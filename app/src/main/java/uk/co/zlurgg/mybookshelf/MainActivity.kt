@@ -7,10 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.BookshelfScreen
 import uk.co.zlurgg.mybookshelf.ui.theme.MyBookshelfTheme
 
 class MainActivity : ComponentActivity() {
@@ -20,9 +19,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyBookshelfTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+                    BookshelfScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        books = sampleBooks,
+                        onBookClick = {}
                     )
                 }
             }
@@ -30,18 +30,15 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+private val sampleBooks = List(50) {
+    Book(
+        id = it.toString(),
+        title = "Test Book $it",
+        author = "Author",
+        spineImageUrl = "https://upload.wikimedia.org/wikipedia/en/8/8e/Harry_Potter_and_the_Philosopher%27s_Stone_Book_Cover.jpg",
+        fullImageUrl = "",
+        blurb = "",
+        purchased = false,
+        affiliateLink = ""
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MyBookshelfTheme {
-        Greeting("Android")
-    }
 }
