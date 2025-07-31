@@ -10,6 +10,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.BookshelfScreen
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.randomReadableDarkColor
 import uk.co.zlurgg.mybookshelf.ui.theme.MyBookshelfTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +24,8 @@ class MainActivity : ComponentActivity() {
                     BookshelfScreen(
                         modifier = Modifier.padding(innerPadding),
                         books = sampleBooks,
-                        onBookClick = {}
+                        onBookClick = {},
+                        shelfMaterial = ShelfMaterial.Wood,
                     )
                 }
             }
@@ -35,10 +38,11 @@ private val sampleBooks = List(50) {
         id = it.toString(),
         title = "Test Book $it",
         author = "Author",
-        spineImageUrl = "https://upload.wikimedia.org/wikipedia/en/8/8e/Harry_Potter_and_the_Philosopher%27s_Stone_Book_Cover.jpg",
+        spineImageUrl = "https://picsum.photos/200/300",
         fullImageUrl = "",
         blurb = "",
         purchased = false,
-        affiliateLink = ""
+        affiliateLink = "",
+        spineColor = randomReadableDarkColor()
     )
 }
