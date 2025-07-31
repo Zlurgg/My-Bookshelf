@@ -1,7 +1,9 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,12 +26,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -42,22 +46,25 @@ fun BookshelfScreen(
     books: List<Book>,
     onBookClick: (Book) -> Unit,
     modifier: Modifier = Modifier,
-    shelfMaterial: ShelfMaterial = ShelfMaterial.Wood // customize shelf style
+    shelfMaterial: ShelfMaterial // customize shelf style
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val bookWidth = 48.dp + 12.dp // book width + spacing
-    val booksPerRow = floor(screenWidth.value / bookWidth.value).toInt().coerceAtLeast(1)
+    val bookWidth = 48.dp
+    val bookSpacing = 4.dp
+    val booksPerRow = floor((screenWidth + bookSpacing) / (bookWidth + bookSpacing)).toInt().coerceAtLeast(1) -1
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(shelfMaterial.backgroundColor)
+//            .background(shelfMaterial)
             .padding(vertical = 16.dp)
     ) {
         items(books.chunked(booksPerRow)) { rowBooks ->
             ShelfRow(
                 books = rowBooks,
                 onBookClick = onBookClick,
-                shelfMaterial = shelfMaterial
+                shelfMaterial = shelfMaterial,
+                bookSpacing = bookSpacing
             )
         }
     }
@@ -67,22 +74,39 @@ fun BookshelfScreen(
 fun ShelfRow(
     books: List<Book>,
     onBookClick: (Book) -> Unit,
-    shelfMaterial: ShelfMaterial
+    shelfMaterial: ShelfMaterial,
+    bookSpacing: Dp
 ) {
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .background(shelfMaterial.shelfColor, shape = RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 12.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(12.dp))
     ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.Bottom,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            books.forEach { book ->
-                BookSpine(book = book, onClick = { onBookClick(book) })
+        Image(
+            painter = shelfMaterial.painter(),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.matchParentSize()
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .padding(8.dp),
+            ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(shelfMaterial.shelfBackground) // darker shelf background
+                    .padding(top= 8.dp, start = 1.dp, end = 1.dp),
+                horizontalArrangement = Arrangement.spacedBy(bookSpacing),
+                verticalAlignment = Alignment.Bottom
+            ) {
+                books.forEach { book ->
+                    BookSpine(book = book, onClick = { onBookClick(book) })
+                }
             }
         }
     }
@@ -168,8 +192,11 @@ data class Book(
     val affiliateLink: String
 )
 
-enum class ShelfMaterial(val backgroundColor: Color, val shelfColor: Color) {
-    Wood(Color(0xFFFAF3E0), Color(0xFF8B5E3C)),
-    Steel(Color(0xFFEFEFEF), Color(0xFF888888)),
-    DarkWood(Color(0xFF3B2F2F), Color(0xFF5C4033))
+enum class ShelfMaterial(val shelfColor: Int, val shelfBackground: Color) {
+    Wood(R.drawable.wood_texture_brown, Color(0xFF2B1F16));
+//    Steel(R.drawable.steel_texture),
+//    DarkWood(R.drawable.dark_wood_texture);
+
+    @Composable
+    fun painter(): Painter = painterResource(shelfColor)
 }
