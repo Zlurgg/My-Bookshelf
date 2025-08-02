@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
 private val sampleBooks = List(50) {
     Book(
         id = it.toString(),
-        title = "Test Book $it",
+        title = "Test Book $it with a longer title making int a bit",
         author = "Author",
         spineImageUrl = "https://picsum.photos/200/300",
         fullImageUrl = "",
