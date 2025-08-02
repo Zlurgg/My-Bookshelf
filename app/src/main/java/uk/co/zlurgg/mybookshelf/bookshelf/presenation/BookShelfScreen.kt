@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +32,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import uk.co.zlurgg.mybookshelf.R
+import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.random.Random
 
@@ -51,14 +54,14 @@ fun BookshelfScreen(
     shelfMaterial: ShelfMaterial, // customize shelf style
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val bookWidth = 60.dp
+    val bookWidth = 62.dp
     val bookSpacing = 4.dp
-    val booksPerRow = floor((screenWidth + bookSpacing) / (bookWidth + bookSpacing)).toInt().coerceAtLeast(1) -1
+    val shelfSpacing = 8.dp
+    val booksPerRow = floor((screenWidth) / (bookWidth + bookSpacing + shelfSpacing)).toInt().coerceAtLeast(1)
 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-//            .background(shelfMaterial)
             .padding(vertical = 16.dp)
     ) {
         items(books.chunked(booksPerRow)) { rowBooks ->
@@ -94,7 +97,7 @@ fun ShelfRow(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 8.dp, vertical = 8.dp)
                 .clip(RoundedCornerShape(12.dp))
                 .padding(8.dp),
             ) {
@@ -130,43 +133,50 @@ fun BookSpine(
     ) {
         Column(
             modifier = Modifier
-                .width(58.dp)
-                .height(150.dp),
+                .height(150.dp)
+                .width(60.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
 
 //          Book image at the top
-            LoadImage(
-                model = book.spineImageUrl,
-                title = book.title,
-                modifier = Modifier.size(40.dp)
-                    .clip(RoundedCornerShape(2.dp))
-            )
+            Box(
+                modifier = Modifier
+                    .padding(top = 4.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                LoadImage(
+                    model = book.spineImageUrl,
+                    title = book.title,
+                    modifier = Modifier.size(50.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                )
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
-//             Rotated title below the image
+//          Rotated title below the image
             Box(
                 modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
+                    .rotate(-90f)
+                    .fillMaxSize()
+                    .wrapContentSize(),
+                contentAlignment = Alignment.BottomCenter,
             ) {
                 Text(
+                    modifier = Modifier,
                     text = book.title,
                     color = Color.White,
+                    maxLines = 4,
                     fontSize = 9.sp,
                     textAlign = TextAlign.Left,
-                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .rotate(-90f)
+                    style = TextStyle.Default,
                 )
             }
         }
     }
 }
-
 @Composable
 fun LoadImage(
     model: String,
@@ -187,10 +197,10 @@ fun LoadImage(
 @Preview(showBackground = true)
 @Composable
 fun BookshelfScreenPreview() {
-    val sampleBooks = List(10) {
+    val sampleBooks = List(13) {
         Book(
             id = it.toString(),
-            title = "Book Title that is longer $it",
+            title = "Test Book $it with a longer title making int a bit",
             author = "Author $it",
             spineImageUrl = "https://via.placeholder.com/40x60.png?text=Book+$it",
             fullImageUrl = "https://via.placeholder.com/200x300.png?text=Book+$it",
@@ -236,8 +246,8 @@ fun randomReadableDarkColor(): Color {
 }
 
 fun hslToColor(h: Float, s: Float, l: Float): Color {
-    val c = (1f - kotlin.math.abs(2 * l - 1f)) * s
-    val x = c * (1f - kotlin.math.abs((h / 60f) % 2 - 1f))
+    val c = (1f - abs(2 * l - 1f)) * s
+    val x = c * (1f - abs((h / 60f) % 2 - 1f))
     val m = l - c / 2f
     val (r1, g1, b1) = when {
         h < 60 -> listOf(c, x, 0f)
