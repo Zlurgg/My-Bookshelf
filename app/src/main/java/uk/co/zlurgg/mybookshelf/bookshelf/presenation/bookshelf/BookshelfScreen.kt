@@ -1,0 +1,70 @@
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
+
+import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import org.koin.androidx.compose.koinViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.components.ShelfRow
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.sampleBooks
+import kotlin.math.floor
+
+@Composable
+fun BookshelfScreenRoot(
+    navController: NavController,
+    viewModel: BookshelfViewModel = koinViewModel(),
+    ) {
+    BookshelfScreen(
+        books = sampleBooks,
+        onBookClick = {},
+        shelfMaterial = ShelfMaterial.Wood,
+    )
+}
+@SuppressLint("ConfigurationScreenWidthHeight")
+@Composable
+fun BookshelfScreen(
+    books: List<Book>,
+    onBookClick: (Book) -> Unit,
+    modifier: Modifier = Modifier,
+    shelfMaterial: ShelfMaterial, // customize shelf style
+) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val bookWidth = 62.dp
+    val bookSpacing = 4.dp
+    val shelfSpacing = 8.dp
+    val booksPerRow = floor((screenWidth) / (bookWidth + bookSpacing + shelfSpacing)).toInt().coerceAtLeast(1)
+
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(vertical = 16.dp)
+    ) {
+        items(books.chunked(booksPerRow)) { rowBooks ->
+            ShelfRow(
+                books = rowBooks,
+                onBookClick = onBookClick,
+                shelfMaterial = shelfMaterial,
+                bookSpacing = bookSpacing,
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BookshelfScreenPreview() {
+    BookshelfScreen(
+        books = sampleBooks,
+        onBookClick = {},
+        shelfMaterial = ShelfMaterial.Wood,
+    )
+}

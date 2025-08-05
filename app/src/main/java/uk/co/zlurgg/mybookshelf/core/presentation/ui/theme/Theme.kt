@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.ui.theme
+package uk.co.zlurgg.mybookshelf.core.presentation.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
