@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.ui.theme
+package uk.co.zlurgg.mybookshelf.core.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
