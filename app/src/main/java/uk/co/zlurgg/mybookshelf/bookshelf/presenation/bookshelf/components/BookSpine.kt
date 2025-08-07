@@ -53,7 +53,7 @@ fun BookSpine(
                 contentAlignment = Alignment.TopCenter
             ) {
                 LoadSpineImage(
-                    model = book.spineImageUrl,
+                    model = book.imageUrl,
                     title = book.title,
                     modifier = Modifier.size(50.dp)
                         .clip(RoundedCornerShape(2.dp))
