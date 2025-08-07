@@ -55,11 +55,11 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.bundles.koin)
     implementation(libs.kotlinx.serialization.json)
 
-    //    implementation(libs.bundles.ktor)
+    implementation(libs.bundles.ktor)
     implementation(libs.bundles.coil)
+    implementation(libs.bundles.koin)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
