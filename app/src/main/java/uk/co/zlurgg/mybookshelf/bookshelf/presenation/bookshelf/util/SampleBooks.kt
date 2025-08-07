@@ -6,12 +6,17 @@ val sampleBooks = List(50) {
     Book(
         id = it.toString(),
         title = "Test Book $it with a longer title making int a bit",
-        author = "Author",
-        spineImageUrl = "https://picsum.photos/200/300",
-        fullImageUrl = "",
-        blurb = "",
+        authors = listOf("Author"),
+        imageUrl = "https://picsum.photos/200/300",
+        description = null,
         purchased = false,
         affiliateLink = "",
-        spineColor = randomReadableDarkColor()
+        spineColor = randomReadableDarkColor(),
+        languages = listOf(""),
+        firstPublishYear = null,
+        averageRating = null,
+        ratingCount = null,
+        numPages = 1000,
+        numEditions = 1
     )
 }
