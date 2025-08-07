@@ -13,10 +13,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.sampleBooks
 
 @Composable
 fun ShelfRow(
@@ -61,4 +63,15 @@ fun ShelfRow(
             }
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ShelfRowPreview() {
+    ShelfRow(
+        books = sampleBooks,
+        onBookClick = {},
+        shelfMaterial = ShelfMaterial.Wood,
+        bookSpacing = 4.dp
+    )
 }

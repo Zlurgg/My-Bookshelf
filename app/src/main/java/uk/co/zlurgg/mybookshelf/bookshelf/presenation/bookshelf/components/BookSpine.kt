@@ -23,9 +23,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.sampleBook
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.sampleBooks
 
 @Composable
 fun BookSpine(
@@ -52,8 +56,8 @@ fun BookSpine(
                     .padding(top = 4.dp),
                 contentAlignment = Alignment.TopCenter
             ) {
-                LoadSpineImage(
-                    model = book.imageUrl,
+                LoadImage(
+                    imageUrl = book.imageUrl,
                     title = book.title,
                     modifier = Modifier.size(50.dp)
                         .clip(RoundedCornerShape(2.dp))
@@ -85,3 +89,11 @@ fun BookSpine(
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun BookSpinePreview() {
+    BookSpine(
+        book = sampleBook,
+        onClick = {}
+    )
+}
