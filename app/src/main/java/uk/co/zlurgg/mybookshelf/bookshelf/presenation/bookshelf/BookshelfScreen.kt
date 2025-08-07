@@ -29,6 +29,7 @@ fun BookshelfScreenRoot(
         shelfMaterial = ShelfMaterial.Wood,
     )
 }
+
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun BookshelfScreen(
