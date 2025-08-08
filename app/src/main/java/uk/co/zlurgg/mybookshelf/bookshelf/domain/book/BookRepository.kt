@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.book
 
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.core.domain.DataError

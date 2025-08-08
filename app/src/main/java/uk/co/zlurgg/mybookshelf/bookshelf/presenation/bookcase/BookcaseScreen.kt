@@ -1,0 +1,108 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
+
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.androidx.compose.koinViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.BookShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.AddShelfDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.BookcaseShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.bookshelves
+import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
+
+@Composable
+fun BookcaseScreenRoot(
+    viewModel: BookcaseViewModel = koinViewModel(),
+    onBookShelfClick: (BookShelf) -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    BookcaseScreen(
+        state = state,
+        onAction = { action ->
+            when(action) {
+                is BookcaseAction.OnBookShelfClick -> onBookShelfClick(action.bookshelf)
+                else -> Unit
+            }
+            viewModel.onAction(action)
+        }
+    )
+}
+
+@Composable
+fun BookcaseScreen(
+    state: BookcaseState,
+    onAction: (BookcaseAction) -> Unit
+    ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showDialog by remember { mutableStateOf(false) }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { showDialog = true }) {
+                Icon(Icons.Default.Add, contentDescription = "Add Shelf")
+            }
+        },
+        modifier = Modifier.fillMaxSize()
+    ) { padding ->
+        LazyColumn(contentPadding = padding) {
+            items(
+                items = state.bookshelves,
+                key = { it.id }
+            ) { shelf ->
+                BookcaseShelf(
+                    shelf = shelf,
+                    onRemove = { shelfToRemove ->
+                        onAction(BookcaseAction.OnRemoveBookShelf(
+                            bookshelf = shelf
+                        ))
+                    },
+                    onClick = {
+                        onAction(BookcaseAction.OnBookShelfClick(it))
+                    },
+                    modifier = Modifier.animateItem()
+                )
+            }
+        }
+    }
+
+    if (showDialog) {
+        AddShelfDialog(
+            onDismiss = { showDialog = false },
+            onAddShelf = {
+                onAction(BookcaseAction.OnAddBookShelf(it))
+            }
+        )
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun BookcaseScreenPreview() {
+    MyBookshelfTheme {
+        BookcaseScreen(
+            state = BookcaseState(),
+            onAction = {}
+        )
+    }
+}
