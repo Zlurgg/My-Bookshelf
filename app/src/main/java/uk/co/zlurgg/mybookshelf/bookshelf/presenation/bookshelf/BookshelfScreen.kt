@@ -38,6 +38,13 @@ fun BookshelfScreen(
     modifier: Modifier = Modifier,
     shelfMaterial: ShelfMaterial, // customize shelf style
 ) {
+    /* TODO:
+         - Add search bar to add new book to shelf
+         - delete shelf / add shelf from bookcase navigates here
+         - Send book shelf to other users
+         - go to book page via clicking on book
+    */
+
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val bookWidth = 62.dp
     val bookSpacing = 4.dp

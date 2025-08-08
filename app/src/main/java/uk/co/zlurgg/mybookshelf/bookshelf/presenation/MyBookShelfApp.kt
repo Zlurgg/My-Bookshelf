@@ -18,6 +18,7 @@ fun MyBookShelfApp() {
             navController = navController,
             startDestination = NavigationRoute.Bookshelf
         ) {
+            // TODO User starts on bookcase, option to add new shelf or edit existing -> bookshelf add books via search using api / send bookshelf -> book details
             composable<NavigationRoute.Bookshelf>() {
                 val viewModel = koinViewModel<BookshelfViewModel>()
 
