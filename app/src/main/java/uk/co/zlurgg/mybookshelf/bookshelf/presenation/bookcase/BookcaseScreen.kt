@@ -25,7 +25,6 @@ import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.BookShelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.AddShelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.BookcaseShelf
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable

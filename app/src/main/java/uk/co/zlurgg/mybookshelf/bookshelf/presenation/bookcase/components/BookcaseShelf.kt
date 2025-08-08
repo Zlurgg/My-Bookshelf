@@ -21,10 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.BookShelf
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseScreen
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseState
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 
