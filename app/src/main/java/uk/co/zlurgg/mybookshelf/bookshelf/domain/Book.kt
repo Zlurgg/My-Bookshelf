@@ -16,5 +16,6 @@ data class Book(
     val numEditions: Int,
     val purchased: Boolean,
     val affiliateLink: String,
-    val spineColor: Color
+    val spineColor: Color,
+    val onShelf: Boolean
 )
