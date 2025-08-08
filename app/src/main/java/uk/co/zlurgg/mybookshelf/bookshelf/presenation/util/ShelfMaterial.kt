@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.util
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color

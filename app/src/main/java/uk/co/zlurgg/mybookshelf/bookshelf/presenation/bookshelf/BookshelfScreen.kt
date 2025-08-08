@@ -6,16 +6,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.book.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.components.ShelfRow
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.ShelfMaterial
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.util.sampleBooks
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
 import kotlin.math.floor
 
 @Composable
@@ -23,9 +25,12 @@ fun BookshelfScreenRoot(
     navController: NavController,
     viewModel: BookshelfViewModel = koinViewModel(),
     ) {
+//    val state by viewModel.state.collectAsStateWithLifecycle()
+
     BookshelfScreen(
+//        state = state,
         books = sampleBooks,
-        onBookClick = {},
+        onBookClick = {}, // onAction...
         shelfMaterial = ShelfMaterial.Wood,
     )
 }
