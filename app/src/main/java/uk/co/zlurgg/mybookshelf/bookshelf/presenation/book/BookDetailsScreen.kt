@@ -63,7 +63,7 @@ fun BookDetailsScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     FloatingActionButton(
-                        onClick = { onAction(BookDetailsAction.OnAddToBookDetailsShelfClick(state.book)) },
+                        onClick = { onAction(BookDetailsAction.OnAddBookToBookshelfClick(state.book)) },
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         state.book.onShelf.let { onShelf ->
