@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_details
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,13 +31,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_details.components.RatingBar
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.components.RatingBar
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBook
 
 @Composable
 fun BookDetailsScreenRoot(
     navController: NavController,
-    viewModel: BookDetailsViewModel = koinViewModel(),
+    viewModel: BookDetailViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -51,8 +51,8 @@ fun BookDetailsScreenRoot(
 
 @Composable
 fun BookDetailsScreen(
-    state: BookDetailsState,
-    onAction: (BookDetailsAction) -> Unit,
+    state: BookDetailState,
+    onAction: (BookDetailAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     if (state.book != null) {
@@ -63,7 +63,7 @@ fun BookDetailsScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     FloatingActionButton(
-                        onClick = { onAction(BookDetailsAction.OnAddBookClick(state.book)) },
+                        onClick = { onAction(BookDetailAction.OnAddBookClick(state.book)) },
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         state.book.onShelf.let { onShelf ->
@@ -75,7 +75,7 @@ fun BookDetailsScreen(
                         }
                     }
                     FloatingActionButton(
-                        onClick = { onAction(BookDetailsAction.OnPurchaseClick) },
+                        onClick = { onAction(BookDetailAction.OnPurchaseClick) },
                         containerColor = if (state.book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
                     ) {
                         Icon(Icons.Default.ShoppingCart, contentDescription = "Purchase")
@@ -114,7 +114,7 @@ fun BookDetailsScreen(
 
                 RatingBar(
                     rating = state.book.averageRating?.toInt() ?: 0,
-                    onRatingChanged = { onAction(BookDetailsAction.OnRateBookDetailsClick) }
+                    onRatingChanged = { onAction(BookDetailAction.OnRateBookDetailsClick) }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -132,7 +132,7 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailScreenPreview() {
     BookDetailsScreen(
-        state = BookDetailsState(
+        state = BookDetailState(
             book = sampleBook
         ),
         onAction = {}

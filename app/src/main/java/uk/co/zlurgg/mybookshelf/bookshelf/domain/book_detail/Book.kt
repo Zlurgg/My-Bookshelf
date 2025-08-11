@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.book
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail
 
 import androidx.compose.ui.graphics.Color
 

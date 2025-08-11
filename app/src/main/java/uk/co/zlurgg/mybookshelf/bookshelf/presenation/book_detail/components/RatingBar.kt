@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_details.components
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
