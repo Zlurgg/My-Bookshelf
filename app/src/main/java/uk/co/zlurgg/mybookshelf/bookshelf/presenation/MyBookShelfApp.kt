@@ -49,7 +49,12 @@ fun MyBookShelfApp() {
 
                     BookSearchScreenRoot(
                         viewModel = viewModel,
-                        navController = navController
+                        onBookClick = { book ->
+//                            viewModel.onSelectBook(book)
+//                            navController.navigate(
+//                                NavigationRoute.BookDetail(book.id)
+//                            )
+                        },
                     )
                 }
                 composable<NavigationRoute.Bookshelf>() {
