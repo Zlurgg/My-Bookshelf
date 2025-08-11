@@ -20,16 +20,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.BookShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.bookshelf
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 
 @Composable
 fun BookcaseShelf(
-    shelf: BookShelf,
-    onRemove: (BookShelf) -> Unit,
-    onClick: (BookShelf) -> Unit,
+    shelf: Bookshelf,
+    onRemove: (Bookshelf) -> Unit,
+    onClick: (Bookshelf) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val swipeState = rememberSwipeToDismissBoxState(

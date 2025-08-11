@@ -22,7 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.BookShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.AddShelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.bookshelves
@@ -31,7 +31,7 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 @Composable
 fun BookcaseScreenRoot(
     viewModel: BookcaseViewModel = koinViewModel(),
-    onBookShelfClick: (BookShelf) -> Unit
+    onBookShelfClick: (Bookshelf) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 

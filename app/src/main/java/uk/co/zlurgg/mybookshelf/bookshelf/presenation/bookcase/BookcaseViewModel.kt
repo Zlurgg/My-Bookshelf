@@ -35,11 +35,11 @@ class BookcaseViewModel : ViewModel() {
                 }
             }
 
-            BookcaseAction.OnAddDialogOpen -> {
+            BookcaseAction.OnAddBookshelfDialogOpen -> {
                 _state.update { it.copy(showAddDialog = true) }
             }
 
-            BookcaseAction.OnAddDialogDismiss -> {
+            BookcaseAction.OnAddBookshelfDialogDismiss -> {
                 _state.update { it.copy(showAddDialog = false) }
             }
 

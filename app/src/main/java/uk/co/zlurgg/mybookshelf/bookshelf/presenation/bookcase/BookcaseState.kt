@@ -1,10 +1,10 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.BookShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
 
 data class BookcaseState(
-    val bookshelves: List<BookShelf> = emptyList(),
+    val bookshelves: List<Bookshelf> = emptyList(),
     val isLoading: Boolean = true,
     val showAddDialog: Boolean = false,
-    val recentlyDeleted: BookShelf? = null
+    val recentlyDeleted: Bookshelf? = null
 )
