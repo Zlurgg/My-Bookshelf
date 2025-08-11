@@ -29,7 +29,9 @@ fun BookshelfScreenRoot(
 
     BookshelfScreen(
         state = state,
-        onBookClick = {}, // onAction...
+        onAction = {
+
+        },
         shelfMaterial = ShelfMaterial.Wood,
     )
 }
@@ -38,7 +40,7 @@ fun BookshelfScreenRoot(
 @Composable
 fun BookshelfScreen(
     state: BookshelfState,
-    onBookClick: (Book) -> Unit,
+    onAction: (BookshelfAction) -> Unit,
     modifier: Modifier = Modifier,
     shelfMaterial: ShelfMaterial, // customize shelf style
 ) {
@@ -64,7 +66,10 @@ fun BookshelfScreen(
             state.books.chunked(booksPerRow)) { rowBooks ->
             ShelfRow(
                 books = rowBooks,
-                onBookClick = onBookClick,
+                onBookClick = {
+                    // TODO: sort out clicking on a book to get that books details
+                    onAction(BookshelfAction.OnBookClick(book = rowBooks[1]))
+                },
                 shelfMaterial = shelfMaterial,
                 bookSpacing = bookSpacing,
             )
@@ -79,7 +84,7 @@ fun BookshelfScreenPreview() {
         state = BookshelfState(
             books = sampleBooks
         ),
-        onBookClick = {},
+        onAction = {},
         shelfMaterial = ShelfMaterial.Wood,
     )
 }

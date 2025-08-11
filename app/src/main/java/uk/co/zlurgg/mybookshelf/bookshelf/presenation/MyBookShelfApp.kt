@@ -1,11 +1,22 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.lifecycle.ViewModel
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import org.koin.compose.viewmodel.koinViewModel
 import uk.co.zlurgg.mybookshelf.app.NavigationRoute
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailsScreenRoot
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_search.BookSearchScreenRoot
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_search.BookSearchViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseScreenRoot
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
@@ -16,16 +27,47 @@ fun MyBookShelfApp() {
         val navController = rememberNavController()
         NavHost(
             navController = navController,
-            startDestination = NavigationRoute.Bookshelf
+            startDestination = NavigationRoute.BookshelfGraph
         ) {
             // TODO User starts on bookcase, option to add new shelf or edit existing -> bookshelf add books via search using api / send bookshelf -> book details
-            composable<NavigationRoute.Bookshelf>() {
-                val viewModel = koinViewModel<BookshelfViewModel>()
+            // Can search from anywhere takes you to the book search screen for the results and can add to either existing or create new shelf from there.
+            navigation<NavigationRoute.BookshelfGraph>(
+                startDestination = NavigationRoute.Bookcase
+            ) {
+                composable<NavigationRoute.Bookcase>() {
+                    val viewModel = koinViewModel<BookcaseViewModel>()
 
-                BookshelfScreenRoot(
-                    viewModel = viewModel,
-                    navController = navController
-                )
+                    BookcaseScreenRoot(
+                        viewModel = viewModel,
+                        onBookShelfClick = { bookshelf ->
+                            NavigationRoute.Bookshelf(bookshelf.id)
+                        }
+                    )
+                }
+                composable<NavigationRoute.BookSearch>() {
+                    val viewModel = koinViewModel<BookSearchViewModel>()
+
+                    BookSearchScreenRoot(
+                        viewModel = viewModel,
+                        navController = navController
+                    )
+                }
+                composable<NavigationRoute.Bookshelf>() {
+                    val viewModel = koinViewModel<BookshelfViewModel>()
+
+                    BookshelfScreenRoot(
+                        viewModel = viewModel,
+                        navController = navController
+                    )
+                }
+                composable<NavigationRoute.BookDetail>() {
+                    val viewModel = koinViewModel<BookDetailViewModel>()
+
+                    BookDetailsScreenRoot(
+                        viewModel = viewModel,
+                        navController = navController
+                    )
+                }
             }
         }
     }

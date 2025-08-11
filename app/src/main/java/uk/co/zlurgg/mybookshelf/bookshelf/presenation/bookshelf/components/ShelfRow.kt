@@ -23,7 +23,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
 @Composable
 fun ShelfRow(
     books: List<Book>,
-    onBookClick: (Book) -> Unit,
+    onBookClick: () -> Unit,
     shelfMaterial: ShelfMaterial,
     bookSpacing: Dp,
 ) {
@@ -57,7 +57,7 @@ fun ShelfRow(
                 books.forEach { book ->
                     BookSpine(
                         book = book,
-                        onClick = { onBookClick(book) },
+                        onClick = { onBookClick() },
                     )
                 }
             }
