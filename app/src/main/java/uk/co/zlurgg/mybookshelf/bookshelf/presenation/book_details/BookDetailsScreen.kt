@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_details
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,7 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book.components.RatingBar
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_details.components.RatingBar
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBook
 
 @Composable
@@ -63,7 +63,7 @@ fun BookDetailsScreen(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     FloatingActionButton(
-                        onClick = { onAction(BookDetailsAction.OnAddBookToBookshelfClick(state.book)) },
+                        onClick = { onAction(BookDetailsAction.OnAddBookClick(state.book)) },
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ) {
                         state.book.onShelf.let { onShelf ->

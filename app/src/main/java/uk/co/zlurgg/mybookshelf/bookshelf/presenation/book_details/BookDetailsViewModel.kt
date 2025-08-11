@@ -1,10 +1,9 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -29,7 +28,7 @@ class BookDetailsViewModel(): ViewModel(
         )
     fun onAction(action: BookDetailsAction) {
         when (action) {
-            is BookDetailsAction.OnAddBookToBookshelfClick -> {
+            is BookDetailsAction.OnAddBookClick -> {
                 viewModelScope.launch {
                     // update book with bookshelf id
                 }
@@ -51,6 +50,10 @@ class BookDetailsViewModel(): ViewModel(
                         ratingCount = it.rating
                     )
                 ) }
+            }
+
+            is BookDetailsAction.OnRemoveBookClick -> {
+
             }
         }
     }
