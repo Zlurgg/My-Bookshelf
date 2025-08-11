@@ -37,81 +37,93 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBook
 @Composable
 fun BookDetailsScreenRoot(
     navController: NavController,
-    viewModel: BookViewModel = koinViewModel(),
+    viewModel: BookDetailsViewModel = koinViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     BookDetailsScreen(
         state = state,
-        onAction = {
-
+        onAction = { action ->
+            viewModel.onAction(action)
         }
     )
 }
+
 @Composable
 fun BookDetailsScreen(
-    state: BookState,
-    onAction: (BookAction) -> Unit,
+    state: BookDetailsState,
+    onAction: (BookDetailsAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val book = state.book
-    Scaffold(
-        floatingActionButton = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.padding(16.dp)
-            ) {
-                FloatingActionButton(
-                    onClick = { onAction(BookAction.OnAddToBookShelfClick(state.book)) },
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+    if (state.book != null) {
+        Scaffold(
+            floatingActionButton = {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    if (!book.onShelf) Icon(Icons.Default.Add, contentDescription = "Add") else Icon(Icons.Default.Delete, contentDescription = "Remove")
+                    FloatingActionButton(
+                        onClick = { onAction(BookDetailsAction.OnAddToBookDetailsShelfClick(state.book)) },
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ) {
+                        state.book.onShelf.let { onShelf ->
+                            if (!onShelf) {
+                                Icon(Icons.Default.Add, contentDescription = "Add")
+                            } else {
+                                Icon(Icons.Default.Delete, contentDescription = "Remove")
+                            }
+                        }
+                    }
+                    FloatingActionButton(
+                        onClick = { onAction(BookDetailsAction.OnPurchaseClick) },
+                        containerColor = if (state.book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
+                    ) {
+                        Icon(Icons.Default.ShoppingCart, contentDescription = "Purchase")
+                    }
                 }
-                FloatingActionButton(
-                    onClick = { onAction(BookAction.OnPurchaseClick(state.book)) },
-                    containerColor = if (book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
-                ) {
-                    Icon(Icons.Default.ShoppingCart, contentDescription = "Purchase")
-                }
-            }
-        },
-        modifier = modifier
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(text = book.title, style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "by ${book.authors.joinToString()}", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AsyncImage(
-                model = book.imageUrl,
-                contentDescription = book.title,
+            },
+            modifier = modifier
+        ) { innerPadding ->
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .clip(RoundedCornerShape(8.dp)),
-                contentScale = ContentScale.Crop
-            )
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Text(text = state.book.title, style = MaterialTheme.typography.headlineMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "by ${state.book.authors.joinToString()}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            RatingBar(
-                rating = book.averageRating?.toInt() ?: 0,
-                onRatingChanged = { onAction(BookAction.OnRateBookClick(state.book)) }
-            )
+                AsyncImage(
+                    model = state.book.imageUrl,
+                    contentDescription = state.book.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = book.description ?: "No description available.",
-                style = MaterialTheme.typography.bodyMedium
-            )
+                RatingBar(
+                    rating = state.book.averageRating?.toInt() ?: 0,
+                    onRatingChanged = { onAction(BookDetailsAction.OnRateBookDetailsClick) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = state.book.description ?: "No description available.",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
@@ -120,7 +132,7 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailScreenPreview() {
     BookDetailsScreen(
-        state = BookState(
+        state = BookDetailsState(
             book = sampleBook
         ),
         onAction = {}
