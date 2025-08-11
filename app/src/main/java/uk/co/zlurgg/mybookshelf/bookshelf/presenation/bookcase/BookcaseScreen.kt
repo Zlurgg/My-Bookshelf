@@ -25,6 +25,7 @@ import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.BookShelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.AddShelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.BookcaseShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
@@ -37,7 +38,7 @@ fun BookcaseScreenRoot(
     BookcaseScreen(
         state = state,
         onAction = { action ->
-            when(action) {
+            when (action) {
                 is BookcaseAction.OnBookShelfClick -> onBookShelfClick(action.bookshelf)
                 else -> Unit
             }
@@ -50,7 +51,7 @@ fun BookcaseScreenRoot(
 fun BookcaseScreen(
     state: BookcaseState,
     onAction: (BookcaseAction) -> Unit
-    ) {
+) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showDialog by remember { mutableStateOf(false) }
 
@@ -71,9 +72,11 @@ fun BookcaseScreen(
                 BookcaseShelf(
                     shelf = shelf,
                     onRemove = { shelfToRemove ->
-                        onAction(BookcaseAction.OnRemoveBookShelf(
-                            bookshelf = shelf
-                        ))
+                        onAction(
+                            BookcaseAction.OnRemoveBookShelf(
+                                bookshelf = shelf
+                            )
+                        )
                     },
                     onClick = {
                         onAction(BookcaseAction.OnBookShelfClick(it))
@@ -100,7 +103,9 @@ fun BookcaseScreen(
 fun BookcaseScreenPreview() {
     MyBookshelfTheme {
         BookcaseScreen(
-            state = BookcaseState(),
+            state = BookcaseState(
+                bookshelves = bookshelves
+            ),
             onAction = {}
         )
     }

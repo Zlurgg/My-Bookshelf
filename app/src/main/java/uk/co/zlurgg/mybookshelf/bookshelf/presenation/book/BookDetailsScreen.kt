@@ -21,24 +21,46 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.book.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book.BookViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book.components.RatingBar
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseAction
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfScreen
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBook
 
 @Composable
+fun BookDetailsScreenRoot(
+    navController: NavController,
+    viewModel: BookViewModel = koinViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    BookDetailsScreen(
+        state = state,
+        onAction = {
+            
+        }
+    )
+}
+@Composable
 fun BookDetailsScreen(
-    book: Book,
-    onRate: (Int) -> Unit,
-    onPurchaseClick: () -> Unit,
-    onAddToBookShelfClick:() -> Unit,
+    state: BookState,
+    onAction: (BookAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val book = state.book
     Scaffold(
         floatingActionButton = {
             Row(
@@ -46,13 +68,13 @@ fun BookDetailsScreen(
                 modifier = Modifier.padding(16.dp)
             ) {
                 FloatingActionButton(
-                    onClick = onPurchaseClick,
+                    onClick = { onAction(BookAction.OnAddToBookShelfClick(state.book)) },
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     if (!book.onShelf) Icon(Icons.Default.Add, contentDescription = "Add") else Icon(Icons.Default.Delete, contentDescription = "Remove")
                 }
                 FloatingActionButton(
-                    onClick = onAddToBookShelfClick,
+                    onClick = { onAction(BookAction.OnPurchaseClick(state.book)) },
                     containerColor = if (book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
                 ) {
                     Icon(Icons.Default.ShoppingCart, contentDescription = "Purchase")
@@ -87,7 +109,7 @@ fun BookDetailsScreen(
 
             RatingBar(
                 rating = book.averageRating?.toInt() ?: 0,
-                onRatingChanged = onRate
+                onRatingChanged = { onAction(BookAction.OnRateBookClick(state.book)) }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -104,9 +126,9 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailScreenPreview() {
     BookDetailsScreen(
-        book = sampleBook,
-        onRate = {},
-        onPurchaseClick = {},
-        onAddToBookShelfClick = {}
+        state = BookState(
+            book = sampleBook
+        ),
+        onAction = {}
     )
 }

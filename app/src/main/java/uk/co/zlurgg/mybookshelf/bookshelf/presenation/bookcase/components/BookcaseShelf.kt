@@ -64,7 +64,6 @@ fun BookcaseShelf(
             }
         }
     ) {
-        // TODO change to use the Bookshelf screen modified to show current + book images till edge
         ListItem(
             modifier = Modifier
                 .clickable { onClick(shelf) }
