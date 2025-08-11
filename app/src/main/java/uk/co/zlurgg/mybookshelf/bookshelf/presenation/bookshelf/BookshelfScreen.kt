@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.book.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.components.ShelfRow
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks

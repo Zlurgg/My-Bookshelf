@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.util
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.book.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
 
 val sampleBooks = List(50) {
     Book(

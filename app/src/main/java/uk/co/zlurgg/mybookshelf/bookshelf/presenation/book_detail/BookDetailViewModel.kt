@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_details
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -9,14 +9,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class BookDetailsViewModel(): ViewModel(
+class BookDetailViewModel(): ViewModel(
 //    private val bookRepository: BookRepository,
 //    private val savedStateHandle: SavedStateHandle
 ) {
 
 //    private val bookId = savedStateHandle.toRoute<Route.BookDetail>().id
 //    private val bookShelfId = savedStateHandle.toRoute<Route.BookDetail>().id
-    private val _state = MutableStateFlow(BookDetailsState())
+    private val _state = MutableStateFlow(BookDetailState())
     val state = _state
         .onStart {
             fetchBookDescription()
@@ -26,14 +26,14 @@ class BookDetailsViewModel(): ViewModel(
             SharingStarted.WhileSubscribed(5000L),
             _state.value
         )
-    fun onAction(action: BookDetailsAction) {
+    fun onAction(action: BookDetailAction) {
         when (action) {
-            is BookDetailsAction.OnAddBookClick -> {
+            is BookDetailAction.OnAddBookClick -> {
                 viewModelScope.launch {
                     // update book with bookshelf id
                 }
             }
-            is BookDetailsAction.OnPurchaseClick -> {
+            is BookDetailAction.OnPurchaseClick -> {
                 viewModelScope.launch {
                     if(state.value.isPurchased) {
 //                        bookRepository.deleteFromPurchased(bookId)
@@ -44,7 +44,7 @@ class BookDetailsViewModel(): ViewModel(
                     }
                 }
             }
-            is BookDetailsAction.OnRateBookDetailsClick -> {
+            is BookDetailAction.OnRateBookDetailClick -> {
                 _state.update { it.copy(
                     book = it.book?.copy(
                         ratingCount = it.rating
@@ -52,7 +52,7 @@ class BookDetailsViewModel(): ViewModel(
                 ) }
             }
 
-            is BookDetailsAction.OnRemoveBookClick -> {
+            is BookDetailAction.OnRemoveBookClick -> {
 
             }
         }
