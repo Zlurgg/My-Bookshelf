@@ -114,7 +114,7 @@ fun BookDetailsScreen(
 
                 RatingBar(
                     rating = state.book.averageRating?.toInt() ?: 0,
-                    onRatingChanged = { onAction(BookDetailAction.OnRateBookDetailsClick) }
+                    onRatingChanged = { onAction(BookDetailAction.OnRateBookDetailClick) }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
