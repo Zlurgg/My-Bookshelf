@@ -1,4 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 
-class BookshelfState {
-}
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.book.Book
+
+data class BookshelfState(
+    val books: List<Book> = emptyList()
+)

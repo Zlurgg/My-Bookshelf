@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.book.Book
@@ -23,11 +25,10 @@ fun BookshelfScreenRoot(
     navController: NavController,
     viewModel: BookshelfViewModel = koinViewModel(),
     ) {
-//    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     BookshelfScreen(
-//        state = state,
-        books = sampleBooks,
+        state = state,
         onBookClick = {}, // onAction...
         shelfMaterial = ShelfMaterial.Wood,
     )
@@ -36,7 +37,7 @@ fun BookshelfScreenRoot(
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun BookshelfScreen(
-    books: List<Book>,
+    state: BookshelfState,
     onBookClick: (Book) -> Unit,
     modifier: Modifier = Modifier,
     shelfMaterial: ShelfMaterial, // customize shelf style
@@ -59,7 +60,8 @@ fun BookshelfScreen(
             .fillMaxSize()
             .padding(vertical = 16.dp)
     ) {
-        items(books.chunked(booksPerRow)) { rowBooks ->
+        items(
+            state.books.chunked(booksPerRow)) { rowBooks ->
             ShelfRow(
                 books = rowBooks,
                 onBookClick = onBookClick,
@@ -74,7 +76,9 @@ fun BookshelfScreen(
 @Composable
 fun BookshelfScreenPreview() {
     BookshelfScreen(
-        books = sampleBooks,
+        state = BookshelfState(
+            books = sampleBooks
+        ),
         onBookClick = {},
         shelfMaterial = ShelfMaterial.Wood,
     )
