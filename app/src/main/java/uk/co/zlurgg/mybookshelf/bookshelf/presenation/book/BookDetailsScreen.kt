@@ -31,13 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.book.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book.BookViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book.components.RatingBar
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseAction
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfScreen
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBook
 
 @Composable
@@ -50,7 +44,7 @@ fun BookDetailsScreenRoot(
     BookDetailsScreen(
         state = state,
         onAction = {
-            
+
         }
     )
 }

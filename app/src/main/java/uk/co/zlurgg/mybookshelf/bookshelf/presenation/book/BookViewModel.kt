@@ -4,10 +4,11 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseAction
 
 class BookViewModel(): ViewModel() {
-    private val _state = MutableStateFlow(BookState())
+    private val _state = MutableStateFlow(BookState(
+        book = TODO() // this will need changing
+    ))
     val state: StateFlow<BookState> = _state
 
     fun onAction(action: BookAction) {
