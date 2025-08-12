@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.components.ShelfRow
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
@@ -29,8 +28,13 @@ fun BookshelfScreenRoot(
 
     BookshelfScreen(
         state = state,
-        onAction = {
-
+        onAction = { action ->
+            when (action) {
+                is BookshelfAction.OnBookClick -> {
+                    navController.navigate("book_details/${action.book.id}")
+                }
+                else -> viewModel.onAction(action)
+            }
         },
         shelfMaterial = ShelfMaterial.Wood,
     )
@@ -66,9 +70,8 @@ fun BookshelfScreen(
             state.books.chunked(booksPerRow)) { rowBooks ->
             ShelfRow(
                 books = rowBooks,
-                onBookClick = {
-                    // TODO: sort out clicking on a book to get that books details
-                    onAction(BookshelfAction.OnBookClick(book = rowBooks[1]))
+                onBookClick = { book ->
+                    onAction(BookshelfAction.OnBookClick(book))
                 },
                 shelfMaterial = shelfMaterial,
                 bookSpacing = bookSpacing,
