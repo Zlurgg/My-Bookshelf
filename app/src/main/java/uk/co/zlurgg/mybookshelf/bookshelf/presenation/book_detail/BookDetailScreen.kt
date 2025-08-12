@@ -36,8 +36,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBook
 
 @Composable
 fun BookDetailsScreenRoot(
-    navController: NavController,
     viewModel: BookDetailViewModel = koinViewModel(),
+    onBackClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 

@@ -31,7 +31,8 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 @Composable
 fun BookcaseScreenRoot(
     viewModel: BookcaseViewModel = koinViewModel(),
-    onBookShelfClick: (Bookshelf) -> Unit
+    onBookshelfClick: (Bookshelf) -> Unit,
+    onAddBookshelfClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -39,7 +40,8 @@ fun BookcaseScreenRoot(
         state = state,
         onAction = { action ->
             when (action) {
-                is BookcaseAction.OnBookShelfClick -> onBookShelfClick(action.bookshelf)
+                is BookcaseAction.OnBookshelfClick -> onBookshelfClick(action.bookshelf)
+                is BookcaseAction.OnAddBookshelfClick -> onAddBookshelfClick(action.name)
                 else -> Unit
             }
             viewModel.onAction(action)
@@ -79,7 +81,7 @@ fun BookcaseScreen(
                         )
                     },
                     onClick = {
-                        onAction(BookcaseAction.OnBookShelfClick(it))
+                        onAction(BookcaseAction.OnBookshelfClick(it))
                     },
                     modifier = Modifier.animateItem()
                 )
@@ -91,7 +93,7 @@ fun BookcaseScreen(
         AddShelfDialog(
             onDismiss = { showDialog = false },
             onAddShelf = {
-                onAction(BookcaseAction.OnAddBookShelf(it))
+                onAction(BookcaseAction.OnAddBookshelfClick(it))
             }
         )
     }
