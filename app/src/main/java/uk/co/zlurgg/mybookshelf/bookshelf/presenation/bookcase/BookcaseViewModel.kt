@@ -14,7 +14,7 @@ class BookcaseViewModel : ViewModel() {
 
     fun onAction(action: BookcaseAction) {
         when (action) {
-            is BookcaseAction.OnAddBookShelf -> {
+            is BookcaseAction.OnAddBookshelfClick -> {
                 _state.update {
                     it.copy(
                         bookshelves = it.bookshelves,
@@ -43,7 +43,7 @@ class BookcaseViewModel : ViewModel() {
                 _state.update { it.copy(showAddDialog = false) }
             }
 
-            is BookcaseAction.OnBookShelfClick -> {
+            is BookcaseAction.OnBookshelfClick -> {
                 // no-op: handled by the screen root for navigation
             }
         }
