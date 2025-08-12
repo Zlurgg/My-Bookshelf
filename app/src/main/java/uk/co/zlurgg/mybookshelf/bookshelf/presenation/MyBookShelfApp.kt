@@ -9,8 +9,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import uk.co.zlurgg.mybookshelf.app.NavigationRoute
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailsScreenRoot
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_search.BookSearchScreenRoot
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_search.BookSearchViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfScreenRoot
@@ -23,11 +21,11 @@ fun MyBookShelfApp() {
         val navController = rememberNavController()
         NavHost(
             navController = navController,
-            startDestination = NavigationRoute.BookshelfGraph
+            startDestination = NavigationRoute.MyBookshelfGraph
         ) {
             // TODO User starts on bookcase, option to add new shelf or edit existing -> bookshelf add books via search using api / send bookshelf -> book details
             // Can search from anywhere takes you to the book search screen for the results and can add to either existing or create new shelf from there.
-            navigation<NavigationRoute.BookshelfGraph>(
+            navigation<NavigationRoute.MyBookshelfGraph>(
                 startDestination = NavigationRoute.Bookcase
             ) {
                 composable<NavigationRoute.Bookcase>() {
@@ -35,38 +33,48 @@ fun MyBookShelfApp() {
 
                     BookcaseScreenRoot(
                         viewModel = viewModel,
-                        onBookShelfClick = { bookshelf ->
+                        onBookshelfClick = { bookshelf ->
                             NavigationRoute.Bookshelf(bookshelf.id)
+                        },
+                        onAddBookshelfClick = {
+
                         }
                     )
                 }
-                composable<NavigationRoute.BookSearch>() {
-                    val viewModel = koinViewModel<BookSearchViewModel>()
-
-                    BookSearchScreenRoot(
+                // Bookcase screen → Bookshelf
+                composable<NavigationRoute.Bookcase> {
+                    val viewModel = koinViewModel<BookcaseViewModel>()
+                    BookcaseScreenRoot(
                         viewModel = viewModel,
-                        onBookClick = { book ->
-//                            viewModel.onSelectBook(book)
-//                            navController.navigate(
-//                                NavigationRoute.BookDetail(book.id)
-//                            )
+                        onBookshelfClick = { shelf ->
+                            navController.navigate(NavigationRoute.Bookshelf(shelf.id))
                         },
+                        onAddBookshelfClick = {
+
+                        }
                     )
                 }
-                composable<NavigationRoute.Bookshelf>() {
+                // Bookshelf screen → Book details
+                composable<NavigationRoute.Bookshelf> {
                     val viewModel = koinViewModel<BookshelfViewModel>()
-
                     BookshelfScreenRoot(
                         viewModel = viewModel,
-                        navController = navController
+                        onBookClick = { book ->
+                            navController.navigate(NavigationRoute.BookDetail(book.id))
+                        },
+                        onSearchClick = {
+                            navController.navigate(NavigationRoute.BookSearch)
+                        },
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
-                composable<NavigationRoute.BookDetail>() {
-                    val viewModel = koinViewModel<BookDetailViewModel>()
 
+                // Book details screen → back
+                composable<NavigationRoute.BookDetail> {
+                    val viewModel = koinViewModel<BookDetailViewModel>()
                     BookDetailsScreenRoot(
                         viewModel = viewModel,
-                        navController = navController
+                        onBackClick = { navController.popBackStack() }
                     )
                 }
             }

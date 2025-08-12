@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 sealed interface NavigationRoute {
     @Serializable
-    data object BookshelfGraph: NavigationRoute
+    data object MyBookshelfGraph: NavigationRoute
     @Serializable
     data object Bookcase: NavigationRoute
     @Serializable
