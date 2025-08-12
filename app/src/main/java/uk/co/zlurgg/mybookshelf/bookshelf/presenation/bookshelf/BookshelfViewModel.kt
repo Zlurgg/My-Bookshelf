@@ -12,10 +12,6 @@ class BookshelfViewModel : ViewModel() {
 
     fun onAction(action: BookshelfAction) {
         when (action) {
-            is BookshelfAction.OnBookClick -> {
-                // navigation handled in compose root
-            }
-
             is BookshelfAction.OnAddBook -> {
                 _state.update { current ->
                     current.copy(
@@ -43,8 +39,15 @@ class BookshelfViewModel : ViewModel() {
                     } ?: current
                 }
             }
+            is BookshelfAction.OnBackClick -> {
+                // navigation handled in compose root
+            }
+            is BookshelfAction.OnSearchClick -> {
 
-            BookshelfAction.OnBackClick -> {}
+            }
+            is BookshelfAction.OnBookClick -> {
+
+            }
         }
     }
 }
