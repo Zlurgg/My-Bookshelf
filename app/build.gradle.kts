@@ -60,6 +60,7 @@ dependencies {
 
     implementation(libs.bundles.ktor)
     implementation(libs.bundles.koin)
+    implementation(libs.material3)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

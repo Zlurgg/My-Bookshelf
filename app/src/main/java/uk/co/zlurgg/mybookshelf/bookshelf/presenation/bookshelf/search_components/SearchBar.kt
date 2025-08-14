@@ -1,9 +1,7 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_search.components
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,12 +23,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
+
 
 @Composable
 fun SearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
+    onSearchClick: () -> Unit,
     onImeSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,24 +92,6 @@ fun SearchBar(
                     color = Color.LightGray
                 )
                 .minimumInteractiveComponentSize()
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun BookSearchBarPreview() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-    ) {
-        SearchBar(
-            searchQuery = "",
-            onSearchQueryChange = {},
-            onImeSearch = {},
-            modifier = Modifier
-                .fillMaxWidth()
         )
     }
 }
