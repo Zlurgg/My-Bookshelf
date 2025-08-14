@@ -28,19 +28,6 @@ fun MyBookShelfApp() {
             navigation<NavigationRoute.MyBookshelfGraph>(
                 startDestination = NavigationRoute.Bookcase
             ) {
-                composable<NavigationRoute.Bookcase>() {
-                    val viewModel = koinViewModel<BookcaseViewModel>()
-
-                    BookcaseScreenRoot(
-                        viewModel = viewModel,
-                        onBookshelfClick = { bookshelf ->
-                            NavigationRoute.Bookshelf(bookshelf.id)
-                        },
-                        onAddBookshelfClick = {
-
-                        }
-                    )
-                }
                 // Bookcase screen → Bookshelf
                 composable<NavigationRoute.Bookcase> {
                     val viewModel = koinViewModel<BookcaseViewModel>()
@@ -62,10 +49,7 @@ fun MyBookShelfApp() {
                         onBookClick = { book ->
                             navController.navigate(NavigationRoute.BookDetail(book.id))
                         },
-                        onSearchClick = {
-                            navController.navigate(NavigationRoute.BookSearch)
-                        },
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStack() },
                     )
                 }
 
