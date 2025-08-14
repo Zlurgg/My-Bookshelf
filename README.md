@@ -27,7 +27,7 @@
 - **Architecture**: MVVM + Clean Architecture
 - **Data Layer**: Room + Firebase Firestore
 - **APIs**: Open Library API, Google Books API (fallback), optional ComicVine & AniList support [Book link setup Doc](https://docs.google.com/document/d/1BUFaQhj8jsI184QQ2ApCmjZTIL7SduJvwO15F1cKZ_E/edit?usp=sharing) [API Doc](https://docs.google.com/document/d/1oOLag-2SpuCNp_U2n_NZ_77X84LdmCXUBy5AA_Yl830/edit?usp=sharing)  
-- **Image Loading**: Coil
+- **Image Loading**: Coil [Textures](https://ambientcg.com/?utm_source=chatgpt.com)  
 - **Affiliate Integration**: Amazon Associates, Bookshop.org (manual link handling)
 - **Navigation**: Jetpack Navigation Compose
 - **Other**: Firebase Dynamic Links, Custom Tabs, Firebase Auth
