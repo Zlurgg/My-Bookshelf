@@ -89,11 +89,7 @@ fun BookcaseScreen(
                 BookcaseShelf(
                     shelf = shelf,
                     onRemove = { shelfToRemove ->
-                        onAction(
-                            BookcaseAction.OnRemoveBookShelf(
-                                bookshelf = shelf
-                            )
-                        )
+                        onAction(BookcaseAction.OnRemoveBookShelf(shelfToRemove))
                     },
                     onClick = {
                         onAction(BookcaseAction.OnBookshelfClick(it))

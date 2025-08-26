@@ -1,10 +1,29 @@
 package uk.co.zlurgg.mybookshelf.core.presentation.ui.theme
 
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 
-val md_theme_light_primary = Color(0xFF6D4C41) // Rich Brown
-val md_theme_light_onPrimary = Color.White
-val md_theme_light_background = Color(0xFFF5F0EB) // Paper-like
-val md_theme_light_surface = Color(0xFFEDE0D4)
-val md_theme_light_onBackground = Color(0xFF3E2723) // Deep coffee
-val md_theme_light_onSurface = Color(0xFF5D4037)
+// Light mode colors
+val LightColorScheme = lightColorScheme(
+    primary = Color(0xFF6D4C41),         // Rich Brown
+    onPrimary = Color.White,
+    background = Color(0xFFF5F0EB),      // Paper-like
+    onBackground = Color(0xFF3E2723),
+    surface = Color(0xFFEDE0D4),
+    onSurface = Color(0xFF5D4037),
+    error = Color(0xFFB00020),
+    errorContainer = Color(0xFFFCD8DF),
+)
+
+// Dark mode colors
+val DarkColorScheme = darkColorScheme(
+    primary = Color(0xFF8D6E63),         // Lighter brown
+    onPrimary = Color.Black,
+    background = Color(0xFF212121),
+    onBackground = Color(0xFFEDE7F6),
+    surface = Color(0xFF2C2C2C),
+    onSurface = Color(0xFFD7CCC8),
+    error = Color(0xFFB00020),
+    errorContainer = Color(0xFFFCD8DF),
+)

@@ -21,10 +21,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
 
 @Composable
-fun ShelfRow(
+fun BookshelfRow(
     books: List<Book>,
     onBookClick: (Book) -> Unit,
-    shelfMaterial: ShelfMaterial,
+    bookshelfMaterial: ShelfMaterial,
     bookSpacing: Dp,
 ) {
     Box(
@@ -34,7 +34,7 @@ fun ShelfRow(
             .clip(RoundedCornerShape(12.dp))
     ) {
         Image(
-            painter = shelfMaterial.painter(),
+            painter = bookshelfMaterial.painter(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize()
@@ -49,7 +49,7 @@ fun ShelfRow(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(shelfMaterial.shelfBackground) // darker shelf background
+                    .background(bookshelfMaterial.shelfBackground) // darker shelf background
                     .padding(top= 8.dp, start = 1.dp, end = 1.dp),
                 horizontalArrangement = Arrangement.spacedBy(bookSpacing),
                 verticalAlignment = Alignment.Bottom
@@ -67,11 +67,11 @@ fun ShelfRow(
 
 @Preview(showBackground = true)
 @Composable
-fun ShelfRowPreview() {
-    ShelfRow(
+fun BookshelfRowPreview() {
+    BookshelfRow(
         books = sampleBooks,
         onBookClick = {},
-        shelfMaterial = ShelfMaterial.Wood,
+        bookshelfMaterial = ShelfMaterial.Wood,
         bookSpacing = 4.dp
     )
 }

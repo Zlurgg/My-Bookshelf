@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.bookshelf_components.ShelfRow
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.bookshelf_components.BookshelfRow
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.SearchBar
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.SearchResultsDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
@@ -42,7 +42,7 @@ fun BookshelfScreenRoot(
             }
             viewModel.onAction(action)
         },
-        shelfMaterial = ShelfMaterial.Wood,
+        bookshelfMaterial = ShelfMaterial.Wood,
     )
 }
 
@@ -51,7 +51,7 @@ fun BookshelfScreenRoot(
 fun BookshelfScreen(
     state: BookshelfState,
     onAction: (BookshelfAction) -> Unit,
-    shelfMaterial: ShelfMaterial,
+    bookshelfMaterial: ShelfMaterial,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val bookWidth = 62.dp
@@ -80,10 +80,10 @@ fun BookshelfScreen(
     ) { paddingValues ->
         LazyColumn(contentPadding = paddingValues) {
             items(state.books.chunked(booksPerRow)) { rowBooks ->
-                ShelfRow(
+                BookshelfRow(
                     books = rowBooks,
                     onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
-                    shelfMaterial = shelfMaterial,
+                    bookshelfMaterial = bookshelfMaterial,
                     bookSpacing = bookSpacing,
                 )
             }
@@ -109,6 +109,6 @@ fun BookshelfScreenPreview() {
             books = sampleBooks
         ),
         onAction = {},
-        shelfMaterial = ShelfMaterial.Wood,
+        bookshelfMaterial = ShelfMaterial.Wood,
     )
 }
