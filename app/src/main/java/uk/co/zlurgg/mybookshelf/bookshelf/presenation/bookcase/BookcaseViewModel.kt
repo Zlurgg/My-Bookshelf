@@ -57,8 +57,12 @@ class BookcaseViewModel(
             }
 
             is BookcaseAction.OnRemoveBookShelf -> {
-                viewModelScope.launch {
-
+                // Immediately remove from UI state
+                _state.update {
+                    it.copy(
+                        bookshelves = it.bookshelves - action.bookshelf,
+                        recentlyDeleted = action.bookshelf // For undo
+                    )
                 }
             }
 

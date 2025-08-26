@@ -5,7 +5,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookcase.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
 
-class BookcaseRepositoryImpl: BookcaseRepository {
+class BookcaseRepositoryImpl(
+//    private val remoteBookDataSource: RemoteBookDataSource
+): BookcaseRepository {
 
     // Temporary in-memory storage (replace with Room/SQLite later)
     private val shelves = mutableListOf<Bookshelf>()
