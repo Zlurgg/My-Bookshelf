@@ -4,23 +4,56 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookcase.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
+import java.util.UUID
 
-class BookcaseViewModel : ViewModel() {
+class BookcaseViewModel(
+    private val repository: BookcaseRepository
+) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state
 
+    init {
+        loadBookshelves()
+    }
+
     fun onAction(action: BookcaseAction) {
         when (action) {
             is BookcaseAction.OnAddBookshelfClick -> {
-                _state.update {
-                    it.copy(
-                        bookshelves = it.bookshelves,
-                        showAddDialog = false
-                    )
+                viewModelScope.launch {
+                    _state.update { it.copy(isLoading = true,  errorMessage = null) }
+                    try {
+                        val newShelf = Bookshelf(
+                            id = UUID.randomUUID().toString(),
+                            name = action.name,
+                            bookCount = 0
+                        )
+                        repository.addShelf(newShelf)
+                        _state.update {
+                            it.copy(
+                                bookshelves = it.bookshelves + newShelf,
+                                isLoading = false,
+                                operationSuccess = true
+                            )
+                        }
+                    } catch (e: Exception) {
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                errorMessage = "Failed to add shelf: ${e.message}"
+                            )
+                        }
+                    }
                 }
+            }
+            // Add action to reset success state
+            is BookcaseAction.ResetOperationState -> {
+                _state.update { it.copy(operationSuccess = false) }
             }
 
             is BookcaseAction.OnRemoveBookShelf -> {
@@ -35,17 +68,32 @@ class BookcaseViewModel : ViewModel() {
                 }
             }
 
-            BookcaseAction.OnAddBookshelfDialogOpen -> {
-                _state.update { it.copy(showAddDialog = true) }
-            }
-
-            BookcaseAction.OnAddBookshelfDialogDismiss -> {
-                _state.update { it.copy(showAddDialog = false) }
-            }
-
             is BookcaseAction.OnBookshelfClick -> {
                 // no-op: handled by the screen root for navigation
             }
         }
     }
+
+    private fun loadBookshelves() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            try {
+                val shelves = repository.getAllShelves().first()
+                _state.update {
+                    it.copy(
+                        bookshelves = shelves,
+                        isLoading = false
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        errorMessage = "Failed to add shelf: ${e.message}",
+                        isLoading = false
+                    )
+                }
+            }
+        }
+    }
 }
+

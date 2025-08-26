@@ -8,6 +8,6 @@ sealed interface BookcaseAction {
     data class OnAddBookshelfClick(val name: String) : BookcaseAction
     data class OnRemoveBookShelf(val bookshelf: Bookshelf) : BookcaseAction
     data class OnUndoRemove(val bookshelf: Bookshelf) : BookcaseAction
-    data object OnAddBookshelfDialogDismiss : BookcaseAction
-    data object OnAddBookshelfDialogOpen : BookcaseAction
+    data object ResetOperationState : BookcaseAction
+
 }
