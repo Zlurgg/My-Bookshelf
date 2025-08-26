@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,13 +5,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,8 +52,25 @@ fun BookcaseScreen(
     state: BookcaseState,
     onAction: (BookcaseAction) -> Unit
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
     var showDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Watch for operation success to close dialog
+    LaunchedEffect(state.operationSuccess) {
+        if (state.operationSuccess) {
+            showDialog = false
+            onAction(BookcaseAction.ResetOperationState)
+        }
+    }
+
+    // Show error snackbar if needed
+    if (state.errorMessage != null) {
+        LaunchedEffect(snackbarHostState) {
+            snackbarHostState.showSnackbar(state.errorMessage)
+            // Clear error after showing
+            onAction(BookcaseAction.ResetOperationState)
+        }
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -92,9 +107,10 @@ fun BookcaseScreen(
     if (showDialog) {
         AddShelfDialog(
             onDismiss = { showDialog = false },
-            onAddShelf = {
-                onAction(BookcaseAction.OnAddBookshelfClick(it))
-            }
+            onAddShelf = { shelfName ->
+                onAction(BookcaseAction.OnAddBookshelfClick(shelfName))
+            },
+            isLoading = state.isLoading
         )
     }
 }
