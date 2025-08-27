@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 
 data class BookcaseState(
     val bookshelves: List<Bookshelf> = emptyList(),
@@ -8,5 +9,6 @@ data class BookcaseState(
     val errorMessage: String? = null,
     val showAddDialog: Boolean = false,
     val recentlyDeleted: Bookshelf? = null,
-    val operationSuccess: Boolean = false
+    val operationSuccess: Boolean = false,
+    val shelfMaterial: ShelfMaterial = ShelfMaterial.Wood
 )

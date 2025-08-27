@@ -118,7 +118,7 @@ fun BookcaseScreenPreview() {
     MyBookshelfTheme {
         BookcaseScreen(
             state = BookcaseState(
-                bookshelves = bookshelves
+                bookshelves = bookshelves,
             ),
             onAction = {}
         )

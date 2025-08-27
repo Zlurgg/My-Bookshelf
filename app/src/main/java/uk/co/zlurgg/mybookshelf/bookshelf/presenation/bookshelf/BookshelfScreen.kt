@@ -41,8 +41,7 @@ fun BookshelfScreenRoot(
                 else -> Unit
             }
             viewModel.onAction(action)
-        },
-        bookshelfMaterial = ShelfMaterial.Wood,
+        }
     )
 }
 
@@ -51,7 +50,6 @@ fun BookshelfScreenRoot(
 fun BookshelfScreen(
     state: BookshelfState,
     onAction: (BookshelfAction) -> Unit,
-    bookshelfMaterial: ShelfMaterial,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val bookWidth = 62.dp
@@ -83,7 +81,7 @@ fun BookshelfScreen(
                 BookshelfRow(
                     books = rowBooks,
                     onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
-                    bookshelfMaterial = bookshelfMaterial,
+                    bookshelfMaterial = state.shelfMaterial,
                     bookSpacing = bookSpacing,
                 )
             }
@@ -108,7 +106,6 @@ fun BookshelfScreenPreview() {
         state = BookshelfState(
             books = sampleBooks
         ),
-        onAction = {},
-        bookshelfMaterial = ShelfMaterial.Wood,
+        onAction = {}
     )
 }
