@@ -20,7 +20,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.bookshelf_components.BookshelfRow
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.SearchBar
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.SearchResultsDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
 import kotlin.math.floor
 

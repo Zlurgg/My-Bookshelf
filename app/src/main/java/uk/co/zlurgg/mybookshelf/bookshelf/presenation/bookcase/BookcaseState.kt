@@ -10,5 +10,4 @@ data class BookcaseState(
     val showAddDialog: Boolean = false,
     val recentlyDeleted: Bookshelf? = null,
     val operationSuccess: Boolean = false,
-    val shelfMaterial: ShelfMaterial = ShelfMaterial.Wood
 )

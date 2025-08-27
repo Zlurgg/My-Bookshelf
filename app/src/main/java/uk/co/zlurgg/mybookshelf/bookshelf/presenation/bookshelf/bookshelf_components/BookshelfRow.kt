@@ -71,7 +71,7 @@ fun BookshelfRowPreview() {
     BookshelfRow(
         books = sampleBooks,
         onBookClick = {},
-        bookshelfMaterial = ShelfMaterial.Wood,
+        bookshelfMaterial = ShelfMaterial.DarkWood,
         bookSpacing = 4.dp
     )
 }

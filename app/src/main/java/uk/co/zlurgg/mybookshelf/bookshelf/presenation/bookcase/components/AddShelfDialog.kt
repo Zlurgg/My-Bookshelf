@@ -52,10 +52,9 @@ fun AddShelfDialog(
                 CircularProgressIndicator()
             } else {
                 Button(
+                    enabled = name.isNotBlank(),
                     onClick = {
-                        if (name.isNotBlank()) {
-                            onAddShelf(name)
-                        }
+                        onAddShelf(name)
                     }
                 ) {
                     Text("Add")
