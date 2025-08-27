@@ -18,6 +18,7 @@ class BookcaseViewModel(
 
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state
+
     init {
         loadBookshelves()
     }
@@ -42,6 +43,7 @@ class BookcaseViewModel(
                                 bookshelves = it.bookshelves + newShelf,
                                 isLoading = false,
                                 operationSuccess = true,
+                                showAddDialog = false
                             )
                         }
                     } catch (e: Exception) {
@@ -54,6 +56,11 @@ class BookcaseViewModel(
                     }
                 }
             }
+
+            is BookcaseAction.ShowAddDialog -> {
+                _state.update { it.copy(showAddDialog = true) }
+            }
+
             is BookcaseAction.ResetOperationState -> {
                 _state.update {
                     it.copy(

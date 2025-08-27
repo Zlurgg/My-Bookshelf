@@ -33,16 +33,23 @@ fun BookcaseScreenRoot(
     onAddBookshelfClick: (String) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var showDialog by remember { mutableStateOf(false) }
 
     BookcaseScreen(
         state = state,
+        showDialog = showDialog,
+        onShowDialogChange = { showDialog = it },
         onAction = { action ->
             when (action) {
                 is BookcaseAction.OnBookshelfClick -> onBookshelfClick(action.bookshelf)
-                is BookcaseAction.OnAddBookshelfClick -> onAddBookshelfClick(action.name)
-                else -> Unit
+                is BookcaseAction.OnAddBookshelfClick -> {
+                    onAddBookshelfClick(action.name)
+                }
+                is BookcaseAction.ShowAddDialog -> {
+                    showDialog = action.showDialog
+                }
+                else -> viewModel.onAction(action)
             }
-            viewModel.onAction(action)
         }
     )
 }
@@ -50,18 +57,11 @@ fun BookcaseScreenRoot(
 @Composable
 fun BookcaseScreen(
     state: BookcaseState,
+    showDialog: Boolean,
+    onShowDialogChange: (Boolean) -> Unit,
     onAction: (BookcaseAction) -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
-
-    // Watch for operation success to close dialog
-    LaunchedEffect(state.operationSuccess) {
-        if (state.operationSuccess) {
-            showDialog = false
-            onAction(BookcaseAction.ResetOperationState)
-        }
-    }
 
     // Show error snackbar if needed
     if (state.errorMessage != null) {
@@ -72,10 +72,18 @@ fun BookcaseScreen(
         }
     }
 
+    // Watch for operation success to close dialog
+    LaunchedEffect(state.operationSuccess) {
+        if (state.operationSuccess) {
+            onShowDialogChange(false)
+            onAction(BookcaseAction.ResetOperationState)
+        }
+    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { showDialog = true }) {
+            FloatingActionButton(onClick = { onShowDialogChange(true)  }) {
                 Icon(Icons.Default.Add, contentDescription = "Add Shelf")
             }
         },
@@ -88,11 +96,11 @@ fun BookcaseScreen(
             ) { shelf ->
                 BookcaseShelf(
                     shelf = shelf,
-                    onRemove = { shelfToRemove ->
+                    onRemoveBookshelf = { shelfToRemove ->
                         onAction(BookcaseAction.OnRemoveBookShelf(shelfToRemove))
                     },
-                    onClick = {
-                        onAction(BookcaseAction.OnBookshelfClick(it))
+                    onBookshelfClick = {
+                        onAction(BookcaseAction.OnBookshelfClick(shelf))
                     },
                     modifier = Modifier.animateItem()
                 )
@@ -102,7 +110,9 @@ fun BookcaseScreen(
 
     if (showDialog) {
         AddShelfDialog(
-            onDismiss = { showDialog = false },
+            onDismiss = {
+                if (!state.isLoading) onShowDialogChange(false)
+            },
             onAddShelf = { shelfName ->
                 onAction(BookcaseAction.OnAddBookshelfClick(shelfName))
             },
@@ -120,7 +130,9 @@ fun BookcaseScreenPreview() {
             state = BookcaseState(
                 bookshelves = bookshelves,
             ),
-            onAction = {}
+            onAction = {},
+            showDialog = false,
+            onShowDialogChange = {}
         )
     }
 }
