@@ -18,10 +18,6 @@ class BookcaseViewModel(
 
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state
-
-    // just hardcoding material as wood for now, option to change material to come (action etc)
-    private val bookshelfMaterial = ShelfMaterial.Wood
-
     init {
         loadBookshelves()
     }
@@ -38,7 +34,7 @@ class BookcaseViewModel(
                             id = UUID.randomUUID().toString(),
                             name = action.name,
                             bookCount = 0,
-                            shelfMaterial = bookshelfMaterial
+                            shelfMaterial = ShelfMaterial.entries.toTypedArray().random()
                         )
                         repository.addShelf(newShelf)
                         _state.update {
@@ -58,9 +54,13 @@ class BookcaseViewModel(
                     }
                 }
             }
-            // Add action to reset success state
             is BookcaseAction.ResetOperationState -> {
-                _state.update { it.copy() }
+                _state.update {
+                    it.copy(
+                        operationSuccess = false,
+                        errorMessage = null
+                    )
+                }
             }
 
             is BookcaseAction.OnRemoveBookShelf -> {
@@ -85,7 +85,7 @@ class BookcaseViewModel(
             }
 
             is BookcaseAction.OnChangeShelfMaterial -> {
-                _state.update { it.copy(shelfMaterial = action.shelfMaterial) }
+
             }
         }
     }
