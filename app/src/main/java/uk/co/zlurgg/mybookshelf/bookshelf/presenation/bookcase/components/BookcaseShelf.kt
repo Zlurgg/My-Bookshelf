@@ -40,8 +40,8 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 @Composable
 fun BookcaseShelf(
     shelf: Bookshelf,
-    onRemove: (Bookshelf) -> Unit,
-    onClick: (Bookshelf) -> Unit,
+    onRemoveBookshelf: (Bookshelf) -> Unit,
+    onBookshelfClick: (Bookshelf) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -52,7 +52,7 @@ fun BookcaseShelf(
         confirmValueChange = { dismissValue ->
             if (shouldRemoveOnRelease) {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onRemove(shelf)
+                onRemoveBookshelf(shelf)
                 true
             } else {
                 false
@@ -130,7 +130,7 @@ fun BookcaseShelf(
             ) {
                 ListItem(
                     modifier = Modifier
-                        .clickable { onClick(shelf) }
+                        .clickable { onBookshelfClick(shelf) }
                         .fillMaxWidth(),
                     headlineContent = { Text(shelf.name) },
                     supportingContent = { Text("${shelf.bookCount} books") }
@@ -146,8 +146,8 @@ fun BookcaseShelfPreview() {
     MyBookshelfTheme {
         BookcaseShelf(
             shelf = bookshelf,
-            onRemove = {},
-            onClick = {},
+            onRemoveBookshelf = {},
+            onBookshelfClick = {},
         )
     }
 }

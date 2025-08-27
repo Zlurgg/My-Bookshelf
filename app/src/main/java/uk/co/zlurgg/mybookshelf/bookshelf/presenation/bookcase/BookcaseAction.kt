@@ -10,6 +10,7 @@ sealed interface BookcaseAction {
     data class OnRemoveBookShelf(val bookshelf: Bookshelf) : BookcaseAction
     data class OnUndoRemove(val bookshelf: Bookshelf) : BookcaseAction
     data class OnChangeShelfMaterial(val shelfMaterial: ShelfMaterial) : BookcaseAction
+    data class ShowAddDialog(val showDialog: Boolean) : BookcaseAction
     data object ResetOperationState : BookcaseAction
 
 }

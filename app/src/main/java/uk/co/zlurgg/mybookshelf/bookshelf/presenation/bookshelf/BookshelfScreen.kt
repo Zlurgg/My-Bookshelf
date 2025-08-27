@@ -103,7 +103,8 @@ fun BookshelfScreen(
 fun BookshelfScreenPreview() {
     BookshelfScreen(
         state = BookshelfState(
-            books = sampleBooks
+            books = sampleBooks,
+            shelfId = "1"
         ),
         onAction = {}
     )
