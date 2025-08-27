@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 
 
 sealed interface BookcaseAction {
@@ -8,6 +9,7 @@ sealed interface BookcaseAction {
     data class OnAddBookshelfClick(val name: String) : BookcaseAction
     data class OnRemoveBookShelf(val bookshelf: Bookshelf) : BookcaseAction
     data class OnUndoRemove(val bookshelf: Bookshelf) : BookcaseAction
+    data class OnChangeShelfMaterial(val shelfMaterial: ShelfMaterial) : BookcaseAction
     data object ResetOperationState : BookcaseAction
 
 }

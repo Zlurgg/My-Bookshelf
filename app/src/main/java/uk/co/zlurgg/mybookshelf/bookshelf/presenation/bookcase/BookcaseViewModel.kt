@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookcase.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import java.util.UUID
 
 class BookcaseViewModel(
@@ -18,6 +19,9 @@ class BookcaseViewModel(
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state
 
+    // just hardcoding material as wood for now, option to change material to come (action etc)
+    private val bookshelfMaterial = ShelfMaterial.Wood
+
     init {
         loadBookshelves()
     }
@@ -26,26 +30,29 @@ class BookcaseViewModel(
         when (action) {
             is BookcaseAction.OnAddBookshelfClick -> {
                 viewModelScope.launch {
-                    _state.update { it.copy(isLoading = true,  errorMessage = null) }
+                    _state.update {
+                        it.copy()
+                    }
                     try {
                         val newShelf = Bookshelf(
                             id = UUID.randomUUID().toString(),
                             name = action.name,
-                            bookCount = 0
+                            bookCount = 0,
+                            shelfMaterial = bookshelfMaterial
                         )
                         repository.addShelf(newShelf)
                         _state.update {
                             it.copy(
                                 bookshelves = it.bookshelves + newShelf,
                                 isLoading = false,
-                                operationSuccess = true
+                                operationSuccess = true,
                             )
                         }
                     } catch (e: Exception) {
                         _state.update {
                             it.copy(
                                 isLoading = false,
-                                errorMessage = "Failed to add shelf: ${e.message}"
+                                errorMessage = "Failed to add shelf: ${e.message}",
                             )
                         }
                     }
@@ -53,7 +60,7 @@ class BookcaseViewModel(
             }
             // Add action to reset success state
             is BookcaseAction.ResetOperationState -> {
-                _state.update { it.copy(operationSuccess = false) }
+                _state.update { it.copy() }
             }
 
             is BookcaseAction.OnRemoveBookShelf -> {
@@ -61,7 +68,8 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         bookshelves = it.bookshelves - action.bookshelf,
-                        recentlyDeleted = action.bookshelf // For undo
+                        recentlyDeleted = action.bookshelf,
+                        // For undo
                     )
                 }
             }
@@ -75,25 +83,29 @@ class BookcaseViewModel(
             is BookcaseAction.OnBookshelfClick -> {
                 // no-op: handled by the screen root for navigation
             }
+
+            is BookcaseAction.OnChangeShelfMaterial -> {
+                _state.update { it.copy(shelfMaterial = action.shelfMaterial) }
+            }
         }
     }
 
     private fun loadBookshelves() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+            _state.update { it.copy() }
             try {
                 val shelves = repository.getAllShelves().first()
                 _state.update {
                     it.copy(
                         bookshelves = shelves,
-                        isLoading = false
+                        isLoading = false,
                     )
                 }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
+                        isLoading = false,
                         errorMessage = "Failed to add shelf: ${e.message}",
-                        isLoading = false
                     )
                 }
             }
