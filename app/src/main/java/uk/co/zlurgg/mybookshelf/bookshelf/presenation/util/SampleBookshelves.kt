@@ -6,10 +6,10 @@ import java.util.UUID
 
 val bookshelves =
     mutableStateListOf(
-        Bookshelf(id = UUID.randomUUID().toString(), name = "Favorites", bookCount = 12, shelfMaterial = ShelfMaterial.DarkWood),
-        Bookshelf(id = UUID.randomUUID().toString(), name = "Sci-Fi", bookCount = 5, shelfMaterial = ShelfMaterial.DarkGreyMetal),
-        Bookshelf(id = UUID.randomUUID().toString(), name = "To Read", bookCount = 8, shelfMaterial = ShelfMaterial.GreyMetal)
+        Bookshelf(id = UUID.randomUUID().toString(), name = "Favorites", books = sampleBooks, shelfMaterial = ShelfMaterial.DarkWood),
+        Bookshelf(id = UUID.randomUUID().toString(), name = "Sci-Fi", books = sampleBooks, shelfMaterial = ShelfMaterial.DarkGreyMetal),
+        Bookshelf(id = UUID.randomUUID().toString(), name = "To Read", books = sampleBooks, shelfMaterial = ShelfMaterial.GreyMetal)
     )
 
 
-val bookshelf = Bookshelf(id = UUID.randomUUID().toString(), name = "Favorites", bookCount = 12, shelfMaterial = ShelfMaterial.SliverMetal)
+val bookshelf = Bookshelf(id = UUID.randomUUID().toString(), name = "Favorites", books = sampleBooks, shelfMaterial = ShelfMaterial.SliverMetal)

@@ -133,7 +133,7 @@ fun BookcaseShelf(
                         .clickable { onBookshelfClick(shelf) }
                         .fillMaxWidth(),
                     headlineContent = { Text(shelf.name) },
-                    supportingContent = { Text("${shelf.bookCount} books") }
+                    supportingContent = { Text("${shelf.books.size} books") }
                 )
             }
         }

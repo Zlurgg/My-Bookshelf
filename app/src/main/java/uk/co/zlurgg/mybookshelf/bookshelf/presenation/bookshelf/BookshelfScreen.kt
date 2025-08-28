@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -72,6 +73,7 @@ fun BookshelfScreen(
                     .widthIn(max = 400.dp)
                     .fillMaxWidth()
                     .padding(16.dp)
+                    .statusBarsPadding()
             )
         }
     ) { paddingValues ->

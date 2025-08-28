@@ -4,14 +4,17 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
 
 class BookshelfRepositoryImpl : BookshelfRepository {
     // Temporary in-memory storage
     private val booksByShelf = mutableMapOf<String, MutableList<Book>>()
 
     override suspend fun searchBooks(query: String): List<Book> {
+
+        val tempTestBooks = sampleBooks
         // Implement actual search logic
-        return emptyList()
+        return tempTestBooks
     }
 
     override suspend fun addBookToShelf(shelfId: String, book: Book) {

@@ -27,14 +27,11 @@ class BookcaseViewModel(
         when (action) {
             is BookcaseAction.OnAddBookshelfClick -> {
                 viewModelScope.launch {
-                    _state.update {
-                        it.copy()
-                    }
                     try {
                         val newShelf = Bookshelf(
                             id = UUID.randomUUID().toString(),
                             name = action.name,
-                            bookCount = 0,
+                            books = emptyList(),
                             shelfMaterial = ShelfMaterial.entries.toTypedArray().random()
                         )
                         repository.addShelf(newShelf)
