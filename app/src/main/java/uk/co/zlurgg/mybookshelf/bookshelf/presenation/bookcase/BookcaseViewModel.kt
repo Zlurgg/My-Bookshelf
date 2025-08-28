@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -26,32 +27,7 @@ class BookcaseViewModel(
     fun onAction(action: BookcaseAction) {
         when (action) {
             is BookcaseAction.OnAddBookshelfClick -> {
-                viewModelScope.launch {
-                    try {
-                        val newShelf = Bookshelf(
-                            id = UUID.randomUUID().toString(),
-                            name = action.name,
-                            books = emptyList(),
-                            shelfMaterial = ShelfMaterial.entries.toTypedArray().random()
-                        )
-                        repository.addShelf(newShelf)
-                        _state.update {
-                            it.copy(
-                                bookshelves = it.bookshelves + newShelf,
-                                isLoading = false,
-                                operationSuccess = true,
-                                showAddDialog = false
-                            )
-                        }
-                    } catch (e: Exception) {
-                        _state.update {
-                            it.copy(
-                                isLoading = false,
-                                errorMessage = "Failed to add shelf: ${e.message}",
-                            )
-                        }
-                    }
-                }
+                addBookshelf(action.name)
             }
 
             is BookcaseAction.ShowAddDialog -> {
@@ -90,6 +66,35 @@ class BookcaseViewModel(
 
             is BookcaseAction.OnChangeShelfMaterial -> {
 
+            }
+        }
+    }
+
+    private fun addBookshelf(name: String) {
+        viewModelScope.launch {
+            try {
+                val newShelf = Bookshelf(
+                    id = UUID.randomUUID().toString(),
+                    name = name,
+                    books = emptyList(),
+                    shelfMaterial = ShelfMaterial.entries.toTypedArray().random()
+                )
+                repository.addShelf(newShelf)
+                _state.update {
+                    it.copy(
+                        bookshelves = it.bookshelves + newShelf,
+                        isLoading = false,
+                        operationSuccess = true,
+                        showAddDialog = false
+                    )
+                }
+            } catch (e: Exception) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "Failed to add shelf: ${e.message}",
+                    )
+                }
             }
         }
     }

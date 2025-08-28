@@ -31,7 +31,10 @@ class BookshelfViewModel(
             is BookshelfAction.OnDismissSearchDialog -> {
                 _state.update { it.copy(isSearchDialogVisible = false, searchQuery = "") }
             }
-            is BookshelfAction.OnAddBookFromSearch -> {
+            is BookshelfAction.OnBookClick -> {
+
+            }
+            is BookshelfAction.OnAddBookClick -> {
                 addBookToShelf(action.book)
             }
             is BookshelfAction.OnRemoveBook -> {
