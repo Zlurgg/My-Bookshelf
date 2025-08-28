@@ -9,7 +9,7 @@ sealed interface BookshelfAction {
     data object OnDismissSearchDialog : BookshelfAction
     data class OnRemoveBook(val book: Book) : BookshelfAction
     data object OnUndoRemove : BookshelfAction
-    data class OnAddBookFromSearch(val book: Book) : BookshelfAction
+    data class OnAddBookClick(val book: Book) : BookshelfAction
     data object OnBackClick : BookshelfAction
 
 }

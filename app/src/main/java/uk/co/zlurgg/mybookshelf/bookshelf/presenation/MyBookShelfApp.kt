@@ -16,6 +16,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailsScr
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
@@ -84,11 +85,15 @@ fun MyBookShelfApp() {
 
                     BookshelfScreenRoot(
                         viewModel = viewModel,
+                        onAddBookClick = { book ->
+                            viewModel.onAction(BookshelfAction.OnAddBookClick(book = book))
+                        },
                         onBookClick = { book ->
                             // Navigate to BookDetail screen
                             navController.navigate(NavigationRoute.BookDetail.createRoute(book.id))
                         },
                         onBackClick = { navController.popBackStack() },
+
                     )
                 }
 
