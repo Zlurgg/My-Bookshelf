@@ -47,6 +47,8 @@ android {
         arg("room.schemaLocation", "$projectDir/schemas")
         arg("room.incremental", "true")
     }
+    sourceSets["main"].assets.srcDir("schemas")
+
 }
 
 dependencies {
