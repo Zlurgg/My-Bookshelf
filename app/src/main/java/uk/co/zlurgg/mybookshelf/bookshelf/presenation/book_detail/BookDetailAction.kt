@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 
 sealed interface  BookDetailAction {
     data object OnRateBookDetailClick : BookDetailAction

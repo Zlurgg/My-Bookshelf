@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.util
 
 import androidx.compose.runtime.mutableStateListOf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import java.util.UUID
 
 val bookshelves =
