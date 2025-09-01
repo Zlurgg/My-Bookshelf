@@ -1,9 +1,9 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.bookshelf
+package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.book_detail.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
 
 class BookshelfRepositoryImpl : BookshelfRepository {

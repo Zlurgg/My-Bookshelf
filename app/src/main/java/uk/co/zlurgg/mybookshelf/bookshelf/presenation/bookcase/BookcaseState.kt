@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.bookshelf.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 
 data class BookcaseState(
     val bookshelves: List<Bookshelf> = emptyList(),
