@@ -2,11 +2,12 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 
 class BookcaseRepositoryImpl(
-//    private val remoteBookDataSource: RemoteBookDataSource
+    private val remoteBookDataSource: RemoteBookDataSource
 ): BookcaseRepository {
 
     // Temporary in-memory storage (replace with Room/SQLite later)

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
+import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
 @Composable
 fun BookshelfRow(

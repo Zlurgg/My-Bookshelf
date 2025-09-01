@@ -31,7 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.components.RatingBar
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBook
+import uk.co.zlurgg.mybookshelf.core.presentation.sampleBook
 
 @Composable
 fun BookDetailsScreenRoot(

@@ -9,9 +9,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.core.domain.onError
+import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
 class BookshelfViewModel(
-    private val repository: BookshelfRepository,
+    private val bookshelfRepository: BookshelfRepository,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -57,24 +59,7 @@ class BookshelfViewModel(
             }
             is BookshelfAction.OnSearchQueryChange -> {
                 _state.update { it.copy(searchQuery = action.query, isSearchLoading = true) }
-                viewModelScope.launch {
-                    try {
-                        val results = repository.searchBooks(action.query)
-                        _state.update {
-                            it.copy(
-                                searchResults = results,
-                                isSearchLoading = false
-                            )
-                        }
-                    } catch (e: Exception) {
-                        _state.update {
-                            it.copy(
-                                isSearchLoading = false,
-                                errorMessage = "Search failed: ${e.message}"
-                            )
-                        }
-                    }
-                }
+                searchBooks(query = action.query)
             }
             else -> Unit
         }
@@ -83,7 +68,7 @@ class BookshelfViewModel(
     private fun loadBooks() {
         viewModelScope.launch {
             try {
-                repository.getBooksForShelf(shelfId).collect { books ->
+                bookshelfRepository.getBooksForShelf(shelfId).collect { books ->
                     _state.update { it.copy(books = books) }
                 }
             } catch (e: Exception) {
@@ -100,7 +85,7 @@ class BookshelfViewModel(
     private fun addBookToShelf(book: Book) {
         viewModelScope.launch {
             try {
-                repository.addBookToShelf(shelfId, book)
+                bookshelfRepository.addBookToShelf(shelfId, book)
                 _state.update { it.copy(books = it.books + book) }
             } catch (e: Exception) {
                 _state.update {
@@ -111,5 +96,33 @@ class BookshelfViewModel(
                 }
             }
         }
+    }
+
+    private fun searchBooks(query: String) = viewModelScope.launch {
+        _state.update {
+            it.copy(
+                isLoading = true
+            )
+        }
+        bookshelfRepository
+            .searchBooks(query)
+            .onSuccess { searchResults ->
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = null,
+                        searchResults = searchResults
+                    )
+                }
+            }
+            .onError { error ->
+                _state.update {
+                    it.copy(
+                        searchResults = emptyList(),
+                        isLoading = false,
+                        errorMessage = error.toString()
+                    )
+                }
+            }
     }
 }
