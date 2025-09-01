@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.sampleBooks
+import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
 @Composable
 fun SearchResultsDialog(
