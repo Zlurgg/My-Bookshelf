@@ -89,8 +89,13 @@ fun MyBookShelfApp() {
                             viewModel.onAction(BookshelfAction.OnAddBookClick(book = book))
                         },
                         onBookClick = { book ->
-                            // Navigate to BookDetail screen
-                            navController.navigate(NavigationRoute.BookDetail.createRoute(book.id))
+                            // Persist clicked book so details can load it by ID; navigate with shelfId
+                            viewModel.onAction(BookshelfAction.OnBookClick(book))
+                            // Close the search dialog to avoid stacking/looping under details
+                            viewModel.onAction(BookshelfAction.OnDismissSearchDialog)
+                            navController.navigate(NavigationRoute.BookDetail.createRoute(book.id, shelfId)) {
+                                launchSingleTop = true
+                            }
                         },
                         onBackClick = { navController.popBackStack() },
 
@@ -102,15 +107,21 @@ fun MyBookShelfApp() {
                     arguments = listOf(
                         navArgument(NavigationRoute.BookDetail.KEY_ID) {
                             type = NavType.StringType
+                        },
+                        navArgument(NavigationRoute.BookDetail.KEY_SHELF_ID) {
+                            type = NavType.StringType
                         }
                     )
                 ) { backStackEntry ->
                     val bookId = backStackEntry.arguments?.getString(
                         NavigationRoute.BookDetail.KEY_ID
                     ) ?: ""
+                    val shelfIdArg = backStackEntry.arguments?.getString(
+                        NavigationRoute.BookDetail.KEY_SHELF_ID
+                    ) ?: ""
 
                     val viewModel = koinViewModel<BookDetailViewModel>(
-                        parameters = { parametersOf(bookId) }
+                        parameters = { parametersOf(bookId, shelfIdArg) }
                     )
 
                     BookDetailsScreenRoot(

@@ -31,15 +31,34 @@ class BookshelfViewModel(
                 _state.update { it.copy(isSearchDialogVisible = true) }
             }
             is BookshelfAction.OnDismissSearchDialog -> {
-                _state.update { it.copy(isSearchDialogVisible = false, searchQuery = "") }
+                _state.update { it.copy(
+                    isSearchDialogVisible = false,
+                    searchQuery = "",
+                    searchResults = emptyList(),
+                    isSearchLoading = false
+                ) }
             }
             is BookshelfAction.OnBookClick -> {
-
+                // Persist clicked book so details screen can load it by ID safely
+                viewModelScope.launch {
+                    try {
+                        bookshelfRepository.upsertBook(action.book)
+                    } catch (e: Exception) {
+                        _state.update { it.copy(errorMessage = "Failed to cache book: ${e.message}") }
+                    }
+                }
             }
             is BookshelfAction.OnAddBookClick -> {
                 addBookToShelf(action.book)
             }
             is BookshelfAction.OnRemoveBook -> {
+                viewModelScope.launch {
+                    try {
+                        bookshelfRepository.removeBookFromShelf(shelfId, action.book.id)
+                    } catch (e: Exception) {
+                        _state.update { it.copy(errorMessage = "Failed to remove book: ${e.message}") }
+                    }
+                }
                 _state.update { current ->
                     current.copy(
                         books = current.books.filterNot { it.id == action.book.id },
@@ -100,7 +119,7 @@ class BookshelfViewModel(
     private fun searchBooks(query: String) = viewModelScope.launch {
         _state.update {
             it.copy(
-                isLoading = true
+                isSearchLoading = true
             )
         }
         bookshelfRepository
@@ -108,7 +127,7 @@ class BookshelfViewModel(
             .onSuccess { searchResults ->
                 _state.update {
                     it.copy(
-                        isLoading = false,
+                        isSearchLoading = false,
                         errorMessage = null,
                         searchResults = searchResults
                     )
@@ -118,7 +137,7 @@ class BookshelfViewModel(
                 _state.update {
                     it.copy(
                         searchResults = emptyList(),
-                        isLoading = false,
+                        isSearchLoading = false,
                         errorMessage = error.toString()
                     )
                 }

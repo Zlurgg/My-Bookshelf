@@ -26,6 +26,18 @@ class BookshelfRepositoryImpl(
             }
     }
 
+    override suspend fun upsertBook(book: Book) {
+        dao.upsert(book.toBookEntity())
+    }
+
+    override suspend fun getBookById(bookId: String): Book? {
+        return dao.getBookById(bookId)?.toBook()
+    }
+
+    override suspend fun getBookDescription(workId: String): Result<String?, DataError.Remote> {
+        return remoteBookDataSource.getBookDetails(workId).map { it.description }
+    }
+
     override suspend fun addBookToShelf(shelfId: String, book: Book) {
         // Upsert book then link to shelf
         dao.upsert(book.toBookEntity())

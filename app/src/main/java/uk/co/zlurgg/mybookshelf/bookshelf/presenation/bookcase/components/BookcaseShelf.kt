@@ -43,6 +43,7 @@ fun BookcaseShelf(
     onRemoveBookshelf: (Bookshelf) -> Unit,
     onBookshelfClick: (Bookshelf) -> Unit,
     modifier: Modifier = Modifier,
+    bookCountOverride: Int? = null,
 ) {
     val haptic = LocalHapticFeedback.current
 
@@ -133,7 +134,7 @@ fun BookcaseShelf(
                         .clickable { onBookshelfClick(shelf) }
                         .fillMaxWidth(),
                     headlineContent = { Text(shelf.name) },
-                    supportingContent = { Text("${shelf.books.size} books") }
+                    supportingContent = { Text("${bookCountOverride ?: shelf.books.size} books") }
                 )
             }
         }

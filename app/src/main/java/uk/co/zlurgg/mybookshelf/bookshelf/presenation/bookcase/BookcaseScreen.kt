@@ -104,7 +104,8 @@ fun BookcaseScreen(
                     onBookshelfClick = {
                         onAction(BookcaseAction.OnBookshelfClick(shelf))
                     },
-                    modifier = Modifier.animateItem()
+                    modifier = Modifier.animateItem(),
+                    bookCountOverride = state.bookCounts[shelf.id] ?: 0
                 )
             }
         }

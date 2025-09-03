@@ -40,6 +40,15 @@ fun BookDetailsScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    // Collect one-shot events
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is BookDetailEvent.NavigateBack -> onBackClick()
+            }
+        }
+    }
+
     BookDetailsScreen(
         state = state,
         onAction = { action ->
@@ -122,6 +131,18 @@ fun BookDetailsScreen(
                     text = state.book.description ?: "No description available.",
                     style = MaterialTheme.typography.bodyMedium
                 )
+            }
+        }
+    } else {
+        // Minimal fallback to avoid blank page
+        Scaffold { innerPadding ->
+            Column(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+            ) {
+                Text("Loading book details...")
             }
         }
     }

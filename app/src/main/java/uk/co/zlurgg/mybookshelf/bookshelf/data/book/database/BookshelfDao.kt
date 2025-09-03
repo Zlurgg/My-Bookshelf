@@ -39,4 +39,7 @@ interface BookshelfDao {
         "SELECT b.* FROM BookEntity b INNER JOIN BookshelfBookCrossRef s ON b.id = s.bookId WHERE s.shelfId = :shelfId ORDER BY s.addedAt DESC"
     )
     fun getBooksForShelf(shelfId: String): Flow<List<BookEntity>>
+
+    @Query("SELECT COUNT(*) FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
+    fun getBookCountForShelf(shelfId: String): Flow<Int>
 }
