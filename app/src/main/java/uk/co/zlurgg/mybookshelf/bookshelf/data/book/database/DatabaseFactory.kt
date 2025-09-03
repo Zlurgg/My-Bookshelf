@@ -12,8 +12,9 @@ class DatabaseFactory(
         val dbFile = appContext.getDatabasePath(BookshelfDatabase.DB_NAME)
 
         return Room.databaseBuilder(
-            context = appContext,
-            name = dbFile.absolutePath,
-        )
+            appContext,
+            BookshelfDatabase::class.java,
+            dbFile.absolutePath,
+        ).fallbackToDestructiveMigration()
     }
 }

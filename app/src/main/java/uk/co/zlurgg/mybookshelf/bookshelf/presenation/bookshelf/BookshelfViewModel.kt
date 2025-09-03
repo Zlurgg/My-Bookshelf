@@ -86,7 +86,6 @@ class BookshelfViewModel(
         viewModelScope.launch {
             try {
                 bookshelfRepository.addBookToShelf(shelfId, book)
-                _state.update { it.copy(books = it.books + book) }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
