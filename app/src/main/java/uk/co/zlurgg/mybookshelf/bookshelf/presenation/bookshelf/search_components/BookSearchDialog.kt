@@ -23,15 +23,18 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
 @Composable
-fun SearchResultsDialog(
+fun BookSearchDialog(
     results: List<Book>,
     isLoading: Boolean,
     onAddBook: (Book) -> Unit,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Search Results") },
+        onDismissRequest = {
+            // Only allow dismiss if not loading
+            if (!isLoading) onDismiss()
+        },
+        title = { Text("Book Search") },
         text = {
             when {
                 isLoading -> {
@@ -80,7 +83,7 @@ fun SearchResultsDialog(
 @Preview
 @Composable
 private fun BookSearchScreenPreview() {
-    SearchResultsDialog(
+    BookSearchDialog(
         results = sampleBooks,
         isLoading = false,
         onAddBook = {},

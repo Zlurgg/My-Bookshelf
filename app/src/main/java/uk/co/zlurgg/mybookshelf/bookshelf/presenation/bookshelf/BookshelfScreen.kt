@@ -22,7 +22,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.bookshelf_components.BookshelfRow
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.SearchResultsDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 import kotlin.math.floor
 
@@ -79,7 +79,7 @@ fun BookshelfScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { onShowBookSearchDialogChange(true)  }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Shelf")
+                Icon(Icons.Default.Add, contentDescription = "Search for and add book to shelf.")
             }
         },
         /*        topBar = {
@@ -111,8 +111,8 @@ fun BookshelfScreen(
     }
 
     // Search dialog
-    if (state.isSearchDialogVisible) {
-        SearchResultsDialog(
+    if (showBookSearchDialog) {
+        BookSearchDialog(
             results = state.searchResults,
             isLoading = state.isSearchLoading,
             onAddBook = { book -> onAction(BookshelfAction.OnAddBookClick(book)) },
