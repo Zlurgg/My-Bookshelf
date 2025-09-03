@@ -5,8 +5,8 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [BookEntity::class],
-    version = 1
+    entities = [BookEntity::class, BookshelfEntity::class, BookshelfBookCrossRef::class],
+    version = 2
 )
 @TypeConverters(
     StringListTypeConverter::class,

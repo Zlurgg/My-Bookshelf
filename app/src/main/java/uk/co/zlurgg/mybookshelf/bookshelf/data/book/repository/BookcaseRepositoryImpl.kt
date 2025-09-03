@@ -1,36 +1,32 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
+import kotlinx.coroutines.flow.map
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toDomain
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toEntity
 
 class BookcaseRepositoryImpl(
-    private val remoteBookDataSource: RemoteBookDataSource
+    private val dao: BookshelfDao
 ): BookcaseRepository {
 
-    // Temporary in-memory storage (replace with Room/SQLite later)
-    private val shelves = mutableListOf<Bookshelf>()
-    private val shelvesFlow = MutableStateFlow(emptyList<Bookshelf>())
-
-    override fun getAllShelves(): Flow<List<Bookshelf>> = shelvesFlow
+    override fun getAllShelves(): Flow<List<Bookshelf>> =
+        dao.getAllShelves().map { list -> list.map { it.toDomain() } }
 
     override suspend fun addShelf(shelf: Bookshelf) {
-        shelves.add(shelf)
-        shelvesFlow.value = shelves.toList()
+        dao.upsertShelf(shelf.toEntity())
     }
 
     override suspend fun removeShelf(shelfId: String) {
-        shelves.removeAll { it.id == shelfId }
-        shelvesFlow.value = shelves.toList()
+        // Remove cross-refs first to keep DB clean
+        dao.deleteAllCrossRefsForShelf(shelfId)
+        dao.deleteShelf(shelfId)
     }
 
     override suspend fun updateShelf(shelf: Bookshelf) {
-        val index = shelves.indexOfFirst { it.id == shelf.id }
-        if (index != -1) {
-            shelves[index] = shelf
-            shelvesFlow.value = shelves.toList()
-        }
+        dao.upsertShelf(shelf.toEntity())
     }
 }

@@ -43,19 +43,51 @@ class BookcaseViewModel(
             }
 
             is BookcaseAction.OnRemoveBookShelf -> {
-                // Immediately remove from UI state
+                // Optimistic UI update
                 _state.update {
                     it.copy(
                         bookshelves = it.bookshelves - action.bookshelf,
                         recentlyDeleted = action.bookshelf,
-                        // For undo
                     )
+                }
+                // Persist deletion
+                viewModelScope.launch {
+                    try {
+                        repository.removeShelf(action.bookshelf.id)
+                    } catch (e: Exception) {
+                        // Revert UI on failure
+                        _state.update { current ->
+                            current.copy(
+                                bookshelves = current.bookshelves + action.bookshelf,
+                                recentlyDeleted = null,
+                                errorMessage = "Failed to remove shelf: ${e.message}"
+                            )
+                        }
+                    }
                 }
             }
 
             is BookcaseAction.OnUndoRemove -> {
-                viewModelScope.launch {
-
+                val toRestore = state.value.recentlyDeleted
+                if (toRestore != null) {
+                    viewModelScope.launch {
+                        try {
+                            repository.addShelf(toRestore)
+                            _state.update { current ->
+                                current.copy(
+                                    bookshelves = current.bookshelves + toRestore,
+                                    recentlyDeleted = null,
+                                    operationSuccess = true
+                                )
+                            }
+                        } catch (e: Exception) {
+                            _state.update { current ->
+                                current.copy(
+                                    errorMessage = "Failed to restore shelf: ${e.message}"
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
