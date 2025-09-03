@@ -9,6 +9,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,7 +26,11 @@ fun RatingBar(
         for (i in 1..maxRating) {
             Icon(
                 imageVector = if (i <= rating) Icons.Default.Star else ImageVector.vectorResource(R.drawable.outline_star_24),
-                contentDescription = "$i stars",
+                contentDescription = pluralStringResource(
+                    id = R.plurals.cd_star_count,
+                    count = i,
+                    i
+                ),
                 modifier = Modifier
                     .size(32.dp)
                     .clickable { onRatingChanged(i) },

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -57,7 +58,7 @@ fun BookshelfScreen(
     ) { paddingValues ->
         if (!state.isLoading && state.books.isEmpty()) {
             androidx.compose.material3.Text(
-                text = "This shelf is empty. Tap + to add a book",
+                text = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.bookshelf_empty_state_hint),
                 modifier = Modifier
                     .padding(paddingValues)
                     .padding(24.dp)

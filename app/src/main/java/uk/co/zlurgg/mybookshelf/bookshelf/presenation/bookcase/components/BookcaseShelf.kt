@@ -31,6 +31,8 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
@@ -103,7 +105,7 @@ fun BookcaseShelf(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete shelf",
+                        contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.cd_delete_shelf),
                         tint = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
@@ -134,7 +136,13 @@ fun BookcaseShelf(
                         .clickable { onBookshelfClick(shelf) }
                         .fillMaxWidth(),
                     headlineContent = { Text(shelf.name) },
-                    supportingContent = { Text("${bookCountOverride ?: shelf.books.size} books") }
+                    supportingContent = { androidx.compose.material3.Text(
+                        text = pluralStringResource(
+                            id = uk.co.zlurgg.mybookshelf.R.plurals.bookcount_books,
+                            count = bookCountOverride ?: shelf.books.size,
+                            bookCountOverride ?: shelf.books.size
+                        )
+                    ) }
                 )
             }
         }
