@@ -136,7 +136,7 @@ fun BookcaseShelf(
                         .clickable { onBookshelfClick(shelf) }
                         .fillMaxWidth(),
                     headlineContent = { Text(shelf.name) },
-                    supportingContent = { androidx.compose.material3.Text(
+                    supportingContent = { Text(
                         text = pluralStringResource(
                             id = uk.co.zlurgg.mybookshelf.R.plurals.bookcount_books,
                             count = bookCountOverride ?: shelf.books.size,

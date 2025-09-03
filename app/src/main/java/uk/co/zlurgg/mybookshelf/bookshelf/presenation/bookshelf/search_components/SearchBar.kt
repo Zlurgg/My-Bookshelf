@@ -30,7 +30,6 @@ import androidx.compose.ui.text.input.KeyboardType
 fun SearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onSearchClick: () -> Unit,
     onImeSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
