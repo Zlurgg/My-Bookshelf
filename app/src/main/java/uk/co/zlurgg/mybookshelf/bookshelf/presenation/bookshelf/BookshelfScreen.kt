@@ -59,11 +59,6 @@ fun BookshelfScreen(
         .toInt().coerceAtLeast(1)
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { onAction(BookshelfAction.OnSearchClick) }) {
-                Icon(Icons.Default.Add, contentDescription = "Add a book to this shelf")
-            }
-        },
     ) { paddingValues ->
         if (!state.isLoading && state.books.isEmpty()) {
             androidx.compose.material3.Text(
@@ -74,12 +69,17 @@ fun BookshelfScreen(
             )
         } else {
             LazyColumn(contentPadding = paddingValues) {
-                items(state.books.chunked(booksPerRow)) { rowBooks ->
+                val rows = state.books.chunked(booksPerRow)
+                items(rows.size) { index ->
+                    val rowBooks = rows[index]
+                    val isLastRow = index == rows.lastIndex
                     BookshelfRow(
                         books = rowBooks,
                         onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
                         bookshelfMaterial = state.shelfMaterial,
                         bookSpacing = bookSpacing,
+                        showAddSlot = isLastRow,
+                        onAddClick = { onAction(BookshelfAction.OnSearchClick) }
                     )
                 }
             }
