@@ -26,6 +26,8 @@ fun BookshelfRow(
     onBookClick: (Book) -> Unit,
     bookshelfMaterial: ShelfMaterial,
     bookSpacing: Dp,
+    showAddSlot: Boolean = false,
+    onAddClick: (() -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier
@@ -59,6 +61,9 @@ fun BookshelfRow(
                         book = book,
                         onClick = { onBookClick(book) },
                     )
+                }
+                if (showAddSlot && onAddClick != null) {
+                    AddBookSpine(onClick = onAddClick)
                 }
             }
         }
