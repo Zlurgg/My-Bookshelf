@@ -57,12 +57,18 @@ fun BookshelfScreen(
     Scaffold(
     ) { paddingValues ->
         if (!state.isLoading && state.books.isEmpty()) {
-            androidx.compose.material3.Text(
-                text = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.bookshelf_empty_state_hint),
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .padding(24.dp)
-            )
+            LazyColumn(contentPadding = paddingValues) {
+                item {
+                    BookshelfRow(
+                        books = emptyList(),
+                        onBookClick = { /* no-op */ },
+                        bookshelfMaterial = state.shelfMaterial,
+                        bookSpacing = bookSpacing,
+                        showAddSlot = true,
+                        onAddClick = { onAction(BookshelfAction.OnSearchClick) }
+                    )
+                }
+            }
         } else {
             LazyColumn(contentPadding = paddingValues) {
                 val rows = state.books.chunked(booksPerRow)
