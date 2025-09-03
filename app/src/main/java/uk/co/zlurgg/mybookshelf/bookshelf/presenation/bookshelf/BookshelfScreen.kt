@@ -1,20 +1,15 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.padding
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
@@ -63,7 +58,7 @@ fun BookshelfScreen(
         if (!state.isLoading && state.books.isEmpty()) {
             androidx.compose.material3.Text(
                 text = "This shelf is empty. Tap + to add a book",
-                modifier = androidx.compose.ui.Modifier
+                modifier = Modifier
                     .padding(paddingValues)
                     .padding(24.dp)
             )
