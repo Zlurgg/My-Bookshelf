@@ -141,6 +141,16 @@ class BookcaseViewModel(
                         isLoading = false,
                     )
                 }
+                // Start observing counts per shelf and update state.bookCounts reactively
+                shelves.forEach { shelf ->
+                    launch {
+                        repository.getBookCountForShelf(shelf.id).collect { count ->
+                            _state.update { current ->
+                                current.copy(bookCounts = current.bookCounts + (shelf.id to count))
+                            }
+                        }
+                    }
+                }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(

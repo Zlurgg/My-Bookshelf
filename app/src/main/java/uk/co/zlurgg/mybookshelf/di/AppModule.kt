@@ -43,7 +43,13 @@ val appModule = module {
         )
     }
     viewModelOf(::BookcaseViewModel)
-    viewModelOf(::BookDetailViewModel)
+    viewModel { (bookId: String, shelfId: String) ->
+        BookDetailViewModel(
+            bookshelfRepository = get(),
+            bookId = bookId,
+            shelfId = shelfId
+        )
+    }
 
     singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
     singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()

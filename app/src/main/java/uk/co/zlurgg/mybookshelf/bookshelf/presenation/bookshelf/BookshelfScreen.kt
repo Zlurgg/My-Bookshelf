@@ -8,13 +8,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,23 +29,14 @@ fun BookshelfScreenRoot(
     onBackClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var showDialog by remember { mutableStateOf(false) }
 
     BookshelfScreen(
         state = state,
-        showBookSearchDialog = showDialog,
-        onShowBookSearchDialogChange = { showDialog = it },
         onAction = { action ->
             when (action) {
-                is BookshelfAction.OnBookClick -> {
-                    onBookClick(action.book)
-                }
-                is BookshelfAction.OnAddBookClick -> {
-                    onAddBookClick(action.book)
-                }
-                is BookshelfAction.OnBackClick -> {
-                    onBackClick()
-                }
+                is BookshelfAction.OnBookClick -> onBookClick(action.book)
+                is BookshelfAction.OnAddBookClick -> onAddBookClick(action.book)
+                is BookshelfAction.OnBackClick -> onBackClick()
                 else -> viewModel.onAction(action)
             }
         }
@@ -61,8 +47,6 @@ fun BookshelfScreenRoot(
 @Composable
 fun BookshelfScreen(
     state: BookshelfState,
-    showBookSearchDialog: Boolean,
-    onShowBookSearchDialogChange: (Boolean) -> Unit,
     onAction: (BookshelfAction) -> Unit,
 ) {
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
@@ -72,31 +56,12 @@ fun BookshelfScreen(
     val booksPerRow = floor((screenWidth) / (bookWidth + bookSpacing + shelfSpacing))
         .toInt().coerceAtLeast(1)
 
-//    val keyboardController = LocalSoftwareKeyboardController.current
-    val snackbarHostState = remember { SnackbarHostState() }
-
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onShowBookSearchDialogChange(true)  }) {
+            FloatingActionButton(onClick = { onAction(BookshelfAction.OnSearchClick) }) {
                 Icon(Icons.Default.Add, contentDescription = "Search for and add book to shelf.")
             }
         },
-        /*        topBar = {
-                    SearchBar(
-                        searchQuery = state.searchQuery,
-                        onSearchQueryChange = { onAction(BookshelfAction.OnSearchQueryChange(it)) },
-                        onSearchClick = { onAction(BookshelfAction.OnSearchClick) },
-                        onImeSearch = {
-                            keyboardController?.hide()
-                        },
-                        modifier = Modifier
-                            .widthIn(max = 400.dp)
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                            .statusBarsPadding()
-                    )
-                }*/
     ) { paddingValues ->
         LazyColumn(contentPadding = paddingValues) {
             items(state.books.chunked(booksPerRow)) { rowBooks ->
@@ -111,12 +76,25 @@ fun BookshelfScreen(
     }
 
     // Search dialog
-    if (showBookSearchDialog) {
+    if (state.isSearchDialogVisible) {
         BookSearchDialog(
+            query = state.searchQuery,
+            onQueryChange = { onAction(BookshelfAction.OnSearchQueryChange(it)) },
             results = state.searchResults,
             isLoading = state.isSearchLoading,
-            onAddBook = { book -> onAction(BookshelfAction.OnAddBookClick(book)) },
-            onDismiss = { onAction(BookshelfAction.OnDismissSearchDialog) }
+            inShelfIds = state.books.map { it.id }.toSet(),
+            onAddBook = { book ->
+                onAction(BookshelfAction.OnAddBookClick(book))
+                onAction(BookshelfAction.OnDismissSearchDialog)
+            },
+            onRemoveBook = { book ->
+                onAction(BookshelfAction.OnRemoveBook(book))
+                onAction(BookshelfAction.OnDismissSearchDialog)
+            },
+            onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
+            onDismiss = {
+                onAction(BookshelfAction.OnDismissSearchDialog)
+            }
         )
     }
 }
@@ -130,7 +108,5 @@ fun BookshelfScreenPreview() {
             shelfId = "1"
         ),
         onAction = {},
-        showBookSearchDialog = false,
-        onShowBookSearchDialogChange = {}
     )
 }
