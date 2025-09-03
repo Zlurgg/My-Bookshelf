@@ -54,7 +54,6 @@ fun BookSearchDialog(
                 SearchBar(
                     searchQuery = query,
                     onSearchQueryChange = onQueryChange,
-                    onSearchClick = { /* search triggers on text change */ },
                     onImeSearch = { /* handled by onQueryChange as user types */ },
                 )
             }
@@ -116,7 +115,7 @@ fun BookSearchDialog(
             }
         },
         confirmButton = {
-            androidx.compose.material3.TextButton(onClick = onDismiss) { androidx.compose.material3.Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_close)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_close)) }
         }
     )
 }
