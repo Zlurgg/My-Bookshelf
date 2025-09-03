@@ -1,4 +1,44 @@
 <resources>
     <string name="app_name">My Bookshelf</string>
     <string name="error_image">error image</string>
+
+    <!-- Bookshelf screen -->
+    <string name="bookshelf_empty_state_hint">This shelf is empty. Tap + to add a book</string>
+    <string name="cd_add_book_to_shelf">Add a book to this shelf</string>
+
+    <!-- Add shelf dialog -->
+    <string name="dialog_add_shelf_title">Add New Shelf</string>
+    <string name="field_shelf_name_label">Shelf Name</string>
+    <string name="action_add">Add</string>
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Search dialog -->
+    <string name="search_no_results">No results found</string>
+    <string name="search_hint">Search...</string>
+    <string name="action_close">Close</string>
+
+    <!-- Book detail -->
+    <string name="bookdetail_loading">Loading book details...</string>
+
+    <!-- Bookcase -->
+    <plurals name="bookcount_books">
+        <item quantity="one">%d book</item>
+        <item quantity="other">%d books</item>
+    </plurals>
+    <string name="cd_delete_shelf">Delete shelf</string>
+    <string name="fab_add_shelf">Add Shelf</string>
+
+    <!-- Search bar -->
+    <string name="cd_clear_search">Clear Search</string>
+
+    <!-- Rating -->
+    <plurals name="cd_star_count">
+        <item quantity="one">%d star</item>
+        <item quantity="other">%d stars</item>
+    </plurals>
+
+    <!-- Generic actions -->
+    <string name="action_add_short">Add</string>
+    <string name="action_remove_short">Remove</string>
+    <string name="action_purchase">Purchase</string>
 </resources>

@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
@@ -86,7 +87,7 @@ fun BookcaseScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { onShowAddBookshelfDialogChange(true)  }) {
-                Icon(Icons.Default.Add, contentDescription = "Add Shelf")
+                Icon(Icons.Default.Add, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.fab_add_shelf))
             }
         },
         modifier = Modifier.fillMaxSize()

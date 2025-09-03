@@ -32,13 +32,13 @@ fun AddShelfDialog(
             // Only allow dismiss if not loading
             if (!isLoading) onDismiss()
         },
-        title = { Text("Add New Shelf") },
+        title = { Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.dialog_add_shelf_title)) },
         text = {
             Column {
                 TextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Shelf Name") },
+                    label = { Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.field_shelf_name_label)) },
                     enabled = !isLoading // Disable during loading
                 )
                 if (isLoading) {
@@ -57,7 +57,7 @@ fun AddShelfDialog(
                         onAddShelf(name)
                     }
                 ) {
-                    Text("Add")
+                    Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_add))
                 }
             }
         },
@@ -66,7 +66,7 @@ fun AddShelfDialog(
                 onClick = onDismiss,
                 enabled = !isLoading // Disable during loading
             ) {
-                Text("Cancel")
+                Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_cancel))
             }
         }
     )

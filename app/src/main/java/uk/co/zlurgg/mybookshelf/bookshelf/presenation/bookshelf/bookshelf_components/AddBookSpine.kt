@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,12 +28,13 @@ import androidx.compose.ui.unit.dp
 fun AddBookSpine(
     onClick: () -> Unit,
 ) {
+    val cd = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.cd_add_book_to_shelf)
     Box(
         modifier = Modifier
             .clickable { onClick() }
             .background(Color(0xFF455A64), shape = RoundedCornerShape(4.dp))
             .clip(RoundedCornerShape(4.dp))
-            .semantics { contentDescription = "Add a book to this shelf" }
+            .semantics { contentDescription = cd }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally

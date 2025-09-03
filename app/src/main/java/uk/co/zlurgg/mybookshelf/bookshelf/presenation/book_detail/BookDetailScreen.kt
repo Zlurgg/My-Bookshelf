@@ -25,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -76,9 +77,9 @@ fun BookDetailsScreen(
                     ) {
                         state.book.onShelf.let { onShelf ->
                             if (!onShelf) {
-                                Icon(Icons.Default.Add, contentDescription = "Add")
+                                Icon(Icons.Default.Add, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_add_short))
                             } else {
-                                Icon(Icons.Default.Delete, contentDescription = "Remove")
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_remove_short))
                             }
                         }
                     }
@@ -86,7 +87,7 @@ fun BookDetailsScreen(
                         onClick = { onAction(BookDetailAction.OnPurchaseClick) },
                         containerColor = if (state.book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
                     ) {
-                        Icon(Icons.Default.ShoppingCart, contentDescription = "Purchase")
+                        Icon(Icons.Default.ShoppingCart, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_purchase))
                     }
                 }
             },
@@ -142,7 +143,7 @@ fun BookDetailsScreen(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                Text("Loading book details...")
+                Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.bookdetail_loading))
             }
         }
     }
