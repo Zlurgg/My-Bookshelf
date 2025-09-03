@@ -13,6 +13,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.padding
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
@@ -59,18 +61,27 @@ fun BookshelfScreen(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = { onAction(BookshelfAction.OnSearchClick) }) {
-                Icon(Icons.Default.Add, contentDescription = "Search for and add book to shelf.")
+                Icon(Icons.Default.Add, contentDescription = "Add a book to this shelf")
             }
         },
     ) { paddingValues ->
-        LazyColumn(contentPadding = paddingValues) {
-            items(state.books.chunked(booksPerRow)) { rowBooks ->
-                BookshelfRow(
-                    books = rowBooks,
-                    onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
-                    bookshelfMaterial = state.shelfMaterial,
-                    bookSpacing = bookSpacing,
-                )
+        if (!state.isLoading && state.books.isEmpty()) {
+            androidx.compose.material3.Text(
+                text = "This shelf is empty. Tap + to add a book",
+                modifier = androidx.compose.ui.Modifier
+                    .padding(paddingValues)
+                    .padding(24.dp)
+            )
+        } else {
+            LazyColumn(contentPadding = paddingValues) {
+                items(state.books.chunked(booksPerRow)) { rowBooks ->
+                    BookshelfRow(
+                        books = rowBooks,
+                        onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
+                        bookshelfMaterial = state.shelfMaterial,
+                        bookSpacing = bookSpacing,
+                    )
+                }
             }
         }
     }

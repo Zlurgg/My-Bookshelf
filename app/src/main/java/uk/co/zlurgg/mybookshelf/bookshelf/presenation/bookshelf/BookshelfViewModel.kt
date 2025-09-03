@@ -88,7 +88,7 @@ class BookshelfViewModel(
         viewModelScope.launch {
             try {
                 bookshelfRepository.getBooksForShelf(shelfId).collect { books ->
-                    _state.update { it.copy(books = books) }
+                    _state.update { it.copy(books = books, isLoading = false) }
                 }
             } catch (e: Exception) {
                 _state.update {
