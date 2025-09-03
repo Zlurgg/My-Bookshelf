@@ -1,10 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,7 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.bookshelf_components.LoadImage
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.SearchBar
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
 @Composable
