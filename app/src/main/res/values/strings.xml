@@ -41,4 +41,7 @@
     <string name="action_add_short">Add</string>
     <string name="action_remove_short">Remove</string>
     <string name="action_purchase">Purchase</string>
+    
+    <!-- Bookcase screen -->
+    <string name="bookcase_empty_state_hint">Your bookcase is empty. Tap + to create a new shelf</string>
 </resources>

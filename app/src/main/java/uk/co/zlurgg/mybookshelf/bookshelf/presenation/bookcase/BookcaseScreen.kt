@@ -7,10 +7,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
@@ -58,6 +64,7 @@ fun BookcaseScreenRoot(
 }
 
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun BookcaseScreen(
     state: BookcaseState,
     showAddBookshelfDialog: Boolean,
@@ -84,6 +91,9 @@ fun BookcaseScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(title = { Text(text = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.app_name), style = MaterialTheme.typography.titleLarge) })
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { onShowAddBookshelfDialogChange(true)  }) {
@@ -92,22 +102,33 @@ fun BookcaseScreen(
         },
         modifier = Modifier.fillMaxSize()
     ) { padding ->
-        LazyColumn(contentPadding = padding) {
-            items(
-                items = state.bookshelves,
-                key = { it.id }
-            ) { shelf ->
-                BookcaseShelf(
-                    shelf = shelf,
-                    onRemoveBookshelf = { shelfToRemove ->
-                        onAction(BookcaseAction.OnRemoveBookShelf(shelfToRemove))
-                    },
-                    onBookshelfClick = {
-                        onAction(BookcaseAction.OnBookshelfClick(shelf))
-                    },
-                    modifier = Modifier.animateItem(),
-                    bookCountOverride = state.bookCounts[shelf.id] ?: 0
-                )
+        if (!state.isLoading && state.bookshelves.isEmpty()) {
+            LazyColumn(contentPadding = padding) {
+                item {
+                    Text(
+                        text = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.bookcase_empty_state_hint),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                }
+            }
+        } else {
+            LazyColumn(contentPadding = padding) {
+                items(
+                    items = state.bookshelves,
+                    key = { it.id }
+                ) { shelf ->
+                    BookcaseShelf(
+                        shelf = shelf,
+                        onRemoveBookshelf = { shelfToRemove ->
+                            onAction(BookcaseAction.OnRemoveBookShelf(shelfToRemove))
+                        },
+                        onBookshelfClick = {
+                            onAction(BookcaseAction.OnBookshelfClick(shelf))
+                        },
+                        modifier = Modifier.animateItem(),
+                        bookCountOverride = state.bookCounts[shelf.id] ?: 0
+                    )
+                }
             }
         }
     }
