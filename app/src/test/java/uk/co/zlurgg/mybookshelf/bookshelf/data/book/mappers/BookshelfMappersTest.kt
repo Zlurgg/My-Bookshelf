@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
 
 class BookshelfMappersTest {
 
@@ -13,14 +13,14 @@ class BookshelfMappersTest {
         val entity = BookshelfEntity(
             id = "s1",
             name = "Sci-Fi",
-            shelfMaterial = ShelfMaterial.GreyMetal.name
+            shelfMaterial = ShelfStyle.GreyMetal.name
         )
 
         val domain = entity.toDomain()
 
         assertEquals("s1", domain.id)
         assertEquals("Sci-Fi", domain.name)
-        assertEquals(ShelfMaterial.GreyMetal, domain.shelfMaterial)
+        assertEquals(ShelfStyle.GreyMetal, domain.shelfStyle)
         assertEquals(emptyList<Any>(), domain.books)
     }
 
@@ -30,13 +30,13 @@ class BookshelfMappersTest {
             id = "s2",
             name = "Fantasy",
             books = emptyList(),
-            shelfMaterial = ShelfMaterial.DarkWood
+            shelfStyle = ShelfStyle.DarkWood
         )
 
         val entity = domain.toEntity()
 
         assertEquals("s2", entity.id)
         assertEquals("Fantasy", entity.name)
-        assertEquals(ShelfMaterial.DarkWood.name, entity.shelfMaterial)
+        assertEquals(ShelfStyle.DarkWood.name, entity.shelfMaterial)
     }
 }

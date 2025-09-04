@@ -21,6 +21,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.shared.SharedMyBookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.toMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
@@ -103,7 +104,7 @@ fun MyBookShelfApp() {
                         },
                         onBackClick = { navController.popBackStack() },
                         shelfName = selectedShelf?.name,
-                        shelfMaterial = selectedShelf?.shelfMaterial,
+                        shelfMaterial = selectedShelf?.shelfStyle?.toMaterial(),
                     )
                 }
 

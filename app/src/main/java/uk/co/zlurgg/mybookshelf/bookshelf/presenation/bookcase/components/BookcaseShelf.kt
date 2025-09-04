@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.core.presentation.bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.toMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
@@ -119,7 +120,7 @@ fun BookcaseShelf(
                 .clip(RoundedCornerShape(12.dp))
         ) {
             Image(
-                painter = shelf.shelfMaterial.painter(),
+                painter = shelf.shelfStyle.toMaterial().painter(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.matchParentSize()

@@ -8,7 +8,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
 
 class BookcaseViewModelTest {
 
@@ -35,7 +35,7 @@ class BookcaseViewModelTest {
         id = id,
         name = name,
         books = emptyList(),
-        shelfMaterial = ShelfMaterial.DarkWood
+        shelfStyle = ShelfStyle.DarkWood
     )
 
     @Test
