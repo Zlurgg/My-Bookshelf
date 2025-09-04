@@ -9,6 +9,7 @@
     <!-- Add shelf dialog -->
     <string name="dialog_add_shelf_title">Add New Shelf</string>
     <string name="field_shelf_name_label">Shelf Name</string>
+    <string name="field_shelf_style_label">Shelf style</string>
     <string name="action_add">Add</string>
     <string name="action_cancel">Cancel</string>
 

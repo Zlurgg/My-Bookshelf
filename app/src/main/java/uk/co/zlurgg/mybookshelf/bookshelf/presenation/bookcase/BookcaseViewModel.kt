@@ -19,6 +19,13 @@ class BookcaseViewModel(
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state
 
+    // One-off UI events (snackbar, etc.)
+    sealed interface UiEvent {
+        data class ShowSnackbar(val message: String) : UiEvent
+    }
+    private val _events = kotlinx.coroutines.flow.MutableSharedFlow<UiEvent>()
+    val events: kotlinx.coroutines.flow.SharedFlow<UiEvent> = _events
+
     init {
         loadBookshelves()
     }
@@ -26,7 +33,7 @@ class BookcaseViewModel(
     fun onAction(action: BookcaseAction) {
         when (action) {
             is BookcaseAction.OnAddBookshelfClick -> {
-                addBookshelf(action.name)
+                addBookshelf(action.name, action.style)
             }
 
             is BookcaseAction.ShowAddDialog -> {
@@ -94,21 +101,17 @@ class BookcaseViewModel(
             is BookcaseAction.OnBookshelfClick -> {
                 // no-op: handled by the screen root for navigation
             }
-
-            is BookcaseAction.OnChangeShelfMaterial -> {
-
-            }
         }
     }
 
-    private fun addBookshelf(name: String) {
+    private fun addBookshelf(name: String, style: ShelfStyle) {
         viewModelScope.launch {
             try {
                 val newShelf = Bookshelf(
                     id = UUID.randomUUID().toString(),
                     name = name,
                     books = emptyList(),
-                    shelfStyle = ShelfStyle.entries.toTypedArray().random()
+                    shelfStyle = style
                 )
                 repository.addShelf(newShelf)
                 _state.update {
