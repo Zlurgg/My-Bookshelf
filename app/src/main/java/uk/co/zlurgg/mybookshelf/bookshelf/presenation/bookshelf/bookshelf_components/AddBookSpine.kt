@@ -22,12 +22,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 @Composable
 fun AddBookSpine(
     onClick: () -> Unit,
 ) {
-    val cd = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.cd_add_book_to_shelf)
+    val cd = stringResource(id = R.string.cd_add_book_to_shelf)
     Box(
         modifier = Modifier
             .clickable { onClick() }
