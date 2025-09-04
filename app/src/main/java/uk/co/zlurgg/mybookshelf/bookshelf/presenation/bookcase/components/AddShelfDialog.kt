@@ -55,10 +55,11 @@ fun AddShelfDialog(
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(stringResource(id = R.string.field_shelf_style_label))
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
+                androidx.compose.foundation.lazy.LazyRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    ShelfStyle.entries.forEach { style ->
+                    items(ShelfStyle.entries.size) { index ->
+                        val style = ShelfStyle.entries[index]
                         Card(
                             onClick = { selected.value = style },
                             border = if (selected.value == style) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
@@ -66,7 +67,7 @@ fun AddShelfDialog(
                         ) {
                             Image(
                                 painter = style.toMaterial().painter(),
-                                contentDescription = null,
+                                contentDescription = style.name,
                                 modifier = Modifier
                                     .height(48.dp)
                                     .fillMaxWidth()
