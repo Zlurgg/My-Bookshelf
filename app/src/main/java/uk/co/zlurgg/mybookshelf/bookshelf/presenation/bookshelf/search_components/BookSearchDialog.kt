@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import uk.co.zlurgg.mybookshelf.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
@@ -77,7 +78,7 @@ fun BookSearchDialog(
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.search_no_results))
+                        Text(stringResource(id = R.string.search_no_results))
                     }
                 }
                 else -> {
@@ -99,11 +100,11 @@ fun BookSearchDialog(
                                 trailingContent = {
                                     if (isInShelf) {
                                         IconButton(onClick = { onRemoveBook(book) }) {
-                                            Icon(Icons.Default.Delete, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_remove_short))
+                                            Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.action_remove_short))
                                         }
                                     } else {
                                         IconButton(onClick = { onAddBook(book) }) {
-                                            Icon(Icons.Default.Add, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_add_short))
+                                            Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.action_add_short))
                                         }
                                     }
                                 },
@@ -115,7 +116,7 @@ fun BookSearchDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_close)) }
+            TextButton(onClick = onDismiss) { Text(stringResource(id = R.string.action_close)) }
         }
     )
 }

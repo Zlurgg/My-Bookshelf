@@ -22,6 +22,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import uk.co.zlurgg.mybookshelf.R
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 
@@ -44,12 +45,13 @@ fun SearchBar(
             onValueChange = onSearchQueryChange,
             shape = RoundedCornerShape(100),
             colors = OutlinedTextFieldDefaults.colors(
-                cursorColor = Color.DarkGray,
-                focusedBorderColor = Color.Cyan
+                cursorColor = MaterialTheme.colorScheme.primary,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = MaterialTheme.colorScheme.outline
             ),
             placeholder = {
                 Text(
-                    text = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.search_hint)
+                    text = stringResource(id = R.string.search_hint)
                 )
             },
             leadingIcon = {
@@ -80,7 +82,7 @@ fun SearchBar(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Clear Search",
+                            contentDescription = stringResource(id = R.string.cd_clear_search),
                             tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
@@ -89,7 +91,7 @@ fun SearchBar(
             modifier = modifier
                 .background(
                     shape = RoundedCornerShape(100),
-                    color = Color.LightGray
+                    color = MaterialTheme.colorScheme.surfaceVariant
                 )
                 .minimumInteractiveComponentSize()
         )

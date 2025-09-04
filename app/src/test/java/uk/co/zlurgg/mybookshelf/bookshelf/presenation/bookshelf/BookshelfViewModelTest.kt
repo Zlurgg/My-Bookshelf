@@ -25,6 +25,7 @@ class BookshelfViewModelTest {
         override suspend fun getBookDescription(workId: String): Result<String?, DataError.Remote> = Result.Success(null)
     }
 
+
     private fun sampleBook(id: String = "ID") = Book(
         id = id,
         title = "t",

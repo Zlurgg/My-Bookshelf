@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import uk.co.zlurgg.mybookshelf.app.NavigationRoute
@@ -19,6 +20,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.shared.SharedMyBookshelfViewModel
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
@@ -79,6 +81,10 @@ fun MyBookShelfApp() {
                         NavigationRoute.Bookshelf.KEY_ID
                     ) ?: ""
 
+                    val sharedVm = koinViewModel<SharedMyBookshelfViewModel>()
+                    LaunchedEffect(shelfId) { sharedVm.selectShelf(shelfId) }
+                    val selectedShelf = sharedVm.selectedShelf.collectAsStateWithLifecycle().value
+
                     val viewModel = koinViewModel<BookshelfViewModel>(
                         parameters = { parametersOf(shelfId) }
                     )
@@ -89,16 +95,15 @@ fun MyBookShelfApp() {
                             viewModel.onAction(BookshelfAction.OnAddBookClick(book = book))
                         },
                         onBookClick = { book ->
-                            // Persist clicked book so details can load it by ID; navigate with shelfId
                             viewModel.onAction(BookshelfAction.OnBookClick(book))
-                            // Close the search dialog to avoid stacking/looping under details
                             viewModel.onAction(BookshelfAction.OnDismissSearchDialog)
                             navController.navigate(NavigationRoute.BookDetail.createRoute(book.id, shelfId)) {
                                 launchSingleTop = true
                             }
                         },
                         onBackClick = { navController.popBackStack() },
-
+                        shelfName = selectedShelf?.name,
+                        shelfMaterial = selectedShelf?.shelfMaterial,
                     )
                 }
 

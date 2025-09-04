@@ -5,6 +5,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 
 data class BookshelfState(
     val shelfId: String,
+    val shelfName: String = "",
     val books: List<Book> = emptyList(),
     val isLoading: Boolean = true,
     val isSearchDialogVisible: Boolean = false,
