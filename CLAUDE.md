@@ -4,16 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-My Bookshelf is an Android app built with Kotlin and Jetpack Compose that allows users to create, customize, and share digital bookshelves. The app supports book searching via Open Library and Google Books APIs, with affiliate link integration for monetization.
+My Bookshelf is a social reading app built with Kotlin and Jetpack Compose that lets users create, customize, and share their bookshelves, reading setups, and cozy corners. Features include drag-and-drop shelf building, book search via Open Library/Google Books APIs, affiliate link integration for monetization, public shelf sharing, and reading nook galleries.
 
 ## Common Commands
 
 ### Build & Development
 - **Build the project**: `./gradlew build`
 - **Clean build**: `./gradlew clean build`
-- **Run tests**: `./gradlew test`
-- **Run connected Android tests**: `./gradlew connectedAndroidTest`
 - **Install debug APK**: `./gradlew installDebug`
+
+### Testing
+- **Run all tests**: `./gradlew test`
+- **Run unit tests only**: `./gradlew testDebugUnitTest`
+- **Run single test**: `./gradlew testDebugUnitTest --tests "*TestClassName*"`
+- **Run connected Android tests**: `./gradlew connectedAndroidTest`
 
 ### Code Quality
 - **Lint check**: `./gradlew lint`
@@ -100,15 +104,19 @@ uk.co.zlurgg.mybookshelf/
 
 ## Development Notes
 
-### Testing
-- Unit tests use JUnit 4
-- UI tests use Compose testing framework
-- Instrumented tests with Espresso
+### Testing Infrastructure
+- **Test Framework**: JUnit 4 with Robolectric for Android unit tests
+- **Test Dependencies**: Full test suite including androidx-test-core, kotlinx-coroutines-test, androidx-arch-core-testing
+- **ViewModel Testing**: Uses `InstantTaskExecutorRule`, `@RunWith(RobolectricTestRunner::class)`, and `@OptIn(ExperimentalCoroutinesApi::class)`
+- **Async Testing**: Tests use `runTest`, `advanceUntilIdle()`, and proper coroutine test patterns
+- **Test Coverage**: Repository layer, ViewModel layer, data mappers, and integration tests
+- **State Flow Testing**: ViewModels using `stateIn()` require state collection via `launch { vm.state.collect { } }` to trigger initialization
 
 ### API Integration
 - Open Library API for book search and details
 - Google Books API as fallback
 - Custom serializers for API response handling
+- Comprehensive error handling via custom `Result` type with `DataError.Remote` enum
 
 ### Database Migrations
 - Room handles schema migrations
@@ -120,3 +128,10 @@ uk.co.zlurgg.mybookshelf/
 - Kotlin JVM target: 11
 - Proguard enabled for release builds
 - KSP arguments configured for Room incremental processing
+- Version catalog system in `gradle/libs.versions.toml`
+
+### Key Testing Patterns
+- **StateFlow ViewModels**: Always collect state in tests to trigger `onStart` initialization
+- **Coroutine Testing**: Use `advanceUntilIdle()` after actions for proper async completion
+- **Mock Repositories**: Implement full repository interfaces with realistic fake behavior
+- **Integration Tests**: Test complete user workflows rather than just isolated units
