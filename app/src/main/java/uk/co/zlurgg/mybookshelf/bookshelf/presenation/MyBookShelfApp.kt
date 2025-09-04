@@ -53,11 +53,10 @@ fun MyBookShelfApp() {
                     BookcaseScreenRoot(
                         viewModel = viewModel,
                         onBookshelfClick = { shelf ->
-                            // Navigate to Bookshelf screen
                             navController.navigate(NavigationRoute.Bookshelf.createRoute(shelf.id))
                         },
-                        onAddBookshelfClick = { name ->
-                            viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name))
+                        onAddBookshelfClick = { name, style ->
+                            viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
                         }
                     )
 
