@@ -32,7 +32,7 @@ fun AddBookSpine(
     Box(
         modifier = Modifier
             .clickable { onClick() }
-            .background(Color(0xFF455A64), shape = RoundedCornerShape(4.dp))
+            .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(4.dp))
             .clip(RoundedCornerShape(4.dp))
             .semantics { contentDescription = cd }
     ) {
@@ -49,7 +49,7 @@ fun AddBookSpine(
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onSecondary, 
                     modifier = Modifier.size(32.dp)
                 )
             }
