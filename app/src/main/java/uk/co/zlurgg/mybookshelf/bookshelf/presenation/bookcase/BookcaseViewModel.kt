@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
 import java.util.UUID
 
 class BookcaseViewModel(
@@ -108,7 +108,7 @@ class BookcaseViewModel(
                     id = UUID.randomUUID().toString(),
                     name = name,
                     books = emptyList(),
-                    shelfMaterial = ShelfMaterial.entries.toTypedArray().random()
+                    shelfStyle = ShelfStyle.entries.toTypedArray().random()
                 )
                 repository.addShelf(newShelf)
                 _state.update {

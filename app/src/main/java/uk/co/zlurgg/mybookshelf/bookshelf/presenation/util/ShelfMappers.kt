@@ -1,0 +1,11 @@
+package uk.co.zlurgg.mybookshelf.bookshelf.presenation.util
+
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
+
+fun ShelfStyle.toMaterial(): ShelfMaterial = when (this) {
+    ShelfStyle.DarkWood -> ShelfMaterial.DarkWood
+    ShelfStyle.SliverMetal -> ShelfMaterial.SliverMetal
+    ShelfStyle.WhiteMetal -> ShelfMaterial.WhiteMetal
+    ShelfStyle.GreyMetal -> ShelfMaterial.GreyMetal
+    ShelfStyle.DarkGreyMetal -> ShelfMaterial.DarkGreyMetal
+}

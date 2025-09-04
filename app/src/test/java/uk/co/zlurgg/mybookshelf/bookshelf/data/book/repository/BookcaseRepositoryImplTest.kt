@@ -63,8 +63,8 @@ class BookcaseRepositoryImplTest {
     fun add_and_list_shelves_maps_to_domain() = runBlocking {
         val dao = FakeDao()
         val repo = BookcaseRepositoryImpl(dao)
-        repo.addShelf(Bookshelf(id = "s1", name = "A", books = emptyList(), shelfMaterial = uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial.DarkWood))
-        repo.addShelf(Bookshelf(id = "s2", name = "B", books = emptyList(), shelfMaterial = uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial.GreyMetal))
+        repo.addShelf(Bookshelf(id = "s1", name = "A", books = emptyList(), shelfStyle = uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle.DarkWood))
+        repo.addShelf(Bookshelf(id = "s2", name = "B", books = emptyList(), shelfStyle = uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle.GreyMetal))
 
         val list = repo.getAllShelves().first()
         assertEquals(listOf("A", "B"), list.map { it.name })
