@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import org.koin.androidx.compose.koinViewModel
@@ -77,9 +78,9 @@ fun BookDetailsScreen(
                     ) {
                         state.book.onShelf.let { onShelf ->
                             if (!onShelf) {
-                                Icon(Icons.Default.Add, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_add_short))
+                                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.action_add_short))
                             } else {
-                                Icon(Icons.Default.Delete, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_remove_short))
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.action_remove_short))
                             }
                         }
                     }
@@ -87,7 +88,7 @@ fun BookDetailsScreen(
                         onClick = { onAction(BookDetailAction.OnPurchaseClick) },
                         containerColor = if (state.book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
                     ) {
-                        Icon(Icons.Default.ShoppingCart, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.action_purchase))
+                        Icon(Icons.Default.ShoppingCart, contentDescription = stringResource(id = R.string.action_purchase))
                     }
                 }
             },
@@ -143,7 +144,7 @@ fun BookDetailsScreen(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                Text(androidx.compose.ui.res.stringResource(id = uk.co.zlurgg.mybookshelf.R.string.bookdetail_loading))
+                Text(stringResource(id = R.string.bookdetail_loading))
             }
         }
     }

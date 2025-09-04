@@ -39,6 +39,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.core.presentation.bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.toMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
+import uk.co.zlurgg.mybookshelf.R
 
 @Composable
 fun BookcaseShelf(
@@ -106,7 +107,7 @@ fun BookcaseShelf(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.cd_delete_shelf),
+                        contentDescription = stringResource(id = R.string.cd_delete_shelf),
                         tint = MaterialTheme.colorScheme.onErrorContainer
                     )
                 }
@@ -139,7 +140,7 @@ fun BookcaseShelf(
                     headlineContent = { Text(shelf.name) },
                     supportingContent = { Text(
                         text = pluralStringResource(
-                            id = uk.co.zlurgg.mybookshelf.R.plurals.bookcount_books,
+                            id = R.plurals.bookcount_books,
                             count = bookCountOverride ?: shelf.books.size,
                             bookCountOverride ?: shelf.books.size
                         )

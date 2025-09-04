@@ -1,10 +1,12 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -14,8 +16,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
+import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.AddShelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.core.presentation.bookshelves
@@ -37,7 +39,7 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 fun BookcaseScreenRoot(
     viewModel: BookcaseViewModel = koinViewModel(),
     onBookshelfClick: (Bookshelf) -> Unit,
-    onAddBookshelfClick: (String, uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle) -> Unit
+    onAddBookshelfClick: (String, ShelfStyle) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
@@ -64,7 +66,7 @@ fun BookcaseScreenRoot(
 }
 
 @Composable
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 fun BookcaseScreen(
     state: BookcaseState,
     showAddBookshelfDialog: Boolean,
@@ -92,12 +94,12 @@ fun BookcaseScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(text = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.app_name), style = MaterialTheme.typography.titleLarge) })
+            TopAppBar(title = { Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.titleLarge) })
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(onClick = { onShowAddBookshelfDialogChange(true)  }) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.fab_add_shelf))
+                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.fab_add_shelf))
             }
         },
         modifier = Modifier.fillMaxSize()
@@ -106,7 +108,7 @@ fun BookcaseScreen(
             LazyColumn(contentPadding = padding) {
                 item {
                     Text(
-                        text = stringResource(id = uk.co.zlurgg.mybookshelf.R.string.bookcase_empty_state_hint),
+                        text = stringResource(id = R.string.bookcase_empty_state_hint),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                     )
                 }
