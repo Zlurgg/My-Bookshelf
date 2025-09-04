@@ -3,7 +3,16 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -13,9 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.bookshelf_components.BookshelfRow
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.search_components.BookSearchDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presenation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 import kotlin.math.floor
 
@@ -25,11 +36,18 @@ fun BookshelfScreenRoot(
     onAddBookClick: (Book) -> Unit,
     onBookClick: (Book) -> Unit,
     onBackClick: () -> Unit,
+    shelfName: String? = null,
+    shelfMaterial: ShelfMaterial? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    val uiState = state.copy(
+        shelfName = shelfName ?: state.shelfName,
+        shelfMaterial = shelfMaterial ?: state.shelfMaterial
+    )
+
     BookshelfScreen(
-        state = state,
+        state = uiState,
         onAction = { action ->
             when (action) {
                 is BookshelfAction.OnBookClick -> onBookClick(action.book)
@@ -42,6 +60,7 @@ fun BookshelfScreenRoot(
 }
 
 @SuppressLint("ConfigurationScreenWidthHeight")
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookshelfScreen(
     state: BookshelfState,
@@ -55,9 +74,37 @@ fun BookshelfScreen(
         .toInt().coerceAtLeast(1)
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(text = if (state.shelfName.isNotBlank()) state.shelfName else stringResource(id = R.string.app_name), style = MaterialTheme.typography.titleLarge) },
+                navigationIcon = {
+                    IconButton(onClick = { onAction(BookshelfAction.OnBackClick) }) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.action_close)
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { onAction(BookshelfAction.OnSearchClick) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = stringResource(id = R.string.search_hint)
+                        )
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         if (!state.isLoading && state.books.isEmpty()) {
             LazyColumn(contentPadding = paddingValues) {
+                item {
+                    Text(
+                        text = stringResource(id = R.string.bookshelf_empty_state_hint),
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    )
+                }
                 item {
                     BookshelfRow(
                         books = emptyList(),
@@ -118,7 +165,8 @@ fun BookshelfScreenPreview() {
     BookshelfScreen(
         state = BookshelfState(
             books = sampleBooks,
-            shelfId = "1"
+            shelfId = "1",
+            shelfName = "Fiction"
         ),
         onAction = {},
     )
