@@ -2,9 +2,13 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
@@ -21,7 +25,11 @@ class BookshelfViewModel(
     private val _state = MutableStateFlow(BookshelfState(shelfId = shelfId))
     val state: StateFlow<BookshelfState> = _state.asStateFlow()
 
+    // Debounced query flow
+    private val queryFlow = MutableStateFlow("")
+
     init {
+        observeDebouncedQuery()
         loadBooks()
     }
 
@@ -37,6 +45,8 @@ class BookshelfViewModel(
                     searchResults = emptyList(),
                     isSearchLoading = false
                 ) }
+                // Reset query to cancel any pending search
+                queryFlow.value = ""
             }
             is BookshelfAction.OnBookClick -> {
                 // Persist clicked book so details screen can load it by ID safely
@@ -77,8 +87,9 @@ class BookshelfViewModel(
                 }
             }
             is BookshelfAction.OnSearchQueryChange -> {
-                _state.update { it.copy(searchQuery = action.query, isSearchLoading = true) }
-                searchBooks(query = action.query)
+                // Update UI immediately; defer actual search via debounce
+                _state.update { it.copy(searchQuery = action.query) }
+                queryFlow.value = action.query
             }
             else -> Unit
         }
@@ -101,6 +112,52 @@ class BookshelfViewModel(
         }
     }
 
+    @OptIn(FlowPreview::class)
+    private fun observeDebouncedQuery() {
+        viewModelScope.launch {
+            queryFlow
+                .debounce(450)
+                .distinctUntilChanged()
+                .collectLatest { raw ->
+                    val query = raw.trim()
+
+                    if (query.length < 2) {
+                        _state.update {
+                            it.copy(
+                                isSearchLoading = false,
+                                errorMessage = null,
+                                searchResults = if (query.isEmpty()) emptyList() else it.searchResults
+                            )
+                        }
+                        return@collectLatest
+                    }
+
+                    _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
+
+                    bookshelfRepository
+                        .searchBooks(query)
+                        .onSuccess { searchResults ->
+                            _state.update {
+                                it.copy(
+                                    isSearchLoading = false,
+                                    errorMessage = null,
+                                    searchResults = searchResults
+                                )
+                            }
+                        }
+                        .onError { error ->
+                            _state.update {
+                                it.copy(
+                                    searchResults = emptyList(),
+                                    isSearchLoading = false,
+                                    errorMessage = error.toString()
+                                )
+                            }
+                        }
+                }
+        }
+    }
+
     private fun addBookToShelf(book: Book) {
         viewModelScope.launch {
             try {
@@ -114,33 +171,5 @@ class BookshelfViewModel(
                 }
             }
         }
-    }
-
-    private fun searchBooks(query: String) = viewModelScope.launch {
-        _state.update {
-            it.copy(
-                isSearchLoading = true
-            )
-        }
-        bookshelfRepository
-            .searchBooks(query)
-            .onSuccess { searchResults ->
-                _state.update {
-                    it.copy(
-                        isSearchLoading = false,
-                        errorMessage = null,
-                        searchResults = searchResults
-                    )
-                }
-            }
-            .onError { error ->
-                _state.update {
-                    it.copy(
-                        searchResults = emptyList(),
-                        isSearchLoading = false,
-                        errorMessage = error.toString()
-                    )
-                }
-            }
     }
 }
