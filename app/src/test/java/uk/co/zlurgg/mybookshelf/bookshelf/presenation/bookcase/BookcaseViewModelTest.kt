@@ -1,16 +1,24 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
 
+@RunWith(RobolectricTestRunner::class)
 class BookcaseViewModelTest {
+
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private class FakeRepo(initial: List<Bookshelf>) : BookcaseRepository {
         private val shelvesFlow = MutableStateFlow(initial)
@@ -39,7 +47,7 @@ class BookcaseViewModelTest {
     )
 
     @Test
-    fun removeShelf_updatesState_andCallsRepository() = runBlocking {
+    fun removeShelf_updatesState_andCallsRepository() = runTest {
         val initial = listOf(shelf("1"), shelf("2"))
         val repo = FakeRepo(initial)
         val vm = BookcaseViewModel(repo)
@@ -56,7 +64,7 @@ class BookcaseViewModelTest {
     }
 
     @Test
-    fun undoRemove_reinserts_andPersists() = runBlocking {
+    fun undoRemove_reinserts_andPersists() = runTest {
         val initial = listOf(shelf("1"), shelf("2"))
         val repo = FakeRepo(initial)
         val vm = BookcaseViewModel(repo)

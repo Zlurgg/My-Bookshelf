@@ -1,17 +1,25 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Rule
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
+@RunWith(RobolectricTestRunner::class)
 class BookshelfViewModelTest {
+
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private class FakeRepo : BookshelfRepository {
         val upserts = mutableListOf<Book>()
@@ -45,7 +53,7 @@ class BookshelfViewModelTest {
     )
 
     @Test
-    fun onBookClick_persists_book() = runBlocking {
+    fun onBookClick_persists_book() = runTest {
         val repo = FakeRepo()
         val vm = BookshelfViewModel(repo, shelfId = "S1")
         val book = sampleBook("B1")
