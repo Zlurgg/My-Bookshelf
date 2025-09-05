@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
@@ -48,7 +47,7 @@ class BookshelfViewModelTest {
         numEditions = 1,
         purchased = false,
         affiliateLink = "",
-        spineColor = Color.Black,
+        spineColor = 0xFF000000.toInt(),
         onShelf = false,
     )
 

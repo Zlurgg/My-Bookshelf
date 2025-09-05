@@ -19,7 +19,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
-import androidx.compose.ui.graphics.Color
 
 class BookshelfRepositoryImplTest {
 
@@ -116,7 +115,7 @@ class BookshelfRepositoryImplTest {
         numEditions = 1,
         purchased = false,
         affiliateLink = "",
-        spineColor = Color.Black,
+        spineColor = 0xFF000000.toInt(),
         onShelf = false,
     )
 

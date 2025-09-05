@@ -37,7 +37,7 @@ fun BookSpine(
     Box(
         modifier = Modifier
             .clickable { onClick() }
-            .background(book.spineColor, shape = RoundedCornerShape(4.dp)) // default spine bg
+            .background(Color(book.spineColor), shape = RoundedCornerShape(4.dp)) // default spine bg
             .padding(4.dp, top = 4.dp)
     ) {
         Column(

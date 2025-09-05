@@ -1,11 +1,9 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
 
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.core.util.randomReadableDarkColor
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.BookColorGenerator
 
 
 fun SearchedBookDto.toBook(): Book {
@@ -27,7 +25,7 @@ fun SearchedBookDto.toBook(): Book {
         numEditions = numEditions ?: 0,
         purchased = false,
         affiliateLink = "",
-        spineColor = randomReadableDarkColor(),
+        spineColor = BookColorGenerator.generateSpineColor(),
         onShelf = false
     )
 }
@@ -47,7 +45,7 @@ fun Book.toBookEntity(): BookEntity {
         numEditions = numEditions,
         purchased = purchased,
         affiliateLink = affiliateLink,
-        spineColor = spineColor.toArgb(),
+        spineColor = spineColor,
         onShelf = onShelf,
     )
 }
@@ -67,7 +65,7 @@ fun BookEntity.toBook(): Book {
         numEditions = numEditions,
         purchased = purchased,
         affiliateLink = affiliateLink,
-        spineColor = Color(spineColor),
+        spineColor = spineColor,
         onShelf = onShelf
     )
 }
