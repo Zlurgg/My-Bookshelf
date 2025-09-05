@@ -2,12 +2,11 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookDataRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
@@ -15,7 +14,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.map
 
 class BookshelfRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
-    private val dao: BookshelfDao,
+    private val bookDataRepository: BookDataRepository,
+    private val dao: BookshelfDao
 ) : BookshelfRepository {
 
     override suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote> {
@@ -27,31 +27,25 @@ class BookshelfRepositoryImpl(
     }
 
     override suspend fun upsertBook(book: Book) {
-        dao.upsert(book.toBookEntity())
+        bookDataRepository.upsertBook(book)
     }
 
     override suspend fun getBookById(bookId: String): Book? {
-        return dao.getBookById(bookId)?.toBook()
+        return bookDataRepository.getBookById(bookId)
     }
 
     override suspend fun getBookDescription(workId: String): Result<String?, DataError.Remote> {
-        return remoteBookDataSource.getBookDetails(workId).map { it.description }
+        return bookDataRepository.getBookDescription(workId)
     }
 
     override suspend fun addBookToShelf(shelfId: String, book: Book) {
         // Upsert book then link to shelf
-        dao.upsert(book.toBookEntity())
-        dao.upsertCrossRef(
-            BookshelfBookCrossRef(
-                shelfId = shelfId,
-                bookId = book.id,
-                addedAt = System.currentTimeMillis()
-            )
-        )
+        bookDataRepository.upsertBook(book)
+        bookDataRepository.addBookToShelf(shelfId, book.id)
     }
 
     override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
-        dao.deleteCrossRef(shelfId, bookId)
+        bookDataRepository.removeBookFromShelf(shelfId, bookId)
     }
 
     override fun getBooksForShelf(shelfId: String): Flow<List<Book>> {

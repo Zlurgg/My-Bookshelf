@@ -12,10 +12,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.DatabaseFactory
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.KtorRemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookDataRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UuidBookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookDataRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
@@ -60,6 +62,10 @@ val appModule = module {
         )
     }
 
+    // Data layer repositories
+    singleOf(::BookDataRepositoryImpl).bind<BookDataRepository>()
+    
+    // Domain layer repositories
     singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
     singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()
     singleOf(::BookRepositoryImpl).bind<BookRepository>()
