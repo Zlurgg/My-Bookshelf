@@ -25,8 +25,7 @@ fun SearchedBookDto.toBook(): Book {
         numEditions = numEditions ?: 0,
         purchased = false,
         affiliateLink = "",
-        spineColor = BookColorGenerator.generateSpineColor(),
-        onShelf = false
+        spineColor = BookColorGenerator.generateSpineColor()
     )
 }
 
@@ -45,8 +44,7 @@ fun Book.toBookEntity(): BookEntity {
         numEditions = numEditions,
         purchased = purchased,
         affiliateLink = affiliateLink,
-        spineColor = spineColor,
-        onShelf = onShelf,
+        spineColor = spineColor
     )
 }
 
@@ -65,7 +63,6 @@ fun BookEntity.toBook(): Book {
         numEditions = numEditions,
         purchased = purchased,
         affiliateLink = affiliateLink,
-        spineColor = spineColor,
-        onShelf = onShelf
+        spineColor = spineColor
     )
 }

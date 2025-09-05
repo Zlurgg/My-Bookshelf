@@ -42,4 +42,11 @@ interface BookshelfDao {
 
     @Query("SELECT COUNT(*) FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
     fun getBookCountForShelf(shelfId: String): Flow<Int>
+
+    // Book-centric queries
+    @Query("SELECT EXISTS(SELECT 1 FROM BookshelfBookCrossRef WHERE bookId = :bookId)")
+    fun isBookInAnyShelf(bookId: String): Flow<Boolean>
+
+    @Query("SELECT shelfId FROM BookshelfBookCrossRef WHERE bookId = :bookId")
+    fun getShelvesForBook(bookId: String): Flow<List<String>>
 }
