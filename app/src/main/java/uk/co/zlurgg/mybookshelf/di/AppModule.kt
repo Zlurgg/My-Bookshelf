@@ -12,8 +12,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.DatabaseFactory
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.KtorRemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseViewModel
@@ -47,9 +49,9 @@ val appModule = module {
         )
     }
     viewModelOf(::BookcaseViewModel)
-    viewModel { (bookId: String, shelfId: String) ->
+    viewModel { (bookId: String, shelfId: String?) ->
         BookDetailViewModel(
-            bookshelfRepository = get(),
+            bookRepository = get(),
             bookId = bookId,
             shelfId = shelfId
         )
@@ -57,4 +59,5 @@ val appModule = module {
 
     singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
     singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()
+    singleOf(::BookRepositoryImpl).bind<BookRepository>()
 }

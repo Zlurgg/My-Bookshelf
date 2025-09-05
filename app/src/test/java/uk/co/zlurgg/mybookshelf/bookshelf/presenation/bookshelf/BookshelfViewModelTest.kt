@@ -47,8 +47,7 @@ class BookshelfViewModelTest {
         numEditions = 1,
         purchased = false,
         affiliateLink = "",
-        spineColor = 0xFF000000.toInt(),
-        onShelf = false,
+        spineColor = 0xFF000000.toInt()
     )
 
     @Test

@@ -77,12 +77,10 @@ fun BookDetailsScreen(
                         onClick = { onAction(BookDetailAction.OnAddBookClick(state.book)) },
                         containerColor = MaterialTheme.colorScheme.surfaceVariant
                     ) {
-                        state.book.onShelf.let { onShelf ->
-                            if (!onShelf) {
-                                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.action_add_short))
-                            } else {
-                                Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.action_remove_short))
-                            }
+                        if (!state.onShelf) {
+                            Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.action_add_short))
+                        } else {
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.action_remove_short))
                         }
                     }
                     FloatingActionButton(
@@ -156,7 +154,8 @@ fun BookDetailsScreen(
 fun BookDetailScreenPreview() {
     BookDetailsScreen(
         state = BookDetailState(
-            book = sampleBook
+            book = sampleBook,
+            onShelf = false
         ),
         onAction = {}
     )

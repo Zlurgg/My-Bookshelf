@@ -123,7 +123,7 @@ fun MyBookShelfApp() {
                     ) ?: ""
                     val shelfIdArg = backStackEntry.arguments?.getString(
                         NavigationRoute.BookDetail.KEY_SHELF_ID
-                    ) ?: ""
+                    ).takeIf { !it.isNullOrBlank() }
 
                     val viewModel = koinViewModel<BookDetailViewModel>(
                         parameters = { parametersOf(bookId, shelfIdArg) }

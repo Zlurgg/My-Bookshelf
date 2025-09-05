@@ -18,8 +18,7 @@ val sampleBooks = List(50) {
         averageRating = null,
         ratingCount = null,
         numPages = 1000,
-        numEditions = 1,
-        onShelf = false
+        numEditions = 1
     )
 }
 val sampleBook =
@@ -37,6 +36,5 @@ Book(
     averageRating = null,
     ratingCount = null,
     numPages = 1000,
-    numEditions = 1,
-    onShelf = false
+    numEditions = 1
 )

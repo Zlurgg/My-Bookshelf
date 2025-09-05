@@ -61,8 +61,7 @@ class BookshelfSearchTest {
         numEditions = 1,
         purchased = false,
         affiliateLink = "",
-        spineColor = 0xFF0000FF.toInt(),
-        onShelf = false,
+        spineColor = 0xFF0000FF.toInt()
     )
 
     @Test

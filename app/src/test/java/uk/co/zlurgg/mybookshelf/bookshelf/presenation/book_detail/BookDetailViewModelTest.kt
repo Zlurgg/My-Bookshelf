@@ -14,7 +14,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
@@ -26,39 +26,44 @@ class BookDetailViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    private class FakeRepo : BookshelfRepository {
+    private class FakeRepo : BookRepository {
         var upserted: Book? = null
-        var addedPair: Pair<String, Book>? = null
+        var addedPair: Pair<String, String>? = null
         var removedPair: Pair<String, String>? = null
         var storedBook: Book? = null
         var description: String? = "desc"
-        private val booksOnShelf = MutableStateFlow<List<Book>>(emptyList())
-
-        override suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote> {
-            return Result.Success(emptyList())
-        }
-
-        override suspend fun addBookToShelf(shelfId: String, book: Book) {
-            addedPair = shelfId to book
-            booksOnShelf.value = booksOnShelf.value + book
-        }
-
-        override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
-            removedPair = shelfId to bookId
-            booksOnShelf.value = booksOnShelf.value.filterNot { it.id == bookId }
-        }
-
-        override fun getBooksForShelf(shelfId: String): Flow<List<Book>> = booksOnShelf
-
-        override suspend fun upsertBook(book: Book) { upserted = book }
+        private val isOnShelfFlow = MutableStateFlow(false)
 
         override suspend fun getBookById(bookId: String): Book? = storedBook
 
-        override suspend fun getBookDescription(workId: String): Result<String?, DataError.Remote> =
-            Result.Success(description)
+        override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
+            return Result.Success(description)
+        }
+
+        override suspend fun upsertBook(book: Book) {
+            upserted = book
+        }
+
+        override fun isBookOnShelf(bookId: String, shelfId: String): Flow<Boolean> = isOnShelfFlow
+
+        override suspend fun addBookToShelf(bookId: String, shelfId: String) {
+            addedPair = bookId to shelfId
+            isOnShelfFlow.value = true
+        }
+
+        override suspend fun removeBookFromShelf(bookId: String, shelfId: String) {
+            removedPair = bookId to shelfId
+            isOnShelfFlow.value = false
+        }
+
+        override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = isOnShelfFlow
+
+        override fun getShelvesForBook(bookId: String): Flow<List<String>> {
+            return MutableStateFlow(if (isOnShelfFlow.value) listOf("S1") else emptyList())
+        }
     }
 
-    private fun sampleBook(onShelf: Boolean = false) = Book(
+    private fun sampleBook() = Book(
         id = "OLID",
         title = "t",
         authors = listOf("a"),
@@ -72,8 +77,7 @@ class BookDetailViewModelTest {
         numEditions = 1,
         purchased = false,
         affiliateLink = "",
-        spineColor = 0xFF000000.toInt(),
-        onShelf = onShelf,
+        spineColor = 0xFF000000.toInt()
     )
 
     @Test
@@ -99,7 +103,7 @@ class BookDetailViewModelTest {
 
     @Test
     fun toggles_add_remove_based_on_onShelf() = runTest {
-        val repo = FakeRepo().apply { storedBook = sampleBook(onShelf = false) }
+        val repo = FakeRepo().apply { storedBook = sampleBook() }
         val vm = BookDetailViewModel(repo, bookId = "OLID", shelfId = "S1")
         
         // Collect state to trigger onStart
@@ -111,17 +115,17 @@ class BookDetailViewModelTest {
         advanceUntilIdle()
         
         // Initially book is not on shelf, click should add it
-        vm.onAction(BookDetailAction.OnAddBookClick(sampleBook(onShelf = false)))
+        vm.onAction(BookDetailAction.OnAddBookClick(sampleBook()))
         advanceUntilIdle()
         assertNotNull(repo.addedPair)
-        assertEquals("S1", repo.addedPair?.first)
-        assertEquals("OLID", repo.addedPair?.second?.id)
+        assertEquals("OLID", repo.addedPair?.first)
+        assertEquals("S1", repo.addedPair?.second)
         
         // Now book should be on shelf, click should remove it
-        vm.onAction(BookDetailAction.OnAddBookClick(sampleBook(onShelf = true)))
+        vm.onAction(BookDetailAction.OnAddBookClick(sampleBook()))
         advanceUntilIdle()
         assertNotNull(repo.removedPair)
-        assertEquals("S1" to "OLID", repo.removedPair)
+        assertEquals("OLID" to "S1", repo.removedPair)
         
         job.cancel()
     }

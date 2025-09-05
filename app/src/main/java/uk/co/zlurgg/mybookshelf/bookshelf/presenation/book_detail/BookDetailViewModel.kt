@@ -9,14 +9,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
 class BookDetailViewModel(
-    private val bookshelfRepository: BookshelfRepository,
+    private val bookRepository: BookRepository,
     private val bookId: String,
-    private val shelfId: String,
+    private val shelfId: String? = null, // Optional shelf context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookDetailState())
@@ -24,23 +24,30 @@ class BookDetailViewModel(
         .onStart {
             viewModelScope.launch {
                 // Load base book from local DB if present
-                val base = bookshelfRepository.getBookById(bookId)
+                val base = bookRepository.getBookById(bookId)
                 _state.update { it.copy(book = base, isLoading = false) }
 
-                // Observe shelf membership for this shelf and reflect in UI
+                // Observe shelf membership and reflect in UI
                 launch {
-                    bookshelfRepository.getBooksForShelf(shelfId).collect { list ->
-                        val inShelf = list.any { it.id == bookId }
-                        _state.update { s -> s.copy(book = s.book?.copy(onShelf = inShelf)) }
+                    if (shelfId != null) {
+                        // Show status for specific shelf
+                        bookRepository.isBookOnShelf(bookId, shelfId).collect { onShelf ->
+                            _state.update { s -> s.copy(onShelf = onShelf) }
+                        }
+                    } else {
+                        // Show general library membership
+                        bookRepository.isBookInAnyShelf(bookId).collect { inLibrary ->
+                            _state.update { s -> s.copy(onShelf = inLibrary) }
+                        }
                     }
                 }
 
                 // Fetch description from remote and merge
-                bookshelfRepository.getBookDescription(bookId)
+                bookRepository.getBookDescription(bookId)
                     .onSuccess { description ->
                         _state.update { s -> s.copy(book = s.book?.copy(description = description)) }
                         // Optionally persist back
-                        _state.value.book?.let { bookshelfRepository.upsertBook(it) }
+                        _state.value.book?.let { bookRepository.upsertBook(it) }
                     }
                     .onError {
                         // ignore, keep UI usable
@@ -62,14 +69,19 @@ class BookDetailViewModel(
             is BookDetailAction.OnAddBookClick -> {
                 viewModelScope.launch {
                     try {
-                        val onShelf = state.value.book?.onShelf == true
+                        val onShelf = state.value.onShelf
                         val book: Book = action.book
-                        if (onShelf) {
-                            bookshelfRepository.removeBookFromShelf(shelfId, book.id)
-                            _state.update { it.copy(book = it.book?.copy(onShelf = false)) }
-                        } else {
-                            bookshelfRepository.addBookToShelf(shelfId, book.copy(onShelf = true))
-                            _state.update { it.copy(book = it.book?.copy(onShelf = true)) }
+                        
+                        // TODO: For now, require shelfId context for add/remove operations
+                        // Future: Show shelf selection dialog when shelfId is null
+                        if (shelfId != null) {
+                            if (onShelf) {
+                                bookRepository.removeBookFromShelf(book.id, shelfId)
+                                _state.update { it.copy(onShelf = false) }
+                            } else {
+                                bookRepository.addBookToShelf(book.id, shelfId)
+                                _state.update { it.copy(onShelf = true) }
+                            }
                         }
                         _events.emit(BookDetailEvent.NavigateBack)
                     } catch (_: Exception) { }
@@ -91,8 +103,10 @@ class BookDetailViewModel(
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
                     try {
-                        bookshelfRepository.removeBookFromShelf(shelfId, bookId)
-                        _state.update { it.copy(book = it.book?.copy(onShelf = false)) }
+                        if (shelfId != null) {
+                            bookRepository.removeBookFromShelf(bookId, shelfId)
+                            _state.update { it.copy(onShelf = false) }
+                        }
                         _events.emit(BookDetailEvent.NavigateBack)
                     } catch (_: Exception) { }
                 }

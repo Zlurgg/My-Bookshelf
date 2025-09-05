@@ -70,6 +70,9 @@ class BookshelfRepositoryImplTest {
 
         override fun getBookCountForShelf(shelfId: String): Flow<Int> =
             shelfFlowMap.getOrPut(shelfId) { MutableStateFlow(emptyList()) }.map { it.size }
+
+        override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = MutableStateFlow(false)
+        override fun getShelvesForBook(bookId: String): Flow<List<String>> = MutableStateFlow(emptyList())
     }
 
     private class FakeRemote : RemoteBookDataSource {
@@ -115,8 +118,7 @@ class BookshelfRepositoryImplTest {
         numEditions = 1,
         purchased = false,
         affiliateLink = "",
-        spineColor = 0xFF000000.toInt(),
-        onShelf = false,
+        spineColor = 0xFF000000.toInt()
     )
 
     @Test

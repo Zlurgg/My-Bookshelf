@@ -81,8 +81,7 @@ class BookMappersTest {
             numEditions = 3,
             purchased = true,
             affiliateLink = "http://buy",
-            spineColor = 0xFF112233.toInt(),
-            onShelf = true,
+            spineColor = 0xFF112233.toInt()
         )
 
         val entity: BookEntity = original.toBookEntity()
@@ -102,6 +101,5 @@ class BookMappersTest {
         assertEquals(original.purchased, mappedBack.purchased)
         assertEquals(original.affiliateLink, mappedBack.affiliateLink)
         assertEquals(original.spineColor, mappedBack.spineColor)
-        assertEquals(original.onShelf, mappedBack.onShelf)
     }
 }
