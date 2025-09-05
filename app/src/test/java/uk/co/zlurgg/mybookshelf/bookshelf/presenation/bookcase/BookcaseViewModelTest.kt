@@ -13,12 +13,17 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
 
 @RunWith(RobolectricTestRunner::class)
 class BookcaseViewModelTest {
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+    private class FakeIdGenerator : BookshelfIdGenerator {
+        override fun generateId(): String = "test-id"
+    }
 
     private class FakeRepo(initial: List<Bookshelf>) : BookcaseRepository {
         private val shelvesFlow = MutableStateFlow(initial)
@@ -50,7 +55,7 @@ class BookcaseViewModelTest {
     fun removeShelf_updatesState_andCallsRepository() = runTest {
         val initial = listOf(shelf("1"), shelf("2"))
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo)
+        val vm = BookcaseViewModel(repo, FakeIdGenerator())
 
         // Remove shelf 1
         val toRemove = initial.first()
@@ -67,7 +72,7 @@ class BookcaseViewModelTest {
     fun undoRemove_reinserts_andPersists() = runTest {
         val initial = listOf(shelf("1"), shelf("2"))
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo)
+        val vm = BookcaseViewModel(repo, FakeIdGenerator())
 
         val toRemove = initial.first()
         vm.onAction(BookcaseAction.OnRemoveBookShelf(toRemove))

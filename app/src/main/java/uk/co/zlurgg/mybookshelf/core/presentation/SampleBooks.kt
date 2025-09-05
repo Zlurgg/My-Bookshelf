@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.core.presentation
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.BookColorGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 
 val sampleBooks = List(50) {
     Book(
