@@ -3,7 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.BookColorGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 
 
 fun SearchedBookDto.toBook(): Book {

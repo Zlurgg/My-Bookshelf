@@ -10,10 +10,11 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
-import java.util.UUID
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
 
 class BookcaseViewModel(
-    private val repository: BookcaseRepository
+    private val repository: BookcaseRepository,
+    private val idGenerator: BookshelfIdGenerator
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -104,7 +105,7 @@ class BookcaseViewModel(
         viewModelScope.launch {
             try {
                 val newShelf = Bookshelf(
-                    id = UUID.randomUUID().toString(),
+                    id = idGenerator.generateId(),
                     name = name,
                     books = emptyList(),
                     shelfStyle = style

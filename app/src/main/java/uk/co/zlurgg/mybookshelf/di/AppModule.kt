@@ -14,9 +14,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UuidBookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
@@ -30,6 +32,7 @@ val appModule = module {
     single { HttpClientFactory.create(get()) }
 
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
+    singleOf(::UuidBookshelfIdGenerator).bind<BookshelfIdGenerator>()
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
@@ -48,7 +51,7 @@ val appModule = module {
             shelfId = shelfId
         )
     }
-    viewModelOf(::BookcaseViewModel)
+    viewModel { BookcaseViewModel(get(), get()) }
     viewModel { (bookId: String, shelfId: String?) ->
         BookDetailViewModel(
             bookRepository = get(),
