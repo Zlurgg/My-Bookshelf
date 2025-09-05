@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
 
-import androidx.compose.ui.graphics.Color
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -38,8 +37,8 @@ class BookMappersTest {
         assertEquals(10, book.ratingCount)
         assertEquals(321, book.numPages)
         assertEquals(2, book.numEditions)
-        // spineColor is random; just ensure it's a valid color int via conversion roundtrip possible
-        Color(book.spineColor.value)
+        // spineColor is random; just ensure it's a valid color int by checking it's non-zero
+        assertTrue(book.spineColor != 0)
     }
 
     @Test
@@ -82,7 +81,7 @@ class BookMappersTest {
             numEditions = 3,
             purchased = true,
             affiliateLink = "http://buy",
-            spineColor = Color(0xFF112233),
+            spineColor = 0xFF112233.toInt(),
             onShelf = true,
         )
 
@@ -102,7 +101,7 @@ class BookMappersTest {
         assertEquals(original.numEditions, mappedBack.numEditions)
         assertEquals(original.purchased, mappedBack.purchased)
         assertEquals(original.affiliateLink, mappedBack.affiliateLink)
-        assertEquals(original.spineColor.value, mappedBack.spineColor.value)
+        assertEquals(original.spineColor, mappedBack.spineColor)
         assertEquals(original.onShelf, mappedBack.onShelf)
     }
 }

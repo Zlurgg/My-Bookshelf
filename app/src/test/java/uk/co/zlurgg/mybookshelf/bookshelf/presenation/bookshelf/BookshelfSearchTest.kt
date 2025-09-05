@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -62,7 +61,7 @@ class BookshelfSearchTest {
         numEditions = 1,
         purchased = false,
         affiliateLink = "",
-        spineColor = Color.Blue,
+        spineColor = 0xFF0000FF.toInt(),
         onShelf = false,
     )
 

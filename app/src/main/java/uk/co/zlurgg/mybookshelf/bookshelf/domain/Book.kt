@@ -1,7 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain
 
-import androidx.compose.ui.graphics.Color
-
 data class Book(
     val id: String,
     val title: String,
@@ -16,6 +14,6 @@ data class Book(
     val numEditions: Int,
     val purchased: Boolean,
     val affiliateLink: String,
-    val spineColor: Color,
+    val spineColor: Int, // ARGB color as Int
     val onShelf: Boolean
 )

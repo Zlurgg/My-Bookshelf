@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.core.presentation
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.core.util.randomReadableDarkColor
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.BookColorGenerator
 
 val sampleBooks = List(50) {
     Book(
@@ -12,7 +12,7 @@ val sampleBooks = List(50) {
         description = null,
         purchased = false,
         affiliateLink = "",
-        spineColor = randomReadableDarkColor(),
+        spineColor = BookColorGenerator.generateSpineColor(),
         languages = listOf(""),
         firstPublishYear = null,
         averageRating = null,
@@ -31,7 +31,7 @@ Book(
     description = null,
     purchased = false,
     affiliateLink = "",
-    spineColor = randomReadableDarkColor(),
+    spineColor = BookColorGenerator.generateSpineColor(),
     languages = listOf(""),
     firstPublishYear = null,
     averageRating = null,

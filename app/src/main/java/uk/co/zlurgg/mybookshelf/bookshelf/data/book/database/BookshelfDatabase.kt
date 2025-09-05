@@ -9,8 +9,7 @@ import androidx.room.TypeConverters
     version = 2
 )
 @TypeConverters(
-    StringListTypeConverter::class,
-    ColorConverters::class
+    StringListTypeConverter::class
 )
 abstract class BookshelfDatabase : RoomDatabase() {
     abstract val bookshelfDao: BookshelfDao
