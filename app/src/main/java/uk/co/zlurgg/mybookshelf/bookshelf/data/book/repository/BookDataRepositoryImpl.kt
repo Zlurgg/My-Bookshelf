@@ -7,13 +7,15 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookDataRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import uk.co.zlurgg.mybookshelf.core.domain.map
 
 class BookDataRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
-    private val dao: BookshelfDao
+    private val dao: BookshelfDao,
+    private val timeProvider: TimeProvider
 ) : BookDataRepository {
     
     override suspend fun upsertBook(book: Book) {
@@ -34,7 +36,7 @@ class BookDataRepositoryImpl(
             BookshelfBookCrossRef(
                 shelfId = shelfId,
                 bookId = bookId,
-                addedAt = System.currentTimeMillis()
+                addedAt = timeProvider.currentTimeMillis()
             )
         )
     }
