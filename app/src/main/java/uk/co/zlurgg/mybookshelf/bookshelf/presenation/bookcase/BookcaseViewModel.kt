@@ -15,6 +15,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,7 +68,7 @@ class BookcaseViewModel(
                             current.copy(
                                 bookshelves = current.bookshelves + action.bookshelf,
                                 recentlyDeleted = null,
-                                errorMessage = "Failed to remove shelf: ${e.message}"
+                                errorMessage = ErrorFormatter.formatOperationError("remove shelf", e)
                             )
                         }
                     }
@@ -90,7 +91,7 @@ class BookcaseViewModel(
                         } catch (e: Exception) {
                             _state.update { current ->
                                 current.copy(
-                                    errorMessage = "Failed to restore shelf: ${e.message}"
+                                    errorMessage = ErrorFormatter.formatOperationError("restore shelf", e)
                                 )
                             }
                         }
@@ -126,7 +127,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = "Failed to add shelf: ${e.message}",
+                        errorMessage = ErrorFormatter.formatOperationError("add shelf", e),
                     )
                 }
             }
@@ -160,7 +161,7 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Failed to load shelves: ${e.message}",
+                            errorMessage = ErrorFormatter.formatOperationError("load shelves", e as Exception),
                         )
                     }
                 }
