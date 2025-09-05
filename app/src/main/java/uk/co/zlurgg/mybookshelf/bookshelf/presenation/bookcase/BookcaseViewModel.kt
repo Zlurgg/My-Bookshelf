@@ -2,7 +2,10 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
@@ -19,12 +22,15 @@ class BookcaseViewModel(
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state
 
+    // Track book count collector jobs to cancel them when shelves update
+    private var bookCountJobs = mutableMapOf<String, Job>()
+
     // One-off UI events (snackbar, etc.)
     sealed interface UiEvent {
         data class ShowSnackbar(val message: String) : UiEvent
     }
-    private val _events = kotlinx.coroutines.flow.MutableSharedFlow<UiEvent>()
-    val events: kotlinx.coroutines.flow.SharedFlow<UiEvent> = _events
+    private val _events = MutableSharedFlow<UiEvent>()
+    val events: SharedFlow<UiEvent> = _events
 
     init {
         loadBookshelves()
@@ -135,30 +141,38 @@ class BookcaseViewModel(
 
     private fun loadBookshelves() {
         viewModelScope.launch {
-            _state.update { it.copy() }
+            _state.update { it.copy(isLoading = true) }
             try {
-                val shelves = repository.getAllShelves().first()
-                _state.update {
-                    it.copy(
-                        bookshelves = shelves,
-                        isLoading = false,
-                    )
-                }
-                // Start observing counts per shelf and update state.bookCounts reactively
-                shelves.forEach { shelf ->
-                    launch {
-                        repository.getBookCountForShelf(shelf.id).collect { count ->
-                            _state.update { current ->
-                                current.copy(bookCounts = current.bookCounts + (shelf.id to count))
+                // Observe shelves continuously instead of using .first()
+                repository.getAllShelves().collect { shelves ->
+                    _state.update {
+                        it.copy(
+                            bookshelves = shelves,
+                            isLoading = false,
+                        )
+                    }
+                    
+                    // Cancel previous count collectors before starting new ones
+                    bookCountJobs.values.forEach { it.cancel() }
+                    bookCountJobs.clear()
+                    
+                    // Start observing counts for all current shelves
+                    shelves.forEach { shelf ->
+                        val job = launch {
+                            repository.getBookCountForShelf(shelf.id).collect { count ->
+                                _state.update { current ->
+                                    current.copy(bookCounts = current.bookCounts + (shelf.id to count))
+                                }
                             }
                         }
+                        bookCountJobs[shelf.id] = job
                     }
                 }
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = "Failed to add shelf: ${e.message}",
+                        errorMessage = "Failed to load shelves: ${e.message}",
                     )
                 }
             }
