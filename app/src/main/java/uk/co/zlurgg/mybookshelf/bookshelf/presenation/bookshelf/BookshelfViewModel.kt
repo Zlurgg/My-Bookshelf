@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
@@ -54,7 +55,7 @@ class BookshelfViewModel(
                     try {
                         bookshelfRepository.upsertBook(action.book)
                     } catch (e: Exception) {
-                        _state.update { it.copy(errorMessage = "Failed to cache book: ${e.message}") }
+                        _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("cache book", e)) }
                     }
                 }
             }
@@ -66,7 +67,7 @@ class BookshelfViewModel(
                     try {
                         bookshelfRepository.removeBookFromShelf(shelfId, action.book.id)
                     } catch (e: Exception) {
-                        _state.update { it.copy(errorMessage = "Failed to remove book: ${e.message}") }
+                        _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("remove book", e)) }
                     }
                 }
                 _state.update { current ->
@@ -104,7 +105,7 @@ class BookshelfViewModel(
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
-                        errorMessage = "Failed to load books: ${e.message}",
+                        errorMessage = ErrorFormatter.formatOperationError("load books", e),
                         isLoading = false
                     )
                 }
@@ -165,7 +166,7 @@ class BookshelfViewModel(
             } catch (e: Exception) {
                 _state.update {
                     it.copy(
-                        errorMessage = "Failed to add book: ${e.message}",
+                        errorMessage = ErrorFormatter.formatOperationError("add book", e),
                         isLoading = false
                     )
                 }

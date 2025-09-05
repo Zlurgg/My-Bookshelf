@@ -135,3 +135,37 @@ uk.co.zlurgg.mybookshelf/
 - **Coroutine Testing**: Use `advanceUntilIdle()` after actions for proper async completion
 - **Mock Repositories**: Implement full repository interfaces with realistic fake behavior
 - **Integration Tests**: Test complete user workflows rather than just isolated units
+
+## Working Style Preferences
+
+- **Be willing to disagree**: Don't just be accommodating to avoid conflict. Engage in genuine technical debate about architectural trade-offs.
+- **Tell me when I'm wrong**: If you disagree with a technical decision or approach, defend your position with reasoning rather than just agreeing.
+- **Technical honesty**: Be intellectually honest about problems and solutions. Don't back down from legitimate technical concerns when challenged.
+- **Principled architecture**: Defend Clean Architecture, SOLID principles, DRY, and good engineering practices when they're being violated.
+
+## Recent Architectural Decisions
+
+### Abstraction Strategy
+- **Slight over-engineering accepted**: We've implemented abstractions like `BookshelfIdGenerator` and `TimeProvider` that may seem excessive for current needs but provide future flexibility and testability.
+- **Testing benefits justify abstractions**: Even simple abstractions are valuable if they make testing more deterministic and reliable.
+
+### Repository Pattern Evolution  
+- **BookDataRepository**: Implemented to eliminate duplication between `BookRepository` and `BookshelfRepository`. Handles all common book CRUD operations.
+- **Layered dependencies**: ViewModels → Domain Repositories → BookDataRepository → Database/Network
+
+### Coroutine Management
+- **Prefer reactive operators**: Use `flatMapLatest`, `combine`, etc. over manual coroutine job management for better lifecycle handling and cleaner code.
+
+### DRY (Don't Repeat Yourself) Enforcement
+- **ErrorFormatter**: Centralized error message formatting via `ErrorFormatter.formatOperationError()` to avoid repeated `"Failed to [action]: ${e.message}"` patterns
+- **Sample Data IDs**: Use consistent naming patterns like `"sample-shelf-*"` instead of random UUIDs for deterministic behavior
+- **Test Utilities**: Extract common test setup patterns to avoid duplication across test classes
+
+### Error Recovery Strategy
+- **Current approach**: Basic error messages without retry mechanisms or offline queues
+- **Status**: Acceptable technical debt for current project stage. Comprehensive error recovery (exponential backoff, offline queues) deferred as it represents a significant architectural change.
+
+### Test Utilities
+- **TestIdGenerator**: Provides unique IDs using AtomicInteger counter for deterministic tests located in `app/src/test/java/uk/co/zlurgg/mybookshelf/test/`
+- **TestTimeProvider**: Allows controlling time in tests via `setTime()` and `advanceBy()` methods located in `app/src/test/java/uk/co/zlurgg/mybookshelf/test/`
+- **Repository Fakes**: Implement full repository interfaces with realistic fake behavior rather than simple mocks
