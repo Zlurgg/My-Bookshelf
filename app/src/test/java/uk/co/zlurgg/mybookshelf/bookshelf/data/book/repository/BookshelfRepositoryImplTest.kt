@@ -124,7 +124,10 @@ class BookshelfRepositoryImplTest {
 
     @Test
     fun upsert_and_getBookById_roundtrip() = runBlocking {
-        val repo = BookshelfRepositoryImpl(FakeRemote(), FakeDao())
+        val dao = FakeDao()
+        val remote = FakeRemote()
+        val bookDataRepo = BookDataRepositoryImpl(remote, dao)
+        val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
         val book = sampleBook("OLX")
         repo.upsertBook(book)
         val loaded = repo.getBookById("OLX")
@@ -135,7 +138,10 @@ class BookshelfRepositoryImplTest {
 
     @Test
     fun getBookDescription_maps_value() = runBlocking {
-        val repo = BookshelfRepositoryImpl(FakeRemote(), FakeDao())
+        val dao = FakeDao()
+        val remote = FakeRemote()
+        val bookDataRepo = BookDataRepositoryImpl(remote, dao)
+        val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
         val result = repo.getBookDescription("OL123W")
         when (result) {
             is Result.Success -> assertEquals("A description for OL123W", result.data)
@@ -146,7 +152,9 @@ class BookshelfRepositoryImplTest {
     @Test
     fun addBookToShelf_links_and_flows() = runBlocking {
         val dao = FakeDao()
-        val repo = BookshelfRepositoryImpl(FakeRemote(), dao)
+        val remote = FakeRemote()
+        val bookDataRepo = BookDataRepositoryImpl(remote, dao)
+        val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
         val shelfId = "s1"
         val book = sampleBook("OLFLOW")
         repo.addBookToShelf(shelfId, book)
