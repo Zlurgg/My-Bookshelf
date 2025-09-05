@@ -19,6 +19,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
 
 class BookshelfRepositoryImplTest {
 
@@ -104,7 +105,7 @@ class BookshelfRepositoryImplTest {
         }
     }
 
-    private fun sampleBook(id: String = "OL123W") = Book(
+    private fun sampleBook(id: String = TestIdGenerator.generateBookId("OL")) = Book(
         id = id,
         title = "Title",
         authors = listOf("Author"),

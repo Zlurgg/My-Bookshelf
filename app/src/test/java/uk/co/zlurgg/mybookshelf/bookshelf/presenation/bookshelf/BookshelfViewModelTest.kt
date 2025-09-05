@@ -13,6 +13,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
 
 @RunWith(RobolectricTestRunner::class)
 class BookshelfViewModelTest {
@@ -33,7 +34,7 @@ class BookshelfViewModelTest {
     }
 
 
-    private fun sampleBook(id: String = "ID") = Book(
+    private fun sampleBook(id: String = TestIdGenerator.generateBookId()) = Book(
         id = id,
         title = "t",
         authors = listOf("a"),

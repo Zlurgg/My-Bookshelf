@@ -5,7 +5,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 
 val sampleBooks = List(50) {
     Book(
-        id = it.toString(),
+        id = "sample-$it",
         title = "Test Book $it with a longer title making it a longer for each one $it",
         authors = listOf("Author"),
         imageUrl = "https://picsum.photos/200/300",
@@ -23,7 +23,7 @@ val sampleBooks = List(50) {
 }
 val sampleBook =
 Book(
-    id = "1",
+    id = "sample-book-single",
     title = "One Book with a longer title making it a bit too crazy",
     authors = listOf("Author"),
     imageUrl = "https://picsum.photos/200/300",
