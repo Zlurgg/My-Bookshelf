@@ -76,10 +76,17 @@ class BookDetailViewModel(
                 }
             }
             is BookDetailAction.OnPurchaseClick -> {
-                // Not implemented - placeholder for future deep link purchase
+                // TODO: Implement purchase functionality
+                // Should open affiliate link in browser or Custom Tab
+                // See BookRepository interface for planned purchase integration
             }
             is BookDetailAction.OnRateBookDetailClick -> {
-                _state.update { it.copy(book = it.book?.copy(ratingCount = it.rating)) }
+                _state.update { current ->
+                    current.copy(
+                        rating = action.rating,
+                        book = current.book?.copy(ratingCount = action.rating)
+                    )
+                }
             }
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
