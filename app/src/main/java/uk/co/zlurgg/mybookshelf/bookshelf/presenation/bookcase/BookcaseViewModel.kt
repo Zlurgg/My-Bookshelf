@@ -3,16 +3,13 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import java.util.UUID
 
 class BookcaseViewModel(
@@ -24,13 +21,6 @@ class BookcaseViewModel(
 
     // Track book count collector jobs to cancel them when shelves update
     private var bookCountJobs = mutableMapOf<String, Job>()
-
-    // One-off UI events (snackbar, etc.)
-    sealed interface UiEvent {
-        data class ShowSnackbar(val message: String) : UiEvent
-    }
-    private val _events = MutableSharedFlow<UiEvent>()
-    val events: SharedFlow<UiEvent> = _events
 
     init {
         loadBookshelves()
