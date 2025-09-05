@@ -16,6 +16,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -41,7 +42,7 @@ class BookshelfIntegrationTest {
         override suspend fun getBookDescription(workId: String): Result<String?, DataError.Remote> = Result.Success(null)
     }
 
-    private fun sampleBook(id: String = "ID") = Book(
+    private fun sampleBook(id: String = TestIdGenerator.generateBookId()) = Book(
         id = id,
         title = "Sample Book",
         authors = listOf("Author"),
