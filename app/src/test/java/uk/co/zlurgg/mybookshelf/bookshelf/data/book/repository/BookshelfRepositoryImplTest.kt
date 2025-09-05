@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
+import uk.co.zlurgg.mybookshelf.test.TestTimeProvider
 
 class BookshelfRepositoryImplTest {
 
@@ -126,7 +127,8 @@ class BookshelfRepositoryImplTest {
     fun upsert_and_getBookById_roundtrip() = runBlocking {
         val dao = FakeDao()
         val remote = FakeRemote()
-        val bookDataRepo = BookDataRepositoryImpl(remote, dao)
+        val timeProvider = TestTimeProvider(1000L)
+        val bookDataRepo = BookDataRepositoryImpl(remote, dao, timeProvider)
         val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
         val book = sampleBook("OLX")
         repo.upsertBook(book)
@@ -140,7 +142,8 @@ class BookshelfRepositoryImplTest {
     fun getBookDescription_maps_value() = runBlocking {
         val dao = FakeDao()
         val remote = FakeRemote()
-        val bookDataRepo = BookDataRepositoryImpl(remote, dao)
+        val timeProvider = TestTimeProvider(1000L)
+        val bookDataRepo = BookDataRepositoryImpl(remote, dao, timeProvider)
         val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
         val result = repo.getBookDescription("OL123W")
         when (result) {
@@ -153,7 +156,8 @@ class BookshelfRepositoryImplTest {
     fun addBookToShelf_links_and_flows() = runBlocking {
         val dao = FakeDao()
         val remote = FakeRemote()
-        val bookDataRepo = BookDataRepositoryImpl(remote, dao)
+        val timeProvider = TestTimeProvider(1000L)
+        val bookDataRepo = BookDataRepositoryImpl(remote, dao, timeProvider)
         val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
         val shelfId = "s1"
         val book = sampleBook("OLFLOW")
