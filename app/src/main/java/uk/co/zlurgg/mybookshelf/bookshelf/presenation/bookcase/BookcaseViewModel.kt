@@ -2,16 +2,22 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
     private val repository: BookcaseRepository,
     private val idGenerator: BookshelfIdGenerator
@@ -19,9 +25,6 @@ class BookcaseViewModel(
 
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state
-
-    // Track book count collector jobs to cancel them when shelves update
-    private var bookCountJobs = mutableMapOf<String, Job>()
 
     init {
         loadBookshelves()
@@ -133,40 +136,43 @@ class BookcaseViewModel(
     private fun loadBookshelves() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            try {
-                // Observe shelves continuously instead of using .first()
-                repository.getAllShelves().collect { shelves ->
+            
+            repository.getAllShelves()
+                .flatMapLatest { shelves ->
+                    // Create a flow of book counts for all shelves
+                    if (shelves.isEmpty()) {
+                        // If no shelves, just emit the shelves with empty counts
+                        flowOf(shelves to emptyMap())
+                    } else {
+                        // Create individual flows for each shelf's book count
+                        val countFlows = shelves.map { shelf ->
+                            repository.getBookCountForShelf(shelf.id)
+                                .map { count -> shelf.id to count }
+                        }
+                        
+                        // Combine all count flows together
+                        combine(countFlows) { counts ->
+                            shelves to counts.toMap()
+                        }
+                    }
+                }
+                .catch { e ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Failed to load shelves: ${e.message}",
+                        )
+                    }
+                }
+                .collect { (shelves, bookCounts) ->
                     _state.update {
                         it.copy(
                             bookshelves = shelves,
+                            bookCounts = bookCounts,
                             isLoading = false,
                         )
                     }
-                    
-                    // Cancel previous count collectors before starting new ones
-                    bookCountJobs.values.forEach { it.cancel() }
-                    bookCountJobs.clear()
-                    
-                    // Start observing counts for all current shelves
-                    shelves.forEach { shelf ->
-                        val job = launch {
-                            repository.getBookCountForShelf(shelf.id).collect { count ->
-                                _state.update { current ->
-                                    current.copy(bookCounts = current.bookCounts + (shelf.id to count))
-                                }
-                            }
-                        }
-                        bookCountJobs[shelf.id] = job
-                    }
                 }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = "Failed to load shelves: ${e.message}",
-                    )
-                }
-            }
         }
     }
 }
