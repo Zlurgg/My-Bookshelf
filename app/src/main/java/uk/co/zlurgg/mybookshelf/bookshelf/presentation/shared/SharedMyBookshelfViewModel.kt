@@ -12,7 +12,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 
 class SharedMyBookshelfViewModel(
-    private val bookcaseRepository: BookcaseRepository
+    bookcaseRepository: BookcaseRepository
 ) : ViewModel() {
 
     private val _selectedShelfId = MutableStateFlow<String?>(null)
