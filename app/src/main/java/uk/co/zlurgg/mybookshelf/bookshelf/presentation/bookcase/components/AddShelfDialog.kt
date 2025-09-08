@@ -37,7 +37,7 @@ fun AddShelfDialog(
     isLoading: Boolean
 ) {
     var name by remember { mutableStateOf("") }
-    var selected = remember { mutableStateOf(ShelfStyle.DarkWood) }
+    val selected = remember { mutableStateOf(ShelfStyle.DarkWood) }
 
     AlertDialog(
         onDismissRequest = {
