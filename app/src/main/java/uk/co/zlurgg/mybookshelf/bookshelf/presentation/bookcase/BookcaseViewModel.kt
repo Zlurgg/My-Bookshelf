@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
