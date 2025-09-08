@@ -50,6 +50,14 @@ class BookcaseViewModel(
                 }
             }
 
+            is BookcaseAction.ToggleReorderMode -> {
+                _state.update { it.copy(isReorderMode = !it.isReorderMode) }
+            }
+
+            is BookcaseAction.OnReorderShelf -> {
+                reorderShelf(action.bookshelf, action.newPosition)
+            }
+
             is BookcaseAction.OnRemoveBookShelf -> {
                 // Optimistic UI update
                 _state.update {
@@ -108,11 +116,13 @@ class BookcaseViewModel(
     private fun addBookshelf(name: String, style: ShelfStyle) {
         viewModelScope.launch {
             try {
+                val nextPosition = state.value.bookshelves.maxOfOrNull { it.position }?.plus(1) ?: 0
                 val newShelf = Bookshelf(
                     id = idGenerator.generateId(),
                     name = name,
                     books = emptyList(),
-                    shelfStyle = style
+                    shelfStyle = style,
+                    position = nextPosition
                 )
                 repository.addShelf(newShelf)
                 _state.update {
@@ -174,6 +184,45 @@ class BookcaseViewModel(
                         )
                     }
                 }
+        }
+    }
+
+    private fun reorderShelf(shelf: Bookshelf, newPosition: Int) {
+        viewModelScope.launch {
+            try {
+                val currentShelves = state.value.bookshelves
+                val currentShelfIndex = currentShelves.indexOfFirst { it.id == shelf.id }
+                
+                if (currentShelfIndex == -1) return@launch
+                
+                // Create reordered list with updated positions
+                val reorderedList = currentShelves.toMutableList().apply {
+                    removeAt(currentShelfIndex)
+                    add(newPosition.coerceIn(0, size), shelf.copy(position = newPosition))
+                }
+                
+                // Update positions for all affected shelves
+                val updatedShelves = reorderedList.mapIndexed { index, bookshelf ->
+                    bookshelf.copy(position = index)
+                }
+                
+                // Optimistic UI update
+                _state.update { it.copy(bookshelves = updatedShelves) }
+                
+                // Persist changes
+                updatedShelves.forEach { updatedShelf ->
+                    repository.updateShelf(updatedShelf)
+                }
+                
+            } catch (e: Exception) {
+                // Revert on error by reloading from database
+                _state.update {
+                    it.copy(
+                        errorMessage = ErrorFormatter.formatOperationError("reorder shelves", e)
+                    )
+                }
+                loadBookshelves()
+            }
         }
     }
 }

@@ -8,11 +8,13 @@ fun BookshelfEntity.toDomain(): Bookshelf = Bookshelf(
     id = id,
     name = name,
     books = emptyList(),
-    shelfStyle = ShelfStyle.valueOf(shelfMaterial)
+    shelfStyle = ShelfStyle.valueOf(shelfMaterial),
+    position = position
 )
 
 fun Bookshelf.toEntity(): BookshelfEntity = BookshelfEntity(
     id = id,
     name = name,
-    shelfMaterial = shelfStyle.name
+    shelfMaterial = shelfStyle.name,
+    position = position
 )

@@ -12,3 +12,10 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("ALTER TABLE BookEntity_new RENAME TO BookEntity")
     }
 }
+
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add position column to BookshelfEntity table
+        db.execSQL("ALTER TABLE BookshelfEntity ADD COLUMN position INTEGER NOT NULL DEFAULT 0")
+    }
+}

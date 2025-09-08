@@ -6,9 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -30,7 +33,7 @@ import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddShelfDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBookshelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.core.presentation.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
@@ -94,7 +97,28 @@ fun BookcaseScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text(text = stringResource(id = R.string.app_name), style = MaterialTheme.typography.titleLarge) })
+            TopAppBar(
+                title = { 
+                    Text(
+                        text = if (state.isReorderMode) 
+                            stringResource(id = R.string.reorder_shelves_title) 
+                        else 
+                            stringResource(id = R.string.app_name), 
+                        style = MaterialTheme.typography.titleLarge
+                    ) 
+                },
+                actions = {
+                    IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
+                        Icon(
+                            imageVector = if (state.isReorderMode) Icons.Default.Edit else Icons.Default.Lock,
+                            contentDescription = if (state.isReorderMode) 
+                                stringResource(id = R.string.cd_lock_reorder_mode) 
+                            else 
+                                stringResource(id = R.string.cd_unlock_reorder_mode)
+                        )
+                    }
+                }
+            )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
@@ -128,7 +152,11 @@ fun BookcaseScreen(
                             onAction(BookcaseAction.OnBookshelfClick(shelf))
                         },
                         modifier = Modifier.animateItem(),
-                        bookCountOverride = state.bookCounts[shelf.id] ?: 0
+                        bookCountOverride = state.bookCounts[shelf.id] ?: 0,
+                        isReorderMode = state.isReorderMode,
+                        onReorderShelf = { shelfToReorder, newPosition ->
+                            onAction(BookcaseAction.OnReorderShelf(shelfToReorder, newPosition))
+                        }
                     )
                 }
             }
@@ -136,7 +164,7 @@ fun BookcaseScreen(
     }
 
     if (showAddBookshelfDialog) {
-        AddShelfDialog(
+        AddBookshelfDialog(
             onDismiss = {
                 if (!state.isLoading) onShowAddBookshelfDialogChange(false)
             },

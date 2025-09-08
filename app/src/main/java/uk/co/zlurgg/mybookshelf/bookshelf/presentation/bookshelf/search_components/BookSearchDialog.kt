@@ -52,7 +52,7 @@ fun BookSearchDialog(
                     .fillMaxWidth()
                     .padding(top = 4.dp, bottom = 8.dp)
             ) {
-                SearchBar(
+                BookSearchBar(
                     searchQuery = query,
                     onSearchQueryChange = onQueryChange,
                     onImeSearch = { /* handled by onQueryChange as user types */ },
