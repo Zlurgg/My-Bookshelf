@@ -10,11 +10,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
 class BookDetailViewModel(
     private val bookRepository: BookRepository,
+    private val bookshelfRepository: BookshelfRepository,
     private val bookId: String,
     private val shelfId: String? = null, // Optional shelf context
 ) : ViewModel() {
@@ -31,12 +33,12 @@ class BookDetailViewModel(
                 launch {
                     if (shelfId != null) {
                         // Show status for specific shelf
-                        bookRepository.isBookOnShelf(bookId, shelfId).collect { onShelf ->
+                        bookshelfRepository.isBookOnShelf(bookId, shelfId).collect { onShelf ->
                             _state.update { s -> s.copy(onShelf = onShelf) }
                         }
                     } else {
                         // Show general library membership
-                        bookRepository.isBookInAnyShelf(bookId).collect { inLibrary ->
+                        bookshelfRepository.isBookInAnyShelf(bookId).collect { inLibrary ->
                             _state.update { s -> s.copy(onShelf = inLibrary) }
                         }
                     }
@@ -76,10 +78,12 @@ class BookDetailViewModel(
                         // Future: Show shelf selection dialog when shelfId is null
                         if (shelfId != null) {
                             if (onShelf) {
-                                bookRepository.removeBookFromShelf(book.id, shelfId)
+                                bookshelfRepository.removeBookFromShelf(shelfId, book.id)
                                 _state.update { it.copy(onShelf = false) }
                             } else {
-                                bookRepository.addBookToShelf(book.id, shelfId)
+                                // Ensure book is saved first
+                                bookRepository.upsertBook(book)
+                                bookshelfRepository.addBookToShelf(shelfId, book.id)
                                 _state.update { it.copy(onShelf = true) }
                             }
                         }
@@ -104,7 +108,7 @@ class BookDetailViewModel(
                 viewModelScope.launch {
                     try {
                         if (shelfId != null) {
-                            bookRepository.removeBookFromShelf(bookId, shelfId)
+                            bookshelfRepository.removeBookFromShelf(shelfId, bookId)
                             _state.update { it.copy(onShelf = false) }
                         }
                         _events.emit(BookDetailEvent.NavigateBack)

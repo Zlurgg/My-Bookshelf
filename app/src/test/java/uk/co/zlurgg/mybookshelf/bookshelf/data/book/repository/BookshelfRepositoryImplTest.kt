@@ -3,19 +3,12 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.first
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -40,6 +33,16 @@ class BookshelfRepositoryImplTest {
         }
 
         override suspend fun getBookById(id: String): BookEntity? = books[id]
+
+        override suspend fun deleteBook(id: String) {
+            books.remove(id)
+            // update any shelf flows where this book was present
+            crossRefs.groupBy { it.shelfId }.forEach { (shelf, list) ->
+                val ids = list.map { it.bookId }.toSet()
+                val current = books.values.filter { it.id in ids }
+                shelfFlowMap.getOrPut(shelf) { MutableStateFlow(emptyList()) }.value = current
+            }
+        }
 
         override suspend fun upsertShelf(shelf: BookshelfEntity) { /* not used */ }
 
@@ -77,35 +80,6 @@ class BookshelfRepositoryImplTest {
         override fun getShelvesForBook(bookId: String): Flow<List<String>> = MutableStateFlow(emptyList())
     }
 
-    private class FakeRemote : RemoteBookDataSource {
-        override suspend fun searchBooks(query: String, resultLimit: Int?): Result<SearchResponseDto, DataError.Remote> {
-            return Result.Success(
-                SearchResponseDto(
-                    results = listOf(
-                        SearchedBookDto(
-                            id = "/works/OL123W",
-                            title = "Test Book",
-                            coverKey = "OL123M",
-                            coverAlternativeKey = 123,
-                            authorNames = listOf("Author"),
-                            authorKeys = listOf("A1"),
-                            ratingsAverage = 4.0,
-                            ratingsCount = 10,
-                            firstPublishYear = 2000,
-                            languages = listOf("eng"),
-                            numPagesMedian = 321,
-                            numEditions = 2
-                        )
-                    )
-                )
-            )
-        }
-
-        override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
-            return Result.Success(BookWorkDto(description = "A description for $bookWorkId"))
-        }
-    }
-
     private fun sampleBook(id: String = TestIdGenerator.generateBookId("OL")) = Book(
         id = id,
         title = "Title",
@@ -124,46 +98,63 @@ class BookshelfRepositoryImplTest {
     )
 
     @Test
-    fun upsert_and_getBookById_roundtrip() = runBlocking {
-        val dao = FakeDao()
-        val remote = FakeRemote()
-        val timeProvider = TestTimeProvider(1000L)
-        val bookDataRepo = BookDataRepositoryImpl(remote, dao, timeProvider)
-        val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
-        val book = sampleBook("OLX")
-        repo.upsertBook(book)
-        val loaded = repo.getBookById("OLX")
-        assertNotNull(loaded)
-        assertEquals(book.id, loaded!!.id)
-        assertEquals(book.title, loaded.title)
-    }
-
-    @Test
-    fun getBookDescription_maps_value() = runBlocking {
-        val dao = FakeDao()
-        val remote = FakeRemote()
-        val timeProvider = TestTimeProvider(1000L)
-        val bookDataRepo = BookDataRepositoryImpl(remote, dao, timeProvider)
-        val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
-        val result = repo.getBookDescription("OL123W")
-        when (result) {
-            is Result.Success -> assertEquals("A description for OL123W", result.data)
-            is Result.Error -> throw AssertionError("Expected success")
-        }
-    }
-
-    @Test
     fun addBookToShelf_links_and_flows() = runBlocking {
         val dao = FakeDao()
-        val remote = FakeRemote()
         val timeProvider = TestTimeProvider(1000L)
-        val bookDataRepo = BookDataRepositoryImpl(remote, dao, timeProvider)
-        val repo = BookshelfRepositoryImpl(remote, bookDataRepo, dao)
+        val repo = BookshelfRepositoryImpl(dao, timeProvider)
         val shelfId = "s1"
         val book = sampleBook("OLFLOW")
-        repo.addBookToShelf(shelfId, book)
+        
+        // First save the book to the database
+        dao.upsert(book.toBookEntity())
+        
+        // Then add it to the shelf
+        repo.addBookToShelf(shelfId, book.id)
+        
         val list = repo.getBooksForShelf(shelfId).first()
         assertEquals(1, list.size)
         assertEquals("OLFLOW", list.first().id)
     }
+    
+    @Test
+    fun removeBookFromShelf_removes_link() = runBlocking {
+        val dao = FakeDao()
+        val timeProvider = TestTimeProvider(1000L)
+        val repo = BookshelfRepositoryImpl(dao, timeProvider)
+        val shelfId = "s1"
+        val book = sampleBook("OLREMOVE")
+        
+        // Save book and add to shelf
+        dao.upsert(book.toBookEntity())
+        repo.addBookToShelf(shelfId, book.id)
+        
+        // Verify it's there
+        var list = repo.getBooksForShelf(shelfId).first()
+        assertEquals(1, list.size)
+        
+        // Remove from shelf
+        repo.removeBookFromShelf(shelfId, book.id)
+        
+        // Verify it's gone
+        list = repo.getBooksForShelf(shelfId).first()
+        assertEquals(0, list.size)
+    }
 }
+
+// Extension to convert Book to BookEntity for testing
+private fun Book.toBookEntity() = BookEntity(
+    id = id,
+    title = title,
+    authors = authors,
+    imageUrl = imageUrl,
+    description = description,
+    languages = languages,
+    firstPublishYear = firstPublishYear,
+    averageRating = averageRating,
+    ratingCount = ratingCount,
+    numPages = numPages,
+    numEditions = numEditions,
+    purchased = purchased,
+    affiliateLink = affiliateLink,
+    spineColor = spineColor
+)
