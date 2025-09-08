@@ -14,5 +14,5 @@ data class Book(
     val numEditions: Int,
     val purchased: Boolean,
     val affiliateLink: String,
-    val spineColor: Int // ARGB color as Int
+    val spineColor: Int // ARGB color as Int - generated once and persisted for consistency
 )
