@@ -12,16 +12,22 @@ My Bookshelf is a social reading app built with Kotlin and Jetpack Compose that 
 - **Build the project**: `./gradlew build`
 - **Clean build**: `./gradlew clean build`
 - **Install debug APK**: `./gradlew installDebug`
+- **Generate APK**: `./gradlew assembleDebug`
+- **List available tasks**: `./gradlew tasks`
 
 ### Testing
 - **Run all tests**: `./gradlew test`
 - **Run unit tests only**: `./gradlew testDebugUnitTest`
 - **Run single test**: `./gradlew testDebugUnitTest --tests "*TestClassName*"`
+- **Run single test class**: `./gradlew testDebugUnitTest --tests "uk.co.zlurgg.mybookshelf.bookshelf.data.repository.BookRepositoryImplTest"`
+- **Run with coverage**: `./gradlew testDebugUnitTestCoverage`
 - **Run connected Android tests**: `./gradlew connectedAndroidTest`
 
 ### Code Quality
 - **Lint check**: `./gradlew lint`
 - **Generate lint report**: `./gradlew lintDebug`
+- **Check dependencies**: `./gradlew dependencies`
+- **Analyze APK size**: `./gradlew app:dependencies --configuration releaseRuntimeClasspath`
 
 ### Database & Schemas
 - Room database schemas are stored in `app/schemas/` directory
@@ -49,40 +55,58 @@ The app follows Clean Architecture with clear separation of concerns:
 ### Key Technical Components
 
 #### Dependency Injection
-- **Koin**: Used for dependency injection
+- **Koin 4.1.0**: Used for dependency injection
 - Main configuration in `di/AppModule.kt`
 - Scoped ViewModels with parameters (e.g., `shelfId`, `bookId`)
+- Pattern: `viewModel { (shelfId: String) -> BookshelfViewModel(shelfId, get(), get()) }`
 
 #### Database
-- **Room**: Local persistence with SQLite
+- **Room 2.7.2**: Local persistence with SQLite
 - Entities: `BookEntity`, `BookshelfEntity`, `BookshelfBookCrossRef`
 - Database factory pattern for initialization
 - Type converters for complex data types
+- Current schema version: 3
+- KSP annotation processing with incremental compilation
 
 #### Networking
-- **Ktor**: HTTP client for API calls
+- **Ktor 3.2.3**: HTTP client for API calls
 - Android engine for network requests
 - JSON serialization with kotlinx.serialization
 - Remote data source abstraction pattern
+- Timeout configuration: 20s socket/request timeouts
+- Custom `Result<T, DataError.Remote>` for error handling
 
 #### UI Architecture
-- **Jetpack Compose**: Modern UI toolkit
+- **Jetpack Compose** (BOM 2025.08.01): Modern UI toolkit
 - **Material 3**: Design system implementation
-- **State Management**: ViewModel + Compose state pattern
-- **Navigation**: Type-safe navigation with route definitions
+- **State Management**: ViewModel + StateFlow pattern
+- **Navigation Compose**: Type-safe navigation with route definitions
+- **Screen-ViewModel pattern**: Each screen has dedicated ViewModel
+- **Shared ViewModels**: Cross-screen data sharing via `SharedMyBookshelfViewModel`
 
 ### Package Structure
 ```
 uk.co.zlurgg.mybookshelf/
 ├── app/                    # Application setup and navigation
+│   └── navigation/        # Route definitions and nav graph
 ├── core/                   # Shared utilities and base classes
 │   ├── data/              # HTTP client setup
 │   ├── domain/            # Common error types and results
 │   └── presentation/      # UI theme and sample data
 ├── bookshelf/             # Main feature module
 │   ├── data/              # Repository implementations, database, network
+│   │   ├── database/      # Room entities, DAOs, type converters
+│   │   ├── mappers/       # DTO ↔ Entity ↔ Domain mappers
+│   │   ├── network/       # Ktor client, DTOs, remote data sources
+│   │   └── repository/    # Repository implementations
 │   ├── domain/            # Entities and repository interfaces
-│   └── presentation/      # UI screens, ViewModels, components
+│   │   ├── entity/        # Book, Bookshelf, Bookcase, ShelfStyle
+│   │   └── repository/    # Repository contracts
+│   └── presenation/       # UI screens, ViewModels, components [TYPO: should be presentation]
+│       ├── bookcase/      # Bookcase screen and ViewModel
+│       ├── bookdetail/    # Book detail screen and ViewModel
+│       ├── bookshelf/     # Bookshelf screen and ViewModel
+│       └── components/    # Reusable UI components
 └── di/                    # Dependency injection configuration
 ```
 
@@ -111,12 +135,14 @@ uk.co.zlurgg.mybookshelf/
 - **Async Testing**: Tests use `runTest`, `advanceUntilIdle()`, and proper coroutine test patterns
 - **Test Coverage**: Repository layer, ViewModel layer, data mappers, and integration tests
 - **State Flow Testing**: ViewModels using `stateIn()` require state collection via `launch { vm.state.collect { } }` to trigger initialization
+- **Current Coverage**: 12 test files for 75+ source files (needs improvement)
 
 ### API Integration
 - Open Library API for book search and details
 - Google Books API as fallback
 - Custom serializers for API response handling
 - Comprehensive error handling via custom `Result` type with `DataError.Remote` enum
+- Base URLs hard-coded (should move to BuildConfig)
 
 ### Database Migrations
 - Room handles schema migrations
@@ -126,9 +152,11 @@ uk.co.zlurgg.mybookshelf/
 ### Build Configuration
 - Android SDK: Target 36, Min 28, Compile 36
 - Kotlin JVM target: 11
-- Proguard enabled for release builds
+- ProGuard **DISABLED** for release builds (security concern - see issues below)
 - KSP arguments configured for Room incremental processing
 - Version catalog system in `gradle/libs.versions.toml`
+- Namespace: `uk.co.zlurgg.mybookshelf`
+- Build tools version: AGP 8.8.2, Kotlin 2.1.20
 
 ### Key Testing Patterns
 - **StateFlow ViewModels**: Always collect state in tests to trigger `onStart` initialization
@@ -169,3 +197,91 @@ uk.co.zlurgg.mybookshelf/
 - **TestIdGenerator**: Provides unique IDs using AtomicInteger counter for deterministic tests located in `app/src/test/java/uk/co/zlurgg/mybookshelf/test/`
 - **TestTimeProvider**: Allows controlling time in tests via `setTime()` and `advanceBy()` methods located in `app/src/test/java/uk/co/zlurgg/mybookshelf/test/`
 - **Repository Fakes**: Implement full repository interfaces with realistic fake behavior rather than simple mocks
+
+## Planned Features for Next Session
+
+### Search Improvements
+- Enhanced search functionality with better filtering and sorting options
+- Potentially add search history or saved searches
+
+### Drag & Drop Ordering
+- **Book Ordering**: Allow users to reorder books within a shelf via drag and drop
+- **Bookshelf Ordering**: Allow users to reorder bookshelves within the bookcase
+- Consider using Compose's drag-and-drop modifiers or a library like `androidx.compose.foundation.lazy.grid.rememberLazyGridState()`
+
+### Swipe-to-Delete
+- **Vertical swipe gesture**: Implement swipe-to-delete for removing books from shelves
+- Consider using `SwipeToDismiss` composable or custom gesture detection
+- Should include confirmation UI/undo functionality to prevent accidental deletions
+
+### Technical Considerations
+- Will need to update domain models to include ordering/position fields
+- Database schema updates for storing book/shelf order
+- State management for drag operations and optimistic UI updates
+
+## Navigation Structure
+```
+MyBookshelfGraph/
+├── Bookcase (root) → BookcaseScreen → BookcaseViewModel
+├── Bookshelf/{id} → BookshelfScreen → BookshelfViewModel(shelfId)
+└── BookDetail/{id}/{shelfId} → BookDetailScreen → BookDetailViewModel(bookId, shelfId)
+```
+
+## Architectural Concerns to Address
+
+### High Priority Issues
+
+#### 1. Repository Pattern Violation - Responsibility Overlap
+**Problem**: Three repositories (`BookRepository`, `BookDataRepository`, `BookshelfRepository`) have duplicate methods like `getBookById()`, `upsertBook()`, and `getBookDescription()`. Violates Interface Segregation Principle.
+**Impact**: Unclear ownership, potential data consistency issues, harder maintenance
+**Solution**: Consolidate into `BookRepository` for book CRUD and `BookshelfRepository` for shelf operations
+
+#### 2. Package Naming Typo 
+**Problem**: `presenation` should be `presentation` throughout the codebase (in bookshelf module)
+**Impact**: Unprofessional appearance, potential confusion
+**Solution**: Rename all `presenation` packages to `presentation`
+
+#### 3. ProGuard Disabled in Release
+**Problem**: `isMinifyEnabled = false` in release build disables code obfuscation
+**Impact**: Reverse engineering vulnerabilities, larger APK size
+**Solution**: Enable ProGuard with proper keep rules
+
+### Medium Priority Issues
+
+#### 4. Clean Architecture Violation in BookRepositoryImpl
+**Problem**: Depends on both `BookDataRepository` and `BookshelfDao`, mixed abstraction levels
+**Solution**: Should depend on only one abstraction layer
+
+#### 5. Domain Entity UI Contamination
+**Problem**: `Book` domain entity contains `spineColor` (ARGB) and `affiliateLink` (business logic)
+**Solution**: Move UI concerns to presentation layer, business rules to separate layer
+
+#### 6. ViewModel Exception Handling Inconsistency
+**Problem**: Mixed error handling patterns (try-catch vs Result type)
+**Solution**: Standardize on `Result<T, Error>` pattern throughout
+
+#### 7. Limited Test Coverage
+**Problem**: Only 12 test files for 75+ source files, missing critical areas
+**Solution**: Aim for 80%+ coverage, especially business logic and error paths
+
+### Low Priority Issues
+
+#### 8. Enum Typo and Duplication
+**Problem**: `SliverMetal` should be `SilverMetal`, duplicate `ShelfStyle`/`ShelfMaterial` enums
+**Solution**: Fix typo and consolidate enums
+
+#### 9. Unused Manga Package Structure
+**Problem**: Complete manga package structure exists but unused
+**Solution**: Remove unused packages or document future plans
+
+#### 10. Security Concerns
+**Problem**: Missing input validation, Ktor logging in production
+**Solution**: Add input sanitization, use build-specific logging
+
+#### 11. Performance Issues
+**Problem**: N+1 query patterns, StateFlow cold start issues
+**Solution**: Add batch operations, use `stateIn()` with `SharingStarted.Eagerly`
+
+#### 12. Hard-coded API Configuration
+**Problem**: Base URL and parameters hard-coded
+**Solution**: Move to configuration-based approach with BuildConfig

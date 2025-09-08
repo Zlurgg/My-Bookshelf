@@ -1,0 +1,18 @@
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
+
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
+
+data class BookshelfState(
+    val shelfId: String,
+    val shelfName: String = "",
+    val books: List<Book> = emptyList(),
+    val isLoading: Boolean = true,
+    val isSearchDialogVisible: Boolean = false,
+    val searchQuery: String = "",
+    val searchResults: List<Book> = emptyList(),
+    val isSearchLoading: Boolean = false,
+    val recentlyDeleted: Book? = null,
+    val errorMessage: String? = null,
+    val shelfMaterial: ShelfMaterial = ShelfMaterial.DarkWood
+)
