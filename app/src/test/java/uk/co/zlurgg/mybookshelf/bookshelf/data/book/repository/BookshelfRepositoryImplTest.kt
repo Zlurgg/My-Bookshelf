@@ -150,11 +150,11 @@ private fun Book.toBookEntity() = BookEntity(
     description = description,
     languages = languages,
     firstPublishYear = firstPublishYear,
-    averageRating = averageRating,
-    ratingCount = ratingCount,
-    numPages = numPages,
+    ratingsAverage = averageRating,
+    ratingsCount = ratingCount,
     numEditions = numEditions,
     purchased = purchased,
     affiliateLink = affiliateLink,
-    spineColor = spineColor
+    spineColor = spineColor,
+    numPagesMedian = numPages
 )

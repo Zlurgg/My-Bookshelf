@@ -12,6 +12,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossR
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
 class BookcaseRepositoryImplTest {
 
@@ -26,6 +27,7 @@ class BookcaseRepositoryImplTest {
 
         override suspend fun upsert(book: BookEntity) { /* not used */ }
         override suspend fun getBookById(id: String): BookEntity? = null
+        override suspend fun deleteBook(id: String) { /* not used */ }
 
         override suspend fun upsertShelf(shelf: BookshelfEntity) {
             shelves[shelf.id] = shelf
@@ -66,8 +68,8 @@ class BookcaseRepositoryImplTest {
     fun add_and_list_shelves_maps_to_domain() = runBlocking {
         val dao = FakeDao()
         val repo = BookcaseRepositoryImpl(dao)
-        repo.addShelf(Bookshelf(id = "s1", name = "A", books = emptyList(), shelfStyle = uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle.DarkWood))
-        repo.addShelf(Bookshelf(id = "s2", name = "B", books = emptyList(), shelfStyle = uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle.GreyMetal))
+        repo.addShelf(Bookshelf(id = "s1", name = "A", books = emptyList(), shelfStyle = ShelfStyle.DarkWood))
+        repo.addShelf(Bookshelf(id = "s2", name = "B", books = emptyList(), shelfStyle = ShelfStyle.GreyMetal))
 
         val list = repo.getAllShelves().first()
         assertEquals(listOf("A", "B"), list.map { it.name })
