@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.MyBookShelfApp
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.MyBookShelfApp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

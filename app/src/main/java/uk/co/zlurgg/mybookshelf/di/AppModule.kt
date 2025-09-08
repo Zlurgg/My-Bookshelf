@@ -23,10 +23,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.book_detail.BookDetailViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookcase.BookcaseViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.bookshelf.BookshelfViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presenation.shared.SharedMyBookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfViewModel
 import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
 
 val appModule = module {
