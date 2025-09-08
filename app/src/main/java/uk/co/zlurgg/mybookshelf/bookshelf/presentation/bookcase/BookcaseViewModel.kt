@@ -209,8 +209,12 @@ class BookcaseViewModel(
                 // Optimistic UI update
                 _state.update { it.copy(bookshelves = updatedShelves) }
                 
-                // Persist changes
-                updatedShelves.forEach { updatedShelf ->
+                // Persist changes - only update shelves whose positions actually changed
+                val originalPositions = currentShelves.associate { it.id to it.position }
+                val shelvesToUpdate = updatedShelves.filter { 
+                    originalPositions[it.id] != it.position 
+                }
+                shelvesToUpdate.forEach { updatedShelf ->
                     repository.updateShelf(updatedShelf)
                 }
                 
