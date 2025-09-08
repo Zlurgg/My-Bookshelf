@@ -31,7 +31,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.toMaterial
 
 
 @Composable
-fun AddShelfDialog(
+fun AddBookshelfDialog(
     onDismiss: () -> Unit,
     onAddShelf: (String, ShelfStyle) -> Unit,
     isLoading: Boolean

@@ -45,4 +45,7 @@
     
     <!-- Bookcase screen -->
     <string name="bookcase_empty_state_hint">Your bookcase is empty. Tap + to create a new shelf</string>
+    <string name="reorder_shelves_title">Reorder Shelves</string>
+    <string name="cd_lock_reorder_mode">Exit reorder mode</string>
+    <string name="cd_unlock_reorder_mode">Enter reorder mode</string>
 </resources>

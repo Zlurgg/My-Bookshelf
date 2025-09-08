@@ -10,4 +10,5 @@ data class BookcaseState(
     val recentlyDeleted: Bookshelf? = null,
     val operationSuccess: Boolean = false,
     val bookCounts: Map<String, Int> = emptyMap(),
+    val isReorderMode: Boolean = false,
 )

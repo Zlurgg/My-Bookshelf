@@ -27,7 +27,7 @@ import uk.co.zlurgg.mybookshelf.R
 
 
 @Composable
-fun SearchBar(
+fun BookSearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onImeSearch: () -> Unit,

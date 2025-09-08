@@ -21,7 +21,7 @@ interface BookshelfDao {
     @Upsert
     suspend fun upsertShelf(shelf: BookshelfEntity)
 
-    @Query("SELECT * FROM BookshelfEntity ORDER BY name ASC")
+    @Query("SELECT * FROM BookshelfEntity ORDER BY position ASC")
     fun getAllShelves(): Flow<List<BookshelfEntity>>
 
     @Query("DELETE FROM BookshelfEntity WHERE id = :id")

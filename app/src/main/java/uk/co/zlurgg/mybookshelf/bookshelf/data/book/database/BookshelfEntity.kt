@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class BookshelfEntity(
     @PrimaryKey val id: String,
     val name: String,
-    val shelfMaterial: String
+    val shelfMaterial: String,
+    val position: Int = 0
 )
