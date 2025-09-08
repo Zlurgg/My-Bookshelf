@@ -13,6 +13,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
@@ -25,21 +26,45 @@ class BookshelfIntegrationTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    private class TestRepository : BookshelfRepository {
+    private class TestBookRepository : BookRepository {
         val searchCalls = mutableListOf<String>()
         var searchResults: List<Book> = emptyList()
+
+        override suspend fun getBookById(bookId: String): Book? = null
+
+        override suspend fun upsertBook(book: Book) {}
+
+        override suspend fun deleteBook(bookId: String) {}
+
+        override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
+            return Result.Success(null)
+        }
 
         override suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote> {
             searchCalls.add(query)
             return Result.Success(searchResults)
         }
-        
-        override suspend fun addBookToShelf(shelfId: String, book: Book) {}
+    }
+
+    private class TestBookshelfRepository : BookshelfRepository {
+        override suspend fun addBookToShelf(shelfId: String, bookId: String) {}
+
         override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {}
-        override fun getBooksForShelf(shelfId: String): Flow<List<Book>> = MutableStateFlow(emptyList())
-        override suspend fun upsertBook(book: Book) {}
-        override suspend fun getBookById(bookId: String): Book? = null
-        override suspend fun getBookDescription(workId: String): Result<String?, DataError.Remote> = Result.Success(null)
+
+        override fun getBooksForShelf(shelfId: String): Flow<List<Book>> = 
+            MutableStateFlow(emptyList())
+
+        override fun isBookInAnyShelf(bookId: String): Flow<Boolean> {
+            return MutableStateFlow(false)
+        }
+
+        override fun isBookOnShelf(bookId: String, shelfId: String): Flow<Boolean> {
+            return MutableStateFlow(false)
+        }
+
+        override fun getShelvesForBook(bookId: String): Flow<List<String>> {
+            return MutableStateFlow(emptyList())
+        }
     }
 
     private fun sampleBook(id: String = TestIdGenerator.generateBookId()) = Book(
@@ -60,63 +85,70 @@ class BookshelfIntegrationTest {
     )
 
     @Test
-    fun search_integration_basic_functionality() = runTest {
-        val repository = TestRepository()
-        repository.searchResults = listOf(sampleBook("search-result"))
-        val vm = BookshelfViewModel(repository, shelfId = "test-shelf")
-        
-        var currentState = vm.state.value
-        val collectJob = launch {
-            vm.state.collect { currentState = it }
+    fun debounce_filters_rapid_queries() = runTest {
+        val bookRepository = TestBookRepository()
+        val bookshelfRepository = TestBookshelfRepository()
+        val vm = BookshelfViewModel(
+            bookRepository = bookRepository,
+            bookshelfRepository = bookshelfRepository,
+            shelfId = "shelf1"
+        )
+
+        // Collect state to trigger initialization
+        var latestState: BookshelfState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
         }
+
         advanceUntilIdle()
 
-        // Verify initial state
-        assertEquals("test-shelf", currentState.shelfId)
-        assertEquals("", currentState.searchQuery)
-        assertEquals(false, currentState.isSearchDialogVisible)
-
-        // Open search dialog
+        // Open search and rapidly type
         vm.onAction(BookshelfAction.OnSearchClick)
-        advanceUntilIdle()
-        assertEquals(true, currentState.isSearchDialogVisible)
+        vm.onAction(BookshelfAction.OnSearchQueryChange("h"))
+        vm.onAction(BookshelfAction.OnSearchQueryChange("he"))
+        vm.onAction(BookshelfAction.OnSearchQueryChange("hel"))
+        vm.onAction(BookshelfAction.OnSearchQueryChange("hello"))
 
-        // Update search query
-        vm.onAction(BookshelfAction.OnSearchQueryChange("test query"))
+        // Wait for debounce to complete
         advanceUntilIdle()
-        assertEquals("test query", currentState.searchQuery)
 
-        // Close search dialog
-        vm.onAction(BookshelfAction.OnDismissSearchDialog)
-        advanceUntilIdle()
-        assertEquals(false, currentState.isSearchDialogVisible)
-        assertEquals("", currentState.searchQuery) // Should be reset
+        // Should only search for the final query
+        assertEquals(listOf("hello"), bookRepository.searchCalls)
 
-        collectJob.cancel()
+        job.cancel()
     }
 
     @Test
-    fun viewmodel_handles_actions_without_errors() = runTest {
-        val repository = TestRepository()
-        val vm = BookshelfViewModel(repository, shelfId = "test-shelf")
-        
-        val collectJob = launch {
-            vm.state.collect { }
+    fun search_results_update_state() = runTest {
+        val bookRepository = TestBookRepository().apply {
+            searchResults = listOf(sampleBook("result1"), sampleBook("result2"))
         }
+        val bookshelfRepository = TestBookshelfRepository()
+        val vm = BookshelfViewModel(
+            bookRepository = bookRepository,
+            bookshelfRepository = bookshelfRepository,
+            shelfId = "shelf1"
+        )
+
+        // Collect state to trigger initialization
+        var latestState: BookshelfState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
+        }
+
         advanceUntilIdle()
 
-        // Test all actions to ensure they don't throw exceptions
+        // Trigger search
         vm.onAction(BookshelfAction.OnSearchClick)
-        vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
-        vm.onAction(BookshelfAction.OnBookClick(sampleBook()))
-        vm.onAction(BookshelfAction.OnAddBookClick(sampleBook()))
-        vm.onAction(BookshelfAction.OnDismissSearchDialog)
-        vm.onAction(BookshelfAction.OnBackClick)
+        vm.onAction(BookshelfAction.OnSearchQueryChange("books"))
+
+        // Wait for search to complete
         advanceUntilIdle()
 
-        // If we get here without exceptions, the test passes
-        assertEquals("Actions handled successfully", "test-shelf", vm.state.value.shelfId)
+        // Should update search results
+        assertEquals(2, latestState?.searchResults?.size)
+        assertEquals("result1", latestState?.searchResults?.first()?.id)
 
-        collectJob.cancel()
+        job.cancel()
     }
 }
