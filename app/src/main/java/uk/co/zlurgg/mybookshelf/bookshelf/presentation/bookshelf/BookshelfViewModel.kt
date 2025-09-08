@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
 class BookshelfViewModel(
+    private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val shelfId: String
 ) : ViewModel() {
@@ -53,7 +55,7 @@ class BookshelfViewModel(
                 // Persist clicked book so details screen can load it by ID safely
                 viewModelScope.launch {
                     try {
-                        bookshelfRepository.upsertBook(action.book)
+                        bookRepository.upsertBook(action.book)
                     } catch (e: Exception) {
                         _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("cache book", e)) }
                     }
@@ -135,7 +137,7 @@ class BookshelfViewModel(
 
                     _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
 
-                    bookshelfRepository
+                    bookRepository
                         .searchBooks(query)
                         .onSuccess { searchResults ->
                             _state.update {
@@ -162,7 +164,9 @@ class BookshelfViewModel(
     private fun addBookToShelf(book: Book) {
         viewModelScope.launch {
             try {
-                bookshelfRepository.addBookToShelf(shelfId, book)
+                // First save the book, then add to shelf
+                bookRepository.upsertBook(book)
+                bookshelfRepository.addBookToShelf(shelfId, book.id)
             } catch (e: Exception) {
                 _state.update {
                     it.copy(

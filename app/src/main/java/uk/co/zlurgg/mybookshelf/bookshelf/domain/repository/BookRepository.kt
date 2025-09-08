@@ -6,17 +6,14 @@ import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 interface BookRepository {
-    // Individual book operations
+    // Book CRUD operations
     suspend fun getBookById(bookId: String): Book?
-    suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote>
     suspend fun upsertBook(book: Book)
+    suspend fun deleteBook(bookId: String)
     
-    // Library membership operations (shelf-agnostic)
-    fun isBookInAnyShelf(bookId: String): Flow<Boolean>
-    fun getShelvesForBook(bookId: String): Flow<List<String>>
+    // Book metadata operations
+    suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote>
     
-    // Shelf membership operations (book-centric)
-    fun isBookOnShelf(bookId: String, shelfId: String): Flow<Boolean>
-    suspend fun addBookToShelf(bookId: String, shelfId: String)
-    suspend fun removeBookFromShelf(bookId: String, shelfId: String)
+    // Book search
+    suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote>
 }
