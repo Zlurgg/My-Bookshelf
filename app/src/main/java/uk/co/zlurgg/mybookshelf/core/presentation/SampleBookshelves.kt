@@ -2,7 +2,7 @@ package uk.co.zlurgg.mybookshelf.core.presentation
 
 import androidx.compose.runtime.mutableStateListOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
 val bookshelves =
     mutableStateListOf(
