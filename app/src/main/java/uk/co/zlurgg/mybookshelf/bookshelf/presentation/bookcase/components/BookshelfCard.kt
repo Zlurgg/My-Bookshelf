@@ -48,7 +48,7 @@ fun BookshelfCard(
             containerColor = MaterialTheme.colorScheme.surface
         ),
         border = BorderStroke(
-            width = 4.dp,
+            width = 12.dp,
             color = getShelfStyleColor(shelf.shelfStyle)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
