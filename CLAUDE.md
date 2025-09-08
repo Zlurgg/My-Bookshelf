@@ -198,26 +198,32 @@ uk.co.zlurgg.mybookshelf/
 - **TestTimeProvider**: Allows controlling time in tests via `setTime()` and `advanceBy()` methods located in `app/src/test/java/uk/co/zlurgg/mybookshelf/test/`
 - **Repository Fakes**: Implement full repository interfaces with realistic fake behavior rather than simple mocks
 
+## Recently Implemented Features
+
+### Bookshelf Drag & Drop Reordering (Completed)
+- **Lock/Unlock Toggle**: Edit icon (unlocked) / Lock icon (locked) in TopAppBar switches between normal and reorder modes
+- **Database**: Added `position: Int` field to BookshelfEntity (migration v3→v4)
+- **UI Design**: Card-based shelves with 80dp fixed height, 12dp colored borders showing shelf style
+- **Drag Calculation**: 88dp total item height (80dp card + 8dp padding) for accurate positioning
+- **Key Learning**: Use fresh database position for each drag, don't track cumulative movements - add `shelf.position` as pointerInput key
+- **Performance**: Only update shelves whose positions actually changed
+- **Component Structure**: `BookshelfCard.kt` (display), `BookcaseShelf.kt` (drag/swipe logic)
+
 ## Planned Features for Next Session
+
+### Book Ordering Within Shelves
+- Add position field to BookshelfBookCrossRef for book ordering
+- Implement drag & drop for books similar to bookshelf approach
+- Consider grid vs list layout for books
 
 ### Search Improvements
 - Enhanced search functionality with better filtering and sorting options
 - Potentially add search history or saved searches
 
-### Drag & Drop Ordering
-- **Book Ordering**: Allow users to reorder books within a shelf via drag and drop
-- **Bookshelf Ordering**: Allow users to reorder bookshelves within the bookcase
-- Consider using Compose's drag-and-drop modifiers or a library like `androidx.compose.foundation.lazy.grid.rememberLazyGridState()`
-
-### Swipe-to-Delete
-- **Vertical swipe gesture**: Implement swipe-to-delete for removing books from shelves
-- Consider using `SwipeToDismiss` composable or custom gesture detection
-- Should include confirmation UI/undo functionality to prevent accidental deletions
-
-### Technical Considerations
-- Will need to update domain models to include ordering/position fields
-- Database schema updates for storing book/shelf order
-- State management for drag operations and optimistic UI updates
+### Testing Priorities
+- Update BookcaseViewModelTest for reorder functionality
+- Test database migration from v3 to v4
+- Add integration tests for drag and drop
 
 ## Navigation Structure
 ```
