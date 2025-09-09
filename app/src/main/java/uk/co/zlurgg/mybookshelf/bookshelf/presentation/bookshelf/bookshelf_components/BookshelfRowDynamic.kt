@@ -22,6 +22,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 @Composable
 fun BookshelfRowDynamic(
     books: List<Book>,
+    bookStyles: List<BookDisplayStyle>? = null,
     onBookClick: (Book) -> Unit,
     bookshelfMaterial: ShelfMaterial,
     showAddSlot: Boolean = false,
@@ -57,8 +58,9 @@ fun BookshelfRowDynamic(
                 verticalAlignment = Alignment.Bottom
             ) {
                 // Render each book with appropriate style based on mode
-                books.forEach { book ->
-                    val bookStyle = if (isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
+                books.forEachIndexed { index, book ->
+                    val bookStyle = bookStyles?.getOrNull(index) 
+                        ?: if (isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
                     when (bookStyle) {
                         BookDisplayStyle.VERTICAL -> {
                             BookVertical(
