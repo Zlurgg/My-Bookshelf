@@ -8,7 +8,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
