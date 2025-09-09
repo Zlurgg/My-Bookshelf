@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.model
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
