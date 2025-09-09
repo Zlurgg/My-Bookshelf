@@ -80,7 +80,6 @@ class BookMappersTest {
             numPages = 250,
             numEditions = 3,
             purchased = true,
-            affiliateLink = "http://buy",
             spineColor = 0xFF112233.toInt()
         )
 
@@ -99,7 +98,6 @@ class BookMappersTest {
         assertEquals(original.numPages, mappedBack.numPages)
         assertEquals(original.numEditions, mappedBack.numEditions)
         assertEquals(original.purchased, mappedBack.purchased)
-        assertEquals(original.affiliateLink, mappedBack.affiliateLink)
         assertEquals(original.spineColor, mappedBack.spineColor)
     }
 }

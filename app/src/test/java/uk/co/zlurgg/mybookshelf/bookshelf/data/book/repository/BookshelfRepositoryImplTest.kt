@@ -93,7 +93,6 @@ class BookshelfRepositoryImplTest {
         numPages = 300,
         numEditions = 1,
         purchased = false,
-        affiliateLink = "",
         spineColor = 0xFF000000.toInt()
     )
 
@@ -154,7 +153,6 @@ private fun Book.toBookEntity() = BookEntity(
     ratingsCount = ratingCount,
     numEditions = numEditions,
     purchased = purchased,
-    affiliateLink = affiliateLink,
     spineColor = spineColor,
     numPagesMedian = numPages
 )

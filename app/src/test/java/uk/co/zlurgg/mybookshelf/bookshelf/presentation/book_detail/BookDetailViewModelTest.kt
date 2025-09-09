@@ -94,7 +94,6 @@ class BookDetailViewModelTest {
         numPages = 100,
         numEditions = 1,
         purchased = false,
-        affiliateLink = "",
         spineColor = 0xFF000000.toInt()
     )
 

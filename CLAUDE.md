@@ -211,6 +211,14 @@ uk.co.zlurgg.mybookshelf/
 
 ## Planned Features for Next Session
 
+### Affiliate Link Service (NEW)
+- Create `AffiliateService` in service/business layer
+- Generate affiliate links on-demand based on book ISBN/title
+- Support multiple affiliate partners (Amazon, Waterstones, etc.)
+- Region-based link generation
+- A/B testing and analytics tracking capabilities
+- No database storage - generate fresh links each time
+
 ### Book Ordering Within Shelves
 - Add position field to BookshelfBookCrossRef for book ordering
 - Implement drag & drop for books similar to bookshelf approach
@@ -222,8 +230,9 @@ uk.co.zlurgg.mybookshelf/
 
 ### Testing Priorities
 - Update BookcaseViewModelTest for reorder functionality
-- Test database migration from v3 to v4
+- Test database migration from v4 to v5 (affiliateLink removal)
 - Add integration tests for drag and drop
+- Increase test coverage from 15% to 80%+
 
 ## Navigation Structure
 ```
@@ -238,29 +247,29 @@ MyBookshelfGraph/
 ### High Priority Issues
 
 #### 1. Repository Pattern Violation - Responsibility Overlap
-**Problem**: Three repositories (`BookRepository`, `BookDataRepository`, `BookshelfRepository`) have duplicate methods like `getBookById()`, `upsertBook()`, and `getBookDescription()`. Violates Interface Segregation Principle.
-**Impact**: Unclear ownership, potential data consistency issues, harder maintenance
-**Solution**: Consolidate into `BookRepository` for book CRUD and `BookshelfRepository` for shelf operations
+**Status**: RESOLVED - No duplicate methods found, clean separation of concerns
+**Original Problem**: Three repositories with duplicate methods
+**Current State**: Only BookRepository, BookshelfRepository, BookcaseRepository exist with distinct responsibilities
 
-#### 2. Package Naming Typo 
-**Problem**: `presenation` should be `presentation` throughout the codebase (in bookshelf module)
-**Impact**: Unprofessional appearance, potential confusion
-**Solution**: Rename all `presenation` packages to `presentation`
+#### 2. Package Naming Typo
+**Status**: RESOLVED - All packages correctly use "presentation"
+**Original Problem**: `presenation` typo
+**Current State**: Verified all packages use correct spelling
 
 #### 3. ProGuard Disabled in Release
-**Problem**: `isMinifyEnabled = false` in release build disables code obfuscation
-**Impact**: Reverse engineering vulnerabilities, larger APK size
-**Solution**: Enable ProGuard with proper keep rules
+**Status**: RESOLVED - ProGuard properly configured
+**Current State**: `isMinifyEnabled = true`, `isShrinkResources = true`, comprehensive rules in proguard-rules.pro
 
 ### Medium Priority Issues
 
 #### 4. Clean Architecture Violation in BookRepositoryImpl
-**Problem**: Depends on both `BookDataRepository` and `BookshelfDao`, mixed abstraction levels
-**Solution**: Should depend on only one abstraction layer
+**Status**: RESOLVED - BookDataRepository doesn't exist, clean dependencies
+**Current State**: BookRepositoryImpl depends only on RemoteBookDataSource and BookshelfDao
 
-#### 5. Domain Entity UI Contamination
-**Problem**: `Book` domain entity contains `spineColor` (ARGB) and `affiliateLink` (business logic)
-**Solution**: Move UI concerns to presentation layer, business rules to separate layer
+#### 5. Domain Entity Decisions
+**Status**: PARTIALLY RESOLVED
+**Decision**: `spineColor` remains in domain - it's persistent book data (Int), becomes UI only when Color() applied
+**Decision**: `affiliateLink` REMOVED (database v4→v5 migration) - will be generated on-demand via future AffiliateService
 
 #### 6. ViewModel Exception Handling Inconsistency
 **Problem**: Mixed error handling patterns (try-catch vs Result type)
@@ -273,8 +282,9 @@ MyBookshelfGraph/
 ### Low Priority Issues
 
 #### 8. Enum Typo and Duplication
-**Problem**: `SliverMetal` should be `SilverMetal`, duplicate `ShelfStyle`/`ShelfMaterial` enums
-**Solution**: Fix typo and consolidate enums
+**Status**: PARTIALLY RESOLVED
+**Fixed**: `SliverMetal` → `SilverMetal` typo corrected
+**Remaining**: Duplicate ShelfStyle/ShelfMaterial enums still exist (intentional separation?)
 
 #### 9. Unused Manga Package Structure
 **Problem**: Complete manga package structure exists but unused

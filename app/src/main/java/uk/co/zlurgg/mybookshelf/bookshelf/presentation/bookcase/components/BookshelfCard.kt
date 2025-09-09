@@ -94,7 +94,7 @@ fun BookshelfCard(
 private fun getShelfStyleColor(shelfStyle: ShelfStyle): Color {
     return when (shelfStyle) {
         ShelfStyle.DarkWood -> Color(0xFF8B4513)
-        ShelfStyle.SliverMetal -> Color(0xFFC0C0C0)
+        ShelfStyle.SilverMetal -> Color(0xFFC0C0C0)
         ShelfStyle.WhiteMetal -> Color(0xFFF5F5F5)
         ShelfStyle.GreyMetal -> Color(0xFF808080)
         ShelfStyle.DarkGreyMetal -> Color(0xFF555555)

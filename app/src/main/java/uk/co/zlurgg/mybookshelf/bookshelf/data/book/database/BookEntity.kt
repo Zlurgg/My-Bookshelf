@@ -17,6 +17,5 @@ data class BookEntity(
     val numPagesMedian: Int?,
     val numEditions: Int,
     val purchased: Boolean,
-    val affiliateLink: String,
     val spineColor: Int
 )
