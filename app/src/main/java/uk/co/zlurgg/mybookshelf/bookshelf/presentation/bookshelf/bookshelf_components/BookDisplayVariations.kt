@@ -120,6 +120,45 @@ fun BookLeaning(
 }
 
 @Composable
+fun BookHorizontal(
+    book: Book,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clickable { onClick() }
+            .width(150.dp)
+            .height(60.dp) // Match width of vertical books for consistent thickness
+            .background(Color(book.spineColor), shape = RoundedCornerShape(2.dp))
+            .padding(horizontal = 4.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = book.title,
+                color = Color.White,
+                maxLines = 1,
+                fontSize = 10.sp,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f)
+            )
+            
+            LoadImage(
+                imageUrl = book.imageUrl,
+                title = book.title,
+                modifier = Modifier
+                    .size(50.dp) // Match the image size of vertical books
+                    .rotate(90f)
+                    .clip(RoundedCornerShape(2.dp))
+            )
+        }
+    }
+}
+
+@Composable
 fun BookHorizontalStack(
     books: List<Book>,
     onClick: (Book) -> Unit,
@@ -184,7 +223,8 @@ fun getBookDisplayStyle(book: Book): BookDisplayStyle {
         0 -> BookDisplayStyle.VERTICAL
         1 -> BookDisplayStyle.LEANING_LEFT
         2 -> BookDisplayStyle.LEANING_RIGHT
-        else -> BookDisplayStyle.VERTICAL // Avoid horizontal stacks for individual books
+        3 -> BookDisplayStyle.HORIZONTAL_STACK // Now allow horizontal style for individual books
+        else -> BookDisplayStyle.VERTICAL
     }
 }
 
