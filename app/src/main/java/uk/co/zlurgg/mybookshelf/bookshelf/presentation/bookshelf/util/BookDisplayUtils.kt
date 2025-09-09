@@ -21,19 +21,3 @@ fun getBookWidth(style: BookDisplayStyle): Float {
         BookDisplayStyle.HORIZONTAL_STACK -> 150f // only used for stacks
     }
 }
-
-fun calculateRowWidthDynamic(books: List<Book>, includeAddButton: Boolean = false, isTidyMode: Boolean = false): Float {
-    var totalWidth = 0f
-    
-    books.forEach { book ->
-        val style = if (isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
-        totalWidth += getBookWidth(style) + 8f // width + spacing
-    }
-    
-    // Add space for the add button if needed
-    if (includeAddButton) {
-        totalWidth += 60f + 8f // add button width + spacing
-    }
-    
-    return if (totalWidth > 0) totalWidth - 8f else 0f // remove last spacing
-}

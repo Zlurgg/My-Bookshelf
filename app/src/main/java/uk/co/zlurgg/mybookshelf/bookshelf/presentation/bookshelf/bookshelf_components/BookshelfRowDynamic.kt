@@ -16,9 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.BookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.calculateRowWidthDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 
 @Composable
