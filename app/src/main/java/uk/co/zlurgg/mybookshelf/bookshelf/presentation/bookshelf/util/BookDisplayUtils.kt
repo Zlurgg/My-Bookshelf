@@ -9,8 +9,43 @@ fun getBookDisplayStyle(book: Book): BookDisplayStyle {
         0 -> BookDisplayStyle.VERTICAL
         1 -> BookDisplayStyle.LEANING_LEFT
         2 -> BookDisplayStyle.LEANING_RIGHT
-        3 -> BookDisplayStyle.HORIZONTAL_STACK // Now allow horizontal style for individual books
+        3 -> BookDisplayStyle.HORIZONTAL_STACK
         else -> BookDisplayStyle.VERTICAL
+    }
+}
+
+fun getDynamicBookDisplayStyle(
+    book: Book,
+    positionInRow: Int,
+    totalBooksInRow: Int,
+    remainingSpace: Float
+): BookDisplayStyle {
+    // Create a deterministic but position-dependent seed
+    // This ensures books change orientation based on their current position context
+    val positionSeed = (book.id.hashCode() + positionInRow * 7 + totalBooksInRow * 13) % 4
+    
+    val baseStyle = when (positionSeed) {
+        0 -> BookDisplayStyle.VERTICAL
+        1 -> BookDisplayStyle.LEANING_LEFT
+        2 -> BookDisplayStyle.LEANING_RIGHT
+        3 -> BookDisplayStyle.HORIZONTAL_STACK
+        else -> BookDisplayStyle.VERTICAL
+    }
+    
+    // Apply position rules
+    return when {
+        // First book in row: can't lean left (no support)
+        positionInRow == 0 && baseStyle == BookDisplayStyle.LEANING_LEFT -> 
+            BookDisplayStyle.VERTICAL
+        
+        // Last book in row: can't lean right into big space (no support)
+        positionInRow == totalBooksInRow - 1 && 
+        baseStyle == BookDisplayStyle.LEANING_RIGHT && 
+        remainingSpace > 30f -> 
+            BookDisplayStyle.VERTICAL
+        
+        // All other cases: use base style
+        else -> baseStyle
     }
 }
 
@@ -18,12 +53,17 @@ fun getBookThickness(numPages: Int?): Float {
     // Calculate realistic book thickness based on page count
     val pages = numPages ?: 250 // Default to average book size if unknown
     return when {
-        pages < 100 -> 25f      // Thin pamphlet/novella
-        pages < 200 -> 35f      // Slim book
-        pages < 300 -> 45f      // Standard paperback
-        pages < 400 -> 55f      // Normal book
-        pages < 600 -> 70f      // Thick book
-        pages < 800 -> 85f      // Very thick book
+        pages < 100 -> 30f      // Thin pamphlet/novella
+        pages < 150 -> 35f
+        pages < 200 -> 40f      // Slim book
+        pages < 250 -> 45f
+        pages < 300 -> 50f      // Standard paperback
+        pages < 350 -> 55f
+        pages < 400 -> 60f      // Normal book
+        pages < 450 -> 65f
+        pages < 500 -> 70f
+        pages < 600 -> 80f      // Thick book
+        pages < 800 -> 90f      // Very thick book
         else -> 100f            // Massive tome
     }
 }

@@ -211,7 +211,15 @@ uk.co.zlurgg.mybookshelf/
 
 ## Planned Features for Next Session
 
-### Affiliate Link Service (NEW)
+### UI/Visual Enhancements (NEW)
+- **Add Button Redesign**: Replace current add button with bookend/bookstop design to match bookshelf theme
+- **3D Visual Effects**: Add depth and shadows to make bookshelf appear more three-dimensional
+  - Book spine shadows/gradients
+  - Shelf depth illusion
+  - Layered background effects
+  - Book cover bevels/highlights
+
+### Affiliate Link Service
 - Create `AffiliateService` in service/business layer
 - Generate affiliate links on-demand based on book ISBN/title
 - Support multiple affiliate partners (Amazon, Waterstones, etc.)
