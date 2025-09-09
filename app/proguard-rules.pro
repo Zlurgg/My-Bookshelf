@@ -14,9 +14,9 @@
 -keep class uk.co.zlurgg.mybookshelf.MainActivity { *; }
 
 # ====== Domain Models (needed for serialization/Room) ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.Book { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookcase { *; }
+-keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book { *; }
+-keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf { *; }
+-keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase { *; }
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle { *; }
 
 # ====== Room Database ======

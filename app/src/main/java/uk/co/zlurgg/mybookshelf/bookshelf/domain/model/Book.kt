@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.model
 
 data class Book(
     val id: String,
