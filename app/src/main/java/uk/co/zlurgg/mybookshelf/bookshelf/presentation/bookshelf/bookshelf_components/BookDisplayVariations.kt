@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.BookDisplayStyle
 
 @Composable
 fun BookVertical(
@@ -209,102 +210,4 @@ fun BookHorizontalStack(
     }
 }
 
-enum class BookDisplayStyle {
-    VERTICAL,
-    LEANING_LEFT,
-    LEANING_RIGHT,
-    HORIZONTAL_STACK
-}
 
-fun getBookDisplayStyle(book: Book): BookDisplayStyle {
-    // Use book ID hash to consistently assign display style to each book
-    val bookHash = book.id.hashCode()
-    return when (bookHash % 4) {
-        0 -> BookDisplayStyle.VERTICAL
-        1 -> BookDisplayStyle.LEANING_LEFT
-        2 -> BookDisplayStyle.LEANING_RIGHT
-        3 -> BookDisplayStyle.HORIZONTAL_STACK // Now allow horizontal style for individual books
-        else -> BookDisplayStyle.VERTICAL
-    }
-}
-
-fun getBookWidth(style: BookDisplayStyle): Float {
-    return when (style) {
-        BookDisplayStyle.VERTICAL -> 60f
-        BookDisplayStyle.LEANING_LEFT, BookDisplayStyle.LEANING_RIGHT -> 70f
-        BookDisplayStyle.HORIZONTAL_STACK -> 150f // only used for stacks
-    }
-}
-
-data class ShelfLayoutTemplate(
-    val name: String,
-    val pattern: List<BookDisplayStyle>,
-    val booksPerShelf: Int
-)
-
-val shelfLayoutTemplates = listOf(
-    ShelfLayoutTemplate(
-        name = "Classic",
-        pattern = listOf(
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL
-        ),
-        booksPerShelf = 5
-    ),
-    ShelfLayoutTemplate(
-        name = "Mixed Vertical",
-        pattern = listOf(
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.LEANING_LEFT,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.LEANING_RIGHT
-        ),
-        booksPerShelf = 5
-    ),
-    ShelfLayoutTemplate(
-        name = "Stack and Stand",
-        pattern = listOf(
-            BookDisplayStyle.HORIZONTAL_STACK,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.LEANING_RIGHT
-        ),
-        booksPerShelf = 6
-    ),
-    ShelfLayoutTemplate(
-        name = "Casual",
-        pattern = listOf(
-            BookDisplayStyle.LEANING_LEFT,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.HORIZONTAL_STACK,
-            BookDisplayStyle.LEANING_RIGHT
-        ),
-        booksPerShelf = 6
-    ),
-    ShelfLayoutTemplate(
-        name = "Library Style",
-        pattern = listOf(
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL,
-            BookDisplayStyle.VERTICAL
-        ),
-        booksPerShelf = 6
-    ),
-    ShelfLayoutTemplate(
-        name = "Artsy",
-        pattern = listOf(
-            BookDisplayStyle.HORIZONTAL_STACK,
-            BookDisplayStyle.LEANING_LEFT,
-            BookDisplayStyle.LEANING_RIGHT,
-            BookDisplayStyle.HORIZONTAL_STACK
-        ),
-        booksPerShelf = 7
-    )
-)
