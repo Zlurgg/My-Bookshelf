@@ -138,7 +138,7 @@ fun BookshelfScreen(
                     while (bookIndex + booksInRow < books.size) {
                         val book = books[bookIndex + booksInRow]
                         val bookStyle = if (state.isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
-                        val bookWidth = getBookWidth(bookStyle) + 8f // width + spacing
+                        val bookWidth = getBookWidth(book, bookStyle) + 8f // width + spacing
                         
                         val potentialRowWidth = currentRowWidth + bookWidth
                         val isLastRow = (bookIndex + booksInRow + 1) >= books.size
