@@ -54,17 +54,17 @@ fun BookVertical(
             
             Box(
                 modifier = Modifier
-                    .rotate(-90f)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = book.title,
                     color = Color.White,
-                    maxLines = 3,
-                    fontSize = 9.sp,
+                    maxLines = 4,
+                    fontSize = 8.sp,
                     textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 9.sp
                 )
             }
         }
@@ -102,7 +102,6 @@ fun BookLeaning(
             
             Box(
                 modifier = Modifier
-                    .rotate(-90f)
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
@@ -112,7 +111,8 @@ fun BookLeaning(
                     maxLines = 3,
                     fontSize = 8.sp,
                     textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = 9.sp
                 )
             }
         }

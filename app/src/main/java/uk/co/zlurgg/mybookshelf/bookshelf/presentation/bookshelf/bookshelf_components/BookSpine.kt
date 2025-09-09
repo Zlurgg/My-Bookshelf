@@ -64,22 +64,21 @@ fun BookSpine(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-//          Rotated title below the image
+//          Horizontal title below the image (easier to read)
             Box(
                 modifier = Modifier
-                    .rotate(-90f)
                     .fillMaxSize()
                     .wrapContentSize(),
-                contentAlignment = Alignment.BottomCenter,
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    modifier = Modifier,
                     text = book.title,
                     color = Color.White,
                     maxLines = 4,
-                    fontSize = 9.sp,
-                    textAlign = TextAlign.Left,
+                    fontSize = 8.sp,
+                    textAlign = TextAlign.Center,
                     overflow = TextOverflow.Ellipsis,
+                    lineHeight = 9.sp,
                     style = TextStyle.Default,
                 )
             }
