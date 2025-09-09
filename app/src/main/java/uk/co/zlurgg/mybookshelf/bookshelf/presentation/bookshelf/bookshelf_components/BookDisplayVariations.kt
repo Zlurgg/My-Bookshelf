@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookThickness
 
 @Composable
 fun BookVertical(
@@ -31,11 +32,12 @@ fun BookVertical(
     onClick: () -> Unit,
     height: Int = 150
 ) {
+    val thickness = getBookThickness(book.numPages)
     Box(
         modifier = Modifier
             .clickable { onClick() }
             .height(height.dp)
-            .width(60.dp)
+            .width(thickness.dp)
             .background(Color(book.spineColor), shape = RoundedCornerShape(4.dp))
             .padding(4.dp)
     ) {
@@ -48,7 +50,7 @@ fun BookVertical(
                 imageUrl = book.imageUrl,
                 title = book.title,
                 modifier = Modifier
-                    .size(50.dp)
+                    .size((thickness * 0.8f).dp)
                     .clip(RoundedCornerShape(2.dp))
             )
             
@@ -78,12 +80,13 @@ fun BookLeaning(
     leanAngle: Float = -5f,
     height: Int = 140
 ) {
+    val thickness = getBookThickness(book.numPages)
     Box(
         modifier = Modifier
             .clickable { onClick() }
             .rotate(leanAngle)
             .height(height.dp)
-            .width(55.dp)
+            .width(thickness.dp)
             .background(Color(book.spineColor), shape = RoundedCornerShape(4.dp))
             .padding(4.dp)
     ) {
@@ -96,7 +99,7 @@ fun BookLeaning(
                 imageUrl = book.imageUrl,
                 title = book.title,
                 modifier = Modifier
-                    .size(45.dp)
+                    .size((thickness * 0.75f).dp)
                     .clip(RoundedCornerShape(2.dp))
             )
             
@@ -124,11 +127,12 @@ fun BookHorizontal(
     book: Book,
     onClick: () -> Unit
 ) {
+    val thickness = getBookThickness(book.numPages)
     Box(
         modifier = Modifier
             .clickable { onClick() }
             .width(150.dp)
-            .height(60.dp) // Match width of vertical books for consistent thickness
+            .height(thickness.dp) // Use page-based thickness
             .background(Color(book.spineColor), shape = RoundedCornerShape(2.dp))
             .padding(horizontal = 4.dp)
     ) {
@@ -150,7 +154,7 @@ fun BookHorizontal(
                 imageUrl = book.imageUrl,
                 title = book.title,
                 modifier = Modifier
-                    .size(50.dp) // Match the image size of vertical books
+                    .size((thickness * 0.9f).dp) // Scale with thickness
                     .rotate(90f)
                     .clip(RoundedCornerShape(2.dp))
             )
