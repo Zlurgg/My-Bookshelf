@@ -12,4 +12,4 @@ val bookshelves =
     )
 
 
-val bookshelf = Bookshelf(id = "sample-shelf-single", name = "Favorites", books = sampleBooks, shelfStyle = ShelfStyle.SliverMetal)
+val bookshelf = Bookshelf(id = "sample-shelf-single", name = "Favorites", books = sampleBooks, shelfStyle = ShelfStyle.SilverMetal)

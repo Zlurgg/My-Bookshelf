@@ -80,7 +80,6 @@ class BookshelfIntegrationTest {
         numPages = 200,
         numEditions = 1,
         purchased = false,
-        affiliateLink = "",
         spineColor = 0xFF0000FF.toInt()
     )
 
