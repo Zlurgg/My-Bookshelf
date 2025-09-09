@@ -15,6 +15,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.calculateRowWidthDynamic
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 
 @Composable
@@ -98,18 +102,3 @@ fun BookshelfRowDynamic(
     }
 }
 
-fun calculateRowWidthDynamic(books: List<Book>, includeAddButton: Boolean = false, isTidyMode: Boolean = false): Float {
-    var totalWidth = 0f
-    
-    books.forEach { book ->
-        val style = if (isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
-        totalWidth += getBookWidth(style) + 8f // width + spacing
-    }
-    
-    // Add space for the add button if needed
-    if (includeAddButton) {
-        totalWidth += 60f + 8f // add button width + spacing
-    }
-    
-    return if (totalWidth > 0) totalWidth - 8f else 0f // remove last spacing
-}
