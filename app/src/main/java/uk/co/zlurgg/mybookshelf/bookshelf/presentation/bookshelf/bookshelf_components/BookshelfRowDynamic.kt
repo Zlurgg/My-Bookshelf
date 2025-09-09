@@ -82,11 +82,9 @@ fun BookshelfRowDynamic(
                             )
                         }
                         BookDisplayStyle.HORIZONTAL_STACK -> {
-                            // Individual books shouldn't be horizontal stacks
-                            BookVertical(
+                            BookHorizontal(
                                 book = book,
-                                onClick = { onBookClick(book) },
-                                height = 150
+                                onClick = { onBookClick(book) }
                             )
                         }
                     }
