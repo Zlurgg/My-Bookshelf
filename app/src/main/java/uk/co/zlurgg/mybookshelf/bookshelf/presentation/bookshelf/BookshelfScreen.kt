@@ -6,6 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,11 +26,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRow
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowDynamic
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.calculateRowWidthDynamic
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.getBookWidth
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
-import kotlin.math.floor
+import kotlin.random.Random
 
 @Composable
 fun BookshelfScreenRoot(
@@ -66,12 +72,10 @@ fun BookshelfScreen(
     state: BookshelfState,
     onAction: (BookshelfAction) -> Unit,
 ) {
+    // Use books in their original order (no forced sorting)
+    val books = state.books
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val bookWidth = 62.dp
-    val bookSpacing = 4.dp
-    val shelfSpacing = 8.dp
-    val booksPerRow = floor((screenWidth) / (bookWidth + bookSpacing + shelfSpacing))
-        .toInt().coerceAtLeast(1)
+    val availableWidth = screenWidth - 24.dp - 16.dp // margins and padding
 
     Scaffold(
         topBar = {
@@ -86,6 +90,12 @@ fun BookshelfScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onAction(BookshelfAction.OnToggleTidyMode) }) {
+                        Icon(
+                            imageVector = if (state.isTidyMode) Icons.Filled.Star else Icons.Filled.Menu,
+                            contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf"
+                        )
+                    }
                     IconButton(onClick = { onAction(BookshelfAction.OnSearchClick) }) {
                         Icon(
                             imageVector = Icons.Filled.Search,
@@ -96,7 +106,7 @@ fun BookshelfScreen(
             )
         }
     ) { paddingValues ->
-        if (!state.isLoading && state.books.isEmpty()) {
+        if (!state.isLoading && books.isEmpty()) {
             LazyColumn(contentPadding = paddingValues) {
                 item {
                     Text(
@@ -106,30 +116,63 @@ fun BookshelfScreen(
                     )
                 }
                 item {
-                    BookshelfRow(
+                    BookshelfRowDynamic(
                         books = emptyList(),
                         onBookClick = { /* no-op */ },
                         bookshelfMaterial = state.shelfMaterial,
-                        bookSpacing = bookSpacing,
                         showAddSlot = true,
-                        onAddClick = { onAction(BookshelfAction.OnSearchClick) }
+                        onAddClick = { onAction(BookshelfAction.OnSearchClick) },
+                        isTidyMode = state.isTidyMode
                     )
                 }
             }
         } else {
             LazyColumn(contentPadding = paddingValues) {
-                val rows = state.books.chunked(booksPerRow)
-                items(rows.size) { index ->
-                    val rowBooks = rows[index]
-                    val isLastRow = index == rows.lastIndex
-                    BookshelfRow(
-                        books = rowBooks,
-                        onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
-                        bookshelfMaterial = state.shelfMaterial,
-                        bookSpacing = bookSpacing,
-                        showAddSlot = isLastRow,
-                        onAddClick = { onAction(BookshelfAction.OnSearchClick) }
-                    )
+                var bookIndex = 0
+                
+                while (bookIndex < books.size) {
+                    // Calculate how many books fit in a row based on their individual styles
+                    var currentRowWidth = 0f
+                    var booksInRow = 0
+                    val addButtonWidth = 60f + 8f // add button space if this is the last row
+                    
+                    // Determine how many books can fit in current row
+                    while (bookIndex + booksInRow < books.size) {
+                        val book = books[bookIndex + booksInRow]
+                        val bookStyle = if (state.isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
+                        val bookWidth = getBookWidth(bookStyle) + 8f // width + spacing
+                        
+                        val potentialRowWidth = currentRowWidth + bookWidth
+                        val isLastRow = (bookIndex + booksInRow + 1) >= books.size
+                        val totalNeededWidth = potentialRowWidth + if (isLastRow) addButtonWidth else 0f
+                        
+                        if (totalNeededWidth <= availableWidth.value) {
+                            currentRowWidth = potentialRowWidth
+                            booksInRow++
+                        } else {
+                            break
+                        }
+                    }
+                    
+                    // Ensure at least one book per row
+                    if (booksInRow == 0) booksInRow = 1
+                    
+                    val endIndex = minOf(bookIndex + booksInRow, books.size)
+                    val rowBooks = books.subList(bookIndex, endIndex)
+                    val isLastRow = endIndex >= books.size
+                    
+                    item(key = rowBooks.first().id) {
+                        BookshelfRowDynamic(
+                            books = rowBooks,
+                            onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
+                            bookshelfMaterial = state.shelfMaterial,
+                            showAddSlot = isLastRow,
+                            onAddClick = { onAction(BookshelfAction.OnSearchClick) },
+                            isTidyMode = state.isTidyMode
+                        )
+                    }
+                    
+                    bookIndex = endIndex
                 }
             }
         }

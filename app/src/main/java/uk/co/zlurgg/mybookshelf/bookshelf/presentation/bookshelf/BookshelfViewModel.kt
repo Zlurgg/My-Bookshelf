@@ -94,6 +94,9 @@ class BookshelfViewModel(
                 _state.update { it.copy(searchQuery = action.query) }
                 queryFlow.value = action.query
             }
+            BookshelfAction.OnToggleTidyMode -> {
+                _state.update { it.copy(isTidyMode = !it.isTidyMode) }
+            }
             else -> Unit
         }
     }
