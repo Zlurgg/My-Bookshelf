@@ -110,7 +110,7 @@ fun BookcaseScreen(
                 actions = {
                     IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                         Icon(
-                            imageVector = if (state.isReorderMode) Icons.Default.Edit else Icons.Default.Lock,
+                            imageVector = if (state.isReorderMode) Icons.Default.Lock else Icons.Default.Edit,
                             contentDescription = if (state.isReorderMode) 
                                 stringResource(id = R.string.cd_lock_reorder_mode) 
                             else 
