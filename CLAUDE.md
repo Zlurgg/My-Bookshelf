@@ -227,10 +227,6 @@ uk.co.zlurgg.mybookshelf/
 - A/B testing and analytics tracking capabilities
 - No database storage - generate fresh links each time
 
-### Book Ordering Within Shelves
-- Add position field to BookshelfBookCrossRef for book ordering
-- Implement drag & drop for books similar to bookshelf approach
-- Consider grid vs list layout for books
 
 ### Search Improvements
 - Enhanced search functionality with better filtering and sorting options
