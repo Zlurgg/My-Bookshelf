@@ -5,7 +5,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 
 class BookMappersTest {
 

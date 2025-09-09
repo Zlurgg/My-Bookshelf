@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
 

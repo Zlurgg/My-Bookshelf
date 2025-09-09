@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 
 data class BookDetailState(
     val isLoading: Boolean = true,

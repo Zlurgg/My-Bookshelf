@@ -25,16 +25,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowDynamic
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.calculateRowWidthDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
-import kotlin.random.Random
 
 @Composable
 fun BookshelfScreenRoot(

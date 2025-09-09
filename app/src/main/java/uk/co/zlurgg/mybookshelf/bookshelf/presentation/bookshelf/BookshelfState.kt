@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 
 data class BookshelfState(

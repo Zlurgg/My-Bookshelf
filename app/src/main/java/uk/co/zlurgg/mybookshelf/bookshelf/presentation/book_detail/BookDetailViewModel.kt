@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.onError
@@ -62,9 +62,12 @@ class BookDetailViewModel(
             _state.value
         )
 
-    // One-shot UI events
-    private val _events = kotlinx.coroutines.flow.MutableSharedFlow<BookDetailEvent>(extraBufferCapacity = 1)
-    val events: kotlinx.coroutines.flow.SharedFlow<BookDetailEvent> = _events
+    // Navigation callback
+    private var onNavigateBack: (() -> Unit)? = null
+    
+    fun setNavigationCallback(onBack: () -> Unit) {
+        onNavigateBack = onBack
+    }
 
     fun onAction(action: BookDetailAction) {
         when (action) {
@@ -87,7 +90,7 @@ class BookDetailViewModel(
                                 _state.update { it.copy(onShelf = true) }
                             }
                         }
-                        _events.emit(BookDetailEvent.NavigateBack)
+                        onNavigateBack?.invoke()
                     } catch (_: Exception) { }
                 }
             }
@@ -104,6 +107,9 @@ class BookDetailViewModel(
                     )
                 }
             }
+            BookDetailAction.OnBackClick -> {
+                onNavigateBack?.invoke()
+            }
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
                     try {
@@ -111,7 +117,7 @@ class BookDetailViewModel(
                             bookshelfRepository.removeBookFromShelf(shelfId, bookId)
                             _state.update { it.copy(onShelf = false) }
                         }
-                        _events.emit(BookDetailEvent.NavigateBack)
+                        onNavigateBack?.invoke()
                     } catch (_: Exception) { }
                 }
             }
@@ -119,6 +125,3 @@ class BookDetailViewModel(
     }
 }
 
-sealed interface BookDetailEvent {
-    data object NavigateBack : BookDetailEvent
-}

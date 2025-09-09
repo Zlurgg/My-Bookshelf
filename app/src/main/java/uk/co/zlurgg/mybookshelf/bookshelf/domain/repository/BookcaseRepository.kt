@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.repository
 
 import kotlinx.coroutines.flow.Flow
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 
 interface BookcaseRepository {
     fun getAllShelves(): Flow<List<Bookshelf>>
