@@ -8,7 +8,7 @@ import uk.co.zlurgg.mybookshelf.R
 
 enum class ShelfMaterial(val shelfColor: Int, val shelfBackground: Color) {
     DarkWood(R.drawable.wood_textured_brown, Color(0xFF2B1F16)),
-    SliverMetal(R.drawable.metal_textured_sliver, Color(0xFFCEC5C1)),
+    SilverMetal(R.drawable.metal_textured_sliver, Color(0xFFCEC5C1)),
     WhiteMetal(R.drawable.metal_plain_white, Color(0xFFFAF0F0)),
     GreyMetal(R.drawable.metal_burnished_grey, Color(0xFF575050)),
     DarkGreyMetal(R.drawable.metal_burnished_dark_grey, Color(0xFF282424));

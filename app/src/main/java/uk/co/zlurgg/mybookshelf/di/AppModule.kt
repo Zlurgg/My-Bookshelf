@@ -56,7 +56,7 @@ val appModule = module {
         )
     }
     viewModel { BookcaseViewModel(get(), get()) }
-    viewModel { (bookId: String, shelfId: String?) ->
+    viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookRepository = get(),
             bookshelfRepository = get(),
