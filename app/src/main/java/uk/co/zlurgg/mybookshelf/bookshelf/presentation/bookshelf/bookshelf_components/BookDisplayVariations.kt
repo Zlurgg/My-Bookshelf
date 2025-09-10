@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,12 +18,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,8 +37,16 @@ fun BookVertical(
 ) {
     val thickness = getBookThickness(book.numPages)
     val baseColor = Color(book.spineColor)
-    val lighterColor = baseColor.copy(alpha = 0.9f)
-    val darkerColor = baseColor.copy(red = baseColor.red * 0.7f, green = baseColor.green * 0.7f, blue = baseColor.blue * 0.7f)
+    val lighterColor = baseColor.copy(
+        red = (baseColor.red * 1.2f).coerceAtMost(1f),
+        green = (baseColor.green * 1.2f).coerceAtMost(1f), 
+        blue = (baseColor.blue * 1.2f).coerceAtMost(1f)
+    )
+    val darkerColor = baseColor.copy(
+        red = baseColor.red * 0.7f,
+        green = baseColor.green * 0.7f,
+        blue = baseColor.blue * 0.7f
+    )
     
     Box(
         modifier = Modifier
@@ -131,8 +136,16 @@ fun BookLeaning(
 ) {
     val thickness = getBookThickness(book.numPages)
     val baseColor = Color(book.spineColor)
-    val lighterColor = baseColor.copy(alpha = 0.9f)
-    val darkerColor = baseColor.copy(red = baseColor.red * 0.7f, green = baseColor.green * 0.7f, blue = baseColor.blue * 0.7f)
+    val lighterColor = baseColor.copy(
+        red = (baseColor.red * 1.2f).coerceAtMost(1f),
+        green = (baseColor.green * 1.2f).coerceAtMost(1f), 
+        blue = (baseColor.blue * 1.2f).coerceAtMost(1f)
+    )
+    val darkerColor = baseColor.copy(
+        red = baseColor.red * 0.7f,
+        green = baseColor.green * 0.7f,
+        blue = baseColor.blue * 0.7f
+    )
     
     Box(
         modifier = Modifier
