@@ -14,41 +14,6 @@ fun getBookDisplayStyle(book: Book): BookDisplayStyle {
     }
 }
 
-fun getDynamicBookDisplayStyle(
-    book: Book,
-    positionInRow: Int,
-    totalBooksInRow: Int,
-    remainingSpace: Float
-): BookDisplayStyle {
-    // Create a deterministic but position-dependent seed
-    // This ensures books change orientation based on their current position context
-    val positionSeed = (book.id.hashCode() + positionInRow * 7 + totalBooksInRow * 13) % 4
-    
-    val baseStyle = when (positionSeed) {
-        0 -> BookDisplayStyle.VERTICAL
-        1 -> BookDisplayStyle.LEANING_LEFT
-        2 -> BookDisplayStyle.LEANING_RIGHT
-        3 -> BookDisplayStyle.HORIZONTAL_STACK
-        else -> BookDisplayStyle.VERTICAL
-    }
-    
-    // Apply position rules
-    return when {
-        // First book in row: can't lean left (no support)
-        positionInRow == 0 && baseStyle == BookDisplayStyle.LEANING_LEFT -> 
-            BookDisplayStyle.VERTICAL
-        
-        // Last book in row: can't lean right into big space (no support)
-        positionInRow == totalBooksInRow - 1 && 
-        baseStyle == BookDisplayStyle.LEANING_RIGHT && 
-        remainingSpace > 30f -> 
-            BookDisplayStyle.VERTICAL
-        
-        // All other cases: use base style
-        else -> baseStyle
-    }
-}
-
 fun getBookThickness(numPages: Int?): Float {
     // Calculate realistic book thickness based on page count
     val pages = numPages ?: 250 // Default to average book size if unknown
@@ -72,9 +37,17 @@ fun getBookWidth(book: Book, style: BookDisplayStyle): Float {
     val baseThickness = getBookThickness(book.numPages)
     
     return when (style) {
-        BookDisplayStyle.VERTICAL -> baseThickness + 2f // Add 2dp for horizontal padding (1dp each side)
-        BookDisplayStyle.LEANING_LEFT, 
-        BookDisplayStyle.LEANING_RIGHT -> (baseThickness * 1.4f) + 4f // 40% more space + 4dp padding (2dp each side)
-        BookDisplayStyle.HORIZONTAL_STACK -> 150f // Horizontal uses height, not thickness
+        BookDisplayStyle.VERTICAL -> 
+            baseThickness + VERTICAL_BOOK_PADDING
+        BookDisplayStyle.LEANING_LEFT, BookDisplayStyle.LEANING_RIGHT -> 
+            (baseThickness * LEANING_SPACE_MULTIPLIER) + LEANING_BOOK_PADDING
+        BookDisplayStyle.HORIZONTAL_STACK -> 
+            HORIZONTAL_BOOK_WIDTH
     }
 }
+
+// Constants for book width calculations
+private const val VERTICAL_BOOK_PADDING = 2f // 1dp padding each side
+private const val LEANING_BOOK_PADDING = 4f // 2dp padding each side  
+private const val LEANING_SPACE_MULTIPLIER = 1.4f // 40% more space for lean
+private const val HORIZONTAL_BOOK_WIDTH = 150f
