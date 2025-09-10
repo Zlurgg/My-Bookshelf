@@ -36,16 +36,16 @@ fun BookVertical(
     height: Int = 150
 ) {
     val thickness = getBookThickness(book.numPages)
-    val baseColor = Color(book.spineColor)
+    val baseColor = Color(book.spineColor) // Already matte from BookColorGenerator
     val lighterColor = baseColor.copy(
-        red = (baseColor.red * 1.2f).coerceAtMost(1f),
-        green = (baseColor.green * 1.2f).coerceAtMost(1f), 
-        blue = (baseColor.blue * 1.2f).coerceAtMost(1f)
+        red = (baseColor.red * 1.15f).coerceAtMost(1f),
+        green = (baseColor.green * 1.15f).coerceAtMost(1f), 
+        blue = (baseColor.blue * 1.15f).coerceAtMost(1f)
     )
     val darkerColor = baseColor.copy(
-        red = baseColor.red * 0.7f,
-        green = baseColor.green * 0.7f,
-        blue = baseColor.blue * 0.7f
+        red = baseColor.red * 0.6f,
+        green = baseColor.green * 0.6f,
+        blue = baseColor.blue * 0.6f
     )
     
     Box(
@@ -135,16 +135,16 @@ fun BookLeaning(
     height: Int = 140
 ) {
     val thickness = getBookThickness(book.numPages)
-    val baseColor = Color(book.spineColor)
+    val baseColor = Color(book.spineColor) // Already matte from BookColorGenerator
     val lighterColor = baseColor.copy(
-        red = (baseColor.red * 1.2f).coerceAtMost(1f),
-        green = (baseColor.green * 1.2f).coerceAtMost(1f), 
-        blue = (baseColor.blue * 1.2f).coerceAtMost(1f)
+        red = (baseColor.red * 1.15f).coerceAtMost(1f),
+        green = (baseColor.green * 1.15f).coerceAtMost(1f), 
+        blue = (baseColor.blue * 1.15f).coerceAtMost(1f)
     )
     val darkerColor = baseColor.copy(
-        red = baseColor.red * 0.7f,
-        green = baseColor.green * 0.7f,
-        blue = baseColor.blue * 0.7f
+        red = baseColor.red * 0.6f,
+        green = baseColor.green * 0.6f,
+        blue = baseColor.blue * 0.6f
     )
     
     Box(
