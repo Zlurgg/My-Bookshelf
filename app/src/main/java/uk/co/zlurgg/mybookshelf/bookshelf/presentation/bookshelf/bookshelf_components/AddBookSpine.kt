@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,32 +30,79 @@ fun AddBookSpine(
     onClick: () -> Unit,
 ) {
     val cd = stringResource(id = R.string.cd_add_book_to_shelf)
+    
+    // Bookend/bookstop design with decorative elements
     Box(
         modifier = Modifier
             .clickable { onClick() }
-            .background(MaterialTheme.colorScheme.secondary, shape = RoundedCornerShape(4.dp))
-            .clip(RoundedCornerShape(4.dp))
+            .height(150.dp)
+            .width(60.dp)
             .semantics { contentDescription = cd }
     ) {
+        // Base bookend structure with gradient-like appearance
         Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    MaterialTheme.colorScheme.tertiary,
+                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 2.dp, bottomEnd = 2.dp)
+                )
+                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 2.dp, bottomEnd = 2.dp)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Keep same size as BookSpine: 60x150 box with top icon
+            // Decorative top section (bookend cap)
             Box(
                 modifier = Modifier
-                    .height(150.dp)
-                    .width(60.dp),
+                    .height(20.dp)
+                    .width(56.dp)
+                    .background(
+                        MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
+                    )
+            )
+            
+            // Main body with add icon
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .width(52.dp)
+                    .background(
+                        MaterialTheme.colorScheme.tertiary,
+                        shape = RoundedCornerShape(2.dp)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSecondary, 
-                    modifier = Modifier.size(32.dp)
+                    tint = MaterialTheme.colorScheme.onTertiary,
+                    modifier = Modifier.size(24.dp)
                 )
             }
-            Spacer(modifier = Modifier.height(0.dp))
+            
+            // Decorative base (bookend foot)
+            Box(
+                modifier = Modifier
+                    .height(12.dp)
+                    .width(58.dp)
+                    .background(
+                        MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.15f),
+                        shape = RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp)
+                    )
+            )
         }
+        
+        // Subtle highlight line to simulate 3D depth
+        Box(
+            modifier = Modifier
+                .width(2.dp)
+                .height(140.dp)
+                .background(
+                    MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(1.dp)
+                )
+                .align(Alignment.CenterStart)
+        )
     }
 }
 

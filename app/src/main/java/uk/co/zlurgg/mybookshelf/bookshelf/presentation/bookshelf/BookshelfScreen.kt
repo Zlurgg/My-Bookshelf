@@ -28,6 +28,7 @@ import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getDynamicBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
@@ -132,28 +133,22 @@ fun BookshelfScreen(
                     // Calculate how many books fit in a row based on their individual styles
                     var currentRowWidth = 0f
                     var booksInRow = 0
-                    val addButtonWidth = 60f + 8f // add button space if this is the last row
+                    val addButtonWidth = 60f + 6f // add button space if this is the last row
                     val rowBookStyles = mutableListOf<BookDisplayStyle>()
                     
-                    // First pass: determine how many books fit using dynamic styling for accurate width
+                    // First pass: determine how many books fit using simpler non-position-dependent styling
                     while (bookIndex + booksInRow < books.size) {
                         val book = books[bookIndex + booksInRow]
                         val tempIsLast = (bookIndex + booksInRow + 1) >= books.size
-                        val tempRemainingSpace = availableWidth.value - currentRowWidth - if (tempIsLast) addButtonWidth else 0f
                         
-                        // Use dynamic style with current position context
+                        // Use basic style for width estimation (avoids circular dependency)
                         val bookStyle = if (state.isTidyMode) {
                             BookDisplayStyle.VERTICAL
                         } else {
-                            getDynamicBookDisplayStyle(
-                                book = book,
-                                positionInRow = booksInRow,
-                                totalBooksInRow = booksInRow + 1, // Tentative total
-                                remainingSpace = tempRemainingSpace
-                            )
+                            getBookDisplayStyle(book) // Use simple hash-based style
                         }
                         
-                        val bookWidth = getBookWidth(book, bookStyle) + 8f // width + spacing
+                        val bookWidth = getBookWidth(book, bookStyle) + 6f // width + spacing
                         val potentialRowWidth = currentRowWidth + bookWidth
                         val totalNeededWidth = potentialRowWidth + if (tempIsLast) addButtonWidth else 0f
                         
@@ -168,27 +163,40 @@ fun BookshelfScreen(
                     // Ensure at least one book per row
                     if (booksInRow == 0) booksInRow = 1
                     
-                    // Second pass: get natural styles, then fix problematic edges
+                    // Second pass: apply position-aware styling with consistent parameters
                     val endIndex = minOf(bookIndex + booksInRow, books.size)
                     val rowBooks = books.subList(bookIndex, endIndex)
+                    val isLastRow = endIndex >= books.size
+                    val totalAvailableWidth = availableWidth.value - if (isLastRow) addButtonWidth else 0f
                     
-                    // Apply dynamic position-aware styling
-                    val remainingSpace = availableWidth.value - currentRowWidth
+                    // Apply final styling with proper position context
                     rowBooks.forEachIndexed { index, book ->
                         val bookStyle = if (state.isTidyMode) {
                             BookDisplayStyle.VERTICAL
                         } else {
-                            getDynamicBookDisplayStyle(
-                                book = book,
-                                positionInRow = index,
-                                totalBooksInRow = rowBooks.size,
-                                remainingSpace = remainingSpace
-                            )
+                            // Start with base style from first pass
+                            val baseStyle = getBookDisplayStyle(book)
+                            // Apply position-based refinements
+                            when {
+                                // First book in row: can't lean left (no support)
+                                index == 0 && baseStyle == BookDisplayStyle.LEANING_LEFT -> 
+                                    BookDisplayStyle.VERTICAL
+                                
+                                // Last book in row: check if there's enough space for right lean
+                                index == rowBooks.size - 1 && baseStyle == BookDisplayStyle.LEANING_RIGHT -> {
+                                    val widthSoFar = rowBookStyles.mapIndexed { styleIndex, style ->
+                                        getBookWidth(rowBooks[styleIndex], style) + 6f
+                                    }.sum()
+                                    val remainingSpace = totalAvailableWidth - widthSoFar
+                                    if (remainingSpace > 30f) BookDisplayStyle.VERTICAL else baseStyle
+                                }
+                                
+                                // All other cases: use base style
+                                else -> baseStyle
+                            }
                         }
                         rowBookStyles.add(bookStyle)
                     }
-                    
-                    val isLastRow = endIndex >= books.size
                     
                     item(key = rowBooks.first().id) {
                         BookshelfRowDynamic(

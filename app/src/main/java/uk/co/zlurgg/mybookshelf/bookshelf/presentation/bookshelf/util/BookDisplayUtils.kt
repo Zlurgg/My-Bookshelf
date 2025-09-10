@@ -72,9 +72,9 @@ fun getBookWidth(book: Book, style: BookDisplayStyle): Float {
     val baseThickness = getBookThickness(book.numPages)
     
     return when (style) {
-        BookDisplayStyle.VERTICAL -> baseThickness
+        BookDisplayStyle.VERTICAL -> baseThickness + 2f // Add 2dp for horizontal padding (1dp each side)
         BookDisplayStyle.LEANING_LEFT, 
-        BookDisplayStyle.LEANING_RIGHT -> baseThickness * 1.4f // 40% more space needed for lean
+        BookDisplayStyle.LEANING_RIGHT -> (baseThickness * 1.4f) + 4f // 40% more space + 4dp padding (2dp each side)
         BookDisplayStyle.HORIZONTAL_STACK -> 150f // Horizontal uses height, not thickness
     }
 }

@@ -53,8 +53,8 @@ fun BookshelfRowDynamic(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(bookshelfMaterial.shelfBackground)
-                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 0.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
                 // Render each book with appropriate style based on mode
