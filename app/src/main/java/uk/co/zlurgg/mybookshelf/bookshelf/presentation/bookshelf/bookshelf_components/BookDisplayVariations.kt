@@ -69,7 +69,7 @@ fun BookVertical(
                     brush = Brush.horizontalGradient(
                         colors = listOf(lighterColor, baseColor, darkerColor),
                         startX = 0f,
-                        endX = thickness.toFloat() * 2
+                        endX = thickness * 2
                     ),
                     shape = RoundedCornerShape(4.dp)
                 )
@@ -169,7 +169,7 @@ fun BookLeaning(
                     brush = Brush.horizontalGradient(
                         colors = listOf(lighterColor, baseColor, darkerColor),
                         startX = 0f,
-                        endX = thickness.toFloat() * 2
+                        endX = thickness * 2
                     ),
                     shape = RoundedCornerShape(4.dp)
                 )
