@@ -18,7 +18,7 @@ class BookDetailViewModel(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val bookId: String,
-    private val shelfId: String? = null, // Optional shelf context
+    private val shelfId: String
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookDetailState())
@@ -31,16 +31,8 @@ class BookDetailViewModel(
 
                 // Observe shelf membership and reflect in UI
                 launch {
-                    if (shelfId != null) {
-                        // Show status for specific shelf
-                        bookshelfRepository.isBookOnShelf(bookId, shelfId).collect { onShelf ->
-                            _state.update { s -> s.copy(onShelf = onShelf) }
-                        }
-                    } else {
-                        // Show general library membership
-                        bookshelfRepository.isBookInAnyShelf(bookId).collect { inLibrary ->
-                            _state.update { s -> s.copy(onShelf = inLibrary) }
-                        }
+                    bookshelfRepository.isBookOnShelf(bookId, shelfId).collect { onShelf ->
+                        _state.update { s -> s.copy(onShelf = onShelf) }
                     }
                 }
 
@@ -77,18 +69,14 @@ class BookDetailViewModel(
                         val onShelf = state.value.onShelf
                         val book: Book = action.book
                         
-                        // TODO: For now, require shelfId context for add/remove operations
-                        // Future: Show shelf selection dialog when shelfId is null
-                        if (shelfId != null) {
-                            if (onShelf) {
-                                bookshelfRepository.removeBookFromShelf(shelfId, book.id)
-                                _state.update { it.copy(onShelf = false) }
-                            } else {
-                                // Ensure book is saved first
-                                bookRepository.upsertBook(book)
-                                bookshelfRepository.addBookToShelf(shelfId, book.id)
-                                _state.update { it.copy(onShelf = true) }
-                            }
+                        if (onShelf) {
+                            bookshelfRepository.removeBookFromShelf(shelfId, book.id)
+                            _state.update { it.copy(onShelf = false) }
+                        } else {
+                            // Ensure book is saved first
+                            bookRepository.upsertBook(book)
+                            bookshelfRepository.addBookToShelf(shelfId, book.id)
+                            _state.update { it.copy(onShelf = true) }
                         }
                         onNavigateBack?.invoke()
                     } catch (_: Exception) { }
@@ -113,10 +101,8 @@ class BookDetailViewModel(
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
                     try {
-                        if (shelfId != null) {
-                            bookshelfRepository.removeBookFromShelf(shelfId, bookId)
-                            _state.update { it.copy(onShelf = false) }
-                        }
+                        bookshelfRepository.removeBookFromShelf(shelfId, bookId)
+                        _state.update { it.copy(onShelf = false) }
                         onNavigateBack?.invoke()
                     } catch (_: Exception) { }
                 }
