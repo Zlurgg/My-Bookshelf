@@ -209,15 +209,33 @@ uk.co.zlurgg.mybookshelf/
 - **Performance**: Only update shelves whose positions actually changed
 - **Component Structure**: `BookshelfCard.kt` (display), `BookcaseShelf.kt` (drag/swipe logic)
 
-## Planned Features for Next Session
+## Planned Features - Updated Priority Order
 
-### UI/Visual Enhancements (NEW)
-- **Add Button Redesign**: Replace current add button with bookend/bookstop design to match bookshelf theme
-- **3D Visual Effects**: Add depth and shadows to make bookshelf appear more three-dimensional
-  - Book spine shadows/gradients
-  - Shelf depth illusion
-  - Layered background effects
-  - Book cover bevels/highlights
+### UI/Visual Enhancements ✅ COMPLETED
+- **Add Button Redesign**: Bookend/bookstop design implemented
+- **3D Visual Effects**: Realistic book spines with shadows, gradients, and matte colors
+- **Code Cleanup**: Architecture improvements and violation fixes
+
+### Search Improvements (NEXT)
+- Enhanced search functionality with better filtering and sorting options
+- Search history and saved searches
+- Improved search result relevance and performance
+- Better search UX with loading states and error handling
+
+### Testing Priorities
+- Increase test coverage from 15% to 80%+
+- Fix existing failing tests (5 search/debounce tests)
+- Update BookcaseViewModelTest for reorder functionality  
+- Add integration tests for drag and drop
+- Test database migrations thoroughly
+- Add UI/component testing with Compose testing framework
+
+### Sharing Features
+- Public shelf sharing with shareable links
+- Social media integration for shelf previews
+- Export functionality (PDF, image formats)
+- Reading nook galleries and community features
+- Privacy controls and shelf visibility settings
 
 ### Affiliate Link Service
 - Create `AffiliateService` in service/business layer
@@ -227,16 +245,13 @@ uk.co.zlurgg.mybookshelf/
 - A/B testing and analytics tracking capabilities
 - No database storage - generate fresh links each time
 
-
-### Search Improvements
-- Enhanced search functionality with better filtering and sorting options
-- Potentially add search history or saved searches
-
-### Testing Priorities
-- Update BookcaseViewModelTest for reorder functionality
-- Test database migration from v4 to v5 (affiliateLink removal)
-- Add integration tests for drag and drop
-- Increase test coverage from 15% to 80%+
+### Store Deployment Preparation
+- Final testing and QA across devices
+- App store compliance (privacy policy, terms of service)
+- App store assets (screenshots, descriptions, keywords)
+- Beta testing program setup
+- Release pipeline and versioning strategy
+- Performance optimization and final polish
 
 ## Navigation Structure
 ```
