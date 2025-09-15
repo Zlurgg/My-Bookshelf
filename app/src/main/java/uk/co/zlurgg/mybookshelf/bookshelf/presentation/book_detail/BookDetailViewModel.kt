@@ -83,9 +83,16 @@ class BookDetailViewModel(
                 }
             }
             is BookDetailAction.OnPurchaseClick -> {
-                // TODO: Implement purchase functionality
-                // Should open affiliate link in browser or Custom Tab
-                // See BookRepository interface for planned purchase integration
+                viewModelScope.launch {
+                    try {
+                        val currentBook = state.value.book
+                        if (currentBook != null) {
+                            val updatedBook = currentBook.copy(purchased = true)
+                            bookRepository.upsertBook(updatedBook)
+                            _state.update { it.copy(book = updatedBook) }
+                        }
+                    } catch (_: Exception) { }
+                }
             }
             is BookDetailAction.OnRateBookDetailClick -> {
                 _state.update { current ->
