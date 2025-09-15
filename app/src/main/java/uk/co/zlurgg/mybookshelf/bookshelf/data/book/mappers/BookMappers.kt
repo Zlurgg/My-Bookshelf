@@ -7,14 +7,16 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 
 
 fun SearchedBookDto.toBook(): Book {
+    val generatedImageUrl = when {
+        coverKey != null -> "https://covers.openlibrary.org/b/olid/${coverKey}-L.jpg"
+        coverAlternativeKey != null -> "https://covers.openlibrary.org/b/id/${coverAlternativeKey}-L.jpg"
+        else -> "" // Empty string fallback when no cover data is available
+    }
+    
     return Book(
         id = id.substringAfterLast("/"),
         title = title,
-        imageUrl = if (coverKey != null) {
-            "https://covers.openlibrary.org/b/olid/${coverKey}-L.jpg"
-        } else {
-            "https://covers.openlibrary.org/b/id/${coverAlternativeKey}-L.jpg"
-        },
+        imageUrl = generatedImageUrl,
         authors = authorNames ?: emptyList(),
         description = null,
         languages = languages ?: emptyList(),
