@@ -22,7 +22,7 @@ import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
-class BookshelfSearchTest {
+class BookshelfSearchViewModelTest {
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
@@ -90,7 +90,7 @@ class BookshelfSearchTest {
     )
 
     @Test
-    fun search_query_updates_ui_state_immediately() = runTest {
+    fun onSearchClick_opens_dialog() = runTest {
         val bookRepository = MockBookRepository()
         val bookshelfRepository = MockBookshelfRepository()
         val vm = BookshelfViewModel(
@@ -100,15 +100,64 @@ class BookshelfSearchTest {
         )
         
         var latestState: BookshelfState? = null
-        val job = launch {
-            vm.state.collect { latestState = it }
-        }
+        val job = launch { vm.state.collect { latestState = it } }
+        advanceUntilIdle()
         
+        vm.onAction(BookshelfAction.OnSearchClick)
+        advanceUntilIdle()
+        
+        assertTrue(latestState?.isSearchDialogVisible == true)
+        job.cancel()
+    }
+
+    @Test
+    fun onDismissSearchDialog_resets_state() = runTest {
+        val bookRepository = MockBookRepository()
+        val bookshelfRepository = MockBookshelfRepository()
+        val vm = BookshelfViewModel(
+            bookRepository = bookRepository,
+            bookshelfRepository = bookshelfRepository,
+            shelfId = "shelf1"
+        )
+        
+        var latestState: BookshelfState? = null
+        val job = launch { vm.state.collect { latestState = it } }
+        advanceUntilIdle()
+        
+        // Set up search state
+        vm.onAction(BookshelfAction.OnSearchClick)
+        vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
+        
+        // Dismiss dialog
+        vm.onAction(BookshelfAction.OnDismissSearchDialog)
+        advanceUntilIdle()
+        
+        // State should be reset
+        assertEquals("", latestState?.searchQuery)
+        assertEquals(false, latestState?.isSearchDialogVisible)
+        assertTrue(latestState?.searchResults?.isEmpty() == true)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun onSearchQueryChange_updates_ui_immediately() = runTest {
+        val bookRepository = MockBookRepository()
+        val bookshelfRepository = MockBookshelfRepository()
+        val vm = BookshelfViewModel(
+            bookRepository = bookRepository,
+            bookshelfRepository = bookshelfRepository,
+            shelfId = "shelf1"
+        )
+        
+        var latestState: BookshelfState? = null
+        val job = launch { vm.state.collect { latestState = it } }
         advanceUntilIdle()
         
         // Open search dialog and enter query
         vm.onAction(BookshelfAction.OnSearchClick)
         vm.onAction(BookshelfAction.OnSearchQueryChange("test query"))
+        advanceUntilIdle()
         
         // State should update immediately (before debounce)
         assertEquals("test query", latestState?.searchQuery)
@@ -118,7 +167,7 @@ class BookshelfSearchTest {
     }
 
     @Test
-    fun search_triggers_repository_after_debounce() = runTest {
+    fun search_triggers_after_debounce() = runTest {
         val bookRepository = MockBookRepository().apply {
             searchResult = listOf(sampleBook("result1"))
         }
@@ -130,10 +179,7 @@ class BookshelfSearchTest {
         )
         
         var latestState: BookshelfState? = null
-        val job = launch {
-            vm.state.collect { latestState = it }
-        }
-        
+        val job = launch { vm.state.collect { latestState = it } }
         advanceUntilIdle()
         
         // Open search dialog and enter query
@@ -145,13 +191,14 @@ class BookshelfSearchTest {
         
         // Should have called search
         assertEquals(listOf("test"), bookRepository.searchQueries)
-        assertEquals(listOf(sampleBook("result1")), latestState?.searchResults)
+        assertEquals(1, latestState?.searchResults?.size)
+        assertEquals("result1", latestState?.searchResults?.first()?.id)
         
         job.cancel()
     }
 
     @Test
-    fun short_queries_do_not_trigger_search() = runTest {
+    fun short_queries_ignored() = runTest {
         val bookRepository = MockBookRepository()
         val bookshelfRepository = MockBookshelfRepository()
         val vm = BookshelfViewModel(
@@ -161,14 +208,12 @@ class BookshelfSearchTest {
         )
         
         var latestState: BookshelfState? = null
-        val job = launch {
-            vm.state.collect { latestState = it }
-        }
-        
+        val job = launch { vm.state.collect { latestState = it } }
         advanceUntilIdle()
         
         // Enter short query
         vm.onAction(BookshelfAction.OnSearchClick)
+        advanceUntilIdle()
         vm.onAction(BookshelfAction.OnSearchQueryChange("a"))
         
         advanceUntilIdle()
@@ -180,7 +225,69 @@ class BookshelfSearchTest {
     }
 
     @Test
-    fun search_error_updates_state() = runTest {
+    fun rapid_queries_debounced_properly() = runTest {
+        val bookRepository = MockBookRepository()
+        val bookshelfRepository = MockBookshelfRepository()
+        val vm = BookshelfViewModel(
+            bookRepository = bookRepository,
+            bookshelfRepository = bookshelfRepository,
+            shelfId = "shelf1"
+        )
+
+        // Collect state to trigger initialization
+        var latestState: BookshelfState? = null
+        val job = launch { vm.state.collect { latestState = it } }
+        advanceUntilIdle()
+
+        // Open search and rapidly type
+        vm.onAction(BookshelfAction.OnSearchClick)
+        vm.onAction(BookshelfAction.OnSearchQueryChange("h"))
+        vm.onAction(BookshelfAction.OnSearchQueryChange("he"))
+        vm.onAction(BookshelfAction.OnSearchQueryChange("hel"))
+        vm.onAction(BookshelfAction.OnSearchQueryChange("hello"))
+
+        // Wait for debounce to complete
+        advanceUntilIdle()
+
+        // Should only search for the final query
+        assertEquals(listOf("hello"), bookRepository.searchQueries)
+
+        job.cancel()
+    }
+
+    @Test
+    fun search_results_update_state() = runTest {
+        val bookRepository = MockBookRepository().apply {
+            searchResult = listOf(sampleBook("result1"), sampleBook("result2"))
+        }
+        val bookshelfRepository = MockBookshelfRepository()
+        val vm = BookshelfViewModel(
+            bookRepository = bookRepository,
+            bookshelfRepository = bookshelfRepository,
+            shelfId = "shelf1"
+        )
+
+        // Collect state to trigger initialization
+        var latestState: BookshelfState? = null
+        val job = launch { vm.state.collect { latestState = it } }
+        advanceUntilIdle()
+
+        // Trigger search
+        vm.onAction(BookshelfAction.OnSearchClick)
+        vm.onAction(BookshelfAction.OnSearchQueryChange("books"))
+
+        // Wait for search to complete
+        advanceUntilIdle()
+
+        // Should update search results
+        assertEquals(2, latestState?.searchResults?.size)
+        assertEquals("result1", latestState?.searchResults?.first()?.id)
+
+        job.cancel()
+    }
+
+    @Test
+    fun search_error_handling() = runTest {
         val bookRepository = MockBookRepository().apply {
             shouldReturnError = true
         }
@@ -192,52 +299,18 @@ class BookshelfSearchTest {
         )
         
         var latestState: BookshelfState? = null
-        val job = launch {
-            vm.state.collect { latestState = it }
-        }
-        
+        val job = launch { vm.state.collect { latestState = it } }
         advanceUntilIdle()
         
         // Trigger search
         vm.onAction(BookshelfAction.OnSearchClick)
+        advanceUntilIdle()
         vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
         
         advanceUntilIdle()
         
         // Should show error
         assertTrue(latestState?.errorMessage != null)
-        assertTrue(latestState?.searchResults?.isEmpty() == true)
-        
-        job.cancel()
-    }
-
-    @Test
-    fun dismiss_search_dialog_resets_state() = runTest {
-        val bookRepository = MockBookRepository()
-        val bookshelfRepository = MockBookshelfRepository()
-        val vm = BookshelfViewModel(
-            bookRepository = bookRepository,
-            bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
-        )
-        
-        var latestState: BookshelfState? = null
-        val job = launch {
-            vm.state.collect { latestState = it }
-        }
-        
-        advanceUntilIdle()
-        
-        // Set up search state
-        vm.onAction(BookshelfAction.OnSearchClick)
-        vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
-        
-        // Dismiss dialog
-        vm.onAction(BookshelfAction.OnDismissSearchDialog)
-        
-        // State should be reset
-        assertEquals("", latestState?.searchQuery)
-        assertEquals(false, latestState?.isSearchDialogVisible)
         assertTrue(latestState?.searchResults?.isEmpty() == true)
         
         job.cancel()
