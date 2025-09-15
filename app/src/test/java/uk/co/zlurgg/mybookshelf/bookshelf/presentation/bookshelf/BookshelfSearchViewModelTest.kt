@@ -1,14 +1,20 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,6 +32,18 @@ class BookshelfSearchViewModelTest {
 
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+    private val testDispatcher = StandardTestDispatcher()
+
+    @Before
+    fun setup() {
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
 
     private class MockBookRepository : BookRepository {
         val searchQueries = mutableListOf<String>()
@@ -186,8 +204,9 @@ class BookshelfSearchViewModelTest {
         vm.onAction(BookshelfAction.OnSearchClick)
         vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
         
-        // Wait for debounce period
-        advanceUntilIdle()
+        // Wait for debounce period (450ms)
+        testDispatcher.scheduler.advanceTimeBy(450L)
+        testDispatcher.scheduler.runCurrent()
         
         // Should have called search
         assertEquals(listOf("test"), bookRepository.searchQueries)
@@ -246,8 +265,9 @@ class BookshelfSearchViewModelTest {
         vm.onAction(BookshelfAction.OnSearchQueryChange("hel"))
         vm.onAction(BookshelfAction.OnSearchQueryChange("hello"))
 
-        // Wait for debounce to complete
-        advanceUntilIdle()
+        // Wait for debounce to complete (450ms)
+        testDispatcher.scheduler.advanceTimeBy(450L)
+        testDispatcher.scheduler.runCurrent()
 
         // Should only search for the final query
         assertEquals(listOf("hello"), bookRepository.searchQueries)
@@ -276,8 +296,9 @@ class BookshelfSearchViewModelTest {
         vm.onAction(BookshelfAction.OnSearchClick)
         vm.onAction(BookshelfAction.OnSearchQueryChange("books"))
 
-        // Wait for search to complete
-        advanceUntilIdle()
+        // Wait for debounce and search to complete (450ms)
+        testDispatcher.scheduler.advanceTimeBy(450L)
+        testDispatcher.scheduler.runCurrent()
 
         // Should update search results
         assertEquals(2, latestState?.searchResults?.size)
@@ -307,7 +328,9 @@ class BookshelfSearchViewModelTest {
         advanceUntilIdle()
         vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
         
-        advanceUntilIdle()
+        // Wait for debounce period (450ms)
+        testDispatcher.scheduler.advanceTimeBy(450L)
+        testDispatcher.scheduler.runCurrent()
         
         // Should show error
         assertTrue(latestState?.errorMessage != null)
