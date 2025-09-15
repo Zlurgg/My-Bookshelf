@@ -8,7 +8,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -53,13 +56,29 @@ class BookDetailViewModelTest {
         var removedPair: Pair<String, String>? = null // shelfId to bookId
         private val isOnShelfFlow = MutableStateFlow(false)
         private val inLibraryFlow = MutableStateFlow(false)
+        var shouldFailAdd = false
+        var shouldFailRemove = false
+
+        fun setIsOnShelf(value: Boolean) {
+            isOnShelfFlow.value = value
+        }
+
+        fun setInLibrary(value: Boolean) {
+            inLibraryFlow.value = value
+        }
 
         override suspend fun addBookToShelf(shelfId: String, bookId: String) {
+            if (shouldFailAdd) {
+                throw RuntimeException("Add failed")
+            }
             addedPair = shelfId to bookId
             isOnShelfFlow.value = true
         }
 
         override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
+            if (shouldFailRemove) {
+                throw RuntimeException("Remove failed")
+            }
             removedPair = shelfId to bookId
             isOnShelfFlow.value = false
         }
@@ -157,6 +176,194 @@ class BookDetailViewModelTest {
         assertNotNull(bookshelfRepo.addedPair)
         assertEquals("S1", bookshelfRepo.addedPair?.first) // shelfId
         assertEquals("OLID", bookshelfRepo.addedPair?.second) // bookId
+        
+        job.cancel()
+    }
+
+    @Test
+    fun onRemoveBookClick_removes_book_from_shelf() = runTest {
+        val bookRepo = FakeBookRepository().apply { 
+            storedBook = sampleBook() 
+        }
+        val bookshelfRepo = FakeBookshelfRepository().apply {
+            setIsOnShelf(true)
+        }
+        
+        val vm = BookDetailViewModel(
+            bookRepository = bookRepo,
+            bookshelfRepository = bookshelfRepo,
+            bookId = "OLID", 
+            shelfId = "S1"
+        )
+        
+        // Collect state to trigger onStart
+        var latestState: BookDetailState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
+        }
+        
+        advanceUntilIdle()
+        
+        // Remove book
+        vm.onAction(BookDetailAction.OnRemoveBookClick(sampleBook()))
+        advanceUntilIdle()
+        
+        assertNotNull(bookshelfRepo.removedPair)
+        assertEquals("S1", bookshelfRepo.removedPair?.first)
+        assertEquals("OLID", bookshelfRepo.removedPair?.second)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun onRateBookDetailClick_updates_book_rating() = runTest {
+        val bookRepo = FakeBookRepository().apply { 
+            storedBook = sampleBook() 
+        }
+        val bookshelfRepo = FakeBookshelfRepository()
+        
+        val vm = BookDetailViewModel(
+            bookRepository = bookRepo,
+            bookshelfRepository = bookshelfRepo,
+            bookId = "OLID", 
+            shelfId = "S1"
+        )
+        
+        // Collect state to trigger onStart
+        var latestState: BookDetailState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
+        }
+        
+        advanceUntilIdle()
+        
+        // Rate book with 5 stars
+        vm.onAction(BookDetailAction.OnRateBookDetailClick(5))
+        advanceUntilIdle()
+        
+        // Should upsert book with updated rating
+        assertNotNull(bookRepo.upserted)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun onPurchaseClick_marks_book_as_purchased() = runTest {
+        val bookRepo = FakeBookRepository().apply { 
+            storedBook = sampleBook() 
+        }
+        val bookshelfRepo = FakeBookshelfRepository()
+        
+        val vm = BookDetailViewModel(
+            bookRepository = bookRepo,
+            bookshelfRepository = bookshelfRepo,
+            bookId = "OLID", 
+            shelfId = "S1"
+        )
+        
+        // Collect state to trigger onStart
+        var latestState: BookDetailState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
+        }
+        
+        advanceUntilIdle()
+        
+        // Mark as purchased
+        vm.onAction(BookDetailAction.OnPurchaseClick)
+        advanceUntilIdle()
+        
+        // Should upsert book with purchased = true
+        assertNotNull(bookRepo.upserted)
+        assertTrue(bookRepo.upserted?.purchased == true)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun onBackClick_does_nothing_locally() = runTest {
+        val bookRepo = FakeBookRepository().apply { 
+            storedBook = sampleBook() 
+        }
+        val bookshelfRepo = FakeBookshelfRepository()
+        
+        val vm = BookDetailViewModel(
+            bookRepository = bookRepo,
+            bookshelfRepository = bookshelfRepo,
+            bookId = "OLID", 
+            shelfId = "S1"
+        )
+        
+        // Collect state to trigger onStart
+        var latestState: BookDetailState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
+        }
+        
+        advanceUntilIdle()
+        val stateBefore = latestState?.copy()
+        
+        // Back click should not change local state (handled by navigation)
+        vm.onAction(BookDetailAction.OnBackClick)
+        
+        assertEquals(stateBefore, latestState)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun book_not_found_shows_error_state() = runTest {
+        val bookRepo = FakeBookRepository().apply { 
+            storedBook = null // Book not found
+        }
+        val bookshelfRepo = FakeBookshelfRepository()
+        
+        val vm = BookDetailViewModel(
+            bookRepository = bookRepo,
+            bookshelfRepository = bookshelfRepo,
+            bookId = "NOT_FOUND", 
+            shelfId = "S1"
+        )
+        
+        // Collect state to trigger onStart
+        var latestState: BookDetailState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
+        }
+        
+        advanceUntilIdle()
+        
+        assertNull(latestState?.book)
+        assertFalse(latestState?.isLoading == true)
+        
+        job.cancel()
+    }
+
+    @Test
+    fun description_failure_uses_book_without_description() = runTest {
+        val bookRepo = FakeBookRepository().apply { 
+            storedBook = sampleBook()
+            description = null // Description fetch fails
+        }
+        val bookshelfRepo = FakeBookshelfRepository()
+        
+        val vm = BookDetailViewModel(
+            bookRepository = bookRepo,
+            bookshelfRepository = bookshelfRepo,
+            bookId = "OLID", 
+            shelfId = "S1"
+        )
+        
+        // Collect state to trigger onStart
+        var latestState: BookDetailState? = null
+        val job = launch {
+            vm.state.collect { latestState = it }
+        }
+        
+        advanceUntilIdle()
+        
+        assertNotNull(latestState?.book)
+        assertNull(latestState?.book?.description)
         
         job.cancel()
     }
