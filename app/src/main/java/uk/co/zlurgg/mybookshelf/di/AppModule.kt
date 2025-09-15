@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.di
 
+import android.content.Context
 import coil3.ImageLoader
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.android.Android
@@ -34,7 +35,7 @@ val appModule = module {
         Android.create()
     }
     single { HttpClientFactory.create(get()) }
-    single<ImageLoader> { ImageLoaderFactory.create(get()) }
+    single<ImageLoader> { ImageLoaderFactory.create(get<Context>()) }
 
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
     singleOf(::UuidBookshelfIdGenerator).bind<BookshelfIdGenerator>()

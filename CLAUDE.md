@@ -14,6 +14,7 @@ My Bookshelf is a social reading app built with Kotlin and Jetpack Compose that 
 - **Install debug APK**: `./gradlew installDebug`
 - **Generate APK**: `./gradlew assembleDebug`
 - **List available tasks**: `./gradlew tasks`
+- **Clean compilation cache**: `./gradlew clean` (needed after major dependency changes)
 
 ### Testing
 - **Run all tests**: `./gradlew test`
@@ -32,6 +33,7 @@ My Bookshelf is a social reading app built with Kotlin and Jetpack Compose that 
 ### Database & Schemas
 - Room database schemas are stored in `app/schemas/` directory
 - The build automatically includes schema assets via `sourceSets["main"].assets.srcDir("schemas")`
+- Current database version: **5** (affiliateLink removed in v4→v5 migration)
 
 ## Architecture Overview
 
@@ -55,34 +57,38 @@ The app follows Clean Architecture with clear separation of concerns:
 ### Key Technical Components
 
 #### Dependency Injection
-- **Koin 4.1.0**: Used for dependency injection
+- **Koin 4.1.1**: Used for dependency injection
 - Main configuration in `di/AppModule.kt`
 - Scoped ViewModels with parameters (e.g., `shelfId`, `bookId`)
 - Pattern: `viewModel { (shelfId: String) -> BookshelfViewModel(shelfId, get(), get()) }`
+- Service layer abstractions: `TimeProvider`, `BookshelfIdGenerator` for testability
 
 #### Database
-- **Room 2.7.2**: Local persistence with SQLite
+- **Room 2.8.0**: Local persistence with SQLite
 - Entities: `BookEntity`, `BookshelfEntity`, `BookshelfBookCrossRef`
 - Database factory pattern for initialization
 - Type converters for complex data types
-- Current schema version: 3
+- Current schema version: **5** (affiliateLink removed, position added)
 - KSP annotation processing with incremental compilation
+- Migration path: v2→v3 (removed onShelf), v3→v4 (added position), v4→v5 (removed affiliateLink)
 
 #### Networking
-- **Ktor 3.2.3**: HTTP client for API calls
+- **Ktor 3.3.0**: HTTP client for API calls
 - Android engine for network requests
 - JSON serialization with kotlinx.serialization
 - Remote data source abstraction pattern
 - Timeout configuration: 20s socket/request timeouts
 - Custom `Result<T, DataError.Remote>` for error handling
+- **Coil3 Integration**: Image loading with Ktor3 network fetcher
 
 #### UI Architecture
-- **Jetpack Compose** (BOM 2025.08.01): Modern UI toolkit
+- **Jetpack Compose** (BOM 2025.09.00): Modern UI toolkit
 - **Material 3**: Design system implementation
 - **State Management**: ViewModel + StateFlow pattern
 - **Navigation Compose**: Type-safe navigation with route definitions
 - **Screen-ViewModel pattern**: Each screen has dedicated ViewModel
 - **Shared ViewModels**: Cross-screen data sharing via `SharedMyBookshelfViewModel`
+- **3D Visual Effects**: Realistic book spine rendering with shadows and gradients
 
 ### Package Structure
 ```
@@ -135,7 +141,9 @@ uk.co.zlurgg.mybookshelf/
 - **Async Testing**: Tests use `runTest`, `advanceUntilIdle()`, and proper coroutine test patterns
 - **Test Coverage**: Repository layer, ViewModel layer, data mappers, and integration tests
 - **State Flow Testing**: ViewModels using `stateIn()` require state collection via `launch { vm.state.collect { } }` to trigger initialization
-- **Current Coverage**: 12 test files for 75+ source files (needs improvement)
+- **Current Status**: 9 test files, 53 tests total, 2 failing (BookDetailViewModel, BookcaseViewModel)
+- **Test Utilities**: `TestIdGenerator`, `TestTimeProvider` for deterministic testing
+- **Search Tests**: All search-related tests are PASSING ✅
 
 ### API Integration
 - Open Library API for book search and details
@@ -152,11 +160,11 @@ uk.co.zlurgg.mybookshelf/
 ### Build Configuration
 - Android SDK: Target 36, Min 28, Compile 36
 - Kotlin JVM target: 11
-- ProGuard **DISABLED** for release builds (security concern - see issues below)
+- ProGuard **ENABLED** for release builds (`isMinifyEnabled = true`, `isShrinkResources = true`)
 - KSP arguments configured for Room incremental processing
 - Version catalog system in `gradle/libs.versions.toml`
 - Namespace: `uk.co.zlurgg.mybookshelf`
-- Build tools version: AGP 8.8.2, Kotlin 2.1.20
+- Build tools version: AGP 8.13.0, Kotlin 2.2.20
 
 ### Key Testing Patterns
 - **StateFlow ViewModels**: Always collect state in tests to trigger `onStart` initialization
@@ -208,6 +216,18 @@ uk.co.zlurgg.mybookshelf/
 - **Key Learning**: Use fresh database position for each drag, don't track cumulative movements - add `shelf.position` as pointerInput key
 - **Performance**: Only update shelves whose positions actually changed
 - **Component Structure**: `BookshelfCard.kt` (display), `BookcaseShelf.kt` (drag/swipe logic)
+
+### Coil3 Migration & Visual Improvements (Completed)
+- **Coil3 Integration**: Upgraded from Coil2 to Coil3 with Ktor3 network fetcher
+- **Image Loading**: Enhanced image loading with proper timeout configuration
+- **3D Book Effects**: Realistic book spine rendering with shadows, gradients, and matte colors
+- **Service Layer**: Added proper abstraction with `SystemTimeProvider`, `UuidBookshelfIdGenerator`
+- **Test Restructuring**: Complete test infrastructure overhaul with utilities
+
+### Database Architecture Cleanup (Completed)
+- **Schema v5**: Removed `affiliateLink` field from BookEntity (clean architecture decision)
+- **Proper Migrations**: Clean migration path from v2 through v5
+- **Type Converters**: Proper handling of complex data types
 
 ## Planned Features - Updated Priority Order
 
@@ -263,40 +283,49 @@ MyBookshelfGraph/
 
 ## Architectural Concerns to Address
 
-### High Priority Issues
+### ✅ RESOLVED ISSUES
 
 #### 1. Repository Pattern Violation - Responsibility Overlap
-**Status**: RESOLVED - No duplicate methods found, clean separation of concerns
-**Original Problem**: Three repositories with duplicate methods
-**Current State**: Only BookRepository, BookshelfRepository, BookcaseRepository exist with distinct responsibilities
+**Status**: ✅ RESOLVED - Clean separation of concerns maintained
+**Solution**: BookRepository, BookshelfRepository, BookcaseRepository have distinct responsibilities
 
 #### 2. Package Naming Typo
-**Status**: RESOLVED - All packages correctly use "presentation"
-**Original Problem**: `presenation` typo
-**Current State**: Verified all packages use correct spelling
+**Status**: ✅ RESOLVED - All packages correctly use "presentation"
+**Solution**: Verified all packages use correct spelling throughout codebase
 
 #### 3. ProGuard Disabled in Release
-**Status**: RESOLVED - ProGuard properly configured
-**Current State**: `isMinifyEnabled = true`, `isShrinkResources = true`, comprehensive rules in proguard-rules.pro
+**Status**: ✅ RESOLVED - ProGuard properly enabled
+**Solution**: `isMinifyEnabled = true`, `isShrinkResources = true` in release builds
+
+#### 4. Compilation Issues
+**Status**: ✅ RESOLVED - Fixed ImageLoaderFactory context injection
+**Solution**: Updated AppModule.kt to properly inject Android Context for ImageLoader creation
+
+### 🔄 CURRENT HIGH PRIORITY ISSUES
+
+#### 5. Test Failures
+**Status**: 🚨 NEEDS ATTENTION - 2 failing tests out of 53 total
+**Current Failures**:
+- `BookDetailViewModelTest.onPurchaseClick_marks_book_as_purchased` (line 251)
+- `BookcaseViewModelTest.showAddDialog_toggles_dialog_visibility` (line 125)
+**Note**: Search tests are all passing ✅
 
 ### Medium Priority Issues
 
-#### 4. Clean Architecture Violation in BookRepositoryImpl
-**Status**: RESOLVED - BookDataRepository doesn't exist, clean dependencies
-**Current State**: BookRepositoryImpl depends only on RemoteBookDataSource and BookshelfDao
-
-#### 5. Domain Entity Decisions
-**Status**: PARTIALLY RESOLVED
+#### 6. Domain Entity Architecture
+**Status**: ✅ RESOLVED
 **Decision**: `spineColor` remains in domain - it's persistent book data (Int), becomes UI only when Color() applied
 **Decision**: `affiliateLink` REMOVED (database v4→v5 migration) - will be generated on-demand via future AffiliateService
 
-#### 6. ViewModel Exception Handling Inconsistency
+#### 7. ViewModel Exception Handling Inconsistency
 **Problem**: Mixed error handling patterns (try-catch vs Result type)
 **Solution**: Standardize on `Result<T, Error>` pattern throughout
 
-#### 7. Limited Test Coverage
-**Problem**: Only 12 test files for 75+ source files, missing critical areas
-**Solution**: Aim for 80%+ coverage, especially business logic and error paths
+#### 8. Test Coverage Improvement Needed
+**Current State**: 9 test files, 53 tests total, 79 source files
+**Coverage**: ~12% (needs significant improvement)
+**Target**: 80%+ coverage, especially business logic and error paths
+**Priority**: Fix 2 failing tests, then expand coverage
 
 ### Low Priority Issues
 
