@@ -19,6 +19,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -97,14 +100,24 @@ fun BookDetailsScreen(
                     text = "by ${state.book.authors.joinToString()}",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                BookDetailImage(
-                    imageUrl = state.book.imageUrl,
-                    title = state.book.title
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
+                
+                var showImageWithSpacing by remember(state.book.imageUrl) { mutableStateOf(state.book.imageUrl.isNotBlank()) }
+                
+                if (showImageWithSpacing) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    
+                    BookDetailImage(
+                        imageUrl = state.book.imageUrl,
+                        title = state.book.title,
+                        onImageLoadResult = { success ->
+                            if (!success) {
+                                showImageWithSpacing = false
+                            }
+                        }
+                    )
+                    
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
 
                 RatingBar(
                     rating = state.book.averageRating?.toInt() ?: 0,

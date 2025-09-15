@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coil.compose)
+    implementation(libs.coil.network.ktor3)
 
     implementation(libs.bundles.ktor)
     implementation(libs.bundles.koin)

@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.di
 
+import coil3.ImageLoader
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.android.Android
 import org.koin.core.module.dsl.singleOf
@@ -26,12 +27,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewMode
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfViewModel
 import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
+import uk.co.zlurgg.mybookshelf.core.data.ImageLoaderFactory
 
 val appModule = module {
     single<HttpClientEngine> {
         Android.create()
     }
     single { HttpClientFactory.create(get()) }
+    single<ImageLoader> { ImageLoaderFactory.create(get()) }
 
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
     singleOf(::UuidBookshelfIdGenerator).bind<BookshelfIdGenerator>()
