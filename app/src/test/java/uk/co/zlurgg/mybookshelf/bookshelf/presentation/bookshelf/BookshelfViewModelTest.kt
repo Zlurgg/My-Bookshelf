@@ -33,7 +33,6 @@ class BookshelfViewModelTest {
         val upserts = mutableListOf<Book>()
         var searchResults = emptyList<Book>()
         var shouldFailUpsert = false
-        var shouldFailAddToShelf = false
 
         override suspend fun getBookById(bookId: String): Book? = null
 
@@ -392,9 +391,7 @@ class BookshelfViewModelTest {
         var latestState: BookshelfState? = null
         val job = launch { vm.state.collect { latestState = it } }
         advanceUntilIdle()
-        
-        val initialBooks = latestState?.books ?: emptyList()
-        
+
         val newBooks = listOf(sampleBook("B1"), sampleBook("B2"))
         bookshelfRepo.setBooksForShelf("S1", newBooks)
         advanceUntilIdle()
