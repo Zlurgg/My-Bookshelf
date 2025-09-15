@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.di
 
 import android.content.Context
 import coil3.ImageLoader
+import uk.co.zlurgg.mybookshelf.BuildConfig
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.android.Android
 import org.koin.core.module.dsl.singleOf
@@ -34,7 +35,7 @@ val appModule = module {
     single<HttpClientEngine> {
         Android.create()
     }
-    single { HttpClientFactory.create(get()) }
+    single { HttpClientFactory.create(get(), enableLogging = BuildConfig.DEBUG) }
     single<ImageLoader> { ImageLoaderFactory.create(get<Context>()) }
 
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()

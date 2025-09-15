@@ -38,7 +38,7 @@ class BookcaseViewModel(
             }
 
             is BookcaseAction.ShowAddDialog -> {
-                _state.update { it.copy(showAddDialog = true) }
+                _state.update { it.copy(showAddDialog = action.showDialog) }
             }
 
             is BookcaseAction.ResetOperationState -> {

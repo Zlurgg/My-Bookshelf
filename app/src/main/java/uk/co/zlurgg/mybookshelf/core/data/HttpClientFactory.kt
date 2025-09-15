@@ -10,12 +10,13 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.userAgent
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 object HttpClientFactory {
 
-    fun create(engine: HttpClientEngine): HttpClient {
+    fun create(engine: HttpClientEngine, enableLogging: Boolean = false): HttpClient {
         return HttpClient(engine) {
             install(ContentNegotiation) {
                 json(
@@ -34,10 +35,11 @@ object HttpClientFactory {
                         println(message)
                     }
                 }
-                level = LogLevel.ALL
+                level = if (enableLogging) LogLevel.ALL else LogLevel.NONE
             }
             defaultRequest {
                 contentType(ContentType.Application.Json)
+                userAgent("MyBookshelf/1.0 (Android App; github.com/zlurgg/mybookshelf)")
             }
         }
     }
