@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 
 data class BookshelfState(
@@ -12,6 +13,7 @@ data class BookshelfState(
     val searchQuery: String = "",
     val searchResults: List<Book> = emptyList(),
     val isSearchLoading: Boolean = false,
+    val selectedSort: BookSearchSort = BookSearchSort.BEST_MATCH,
     val recentlyDeleted: Book? = null,
     val errorMessage: String? = null,
     val shelfMaterial: ShelfMaterial = ShelfMaterial.DarkWood,
