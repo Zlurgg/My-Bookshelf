@@ -6,9 +6,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 interface BookSearchCallbacks {
     val onQueryChange: (String) -> Unit
     val onSortChange: (BookSearchSort) -> Unit
-    val onLanguageChange: (String?) -> Unit
     val onToggleAdvanced: () -> Unit
-    val onToggleSort: () -> Unit
     val onAuthorFilterChange: (String) -> Unit
     val onTitleFilterChange: (String) -> Unit
     val onAddBook: (Book) -> Unit

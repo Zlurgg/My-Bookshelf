@@ -230,6 +230,16 @@ uk.co.zlurgg.mybookshelf/
 - **Proper Migrations**: Clean migration path from v2 through v5
 - **Type Converters**: Proper handling of complex data types
 
+### Search UI/UX Improvements (Completed)
+- **Consolidated Search Interface**: Moved sort dropdown into advanced filters section for cleaner UI
+- **Right-Aligned Controls**: Toggle buttons now right-aligned for neater, more professional appearance
+- **Compact Components**: Reduced component sizes (padding, spacing, typography) for less cramped dialog
+- **Progressive Disclosure**: Single collapsible "Advanced" section containing sort + author/title filters
+- **State Management Cleanup**: Removed unused showSort state and simplified callback structure
+- **Enhanced User Flow**: Search → Advanced Filters (Sort + Author/Title) → Results
+- **String Resources**: Fixed hint text formatting ("e.g. Tolkien" instead of "e.g., Tolkien")
+- **Code Architecture**: Clean separation with BookSearchState + BookSearchCallbacks pattern
+
 ## Planned Features - Updated Priority Order
 
 ### UI/Visual Enhancements ✅ COMPLETED
@@ -237,11 +247,12 @@ uk.co.zlurgg.mybookshelf/
 - **3D Visual Effects**: Realistic book spines with shadows, gradients, and matte colors
 - **Code Cleanup**: Architecture improvements and violation fixes
 
-### Search Improvements (NEXT)
-- Enhanced search functionality with better filtering and sorting options
-- Search history and saved searches
-- Improved search result relevance and performance
-- Better search UX with loading states and error handling
+### Search Improvements ✅ COMPLETED
+- **Enhanced UI/UX**: Consolidated search interface with professional right-aligned controls
+- **Advanced Filtering**: Author/title filtering with progressive disclosure
+- **Sorting Options**: 5 sort options (Best Match, Newest, Oldest, Highest Rated, Most Popular)
+- **Improved Architecture**: Clean state management with BookSearchState + callbacks pattern
+- **Performance**: Debounced search (450ms) with efficient re-search triggering
 
 ### Testing Priorities
 - Increase test coverage from 15% to 80%+

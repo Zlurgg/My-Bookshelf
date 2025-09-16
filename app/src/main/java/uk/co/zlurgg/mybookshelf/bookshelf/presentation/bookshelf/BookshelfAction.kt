@@ -9,7 +9,6 @@ sealed interface BookshelfAction {
     data class OnSearchQueryChange(val query: String) : BookshelfAction
     data class OnSortChange(val sort: BookSearchSort) : BookshelfAction
     data object OnToggleAdvancedSearch : BookshelfAction
-    data object OnToggleSort : BookshelfAction
     data class OnAuthorFilterChange(val authorFilter: String) : BookshelfAction
     data class OnTitleFilterChange(val titleFilter: String) : BookshelfAction
     data object OnDismissSearchDialog : BookshelfAction
