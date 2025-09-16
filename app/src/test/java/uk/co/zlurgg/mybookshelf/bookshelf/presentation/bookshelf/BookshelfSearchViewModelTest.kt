@@ -35,6 +35,11 @@ class BookshelfSearchViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
 
+    companion object {
+        private const val TEST_SHELF_ID = "shelf1"
+        private const val DEBOUNCE_DELAY_MS = 450L
+    }
+
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
@@ -45,7 +50,7 @@ class BookshelfSearchViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private class MockBookRepository : BookRepository {
+    private class FakeBookRepository : BookRepository {
         val searchQueries = mutableListOf<String>()
         var searchResult: List<Book> = emptyList()
         var shouldReturnError = false
@@ -74,7 +79,7 @@ class BookshelfSearchViewModelTest {
         }
     }
 
-    private class MockBookshelfRepository : BookshelfRepository {
+    private class FakeBookshelfRepository : BookshelfRepository {
         override suspend fun addBookToShelf(shelfId: String, bookId: String) {}
 
         override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {}
@@ -113,12 +118,12 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun onSearchClick_opens_dialog() = runTest {
-        val bookRepository = MockBookRepository()
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookRepository = FakeBookRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
         
         var latestState: BookshelfState? = null
@@ -134,12 +139,12 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun onDismissSearchDialog_resets_state() = runTest {
-        val bookRepository = MockBookRepository()
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookRepository = FakeBookRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
         
         var latestState: BookshelfState? = null
@@ -164,12 +169,12 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun onSearchQueryChange_updates_ui_immediately() = runTest {
-        val bookRepository = MockBookRepository()
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookRepository = FakeBookRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
         
         var latestState: BookshelfState? = null
@@ -190,14 +195,14 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun search_triggers_after_debounce() = runTest {
-        val bookRepository = MockBookRepository().apply {
+        val bookRepository = FakeBookRepository().apply {
             searchResult = listOf(sampleBook("result1"))
         }
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository, 
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
         
         var latestState: BookshelfState? = null
@@ -208,8 +213,8 @@ class BookshelfSearchViewModelTest {
         vm.onAction(BookshelfAction.OnSearchClick)
         vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
         
-        // Wait for debounce period (450ms)
-        testDispatcher.scheduler.advanceTimeBy(450L)
+        // Wait for debounce period
+        testDispatcher.scheduler.advanceTimeBy(DEBOUNCE_DELAY_MS)
         testDispatcher.scheduler.runCurrent()
         
         // Should have called search
@@ -222,12 +227,12 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun short_queries_ignored() = runTest {
-        val bookRepository = MockBookRepository()
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookRepository = FakeBookRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
         
         var latestState: BookshelfState? = null
@@ -249,12 +254,12 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun rapid_queries_debounced_properly() = runTest {
-        val bookRepository = MockBookRepository()
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookRepository = FakeBookRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
 
         // Collect state to trigger initialization
@@ -269,8 +274,8 @@ class BookshelfSearchViewModelTest {
         vm.onAction(BookshelfAction.OnSearchQueryChange("hel"))
         vm.onAction(BookshelfAction.OnSearchQueryChange("hello"))
 
-        // Wait for debounce to complete (450ms)
-        testDispatcher.scheduler.advanceTimeBy(450L)
+        // Wait for debounce to complete
+        testDispatcher.scheduler.advanceTimeBy(DEBOUNCE_DELAY_MS)
         testDispatcher.scheduler.runCurrent()
 
         // Should only search for the final query
@@ -281,14 +286,14 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun search_results_update_state() = runTest {
-        val bookRepository = MockBookRepository().apply {
+        val bookRepository = FakeBookRepository().apply {
             searchResult = listOf(sampleBook("result1"), sampleBook("result2"))
         }
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
 
         // Collect state to trigger initialization
@@ -300,8 +305,8 @@ class BookshelfSearchViewModelTest {
         vm.onAction(BookshelfAction.OnSearchClick)
         vm.onAction(BookshelfAction.OnSearchQueryChange("books"))
 
-        // Wait for debounce and search to complete (450ms)
-        testDispatcher.scheduler.advanceTimeBy(450L)
+        // Wait for debounce and search to complete
+        testDispatcher.scheduler.advanceTimeBy(DEBOUNCE_DELAY_MS)
         testDispatcher.scheduler.runCurrent()
 
         // Should update search results
@@ -313,14 +318,14 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun search_error_handling() = runTest {
-        val bookRepository = MockBookRepository().apply {
+        val bookRepository = FakeBookRepository().apply {
             shouldReturnError = true
         }
-        val bookshelfRepository = MockBookshelfRepository()
+        val bookshelfRepository = FakeBookshelfRepository()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
-            shelfId = "shelf1"
+            shelfId = TEST_SHELF_ID
         )
         
         var latestState: BookshelfState? = null
@@ -332,8 +337,8 @@ class BookshelfSearchViewModelTest {
         advanceUntilIdle()
         vm.onAction(BookshelfAction.OnSearchQueryChange("test"))
         
-        // Wait for debounce period (450ms)
-        testDispatcher.scheduler.advanceTimeBy(450L)
+        // Wait for debounce period
+        testDispatcher.scheduler.advanceTimeBy(DEBOUNCE_DELAY_MS)
         testDispatcher.scheduler.runCurrent()
         
         // Should show error
