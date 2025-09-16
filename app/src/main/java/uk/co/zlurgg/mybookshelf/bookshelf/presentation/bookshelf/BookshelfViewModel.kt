@@ -46,7 +46,11 @@ class BookshelfViewModel(
                     isSearchDialogVisible = false,
                     searchQuery = "",
                     searchResults = emptyList(),
-                    isSearchLoading = false
+                    isSearchLoading = false,
+                    showAdvanced = false,
+                    showSort = false,
+                    authorFilter = "",
+                    titleFilter = ""
                 ) }
                 // Reset query to cancel any pending search
                 queryFlow.value = ""
@@ -97,6 +101,39 @@ class BookshelfViewModel(
             BookshelfAction.OnToggleTidyMode -> {
                 _state.update { it.copy(isTidyMode = !it.isTidyMode) }
             }
+            is BookshelfAction.OnSortChange -> {
+                _state.update { it.copy(selectedSort = action.sort) }
+
+                // Re-trigger search if there's an active query
+                val currentQuery = _state.value.searchQuery.trim()
+                if (currentQuery.length >= 2) {
+                    performSearch(currentQuery)
+                }
+            }
+            BookshelfAction.OnToggleAdvancedSearch -> {
+                _state.update { it.copy(showAdvanced = !it.showAdvanced) }
+            }
+            BookshelfAction.OnToggleSort -> {
+                _state.update { it.copy(showSort = !it.showSort) }
+            }
+            is BookshelfAction.OnAuthorFilterChange -> {
+                _state.update { it.copy(authorFilter = action.authorFilter) }
+
+                // Re-trigger search if there's an active query
+                val currentQuery = _state.value.searchQuery.trim()
+                if (currentQuery.length >= 2) {
+                    performSearch(currentQuery)
+                }
+            }
+            is BookshelfAction.OnTitleFilterChange -> {
+                _state.update { it.copy(titleFilter = action.titleFilter) }
+
+                // Re-trigger search if there's an active query
+                val currentQuery = _state.value.searchQuery.trim()
+                if (currentQuery.length >= 2) {
+                    performSearch(currentQuery)
+                }
+            }
             else -> Unit
         }
     }
@@ -138,28 +175,7 @@ class BookshelfViewModel(
                         return@collectLatest
                     }
 
-                    _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
-
-                    bookRepository
-                        .searchBooks(query)
-                        .onSuccess { searchResults ->
-                            _state.update {
-                                it.copy(
-                                    isSearchLoading = false,
-                                    errorMessage = null,
-                                    searchResults = searchResults
-                                )
-                            }
-                        }
-                        .onError { error ->
-                            _state.update {
-                                it.copy(
-                                    searchResults = emptyList(),
-                                    isSearchLoading = false,
-                                    errorMessage = error.toString()
-                                )
-                            }
-                        }
+                    performSearch(query)
                 }
         }
     }
@@ -178,6 +194,40 @@ class BookshelfViewModel(
                     )
                 }
             }
+        }
+    }
+
+    private fun performSearch(query: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
+
+            val currentState = _state.value
+            bookRepository
+                .searchBooks(
+                    query = query,
+                    sortBy = currentState.selectedSort,
+                    language = null, // TODO: Add language selection to state
+                    authorFilter = currentState.authorFilter.takeIf { it.isNotBlank() },
+                    titleFilter = currentState.titleFilter.takeIf { it.isNotBlank() }
+                )
+                .onSuccess { searchResults ->
+                    _state.update {
+                        it.copy(
+                            isSearchLoading = false,
+                            errorMessage = null,
+                            searchResults = searchResults
+                        )
+                    }
+                }
+                .onError { error ->
+                    _state.update {
+                        it.copy(
+                            searchResults = emptyList(),
+                            isSearchLoading = false,
+                            errorMessage = error.toString()
+                        )
+                    }
+                }
         }
     }
 }

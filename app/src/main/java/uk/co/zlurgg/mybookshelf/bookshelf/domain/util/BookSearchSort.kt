@@ -1,13 +1,15 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.util
 
-enum class BookSearchSort(val displayName: String) {
-    BEST_MATCH("Best Match"),
-    HIGHEST_RATED("Highest Rated"),
-    MOST_POPULAR("Most Popular"),
-    NEWEST("Newest"),
-    OLDEST("Oldest"),
-    TITLE_A_Z("Title A-Z"),
-    TITLE_Z_A("Title Z-A"),
-    AUTHOR_A_Z("Author A-Z"),
-    AUTHOR_Z_A("Author Z-A")
+enum class BookSearchSort(
+    val displayName: String,
+    val useServerSide: Boolean = false,
+    val serverSortParam: String? = null
+) {
+    BEST_MATCH("Best Match", useServerSide = false),
+    NEWEST("Newest First", useServerSide = true, serverSortParam = "new"),
+    OLDEST("Oldest First", useServerSide = true, serverSortParam = "old"),
+    HIGHEST_RATED("Highest Rated", useServerSide = false),
+    MOST_POPULAR("Most Popular", useServerSide = false);
+
+    val isClientSide: Boolean get() = !useServerSide
 }

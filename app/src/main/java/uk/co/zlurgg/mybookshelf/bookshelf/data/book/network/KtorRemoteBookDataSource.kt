@@ -20,18 +20,54 @@ class KtorRemoteBookDataSource(
     override suspend fun searchBooks(
         query: String,
         resultLimit: Int?,
-        language: String?
+        language: String?,
+        authorFilter: String?,
+        titleFilter: String?,
+        sort: String?
     ): Result<SearchResponseDto, DataError.Remote> {
         return safeCall<SearchResponseDto> {
             httpClient.get(
                 urlString = "$BASE_URL/search.json"
             ) {
-                parameter("q", query)
+                // Build query with field-specific filters
+                val finalQuery = buildQuery(query, authorFilter, titleFilter)
+                parameter("q", finalQuery)
+
                 parameter("limit", resultLimit)
                 parameter("language", language ?: systemLanguageProvider.getCurrentLanguageCode())
+
+                // Add server-side sort if specified
+                sort?.let { parameter("sort", it) }
+
                 parameter("fields", "key,title,author_name,author_key,cover_edition_key,cover_i,ratings_average,ratings_count,first_publish_year,language,number_of_pages_median,edition_count")
             }
         }
+    }
+
+    private fun buildQuery(
+        baseQuery: String,
+        authorFilter: String?,
+        titleFilter: String?
+    ): String {
+        val queryParts = mutableListOf<String>()
+
+        // Add base query if provided
+        if (baseQuery.isNotBlank()) {
+            queryParts.add(baseQuery.trim())
+        }
+
+        // Add author filter using Open Library field syntax
+        authorFilter?.takeIf { it.isNotBlank() }?.let {
+            queryParts.add("author:${it.trim()}")
+        }
+
+        // Add title filter using Open Library field syntax
+        titleFilter?.takeIf { it.isNotBlank() }?.let {
+            queryParts.add("title:${it.trim()}")
+        }
+
+        // Join with spaces (Open Library treats multiple terms as AND)
+        return queryParts.joinToString(" ").ifBlank { "*" }
     }
 
     override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
