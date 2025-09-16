@@ -10,12 +10,7 @@ class AndroidSystemLanguageProvider(
 
     override fun getCurrentLanguageCode(): String {
         val locale = try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                context.resources.configuration.locales[0]
-            } else {
-                @Suppress("DEPRECATION")
-                context.resources.configuration.locale
-            }
+            context.resources.configuration.locales[0]
         } catch (e: Exception) {
             Locale.getDefault()
         } ?: Locale.getDefault()
@@ -23,23 +18,6 @@ class AndroidSystemLanguageProvider(
         return mapToOpenLibraryLanguageCode(locale.language)
     }
 
-    override fun getAvailableLanguages(): List<String> {
-        return listOf(
-            "eng", // English
-            "spa", // Spanish
-            "fre", // French
-            "ger", // German
-            "ita", // Italian
-            "por", // Portuguese
-            "dut", // Dutch
-            "rus", // Russian
-            "jpn", // Japanese
-            "chi", // Chinese
-            "kor", // Korean
-            "ara", // Arabic
-            "hin", // Hindi
-        )
-    }
 
     private fun mapToOpenLibraryLanguageCode(languageCode: String): String {
         return when (languageCode) {
