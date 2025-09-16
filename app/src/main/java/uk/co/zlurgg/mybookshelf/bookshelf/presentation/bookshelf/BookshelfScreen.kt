@@ -227,7 +227,11 @@ fun BookshelfScreen(
                 isLoading = state.isSearchLoading,
                 inShelfIds = state.books.map { it.id }.toSet(),
                 selectedSort = state.selectedSort,
-                selectedLanguage = null
+                selectedLanguage = null,
+                showAdvanced = state.showAdvanced,
+                showSort = state.showSort,
+                authorFilter = state.authorFilter,
+                titleFilter = state.titleFilter
             ),
             callbacks = object : BookSearchCallbacks {
                 override val onQueryChange: (String) -> Unit = { query ->
@@ -238,6 +242,18 @@ fun BookshelfScreen(
                 }
                 override val onLanguageChange: (String?) -> Unit = { _ ->
                     // TODO: Add language change action
+                }
+                override val onToggleAdvanced: () -> Unit = {
+                    onAction(BookshelfAction.OnToggleAdvancedSearch)
+                }
+                override val onToggleSort: () -> Unit = {
+                    onAction(BookshelfAction.OnToggleSort)
+                }
+                override val onAuthorFilterChange: (String) -> Unit = { authorFilter ->
+                    onAction(BookshelfAction.OnAuthorFilterChange(authorFilter))
+                }
+                override val onTitleFilterChange: (String) -> Unit = { titleFilter ->
+                    onAction(BookshelfAction.OnTitleFilterChange(titleFilter))
                 }
                 override val onAddBook: (Book) -> Unit = { book ->
                     onAction(BookshelfAction.OnAddBookClick(book))

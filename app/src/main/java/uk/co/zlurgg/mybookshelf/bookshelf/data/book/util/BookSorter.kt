@@ -33,14 +33,10 @@ class BookSorter {
     ): List<Book> {
         return when (sortBy) {
             BookSearchSort.BEST_MATCH -> sortByBestMatch(books, searchQuery)
-            BookSearchSort.HIGHEST_RATED -> sortByHighestRated(books)
-            BookSearchSort.MOST_POPULAR -> sortByMostPopular(books)
             BookSearchSort.NEWEST -> sortByNewest(books)
             BookSearchSort.OLDEST -> sortByOldest(books)
-            BookSearchSort.TITLE_A_Z -> sortByTitleAscending(books)
-            BookSearchSort.TITLE_Z_A -> sortByTitleDescending(books)
-            BookSearchSort.AUTHOR_A_Z -> sortByAuthorAscending(books)
-            BookSearchSort.AUTHOR_Z_A -> sortByAuthorDescending(books)
+            BookSearchSort.HIGHEST_RATED -> sortByHighestRated(books)
+            BookSearchSort.MOST_POPULAR -> sortByMostPopular(books)
         }
     }
 
@@ -142,25 +138,6 @@ class BookSorter {
         }
     }
 
-    private fun sortByTitleAscending(books: List<Book>): List<Book> {
-        return books.sortedBy { it.title.lowercase() }
-    }
-
-    private fun sortByTitleDescending(books: List<Book>): List<Book> {
-        return books.sortedByDescending { it.title.lowercase() }
-    }
-
-    private fun sortByAuthorAscending(books: List<Book>): List<Book> {
-        return books.sortedBy { book ->
-            book.authors.firstOrNull()?.lowercase() ?: "zzz" // Unknown authors go to end
-        }
-    }
-
-    private fun sortByAuthorDescending(books: List<Book>): List<Book> {
-        return books.sortedByDescending { book ->
-            book.authors.firstOrNull()?.lowercase() ?: ""
-        }
-    }
 
     private fun levenshteinDistance(s1: String, s2: String): Int {
         val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }

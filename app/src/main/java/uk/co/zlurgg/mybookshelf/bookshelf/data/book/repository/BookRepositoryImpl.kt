@@ -38,12 +38,27 @@ class BookRepositoryImpl(
     override suspend fun searchBooks(
         query: String,
         sortBy: BookSearchSort,
-        language: String?
+        language: String?,
+        authorFilter: String?,
+        titleFilter: String?
     ): Result<List<Book>, DataError.Remote> {
-        return remoteBookDataSource.searchBooks(query, language = language)
-            .map { dto ->
-                val books = dto.results.map { it.toBook() }
+        // Determine server-side sort parameter
+        val serverSort = if (sortBy.useServerSide) sortBy.serverSortParam else null
+
+        return remoteBookDataSource.searchBooks(
+            query = query,
+            language = language,
+            authorFilter = authorFilter,
+            titleFilter = titleFilter,
+            sort = serverSort
+        ).map { dto ->
+            val books = dto.results.map { it.toBook() }
+            // Apply client-side sorting only if not handled server-side
+            if (sortBy.isClientSide) {
                 bookSorter.sortBooks(books, sortBy, query)
+            } else {
+                books // Server already sorted
             }
+        }
     }
 }

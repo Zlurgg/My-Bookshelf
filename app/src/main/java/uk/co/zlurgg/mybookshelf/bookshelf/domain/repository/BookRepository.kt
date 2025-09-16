@@ -18,6 +18,8 @@ interface BookRepository {
     suspend fun searchBooks(
         query: String,
         sortBy: BookSearchSort = BookSearchSort.BEST_MATCH,
-        language: String? = null
+        language: String? = null,
+        authorFilter: String? = null,
+        titleFilter: String? = null
     ): Result<List<Book>, DataError.Remote>
 }

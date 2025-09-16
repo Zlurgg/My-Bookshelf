@@ -3,7 +3,9 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_compone
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -44,12 +46,32 @@ fun BookSearchDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp, bottom = 8.dp)
+                    .padding(top = 2.dp, bottom = 4.dp)
             ) {
                 BookSearchBar(
                     searchQuery = state.query,
                     onSearchQueryChange = callbacks.onQueryChange,
                     onImeSearch = { /* handled by onQueryChange as user types */ }
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                AdvancedSearchFilters(
+                    showAdvanced = state.showAdvanced,
+                    authorFilter = state.authorFilter,
+                    titleFilter = state.titleFilter,
+                    onToggleAdvanced = callbacks.onToggleAdvanced,
+                    onAuthorFilterChange = callbacks.onAuthorFilterChange,
+                    onTitleFilterChange = callbacks.onTitleFilterChange
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                BookSortDropdown(
+                    selectedSort = state.selectedSort,
+                    showSort = state.showSort,
+                    onSortChange = callbacks.onSortChange,
+                    onToggleSort = callbacks.onToggleSort
                 )
             }
         },
@@ -125,12 +147,20 @@ private fun BookSearchScreenPreview() {
             isLoading = false,
             inShelfIds = emptySet(),
             selectedSort = BookSearchSort.BEST_MATCH,
-            selectedLanguage = null
+            selectedLanguage = null,
+            showAdvanced = false,
+            showSort = false,
+            authorFilter = "",
+            titleFilter = ""
         ),
         callbacks = object : BookSearchCallbacks {
             override val onQueryChange: (String) -> Unit = {}
             override val onSortChange: (BookSearchSort) -> Unit = {}
             override val onLanguageChange: (String?) -> Unit = {}
+            override val onToggleAdvanced: () -> Unit = {}
+            override val onToggleSort: () -> Unit = {}
+            override val onAuthorFilterChange: (String) -> Unit = {}
+            override val onTitleFilterChange: (String) -> Unit = {}
             override val onAddBook: (Book) -> Unit = {}
             override val onRemoveBook: (Book) -> Unit = {}
             override val onBookClick: (Book) -> Unit = {}

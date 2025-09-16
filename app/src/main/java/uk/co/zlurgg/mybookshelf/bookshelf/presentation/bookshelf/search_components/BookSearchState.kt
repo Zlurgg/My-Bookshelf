@@ -9,5 +9,9 @@ data class BookSearchState(
     val isLoading: Boolean,
     val inShelfIds: Set<String>,
     val selectedSort: BookSearchSort,
-    val selectedLanguage: String? = null
+    val selectedLanguage: String? = null,
+    val showAdvanced: Boolean = false,
+    val showSort: Boolean = false,
+    val authorFilter: String = "",
+    val titleFilter: String = ""
 )
