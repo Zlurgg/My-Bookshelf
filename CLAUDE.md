@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-My Bookshelf is a personal bookshelf organizer built with Kotlin and Jetpack Compose that lets users create, customize, and organize their book collections. Features include drag-and-drop shelf building, book search via Open Library/Google Books APIs, local data storage, and simple bookshelf export/import for sharing between devices.
+My Bookshelf is a personal bookshelf organizer built with Kotlin and Jetpack Compose that lets users create, customize, and organize their book collections. Features include drag-and-drop shelf building, book search via Open Library/Google Books APIs, local data storage, and simple bookshelf Export/Import for sharing between devices.
 
 ## Common Commands
 
@@ -255,7 +255,7 @@ uk.co.zlurgg.mybookshelf/
 - **Performance**: Debounced search (450ms) with efficient re-search triggering
 
 ### 📁 Bookshelf Export/Import (NEXT)
-- **Local-First Design**: Export/import functionality for sharing bookshelves between devices
+- **Local-First Design**: Export/Import functionality for sharing bookshelves between devices
 - **Android Share Integration**: Standard share sheet for sending bookshelf data
 - **JSON Format**: Simple, readable format for bookshelf data exchange
 - **Validation**: Import validation with user-friendly error handling
@@ -420,13 +420,12 @@ The codebase demonstrates **excellent engineering practices** with a solid archi
 **User Flow**: Share shelf → Android share sheet → Recipient imports → Books appear in collection
 
 **Action Items**:
-```kotlin
 // Core components to implement:
-- BookshelfExportService.kt - JSON export/import functionality
+- BookshelfExportService.kt - JSON Export/Import functionality
 - BookshelfExportData.kt - Data class for export format
 - Import UI components - User-friendly import flow with validation
 - Android share sheet integration - Standard platform sharing
-```
+
 
 **Technical Details**:
 - JSON serialization of shelf data (books, name, material, metadata)
@@ -470,14 +469,14 @@ The codebase demonstrates **excellent engineering practices** with a solid archi
 ## Next Session Action Items
 
 ### 🎯 **Immediate Tasks (Ready to Start)**
-1. **Implement `BookshelfExportService.kt`** - Core export/import functionality with JSON serialization
+1. **Implement `BookshelfExportService.kt`** - Core Export/Import functionality with JSON serialization
 2. **Create `BookshelfExportData.kt`** - Data class defining export format and validation
 3. **Add export UI** - "Share Shelf" button in BookshelfScreen with Android share integration
 4. **Add import UI** - Import flow in BookcaseScreen with validation and error handling
-5. **Create export/import tests** - Comprehensive testing for data integrity and edge cases
+5. **Create Export/Import tests** - Comprehensive testing for data integrity and edge cases
 
 ### 📋 **Session Planning**
-- **Estimated Time**: 2-3 hours for complete export/import implementation
+- **Estimated Time**: 2-3 hours for complete Export/Import implementation
 - **Complexity**: Low-Medium (leverages existing architecture patterns)
 - **Dependencies**: None (all prerequisites completed)
 - **Outcome**: Working bookshelf sharing between devices with zero legal overhead
@@ -487,4 +486,4 @@ The codebase demonstrates **excellent engineering practices** with a solid archi
 - Share: Android share sheet integration working smoothly
 - Import: Validate and import shared bookshelves successfully
 - User Experience: Intuitive flow from share to import with clear feedback
-- Testing: Comprehensive coverage for export/import edge cases
+- Testing: Comprehensive coverage for Export/Import edge cases
