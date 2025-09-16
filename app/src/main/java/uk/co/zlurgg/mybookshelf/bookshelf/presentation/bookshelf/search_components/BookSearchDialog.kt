@@ -26,25 +26,19 @@ import uk.co.zlurgg.mybookshelf.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.LoadImage
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
 @Composable
 fun BookSearchDialog(
-    query: String,
-    onQueryChange: (String) -> Unit,
-    results: List<Book>,
-    isLoading: Boolean,
-    inShelfIds: Set<String>,
-    onAddBook: (Book) -> Unit,
-    onRemoveBook: (Book) -> Unit,
-    onBookClick: (Book) -> Unit,
-    onDismiss: () -> Unit
+    state: BookSearchState,
+    callbacks: BookSearchCallbacks
 ) {
     AlertDialog(
         onDismissRequest = {
             // Only allow dismiss if not loading
-            if (!isLoading) onDismiss()
+            if (!state.isLoading) callbacks.onDismiss()
         },
         title = {
             Column(
@@ -53,15 +47,15 @@ fun BookSearchDialog(
                     .padding(top = 4.dp, bottom = 8.dp)
             ) {
                 BookSearchBar(
-                    searchQuery = query,
-                    onSearchQueryChange = onQueryChange,
-                    onImeSearch = { /* handled by onQueryChange as user types */ },
+                    searchQuery = state.query,
+                    onSearchQueryChange = callbacks.onQueryChange,
+                    onImeSearch = { /* handled by onQueryChange as user types */ }
                 )
             }
         },
         text = {
             when {
-                isLoading -> {
+                state.isLoading -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -71,7 +65,7 @@ fun BookSearchDialog(
                         CircularProgressIndicator()
                     }
                 }
-                results.isEmpty() && query.isNotBlank() -> {
+                state.results.isEmpty() && state.query.isNotBlank() -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -85,8 +79,8 @@ fun BookSearchDialog(
                     LazyColumn(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(results) { book ->
-                            val isInShelf = inShelfIds.contains(book.id)
+                        items(state.results) { book ->
+                            val isInShelf = state.inShelfIds.contains(book.id)
                             ListItem(
                                 leadingContent = {
                                     LoadImage(
@@ -99,16 +93,16 @@ fun BookSearchDialog(
                                 supportingContent = { Text(book.authors.joinToString()) },
                                 trailingContent = {
                                     if (isInShelf) {
-                                        IconButton(onClick = { onRemoveBook(book) }) {
+                                        IconButton(onClick = { callbacks.onRemoveBook(book) }) {
                                             Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.action_remove_short))
                                         }
                                     } else {
-                                        IconButton(onClick = { onAddBook(book) }) {
+                                        IconButton(onClick = { callbacks.onAddBook(book) }) {
                                             Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.action_add_short))
                                         }
                                     }
                                 },
-                                modifier = Modifier.clickable { onBookClick(book) }
+                                modifier = Modifier.clickable { callbacks.onBookClick(book) }
                             )
                         }
                     }
@@ -116,7 +110,7 @@ fun BookSearchDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(id = R.string.action_close)) }
+            TextButton(onClick = { callbacks.onDismiss() }) { Text(stringResource(id = R.string.action_close)) }
         }
     )
 }
@@ -125,14 +119,22 @@ fun BookSearchDialog(
 @Composable
 private fun BookSearchScreenPreview() {
     BookSearchDialog(
-        query = "",
-        onQueryChange = {},
-        results = sampleBooks,
-        isLoading = false,
-        inShelfIds = emptySet(),
-        onAddBook = {},
-        onRemoveBook = {},
-        onBookClick = {},
-        onDismiss = {},
+        state = BookSearchState(
+            query = "",
+            results = sampleBooks,
+            isLoading = false,
+            inShelfIds = emptySet(),
+            selectedSort = BookSearchSort.BEST_MATCH,
+            selectedLanguage = null
+        ),
+        callbacks = object : BookSearchCallbacks {
+            override val onQueryChange: (String) -> Unit = {}
+            override val onSortChange: (BookSearchSort) -> Unit = {}
+            override val onLanguageChange: (String?) -> Unit = {}
+            override val onAddBook: (Book) -> Unit = {}
+            override val onRemoveBook: (Book) -> Unit = {}
+            override val onBookClick: (Book) -> Unit = {}
+            override val onDismiss: () -> Unit = {}
+        }
     )
 }

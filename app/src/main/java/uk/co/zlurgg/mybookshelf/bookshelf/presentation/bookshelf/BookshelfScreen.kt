@@ -26,8 +26,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchState
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.BookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookWidth
@@ -218,22 +221,38 @@ fun BookshelfScreen(
     // Search dialog
     if (state.isSearchDialogVisible) {
         BookSearchDialog(
-            query = state.searchQuery,
-            onQueryChange = { onAction(BookshelfAction.OnSearchQueryChange(it)) },
-            results = state.searchResults,
-            isLoading = state.isSearchLoading,
-            inShelfIds = state.books.map { it.id }.toSet(),
-            onAddBook = { book ->
-                onAction(BookshelfAction.OnAddBookClick(book))
-                onAction(BookshelfAction.OnDismissSearchDialog)
-            },
-            onRemoveBook = { book ->
-                onAction(BookshelfAction.OnRemoveBook(book))
-                onAction(BookshelfAction.OnDismissSearchDialog)
-            },
-            onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
-            onDismiss = {
-                onAction(BookshelfAction.OnDismissSearchDialog)
+            state = BookSearchState(
+                query = state.searchQuery,
+                results = state.searchResults,
+                isLoading = state.isSearchLoading,
+                inShelfIds = state.books.map { it.id }.toSet(),
+                selectedSort = state.selectedSort,
+                selectedLanguage = null
+            ),
+            callbacks = object : BookSearchCallbacks {
+                override val onQueryChange: (String) -> Unit = { query ->
+                    onAction(BookshelfAction.OnSearchQueryChange(query))
+                }
+                override val onSortChange: (BookSearchSort) -> Unit = { sort ->
+                    onAction(BookshelfAction.OnSortChange(sort))
+                }
+                override val onLanguageChange: (String?) -> Unit = { _ ->
+                    // TODO: Add language change action
+                }
+                override val onAddBook: (Book) -> Unit = { book ->
+                    onAction(BookshelfAction.OnAddBookClick(book))
+                    onAction(BookshelfAction.OnDismissSearchDialog)
+                }
+                override val onRemoveBook: (Book) -> Unit = { book ->
+                    onAction(BookshelfAction.OnRemoveBook(book))
+                    onAction(BookshelfAction.OnDismissSearchDialog)
+                }
+                override val onBookClick: (Book) -> Unit = { book ->
+                    onAction(BookshelfAction.OnBookClick(book))
+                }
+                override val onDismiss: () -> Unit = {
+                    onAction(BookshelfAction.OnDismissSearchDialog)
+                }
             }
         )
     }
