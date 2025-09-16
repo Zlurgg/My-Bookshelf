@@ -49,7 +49,11 @@ class BookshelfViewModelTest {
             return Result.Success(null)
         }
 
-        override suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote> {
+        override suspend fun searchBooks(
+            query: String,
+            sortBy: uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort,
+            language: String?
+        ): Result<List<Book>, DataError.Remote> {
             return Result.Success(searchResults)
         }
     }

@@ -8,7 +8,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.Result
 interface RemoteBookDataSource {
     suspend fun searchBooks(
         query: String,
-        resultLimit: Int? = null
+        resultLimit: Int? = null,
+        language: String? = null
     ): Result<SearchResponseDto, DataError.Remote>
 
     suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote>

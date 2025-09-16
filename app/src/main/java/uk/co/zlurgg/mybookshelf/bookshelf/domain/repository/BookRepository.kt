@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.repository
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
@@ -14,5 +15,9 @@ interface BookRepository {
     suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote>
     
     // Book search
-    suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote>
+    suspend fun searchBooks(
+        query: String,
+        sortBy: BookSearchSort = BookSearchSort.BEST_MATCH,
+        language: String? = null
+    ): Result<List<Book>, DataError.Remote>
 }

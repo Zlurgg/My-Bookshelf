@@ -17,12 +17,15 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.util.BookSorter
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UuidBookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
@@ -41,6 +44,8 @@ val appModule = module {
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
     singleOf(::UuidBookshelfIdGenerator).bind<BookshelfIdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
+    singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
+    singleOf(::BookSorter)
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
