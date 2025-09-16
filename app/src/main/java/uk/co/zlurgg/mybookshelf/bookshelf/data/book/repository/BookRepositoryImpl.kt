@@ -4,15 +4,18 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.util.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import uk.co.zlurgg.mybookshelf.core.domain.map
 
 class BookRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
-    private val dao: BookshelfDao
+    private val dao: BookshelfDao,
+    private val bookSorter: BookSorter
 ) : BookRepository {
 
     override suspend fun getBookById(bookId: String): Book? {
@@ -32,8 +35,15 @@ class BookRepositoryImpl(
             .map { bookDetails -> bookDetails.description }
     }
 
-    override suspend fun searchBooks(query: String): Result<List<Book>, DataError.Remote> {
-        return remoteBookDataSource.searchBooks(query)
-            .map { dto -> dto.results.map { it.toBook() } }
+    override suspend fun searchBooks(
+        query: String,
+        sortBy: BookSearchSort,
+        language: String?
+    ): Result<List<Book>, DataError.Remote> {
+        return remoteBookDataSource.searchBooks(query, language = language)
+            .map { dto ->
+                val books = dto.results.map { it.toBook() }
+                bookSorter.sortBooks(books, sortBy, query)
+            }
     }
 }
