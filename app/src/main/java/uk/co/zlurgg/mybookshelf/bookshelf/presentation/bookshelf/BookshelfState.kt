@@ -15,7 +15,6 @@ data class BookshelfState(
     val isSearchLoading: Boolean = false,
     val selectedSort: BookSearchSort = BookSearchSort.BEST_MATCH,
     val showAdvanced: Boolean = false,
-    val showSort: Boolean = false,
     val authorFilter: String = "",
     val titleFilter: String = "",
     val recentlyDeleted: Book? = null,

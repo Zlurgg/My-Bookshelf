@@ -48,7 +48,6 @@ class BookshelfViewModel(
                     searchResults = emptyList(),
                     isSearchLoading = false,
                     showAdvanced = false,
-                    showSort = false,
                     authorFilter = "",
                     titleFilter = ""
                 ) }
@@ -112,9 +111,6 @@ class BookshelfViewModel(
             }
             BookshelfAction.OnToggleAdvancedSearch -> {
                 _state.update { it.copy(showAdvanced = !it.showAdvanced) }
-            }
-            BookshelfAction.OnToggleSort -> {
-                _state.update { it.copy(showSort = !it.showSort) }
             }
             is BookshelfAction.OnAuthorFilterChange -> {
                 _state.update { it.copy(authorFilter = action.authorFilter) }
@@ -206,7 +202,7 @@ class BookshelfViewModel(
                 .searchBooks(
                     query = query,
                     sortBy = currentState.selectedSort,
-                    language = null, // TODO: Add language selection to state
+                    language = null,
                     authorFilter = currentState.authorFilter.takeIf { it.isNotBlank() },
                     titleFilter = currentState.titleFilter.takeIf { it.isNotBlank() }
                 )

@@ -24,8 +24,8 @@
     <string name="hide_advanced_search">Hide Advanced</string>
     <string name="filter_by_author">Filter by Author</string>
     <string name="filter_by_title">Filter by Title</string>
-    <string name="author_hint">e.g., Tolkien</string>
-    <string name="title_hint">e.g., Lord of the Rings</string>
+    <string name="author_hint">e.g. Tolkien</string>
+    <string name="title_hint">e.g. Lord of the Rings</string>
     <string name="action_close">Close</string>
 
     <!-- Book detail -->

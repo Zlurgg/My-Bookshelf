@@ -227,9 +227,7 @@ fun BookshelfScreen(
                 isLoading = state.isSearchLoading,
                 inShelfIds = state.books.map { it.id }.toSet(),
                 selectedSort = state.selectedSort,
-                selectedLanguage = null,
                 showAdvanced = state.showAdvanced,
-                showSort = state.showSort,
                 authorFilter = state.authorFilter,
                 titleFilter = state.titleFilter
             ),
@@ -240,14 +238,8 @@ fun BookshelfScreen(
                 override val onSortChange: (BookSearchSort) -> Unit = { sort ->
                     onAction(BookshelfAction.OnSortChange(sort))
                 }
-                override val onLanguageChange: (String?) -> Unit = { _ ->
-                    // TODO: Add language change action
-                }
                 override val onToggleAdvanced: () -> Unit = {
                     onAction(BookshelfAction.OnToggleAdvancedSearch)
-                }
-                override val onToggleSort: () -> Unit = {
-                    onAction(BookshelfAction.OnToggleSort)
                 }
                 override val onAuthorFilterChange: (String) -> Unit = { authorFilter ->
                     onAction(BookshelfAction.OnAuthorFilterChange(authorFilter))

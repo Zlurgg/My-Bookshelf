@@ -60,18 +60,11 @@ fun BookSearchDialog(
                     showAdvanced = state.showAdvanced,
                     authorFilter = state.authorFilter,
                     titleFilter = state.titleFilter,
+                    selectedSort = state.selectedSort,
                     onToggleAdvanced = callbacks.onToggleAdvanced,
                     onAuthorFilterChange = callbacks.onAuthorFilterChange,
-                    onTitleFilterChange = callbacks.onTitleFilterChange
-                )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                BookSortDropdown(
-                    selectedSort = state.selectedSort,
-                    showSort = state.showSort,
-                    onSortChange = callbacks.onSortChange,
-                    onToggleSort = callbacks.onToggleSort
+                    onTitleFilterChange = callbacks.onTitleFilterChange,
+                    onSortChange = callbacks.onSortChange
                 )
             }
         },
@@ -147,18 +140,14 @@ private fun BookSearchScreenPreview() {
             isLoading = false,
             inShelfIds = emptySet(),
             selectedSort = BookSearchSort.BEST_MATCH,
-            selectedLanguage = null,
             showAdvanced = false,
-            showSort = false,
             authorFilter = "",
             titleFilter = ""
         ),
         callbacks = object : BookSearchCallbacks {
             override val onQueryChange: (String) -> Unit = {}
             override val onSortChange: (BookSearchSort) -> Unit = {}
-            override val onLanguageChange: (String?) -> Unit = {}
             override val onToggleAdvanced: () -> Unit = {}
-            override val onToggleSort: () -> Unit = {}
             override val onAuthorFilterChange: (String) -> Unit = {}
             override val onTitleFilterChange: (String) -> Unit = {}
             override val onAddBook: (Book) -> Unit = {}
