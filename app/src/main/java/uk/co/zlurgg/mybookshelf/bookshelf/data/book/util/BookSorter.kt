@@ -7,13 +7,32 @@ import kotlin.math.max
 
 class BookSorter {
 
+    companion object {
+        // Weighted scoring weights for BEST_MATCH algorithm
+        private const val TITLE_WEIGHT = 0.4
+        private const val AUTHOR_WEIGHT = 0.2
+        private const val RATINGS_WEIGHT = 0.25
+        private const val POPULARITY_WEIGHT = 0.15
+
+        // Title similarity scores
+        private const val EXACT_MATCH_SCORE = 100.0
+        private const val STARTS_WITH_SCORE = 90.0
+        private const val CONTAINS_SCORE = 70.0
+        private const val FUZZY_MATCH_MAX_SCORE = 50.0
+
+        // Author match scores
+        private const val AUTHOR_EXACT_MATCH_SCORE = 100.0
+        private const val AUTHOR_STARTS_WITH_SCORE = 80.0
+        private const val AUTHOR_CONTAINS_SCORE = 60.0
+    }
+
     fun sortBooks(
         books: List<Book>,
         sortBy: BookSearchSort,
-        originalQuery: String = ""
+        searchQuery: String = ""
     ): List<Book> {
         return when (sortBy) {
-            BookSearchSort.BEST_MATCH -> sortByBestMatch(books, originalQuery)
+            BookSearchSort.BEST_MATCH -> sortByBestMatch(books, searchQuery)
             BookSearchSort.HIGHEST_RATED -> sortByHighestRated(books)
             BookSearchSort.MOST_POPULAR -> sortByMostPopular(books)
             BookSearchSort.NEWEST -> sortByNewest(books)
@@ -37,7 +56,8 @@ class BookSorter {
             val popularityScore = calculatePopularityScore(book.ratingCount)
 
             // Weighted scoring: Title 40%, Author 20%, Ratings 25%, Popularity 15%
-            (titleSimilarity * 0.4) + (authorMatch * 0.2) + (ratingsScore * 0.25) + (popularityScore * 0.15)
+            (titleSimilarity * TITLE_WEIGHT) + (authorMatch * AUTHOR_WEIGHT) +
+                    (ratingsScore * RATINGS_WEIGHT) + (popularityScore * POPULARITY_WEIGHT)
         }
     }
 
@@ -45,15 +65,15 @@ class BookSorter {
         val titleLower = title.lowercase()
 
         return when {
-            titleLower == query -> 100.0 // Exact match
-            titleLower.startsWith(query) -> 90.0 // Starts with query
-            titleLower.contains(query) -> 70.0 // Contains query
+            titleLower == query -> EXACT_MATCH_SCORE
+            titleLower.startsWith(query) -> STARTS_WITH_SCORE
+            titleLower.contains(query) -> CONTAINS_SCORE
             else -> {
                 // Calculate Levenshtein distance for fuzzy matching
                 val distance = levenshteinDistance(titleLower, query)
                 val maxLength = max(titleLower.length, query.length)
                 val similarity = (maxLength - distance).toDouble() / maxLength
-                similarity * 50.0 // Scale to 0-50 range
+                similarity * FUZZY_MATCH_MAX_SCORE
             }
         }
     }
@@ -64,9 +84,9 @@ class BookSorter {
         val bestMatch = authors.maxOfOrNull { author ->
             val authorLower = author.lowercase()
             when {
-                authorLower == query -> 100.0
-                authorLower.startsWith(query) -> 80.0
-                authorLower.contains(query) -> 60.0
+                authorLower == query -> AUTHOR_EXACT_MATCH_SCORE
+                authorLower.startsWith(query) -> AUTHOR_STARTS_WITH_SCORE
+                authorLower.contains(query) -> AUTHOR_CONTAINS_SCORE
                 else -> 0.0
             }
         } ?: 0.0
