@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-My Bookshelf is a social reading app built with Kotlin and Jetpack Compose that lets users create, customize, and share their bookshelves, reading setups, and cozy corners. Features include drag-and-drop shelf building, book search via Open Library/Google Books APIs, affiliate link integration for monetization, public shelf sharing, and reading nook galleries.
+My Bookshelf is a personal bookshelf organizer built with Kotlin and Jetpack Compose that lets users create, customize, and organize their book collections. Features include drag-and-drop shelf building, book search via Open Library/Google Books APIs, local data storage, and simple bookshelf export/import for sharing between devices.
 
 ## Common Commands
 
@@ -254,6 +254,13 @@ uk.co.zlurgg.mybookshelf/
 - **Improved Architecture**: Clean state management with BookSearchState + callbacks pattern
 - **Performance**: Debounced search (450ms) with efficient re-search triggering
 
+### 📁 Bookshelf Export/Import (NEXT)
+- **Local-First Design**: Export/import functionality for sharing bookshelves between devices
+- **Android Share Integration**: Standard share sheet for sending bookshelf data
+- **JSON Format**: Simple, readable format for bookshelf data exchange
+- **Validation**: Import validation with user-friendly error handling
+- **Timeline**: 2-3 hours implementation
+
 ### Testing Priorities
 - Increase test coverage from 15% to 80%+
 - Fix existing failing tests (5 search/debounce tests)
@@ -262,28 +269,11 @@ uk.co.zlurgg.mybookshelf/
 - Test database migrations thoroughly
 - Add UI/component testing with Compose testing framework
 
-### Sharing Features
-- Public shelf sharing with shareable links
-- Social media integration for shelf previews
-- Export functionality (PDF, image formats)
-- Reading nook galleries and community features
-- Privacy controls and shelf visibility settings
-
-### Affiliate Link Service
-- Create `AffiliateService` in service/business layer
-- Generate affiliate links on-demand based on book ISBN/title
-- Support multiple affiliate partners (Amazon, Waterstones, etc.)
-- Region-based link generation
-- A/B testing and analytics tracking capabilities
-- No database storage - generate fresh links each time
-
-### Store Deployment Preparation
-- Final testing and QA across devices
-- App store compliance (privacy policy, terms of service)
-- App store assets (screenshots, descriptions, keywords)
-- Beta testing program setup
-- Release pipeline and versioning strategy
-- Performance optimization and final polish
+### Future Enhancements
+- **Affiliate Link Service**: Optional on-demand affiliate link generation for book purchases
+- **Enhanced Search**: Additional search filters and recommendation features
+- **Cloud Sync**: Future user accounts for cross-device synchronization
+- **Advanced Organization**: Tags, categories, and custom shelf organization features
 
 ## Navigation Structure
 ```
@@ -424,85 +414,77 @@ The codebase demonstrates **excellent engineering practices** with a solid archi
 
 ### 🚨 IMMEDIATE PRIORITIES (Next Development Session)
 
-#### 1. Test Coverage Expansion (HIGH PRIORITY)
+#### 1. Bookshelf Export/Import Implementation (HIGH PRIORITY) ⭐
+**Timeline**: 2-3 hours implementation
+**Status**: Ready to implement - no dependencies
+**User Flow**: Share shelf → Android share sheet → Recipient imports → Books appear in collection
+
+**Action Items**:
+```kotlin
+// Core components to implement:
+- BookshelfExportService.kt - JSON export/import functionality
+- BookshelfExportData.kt - Data class for export format
+- Import UI components - User-friendly import flow with validation
+- Android share sheet integration - Standard platform sharing
+```
+
+**Technical Details**:
+- JSON serialization of shelf data (books, name, material, metadata)
+- Android Intent.createChooser() for sharing
+- Import validation with user-friendly error messages
+- No server required - pure local file sharing
+
+#### 2. Test Coverage Expansion (MEDIUM PRIORITY)
 **Current**: 14% file coverage (11 test files / 79 source files)
-**Target**: 80%+ coverage
-**Missing Areas**:
-- Network layer (`KtorRemoteBookDataSource`) - 0% coverage
-- Database layer (DAOs, migrations) - minimal coverage
-- Error handling edge cases - incomplete
-- UI layer (Compose components) - 0% coverage
+**Target**: 50%+ initial coverage improvement
+**Focus Areas**:
+- Export/Import service testing
+- Network layer (`KtorRemoteBookDataSource`)
+- Database layer (DAOs, migrations)
+- Error handling and validation
 
-**Action Items**:
-```kotlin
-// Priority test files to create:
-- KtorRemoteBookDataSourceTest.kt
-- BookshelfDaoTest.kt
-- DatabaseMigrationTest.kt
-- ErrorHandlingIntegrationTest.kt
-- ComposeUIComponentTests.kt
-```
-
-#### 2. Configuration Management (MEDIUM PRIORITY)
-**Issues**:
-- Hard-coded BASE_URL in `KtorRemoteBookDataSource`
-- Language parameter fixed to "eng"
-- API parameters should use BuildConfig
-
-**Action Items**:
-```kotlin
-// Move to BuildConfig:
-- BASE_URL = "https://openlibrary.org"
-- DEFAULT_LANGUAGE = "eng"
-- API_TIMEOUT = 20_000L
-```
-
-#### 3. Search Enhancement Implementation (MEDIUM PRIORITY)
-**Reference**: See `SEARCH_IMPROVEMENTS_ISSUE.md` for detailed plan
-**Ready to Implement**: All prerequisites completed
-**Action Items**:
-- Add language selection dropdown
-- Implement sorting options (relevance, date, title)
-- Add result limit controls (10, 25, 50, 100)
-- Create advanced search filters
+#### 3. Configuration Management (LOW PRIORITY)
+**Issues**: Hard-coded BASE_URL and API parameters
+**Solution**: Move to BuildConfig for better maintainability
 
 ### 🔮 FUTURE MILESTONES
 
 #### Enhanced Features
-- Advanced search with filters and facets
-- Offline synchronization and caching
-- Social sharing and public shelf features
-- Affiliate link service integration
+- Advanced search filters and recommendation engine
+- Cloud synchronization with user accounts (optional)
+- Offline-first improvements and data caching
+- Affiliate link service integration (optional monetization)
 
 #### Performance & Scalability
-- Database query optimization
-- Image loading performance improvements
-- Background sync mechanisms
-- Analytics and crash reporting
+- Database query optimization for large collections
+- Image loading performance improvements with advanced caching
+- Background processing optimization
+- Analytics and crash reporting for stability
 
 #### Store Deployment
-- Final QA testing across devices
-- App store compliance and assets
-- Beta testing program
-- Release pipeline automation
+- Basic privacy policy (simple data collection disclosure)
+- App store listing optimization for "Books & Reference" category
+- Beta testing with friends and family
+- Standard Play Store submission process
 
 ## Next Session Action Items
 
 ### 🎯 **Immediate Tasks (Ready to Start)**
-1. **Create `KtorRemoteBookDataSourceTest.kt`** - Test network layer with mock responses
-2. **Add `BookshelfDaoTest.kt`** - Test database operations and queries
-3. **Implement database migration tests** - Ensure data integrity across schema changes
-4. **Extract API configuration** - Move hardcoded values to BuildConfig
-5. **Begin search enhancement implementation** - Start with language selection
+1. **Implement `BookshelfExportService.kt`** - Core export/import functionality with JSON serialization
+2. **Create `BookshelfExportData.kt`** - Data class defining export format and validation
+3. **Add export UI** - "Share Shelf" button in BookshelfScreen with Android share integration
+4. **Add import UI** - Import flow in BookcaseScreen with validation and error handling
+5. **Create export/import tests** - Comprehensive testing for data integrity and edge cases
 
 ### 📋 **Session Planning**
-- **Estimated Time**: 2-3 hours for test coverage expansion
-- **Complexity**: Medium (good infrastructure already in place)
+- **Estimated Time**: 2-3 hours for complete export/import implementation
+- **Complexity**: Low-Medium (leverages existing architecture patterns)
 - **Dependencies**: None (all prerequisites completed)
-- **Outcome**: Significantly improved test coverage and code confidence
+- **Outcome**: Working bookshelf sharing between devices with zero legal overhead
 
 ### 📈 **Success Metrics**
-- Test coverage: 14% → 50%+ (initial target)
-- Network layer: 0% → 80%+ coverage
-- Database layer: minimal → comprehensive coverage
-- Configuration: hardcoded → externalized values
+- Export: Generate shareable JSON from any bookshelf
+- Share: Android share sheet integration working smoothly
+- Import: Validate and import shared bookshelves successfully
+- User Experience: Intuitive flow from share to import with clear feedback
+- Testing: Comprehensive coverage for export/import edge cases
