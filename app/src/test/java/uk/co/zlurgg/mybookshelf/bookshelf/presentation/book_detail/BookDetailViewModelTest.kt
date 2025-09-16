@@ -29,6 +29,11 @@ class BookDetailViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
+    companion object {
+        private const val TEST_BOOK_ID = "OLID"
+        private const val TEST_SHELF_ID = "S1"
+    }
+
     private class FakeBookRepository : BookRepository {
         var upserted: Book? = null
         var storedBook: Book? = null
@@ -60,8 +65,6 @@ class BookDetailViewModelTest {
         var removedPair: Pair<String, String>? = null // shelfId to bookId
         private val isOnShelfFlow = MutableStateFlow(false)
         private val inLibraryFlow = MutableStateFlow(false)
-        var shouldFailAdd = false
-        var shouldFailRemove = false
 
         fun setIsOnShelf(value: Boolean) {
             isOnShelfFlow.value = value
@@ -72,17 +75,11 @@ class BookDetailViewModelTest {
         }
 
         override suspend fun addBookToShelf(shelfId: String, bookId: String) {
-            if (shouldFailAdd) {
-                throw RuntimeException("Add failed")
-            }
             addedPair = shelfId to bookId
             isOnShelfFlow.value = true
         }
 
         override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
-            if (shouldFailRemove) {
-                throw RuntimeException("Remove failed")
-            }
             removedPair = shelfId to bookId
             isOnShelfFlow.value = false
         }
@@ -105,7 +102,7 @@ class BookDetailViewModelTest {
     }
 
     private fun sampleBook() = Book(
-        id = "OLID",
+        id = TEST_BOOK_ID,
         title = "t",
         authors = listOf("a"),
         imageUrl = "http://",
@@ -131,8 +128,8 @@ class BookDetailViewModelTest {
         val vm = BookDetailViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
-            bookId = "OLID", 
-            shelfId = "S1"
+            bookId = TEST_BOOK_ID,
+            shelfId = TEST_SHELF_ID
         )
         
         // Collect state to trigger onStart
@@ -161,8 +158,8 @@ class BookDetailViewModelTest {
         val vm = BookDetailViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
-            bookId = "OLID", 
-            shelfId = "S1"
+            bookId = TEST_BOOK_ID,
+            shelfId = TEST_SHELF_ID
         )
         
         // Collect state to trigger onStart
@@ -178,8 +175,8 @@ class BookDetailViewModelTest {
         advanceUntilIdle()
         
         assertNotNull(bookshelfRepo.addedPair)
-        assertEquals("S1", bookshelfRepo.addedPair?.first) // shelfId
-        assertEquals("OLID", bookshelfRepo.addedPair?.second) // bookId
+        assertEquals(TEST_SHELF_ID, bookshelfRepo.addedPair?.first) // shelfId
+        assertEquals(TEST_BOOK_ID, bookshelfRepo.addedPair?.second) // bookId
         
         job.cancel()
     }
@@ -196,8 +193,8 @@ class BookDetailViewModelTest {
         val vm = BookDetailViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
-            bookId = "OLID", 
-            shelfId = "S1"
+            bookId = TEST_BOOK_ID,
+            shelfId = TEST_SHELF_ID
         )
         
         // Collect state to trigger onStart
@@ -213,8 +210,8 @@ class BookDetailViewModelTest {
         advanceUntilIdle()
         
         assertNotNull(bookshelfRepo.removedPair)
-        assertEquals("S1", bookshelfRepo.removedPair?.first)
-        assertEquals("OLID", bookshelfRepo.removedPair?.second)
+        assertEquals(TEST_SHELF_ID, bookshelfRepo.removedPair?.first)
+        assertEquals(TEST_BOOK_ID, bookshelfRepo.removedPair?.second)
         
         job.cancel()
     }
@@ -229,8 +226,8 @@ class BookDetailViewModelTest {
         val vm = BookDetailViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
-            bookId = "OLID", 
-            shelfId = "S1"
+            bookId = TEST_BOOK_ID,
+            shelfId = TEST_SHELF_ID
         )
         
         // Collect state to trigger onStart
@@ -261,8 +258,8 @@ class BookDetailViewModelTest {
         val vm = BookDetailViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
-            bookId = "OLID", 
-            shelfId = "S1"
+            bookId = TEST_BOOK_ID,
+            shelfId = TEST_SHELF_ID
         )
         
         // Collect state to trigger onStart
@@ -294,8 +291,8 @@ class BookDetailViewModelTest {
         val vm = BookDetailViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
-            bookId = "OLID", 
-            shelfId = "S1"
+            bookId = TEST_BOOK_ID,
+            shelfId = TEST_SHELF_ID
         )
         
         // Collect state to trigger onStart
@@ -354,8 +351,8 @@ class BookDetailViewModelTest {
         val vm = BookDetailViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
-            bookId = "OLID", 
-            shelfId = "S1"
+            bookId = TEST_BOOK_ID,
+            shelfId = TEST_SHELF_ID
         )
         
         // Collect state to trigger onStart
