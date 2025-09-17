@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Import Bookshelf - MyBookshelf</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .loading-text {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .fallback {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fallback h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        .fallback p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .download-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            margin: 0.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .secondary-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .secondary-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .token-section {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .token-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .token-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+
+        .copy-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .instructions {
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .loading-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading-section">
+            <div class="loading-icon">📖</div>
+            <h1>Opening Your Bookshelf...</h1>
+            <p class="loading-text">Launching MyBookshelf app...</p>
+        </div>
+
+        <div id="fallback-section" class="fallback">
+            <h2>📱 App Not Installed?</h2>
+            <p>To import this shared bookshelf, you'll need the MyBookshelf app.</p>
+
+            <div>
+                <a href="../index.html" class="download-btn">
+                    📚 Get MyBookshelf
+                </a>
+                <br>
+                <button onclick="retryAppLaunch()" class="download-btn secondary-btn">
+                    🔄 Try Again
+                </button>
+            </div>
+
+            <div class="token-section">
+                <div class="token-label">Save this import code:</div>
+                <div id="token-display" class="token-display"></div>
+                <button onclick="copyToken()" class="copy-btn" id="copy-btn">
+                    📋 Copy Code
+                </button>
+            </div>
+
+            <div class="instructions">
+                <strong>Manual Import:</strong><br>
+                1. Install MyBookshelf<br>
+                2. Open the app<br>
+                3. Use the import feature with the code above
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let shareToken = '';
+        let appLaunchAttempted = false;
+
+        function getTokenFromUrl() {
+            // Get token from URL fragment (#token) or hash parameter
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(window.location.search);
+            return hash || params.get('token') || params.get('t');
+        }
+
+        function attemptAppLaunch() {
+            if (appLaunchAttempted) return;
+
+            shareToken = getTokenFromUrl();
+
+            if (!shareToken) {
+                showFallback('No bookshelf token found in the link.');
+                return;
+            }
+
+            console.log('Attempting to launch app with token:', shareToken.substring(0, 20) + '...');
+
+            // Try to launch the app
+            const appUrl = `mybookshelf://share/${shareToken}`;
+
+            // Method 1: Direct navigation
+            window.location.href = appUrl;
+
+            // Method 2: Iframe attempt (fallback)
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = appUrl;
+            document.body.appendChild(iframe);
+
+            appLaunchAttempted = true;
+
+            // Show fallback after delay
+            setTimeout(showFallback, 3000);
+        }
+
+        function showFallback(customMessage) {
+            document.getElementById('loading-section').style.display = 'none';
+            document.getElementById('fallback-section').style.display = 'block';
+
+            if (shareToken) {
+                document.getElementById('token-display').textContent = shareToken;
+            } else {
+                document.getElementById('token-display').textContent = 'Token not found';
+            }
+
+            if (customMessage) {
+                document.querySelector('.fallback h2').textContent = customMessage;
+            }
+        }
+
+        function retryAppLaunch() {
+            appLaunchAttempted = false;
+            document.getElementById('loading-section').style.display = 'block';
+            document.getElementById('fallback-section').style.display = 'none';
+
+            setTimeout(attemptAppLaunch, 500);
+        }
+
+        function copyToken() {
+            const tokenText = document.getElementById('token-display').textContent;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(tokenText).then(() => {
+                    const btn = document.getElementById('copy-btn');
+                    const originalText = btn.textContent;
+                    btn.textContent = '✅ Copied!';
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                    fallbackCopy(tokenText);
+                });
+            } else {
+                fallbackCopy(tokenText);
+            }
+        }
+
+        function fallbackCopy(text) {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Fallback copy failed:', err);
+            }
+
+            document.body.removeChild(textArea);
+        }
+
+        // Initialize when page loads
+        window.onload = function() {
+            console.log('Share page loaded');
+
+            // Small delay to ensure page is ready
+            setTimeout(attemptAppLaunch, 1000);
+        };
+
+        // Handle page visibility change (user switching back to browser)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && appLaunchAttempted) {
+                // User came back to browser, probably app launch failed
+                setTimeout(showFallback, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

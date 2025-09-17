@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyBookshelf - Personal Book Collection</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .book-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .features {
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .features h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .features li::before {
+            content: "📚";
+            margin-right: 1rem;
+        }
+
+        .download-section {
+            margin-top: 2rem;
+        }
+
+        .download-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 1rem 2rem;
+            margin: 0.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .download-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .download-btn.primary {
+            background: #4285f4;
+            border-color: #4285f4;
+        }
+
+        .download-btn.primary:hover {
+            background: #3367d6;
+        }
+
+        .coming-soon {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 2rem;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="book-icon">📚</div>
+        <h1>MyBookshelf</h1>
+        <p class="subtitle">Organize your personal book collection with style</p>
+
+        <div class="features">
+            <h3>Features</h3>
+            <ul>
+                <li>Create beautiful virtual bookshelves</li>
+                <li>Search books from Open Library & Google Books</li>
+                <li>Drag & drop to organize your collection</li>
+                <li>Share bookshelves with friends</li>
+                <li>Realistic 3D book spine effects</li>
+            </ul>
+        </div>
+
+        <div class="download-section">
+            <h3>Get MyBookshelf</h3>
+            <a href="#" class="download-btn primary" onclick="showComingSoon()">
+                📱 Download on Google Play
+            </a>
+            <br>
+            <a href="#" class="download-btn" onclick="showComingSoon()">
+                📦 Download APK
+            </a>
+            <p class="coming-soon" id="coming-soon" style="display: none;">
+                Coming soon! App is currently in development.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function showComingSoon() {
+            document.getElementById('coming-soon').style.display = 'block';
+        }
+
+        // Handle any deep links that might come to main page
+        window.onload = function() {
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#share-')) {
+                // Redirect to proper share handler
+                const token = hash.substring(7); // Remove '#share-'
+                window.location.href = `./share/#${token}`;
+            }
+        };
+    </script>
+</body>
+</html>
