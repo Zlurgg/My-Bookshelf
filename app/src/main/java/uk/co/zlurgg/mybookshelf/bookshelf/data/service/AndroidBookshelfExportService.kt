@@ -119,6 +119,11 @@ class AndroidBookshelfExportService(
             // Then add the shelf
             bookcaseRepository.addShelf(importedShelf)
 
+            // Link each book to the imported shelf
+            importedShelf.books.forEach { book ->
+                bookshelfRepository.addBookToShelf(importedShelf.id, book.id)
+            }
+
             Result.Success(Unit)
         } catch (e: SerializationException) {
             Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
