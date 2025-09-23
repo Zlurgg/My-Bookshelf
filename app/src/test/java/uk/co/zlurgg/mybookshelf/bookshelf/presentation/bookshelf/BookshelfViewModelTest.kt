@@ -20,6 +20,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.test.FakeBookshelfExportService
 import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -129,6 +130,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         val book = sampleBook("B1")
@@ -146,6 +148,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -168,6 +171,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         val book = sampleBook("B1")
@@ -186,6 +190,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -208,6 +213,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -235,6 +241,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -257,6 +264,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -283,6 +291,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -305,6 +314,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -327,6 +337,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -352,6 +363,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -372,6 +384,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         
@@ -391,6 +404,7 @@ class BookshelfViewModelTest {
         val vm = BookshelfViewModel(
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
+            bookshelfExportService = FakeBookshelfExportService(),
             shelfId = "S1"
         )
         

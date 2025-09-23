@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -91,6 +92,12 @@ fun BookshelfScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { onAction(BookshelfAction.OnShareShelf) }) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            contentDescription = "Share bookshelf"
+                        )
+                    }
                     IconButton(onClick = { onAction(BookshelfAction.OnToggleTidyMode) }) {
                         Icon(
                             imageVector = if (state.isTidyMode) Icons.Filled.Star else Icons.Filled.Menu,

@@ -18,6 +18,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.test.FakeBookshelfExportService
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -62,7 +63,7 @@ class BookcaseViewModelTest {
     fun removeShelf_updatesState_andCallsRepository() = runTest {
         val initial = listOf(shelf("1"), shelf("2"))
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         // Remove shelf 1
         val toRemove = initial.first()
@@ -79,7 +80,7 @@ class BookcaseViewModelTest {
     fun undoRemove_reinserts_andPersists() = runTest {
         val initial = listOf(shelf("1"), shelf("2"))
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         val toRemove = initial.first()
         vm.onAction(BookcaseAction.OnRemoveBookShelf(toRemove))
@@ -97,7 +98,7 @@ class BookcaseViewModelTest {
     fun init_loads_shelves_from_repository() = runTest {
         val initial = listOf(shelf("1", "Fiction"), shelf("2", "Science"))
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         var latestState: BookcaseState? = null
         val job = launch { vm.state.collect { latestState = it } }
@@ -111,7 +112,7 @@ class BookcaseViewModelTest {
     @Test
     fun onAddBookshelfClick_creates_shelf_with_generated_id() = runTest {
         val repo = FakeRepo(emptyList())
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         vm.onAction(BookcaseAction.OnAddBookshelfClick("New Shelf", ShelfStyle.SilverMetal))
 
@@ -124,7 +125,7 @@ class BookcaseViewModelTest {
     @Test
     fun showAddDialog_toggles_dialog_visibility() = runTest {
         val repo = FakeRepo(emptyList())
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         // Show dialog
         vm.onAction(BookcaseAction.ShowAddDialog(true))
@@ -139,7 +140,7 @@ class BookcaseViewModelTest {
     fun resetOperationState_clears_operation_state() = runTest {
         val initial = listOf(shelf("1"))
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         // Remove shelf to set operation state
         vm.onAction(BookcaseAction.OnRemoveBookShelf(initial.first()))
@@ -154,7 +155,7 @@ class BookcaseViewModelTest {
     @Test
     fun toggleReorderMode_toggles_reorder_state() = runTest {
         val repo = FakeRepo(emptyList())
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         val initialReorderMode = vm.state.value.isReorderMode
         vm.onAction(BookcaseAction.ToggleReorderMode)
@@ -168,7 +169,7 @@ class BookcaseViewModelTest {
         val shelf2 = shelf("2", "Second").copy(position = 1)
         val initial = listOf(shelf1, shelf2)
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         // Reorder shelf1 to position 1
         vm.onAction(BookcaseAction.OnReorderShelf(shelf1, 1))
@@ -182,7 +183,7 @@ class BookcaseViewModelTest {
     fun onBookshelfClick_does_nothing_locally() = runTest {
         val initial = listOf(shelf("1"))
         val repo = FakeRepo(initial)
-        val vm = BookcaseViewModel(repo, FakeIdGenerator())
+        val vm = BookcaseViewModel(repo, FakeIdGenerator(), FakeBookshelfExportService())
 
         val stateBefore = vm.state.value
         vm.onAction(BookcaseAction.OnBookshelfClick(initial.first()))

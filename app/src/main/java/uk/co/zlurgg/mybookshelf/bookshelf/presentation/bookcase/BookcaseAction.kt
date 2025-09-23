@@ -13,4 +13,5 @@ sealed interface BookcaseAction {
     data object ResetOperationState : BookcaseAction
     data object ToggleReorderMode : BookcaseAction
     data class OnReorderShelf(val bookshelf: Bookshelf, val newPosition: Int) : BookcaseAction
+    data class OnImportBookshelf(val jsonData: String) : BookcaseAction
 }
