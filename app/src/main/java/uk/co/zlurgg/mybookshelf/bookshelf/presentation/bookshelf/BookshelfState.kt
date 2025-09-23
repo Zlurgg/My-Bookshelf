@@ -20,5 +20,7 @@ data class BookshelfState(
     val recentlyDeleted: Book? = null,
     val errorMessage: String? = null,
     val shelfMaterial: ShelfMaterial = ShelfMaterial.DarkWood,
-    val isTidyMode: Boolean = false
+    val isTidyMode: Boolean = false,
+    val isShareLoading: Boolean = false,
+    val shareSuccess: Boolean = false
 )

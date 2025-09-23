@@ -114,10 +114,6 @@ class BookcaseViewModel(
             is BookcaseAction.OnBookshelfClick -> {
                 // no-op: handled by the screen root for navigation
             }
-
-            is BookcaseAction.OnImportBookshelf -> {
-                importBookshelf(action.jsonData)
-            }
         }
     }
 
@@ -238,30 +234,5 @@ class BookcaseViewModel(
         }
     }
 
-    private fun importBookshelf(jsonData: String) {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, errorMessage = null) }
-
-            bookshelfExportService.importBookshelf(jsonData)
-                .onSuccess {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            operationSuccess = true
-                        )
-                    }
-                    // Reload bookshelves to show the imported shelf
-                    loadBookshelves()
-                }
-                .onError { error ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = ErrorFormatter.formatOperationError("import bookshelf", Exception(error.toString()))
-                        )
-                    }
-                }
-        }
-    }
 }
 

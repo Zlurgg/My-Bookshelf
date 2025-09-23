@@ -41,24 +41,6 @@ class AndroidBookshelfExportService(
         private const val SHARE_BASE_URL = "https://zlurgg.github.io/My-Bookshelf/share"
     }
 
-    override suspend fun exportBookshelf(shelfId: String): Result<String, DataError.Local> {
-        return try {
-            val allShelves = bookcaseRepository.getAllShelves().first()
-            val shelf = allShelves.find { it.id == shelfId }
-                ?: return Result.Error(DataError.Local.UNKNOWN)
-
-            // Load the books for this shelf
-            val books = bookshelfRepository.getBooksForShelf(shelfId).first()
-            val shelfWithBooks = shelf.copy(books = books)
-
-            val exportData = createExportData(shelfWithBooks)
-            val jsonString = json.encodeToString(BookshelfExportData.serializer(), exportData)
-            Result.Success(jsonString)
-        } catch (e: Exception) {
-            Result.Error(DataError.Local.UNKNOWN)
-        }
-    }
-
     override suspend fun shareBookshelf(shelfId: String): Result<Unit, DataError.Local> {
         return try {
             // Get shelf once and use it for both export and share
