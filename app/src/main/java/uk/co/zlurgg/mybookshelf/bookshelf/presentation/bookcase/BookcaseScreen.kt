@@ -108,18 +108,6 @@ fun BookcaseScreen(
                     ) 
                 },
                 actions = {
-                    if (!state.isReorderMode) {
-                        IconButton(onClick = {
-                            // For demo: import a sample bookshelf
-                            val sampleJsonData = """{"formatVersion":1,"exportedAt":"2023-01-01T00:00:00","appName":"My Bookshelf","bookshelf":{"name":"Imported Shelf","shelfStyle":"DarkWood","books":[]}}"""
-                            onAction(BookcaseAction.OnImportBookshelf(sampleJsonData))
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.outline_download_24),
-                                contentDescription = "Import bookshelf"
-                            )
-                        }
-                    }
                     if (state.bookshelves.isNotEmpty()) {
                         IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                             if (state.isReorderMode) {
