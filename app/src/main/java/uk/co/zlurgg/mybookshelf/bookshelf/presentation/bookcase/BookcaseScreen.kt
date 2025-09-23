@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -108,12 +109,24 @@ fun BookcaseScreen(
                     ) 
                 },
                 actions = {
+                    if (!state.isReorderMode) {
+                        IconButton(onClick = {
+                            // For demo: import a sample bookshelf
+                            val sampleJsonData = """{"formatVersion":1,"exportedAt":"2023-01-01T00:00:00","appName":"My Bookshelf","bookshelf":{"name":"Imported Shelf","shelfStyle":"DarkWood","books":[]}}"""
+                            onAction(BookcaseAction.OnImportBookshelf(sampleJsonData))
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Create,
+                                contentDescription = "Import bookshelf"
+                            )
+                        }
+                    }
                     IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                         Icon(
                             imageVector = if (state.isReorderMode) Icons.Default.Lock else Icons.Default.Edit,
-                            contentDescription = if (state.isReorderMode) 
-                                stringResource(id = R.string.cd_lock_reorder_mode) 
-                            else 
+                            contentDescription = if (state.isReorderMode)
+                                stringResource(id = R.string.cd_lock_reorder_mode)
+                            else
                                 stringResource(id = R.string.cd_unlock_reorder_mode)
                         )
                     }

@@ -14,14 +14,18 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.onError
+import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
     private val repository: BookcaseRepository,
-    private val idGenerator: BookshelfIdGenerator
+    private val idGenerator: BookshelfIdGenerator,
+    private val bookshelfExportService: BookshelfExportService
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -109,6 +113,10 @@ class BookcaseViewModel(
 
             is BookcaseAction.OnBookshelfClick -> {
                 // no-op: handled by the screen root for navigation
+            }
+
+            is BookcaseAction.OnImportBookshelf -> {
+                importBookshelf(action.jsonData)
             }
         }
     }
@@ -227,6 +235,32 @@ class BookcaseViewModel(
                 }
                 loadBookshelves()
             }
+        }
+    }
+
+    private fun importBookshelf(jsonData: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+            bookshelfExportService.importBookshelf(jsonData)
+                .onSuccess {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            operationSuccess = true
+                        )
+                    }
+                    // Reload bookshelves to show the imported shelf
+                    loadBookshelves()
+                }
+                .onError { error ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = ErrorFormatter.formatOperationError("import bookshelf", Exception(error.toString()))
+                        )
+                    }
+                }
         }
     }
 }

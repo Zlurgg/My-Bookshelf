@@ -18,12 +18,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositor
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.util.BookSorter
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UuidBookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
@@ -45,6 +47,7 @@ val appModule = module {
     singleOf(::UuidBookshelfIdGenerator).bind<BookshelfIdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
     singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
+    singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
     singleOf(::BookSorter)
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
@@ -62,10 +65,11 @@ val appModule = module {
         BookshelfViewModel(
             bookRepository = get(),
             bookshelfRepository = get(),
+            bookshelfExportService = get(),
             shelfId = shelfId
         )
     }
-    viewModel { BookcaseViewModel(get(), get()) }
+    viewModel { BookcaseViewModel(get(), get(), get()) }
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookRepository = get(),

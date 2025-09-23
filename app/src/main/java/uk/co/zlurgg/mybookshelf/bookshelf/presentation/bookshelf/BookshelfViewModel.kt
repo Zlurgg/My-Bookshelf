@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
@@ -21,6 +22,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 class BookshelfViewModel(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
+    private val bookshelfExportService: BookshelfExportService,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -99,6 +101,9 @@ class BookshelfViewModel(
             }
             BookshelfAction.OnToggleTidyMode -> {
                 _state.update { it.copy(isTidyMode = !it.isTidyMode) }
+            }
+            BookshelfAction.OnShareShelf -> {
+                shareShelf()
             }
             is BookshelfAction.OnSortChange -> {
                 _state.update { it.copy(selectedSort = action.sort) }
@@ -221,6 +226,19 @@ class BookshelfViewModel(
                             searchResults = emptyList(),
                             isSearchLoading = false,
                             errorMessage = error.toString()
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun shareShelf() {
+        viewModelScope.launch {
+            bookshelfExportService.shareBookshelf(shelfId)
+                .onError { error ->
+                    _state.update {
+                        it.copy(
+                            errorMessage = ErrorFormatter.formatOperationError("share bookshelf", Exception(error.toString()))
                         )
                     }
                 }
