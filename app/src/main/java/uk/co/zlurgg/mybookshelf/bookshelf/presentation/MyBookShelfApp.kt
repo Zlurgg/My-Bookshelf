@@ -1,5 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
@@ -22,12 +24,23 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfScreen
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.toMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
-fun MyBookShelfApp() {
+fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
     MyBookshelfTheme {
         val navController = rememberNavController()
+        val deepLinkViewModel = koinViewModel<DeepLinkViewModel>()
+
+        // Handle deep links at the app composition level
+        LaunchedEffect(deepLinkIntent) {
+            deepLinkIntent?.data?.let { uri ->
+                handleDeepLink(uri, deepLinkViewModel)
+            }
+        }
+
         NavHost(
             navController = navController,
             startDestination = NavigationRoute.MyBookshelfGraph.ROUTE
@@ -135,6 +148,15 @@ fun MyBookShelfApp() {
                     )
                 }
             }
+        }
+    }
+}
+
+private fun handleDeepLink(uri: Uri, deepLinkViewModel: DeepLinkViewModel) {
+    if (uri.scheme == "mybookshelf" && uri.host == "share") {
+        val token = uri.path?.removePrefix("/") // Remove leading slash
+        if (!token.isNullOrBlank()) {
+            deepLinkViewModel.onAction(DeepLinkAction.ImportFromToken(token))
         }
     }
 }

@@ -35,6 +35,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailVie
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.DeepLinkImportUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.ImageLoaderFactory
 
@@ -57,6 +59,7 @@ val appModule = module {
     }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
     singleOf(::BookSorter)
+    singleOf(::DeepLinkImportUseCase)
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
@@ -68,6 +71,7 @@ val appModule = module {
 
     // Shared shelves VM
     viewModelOf(::SharedMyBookshelfViewModel)
+    viewModelOf(::DeepLinkViewModel)
 
     viewModel { (shelfId: String) ->
         BookshelfViewModel(
