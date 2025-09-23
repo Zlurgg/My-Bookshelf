@@ -20,6 +20,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfReposito
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.util.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidSystemLanguageProvider
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.LocalShareTokenService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UuidBookshelfIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
@@ -27,6 +28,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
@@ -47,6 +49,12 @@ val appModule = module {
     singleOf(::UuidBookshelfIdGenerator).bind<BookshelfIdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
     singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
+    single<ShareTokenService> {
+        LocalShareTokenService(
+            tokenGenerator = get(),
+            timeProvider = get()
+        )
+    }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
     singleOf(::BookSorter)
 
