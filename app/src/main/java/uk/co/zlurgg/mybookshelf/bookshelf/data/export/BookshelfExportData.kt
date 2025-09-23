@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.export
 
 import kotlinx.serialization.Serializable
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
 @Serializable
 data class BookshelfExportData(
