@@ -58,4 +58,15 @@
     <string name="reorder_shelves_title">Reorder Shelves</string>
     <string name="cd_lock_reorder_mode">Exit reorder mode</string>
     <string name="cd_unlock_reorder_mode">Enter reorder mode</string>
+
+    <!-- Deep link import -->
+    <string name="import_success_title">Import Successful</string>
+    <string name="import_success_message">Bookshelf imported successfully!</string>
+    <string name="import_error_title">Import Failed</string>
+    <string name="import_name_conflict_title">Shelf Name Conflict</string>
+    <string name="import_name_conflict_message">A shelf named \"%s\" already exists. Please choose a new name:</string>
+    <string name="import_new_name_label">New Shelf Name</string>
+    <string name="action_import">Import</string>
+    <string name="action_ok">OK</string>
+    <string name="importing_shelf">Importing shelf…</string>
 </resources>

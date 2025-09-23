@@ -21,6 +21,7 @@ class DeepLinkViewModel(
         when (action) {
             is DeepLinkAction.ImportFromToken -> importFromToken(action.token)
             is DeepLinkAction.DismissError -> dismissError()
+            is DeepLinkAction.DismissSuccess -> dismissSuccess()
             is DeepLinkAction.DismissNameConflict -> dismissNameConflict()
             is DeepLinkAction.ResolveNameConflictWithNewName -> resolveNameConflict(action.jsonData, action.newName)
         }
@@ -83,6 +84,10 @@ class DeepLinkViewModel(
 
     private fun dismissError() {
         _state.value = _state.value.copy(error = null)
+    }
+
+    private fun dismissSuccess() {
+        _state.value = _state.value.copy(importSuccessful = false)
     }
 
     private fun dismissNameConflict() {
