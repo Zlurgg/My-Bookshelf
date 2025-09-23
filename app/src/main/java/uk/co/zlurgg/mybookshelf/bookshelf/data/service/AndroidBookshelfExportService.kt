@@ -132,6 +132,58 @@ class AndroidBookshelfExportService(
         }
     }
 
+    override suspend fun checkImportNameConflict(jsonData: String): Result<String?, DataError.Local> {
+        return try {
+            val exportData = json.decodeFromString<BookshelfExportData>(jsonData)
+
+            // Validate format version
+            if (exportData.formatVersion > 1) {
+                return Result.Error(DataError.Local.UNKNOWN) // Unsupported version
+            }
+
+            val existingShelves = bookcaseRepository.getAllShelves().first()
+            val conflictingShelf = existingShelves.find { it.name == exportData.bookshelf.name }
+
+            Result.Success(conflictingShelf?.name)
+        } catch (e: SerializationException) {
+            Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.UNKNOWN)
+        }
+    }
+
+    override suspend fun importBookshelfWithName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
+        return try {
+            val exportData = json.decodeFromString<BookshelfExportData>(jsonData)
+
+            // Validate format version
+            if (exportData.formatVersion > 1) {
+                return Result.Error(DataError.Local.UNKNOWN) // Unsupported version
+            }
+
+            val importedShelf = createBookshelfFromImport(exportData.bookshelf).copy(name = customName)
+
+            // Add all books to the repository first
+            importedShelf.books.forEach { book ->
+                bookRepository.upsertBook(book)
+            }
+
+            // Then add the shelf
+            bookcaseRepository.addShelf(importedShelf)
+
+            // Link each book to the imported shelf
+            importedShelf.books.forEach { book ->
+                bookshelfRepository.addBookToShelf(importedShelf.id, book.id)
+            }
+
+            Result.Success(Unit)
+        } catch (e: SerializationException) {
+            Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.UNKNOWN)
+        }
+    }
+
     private fun createExportData(shelf: Bookshelf): BookshelfExportData {
         return BookshelfExportData(
             exportedAt = LocalDateTime.ofInstant(
