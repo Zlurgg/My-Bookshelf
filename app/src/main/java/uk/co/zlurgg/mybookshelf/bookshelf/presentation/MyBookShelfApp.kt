@@ -26,6 +26,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfV
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.toMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportErrorDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportLoadingDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportNameConflictDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportSuccessDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
@@ -33,6 +37,7 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
     MyBookshelfTheme {
         val navController = rememberNavController()
         val deepLinkViewModel = koinViewModel<DeepLinkViewModel>()
+        val deepLinkState = deepLinkViewModel.state.collectAsStateWithLifecycle().value
 
         // Handle deep links at the app composition level
         LaunchedEffect(deepLinkIntent) {
@@ -147,6 +152,45 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                         onBackClick = { navController.popBackStack() }
                     )
                 }
+            }
+        }
+
+        // Deep link import dialogs
+        when {
+            deepLinkState.isLoading -> {
+                ImportLoadingDialog()
+            }
+            deepLinkState.importSuccessful -> {
+                ImportSuccessDialog(
+                    onDismiss = {
+                        deepLinkViewModel.onAction(DeepLinkAction.DismissSuccess)
+                    }
+                )
+            }
+            deepLinkState.error != null -> {
+                ImportErrorDialog(
+                    errorMessage = deepLinkState.error,
+                    onDismiss = {
+                        deepLinkViewModel.onAction(DeepLinkAction.DismissError)
+                    }
+                )
+            }
+            deepLinkState.nameConflict != null -> {
+                ImportNameConflictDialog(
+                    existingName = deepLinkState.nameConflict.existingName,
+                    isLoading = deepLinkState.isLoading,
+                    onDismiss = {
+                        deepLinkViewModel.onAction(DeepLinkAction.DismissNameConflict)
+                    },
+                    onResolveConflict = { newName ->
+                        deepLinkViewModel.onAction(
+                            DeepLinkAction.ResolveNameConflictWithNewName(
+                                jsonData = deepLinkState.nameConflict.jsonData,
+                                newName = newName
+                            )
+                        )
+                    }
+                )
             }
         }
     }
