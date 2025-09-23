@@ -6,9 +6,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -116,19 +115,25 @@ fun BookcaseScreen(
                             onAction(BookcaseAction.OnImportBookshelf(sampleJsonData))
                         }) {
                             Icon(
-                                imageVector = Icons.Default.Create,
+                                painter = painterResource(id = R.drawable.outline_download_24),
                                 contentDescription = "Import bookshelf"
                             )
                         }
                     }
-                    IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
-                        Icon(
-                            imageVector = if (state.isReorderMode) Icons.Default.Lock else Icons.Default.Edit,
-                            contentDescription = if (state.isReorderMode)
-                                stringResource(id = R.string.cd_lock_reorder_mode)
-                            else
-                                stringResource(id = R.string.cd_unlock_reorder_mode)
-                        )
+                    if (state.bookshelves.isNotEmpty()) {
+                        IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
+                            if (state.isReorderMode) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_lock_open_24),
+                                    contentDescription = stringResource(id = R.string.cd_lock_reorder_mode)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = stringResource(id = R.string.cd_unlock_reorder_mode)
+                                )
+                            }
+                        }
                     }
                 }
             )
