@@ -12,8 +12,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
@@ -22,9 +24,11 @@ import java.time.format.DateTimeFormatter
 
 class AndroidBookshelfExportService(
     private val bookcaseRepository: BookcaseRepository,
+    private val bookshelfRepository: BookshelfRepository,
     private val bookRepository: BookRepository,
     private val bookshelfIdGenerator: BookshelfIdGenerator,
     private val timeProvider: TimeProvider,
+    private val shareTokenService: ShareTokenService,
     private val context: Context
 ) : BookshelfExportService {
 
@@ -33,14 +37,22 @@ class AndroidBookshelfExportService(
         ignoreUnknownKeys = true
     }
 
+    companion object {
+        private const val SHARE_BASE_URL = "https://zlurgg.github.io/My-Bookshelf/share"
+    }
+
     override suspend fun exportBookshelf(shelfId: String): Result<String, DataError.Local> {
         return try {
             val allShelves = bookcaseRepository.getAllShelves().first()
             val shelf = allShelves.find { it.id == shelfId }
                 ?: return Result.Error(DataError.Local.UNKNOWN)
 
-            val exportData = createExportData(shelf)
-            val jsonString = json.encodeToString(exportData)
+            // Load the books for this shelf
+            val books = bookshelfRepository.getBooksForShelf(shelfId).first()
+            val shelfWithBooks = shelf.copy(books = books)
+
+            val exportData = createExportData(shelfWithBooks)
+            val jsonString = json.encodeToString(BookshelfExportData.serializer(), exportData)
             Result.Success(jsonString)
         } catch (e: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
@@ -48,16 +60,29 @@ class AndroidBookshelfExportService(
     }
 
     override suspend fun shareBookshelf(shelfId: String): Result<Unit, DataError.Local> {
-        return when (val exportResult = exportBookshelf(shelfId)) {
-            is Result.Success -> {
-                try {
-                    val allShelves = bookcaseRepository.getAllShelves().first()
-                    val shelf = allShelves.find { it.id == shelfId }
-                        ?: return Result.Error(DataError.Local.UNKNOWN)
+        return try {
+            // Get shelf once and use it for both export and share
+            val allShelves = bookcaseRepository.getAllShelves().first()
+            val shelf = allShelves.find { it.id == shelfId }
+                ?: return Result.Error(DataError.Local.UNKNOWN)
+
+            // Load books and create export data
+            val books = bookshelfRepository.getBooksForShelf(shelfId).first()
+            val shelfWithBooks = shelf.copy(books = books)
+            val exportData = createExportData(shelfWithBooks)
+            val jsonString = json.encodeToString(BookshelfExportData.serializer(), exportData)
+
+            // Generate token with the JSON data
+            when (val tokenResult = shareTokenService.generateToken(jsonString)) {
+                is Result.Success -> {
+                    // Generate web URL for sharing with bookshelf name as parameter
+                    val encodedName = java.net.URLEncoder.encode(shelf.name, "UTF-8")
+                    val shareUrl = "$SHARE_BASE_URL/?name=${encodedName}#${tokenResult.data}"
+                    val message = "Check out my ${shelf.name}!\n${shareUrl}"
 
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "application/json"
-                        putExtra(Intent.EXTRA_TEXT, exportResult.data)
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, message)
                         putExtra(Intent.EXTRA_SUBJECT, "My Bookshelf: ${shelf.name}")
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     }
@@ -67,11 +92,11 @@ class AndroidBookshelfExportService(
 
                     context.startActivity(chooserIntent)
                     Result.Success(Unit)
-                } catch (e: Exception) {
-                    Result.Error(DataError.Local.UNKNOWN)
                 }
+                is Result.Error -> Result.Error(tokenResult.error)
             }
-            is Result.Error -> Result.Error(exportResult.error)
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.UNKNOWN)
         }
     }
 
@@ -103,63 +128,65 @@ class AndroidBookshelfExportService(
     }
 
     private fun createExportData(shelf: Bookshelf): BookshelfExportData {
-        val exportedBooks = shelf.books.map { book ->
-            ExportedBook(
-                id = book.id,
-                title = book.title,
-                authors = book.authors,
-                imageUrl = book.imageUrl,
-                description = book.description,
-                languages = book.languages,
-                firstPublishYear = book.firstPublishYear,
-                averageRating = book.averageRating,
-                ratingCount = book.ratingCount,
-                numPages = book.numPages,
-                numEditions = book.numEditions,
-                purchased = book.purchased,
-                spineColor = book.spineColor
-            )
-        }
-
-        val exportedBookshelf = ExportedBookshelf(
-            name = shelf.name,
-            shelfStyle = shelf.shelfStyle,
-            books = exportedBooks
-        )
-
         return BookshelfExportData(
             exportedAt = LocalDateTime.ofInstant(
                 java.time.Instant.ofEpochMilli(timeProvider.currentTimeMillis()),
                 java.time.ZoneId.systemDefault()
             ).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-            bookshelf = exportedBookshelf
+            bookshelf = shelf.toExportedBookshelf()
         )
     }
 
     private fun createBookshelfFromImport(exportedShelf: ExportedBookshelf): Bookshelf {
-        val books = exportedShelf.books.map { exportedBook ->
-            Book(
-                id = exportedBook.id,
-                title = exportedBook.title,
-                authors = exportedBook.authors,
-                imageUrl = exportedBook.imageUrl,
-                description = exportedBook.description,
-                languages = exportedBook.languages,
-                firstPublishYear = exportedBook.firstPublishYear,
-                averageRating = exportedBook.averageRating,
-                ratingCount = exportedBook.ratingCount,
-                numPages = exportedBook.numPages,
-                numEditions = exportedBook.numEditions,
-                purchased = exportedBook.purchased,
-                spineColor = exportedBook.spineColor
-            )
-        }
-
         return Bookshelf(
             id = bookshelfIdGenerator.generateId(),
             name = exportedShelf.name,
-            books = books,
+            books = exportedShelf.books.map { it.toBook() },
             shelfStyle = exportedShelf.shelfStyle
+        )
+    }
+
+    private fun Bookshelf.toExportedBookshelf(): ExportedBookshelf {
+        return ExportedBookshelf(
+            name = name,
+            shelfStyle = shelfStyle,
+            books = books.map { it.toExportedBook() }
+        )
+    }
+
+    private fun Book.toExportedBook(): ExportedBook {
+        return ExportedBook(
+            id = id,
+            title = title,
+            authors = authors,
+            imageUrl = imageUrl,
+            description = description,
+            languages = languages,
+            firstPublishYear = firstPublishYear,
+            averageRating = averageRating,
+            ratingCount = ratingCount,
+            numPages = numPages,
+            numEditions = numEditions,
+            purchased = purchased,
+            spineColor = spineColor
+        )
+    }
+
+    private fun ExportedBook.toBook(): Book {
+        return Book(
+            id = id,
+            title = title,
+            authors = authors,
+            imageUrl = imageUrl,
+            description = description,
+            languages = languages,
+            firstPublishYear = firstPublishYear,
+            averageRating = averageRating,
+            ratingCount = ratingCount,
+            numPages = numPages,
+            numEditions = numEditions,
+            purchased = purchased,
+            spineColor = spineColor
         )
     }
 }

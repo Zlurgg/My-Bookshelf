@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Import Bookshelf - MyBookshelf</title>
+    <title id="page-title">Import Bookshelf - MyBookshelf</title>
     <style>
         * {
             margin: 0;
@@ -172,46 +172,36 @@
 </head>
 <body>
     <div class="container">
-        <div id="loading-section">
+        <div id="main-section">
             <div class="loading-icon">📖</div>
-            <h1>Opening Your Bookshelf...</h1>
-            <p class="loading-text">Launching MyBookshelf app...</p>
-        </div>
+            <h1 id="bookshelf-title" onclick="launchApp()" style="cursor: pointer; text-decoration: underline;">
+                Loading Bookshelf...
+            </h1>
+            <p class="loading-text">Click the title above to open in MyBookshelf app</p>
 
-        <div id="fallback-section" class="fallback">
-            <h2>📱 App Not Installed?</h2>
-            <p>To import this shared bookshelf, you'll need the MyBookshelf app.</p>
+            <div id="fallback-info" class="fallback" style="display: none;">
+                <p>Don't have MyBookshelf? <a href="../index.html">Get the app</a></p>
 
-            <div>
-                <a href="../index.html" class="download-btn">
-                    📚 Get MyBookshelf
-                </a>
-                <br>
-                <button onclick="retryAppLaunch()" class="download-btn secondary-btn">
-                    🔄 Try Again
-                </button>
-            </div>
-
-            <div class="token-section">
-                <div class="token-label">Save this import code:</div>
-                <div id="token-display" class="token-display"></div>
-                <button onclick="copyToken()" class="copy-btn" id="copy-btn">
-                    📋 Copy Code
-                </button>
-            </div>
-
-            <div class="instructions">
-                <strong>Manual Import:</strong><br>
-                1. Install MyBookshelf<br>
-                2. Open the app<br>
-                3. Use the import feature with the code above
+                <div class="token-section">
+                    <div class="token-label">Import code for manual use:</div>
+                    <div id="token-display" class="token-display"></div>
+                    <button onclick="copyToken()" class="copy-btn" id="copy-btn">
+                        📋 Copy Code
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         let shareToken = '';
+        let bookshelfName = '';
         let appLaunchAttempted = false;
+
+        function getBookshelfNameFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('name') || 'Bookshelf';
+        }
 
         function getTokenFromUrl() {
             // Get token from URL fragment (#token) or hash parameter
@@ -220,13 +210,23 @@
             return hash || params.get('token') || params.get('t');
         }
 
+        function updatePageTitle() {
+            bookshelfName = decodeURIComponent(getBookshelfNameFromUrl());
+            document.getElementById('page-title').textContent = `${bookshelfName} - MyBookshelf`;
+            document.getElementById('bookshelf-title').textContent = bookshelfName;
+        }
+
+        function launchApp() {
+            attemptAppLaunch();
+        }
+
         function attemptAppLaunch() {
             if (appLaunchAttempted) return;
 
             shareToken = getTokenFromUrl();
 
             if (!shareToken) {
-                showFallback('No bookshelf token found in the link.');
+                showFallback();
                 return;
             }
 
@@ -250,27 +250,14 @@
             setTimeout(showFallback, 3000);
         }
 
-        function showFallback(customMessage) {
-            document.getElementById('loading-section').style.display = 'none';
-            document.getElementById('fallback-section').style.display = 'block';
+        function showFallback() {
+            document.getElementById('fallback-info').style.display = 'block';
 
             if (shareToken) {
                 document.getElementById('token-display').textContent = shareToken;
             } else {
                 document.getElementById('token-display').textContent = 'Token not found';
             }
-
-            if (customMessage) {
-                document.querySelector('.fallback h2').textContent = customMessage;
-            }
-        }
-
-        function retryAppLaunch() {
-            appLaunchAttempted = false;
-            document.getElementById('loading-section').style.display = 'block';
-            document.getElementById('fallback-section').style.display = 'none';
-
-            setTimeout(attemptAppLaunch, 500);
         }
 
         function copyToken() {
@@ -321,7 +308,10 @@
         window.onload = function() {
             console.log('Share page loaded');
 
-            // Small delay to ensure page is ready
+            // Update page title and bookshelf name
+            updatePageTitle();
+
+            // Small delay to ensure page is ready, then try to launch app automatically
             setTimeout(attemptAppLaunch, 1000);
         };
 
