@@ -24,6 +24,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.test.FakeSearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.test.FakeBookshelfExportService
 import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
 
@@ -66,20 +67,6 @@ class BookshelfSearchViewModelTest {
             return Result.Success(null)
         }
 
-        override suspend fun searchBooks(
-            query: String,
-            sortBy: uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort,
-            language: String?,
-            authorFilter: String?,
-            titleFilter: String?
-        ): Result<List<Book>, DataError.Remote> {
-            searchQueries.add(query)
-            return if (shouldReturnError) {
-                Result.Error(DataError.Remote.REQUEST_TIMEOUT)
-            } else {
-                Result.Success(searchResult)
-            }
-        }
     }
 
     private class FakeBookshelfRepository : BookshelfRepository {
@@ -127,6 +114,7 @@ class BookshelfSearchViewModelTest {
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = TEST_SHELF_ID
         )
         
@@ -149,6 +137,7 @@ class BookshelfSearchViewModelTest {
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = TEST_SHELF_ID
         )
         
@@ -180,6 +169,7 @@ class BookshelfSearchViewModelTest {
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = TEST_SHELF_ID
         )
         
@@ -201,14 +191,16 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun search_triggers_after_debounce() = runTest {
-        val bookRepository = FakeBookRepository().apply {
-            searchResult = listOf(sampleBook("result1"))
-        }
+        val bookRepository = FakeBookRepository()
         val bookshelfRepository = FakeBookshelfRepository()
+        val searchUseCase = FakeSearchBooksUseCase().apply {
+            searchResults = listOf(sampleBook("result1"))
+        }
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = searchUseCase,
             shelfId = TEST_SHELF_ID
         )
         
@@ -225,7 +217,7 @@ class BookshelfSearchViewModelTest {
         testDispatcher.scheduler.runCurrent()
         
         // Should have called search
-        assertEquals(listOf("test"), bookRepository.searchQueries)
+        assertEquals(listOf("test"), listOf(searchUseCase.lastSearchQuery))
         assertEquals(1, latestState?.searchResults?.size)
         assertEquals("result1", latestState?.searchResults?.first()?.id)
         
@@ -236,10 +228,12 @@ class BookshelfSearchViewModelTest {
     fun short_queries_ignored() = runTest {
         val bookRepository = FakeBookRepository()
         val bookshelfRepository = FakeBookshelfRepository()
+        val searchUseCase = FakeSearchBooksUseCase()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = searchUseCase,
             shelfId = TEST_SHELF_ID
         )
         
@@ -255,7 +249,7 @@ class BookshelfSearchViewModelTest {
         advanceUntilIdle()
         
         // Should not have triggered search
-        assertTrue(bookRepository.searchQueries.isEmpty())
+        assertEquals(0, searchUseCase.searchCallCount)
         
         job.cancel()
     }
@@ -264,10 +258,12 @@ class BookshelfSearchViewModelTest {
     fun rapid_queries_debounced_properly() = runTest {
         val bookRepository = FakeBookRepository()
         val bookshelfRepository = FakeBookshelfRepository()
+        val searchUseCase = FakeSearchBooksUseCase()
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = searchUseCase,
             shelfId = TEST_SHELF_ID
         )
 
@@ -288,21 +284,23 @@ class BookshelfSearchViewModelTest {
         testDispatcher.scheduler.runCurrent()
 
         // Should only search for the final query
-        assertEquals(listOf("hello"), bookRepository.searchQueries)
+        assertEquals("hello", searchUseCase.lastSearchQuery)
 
         job.cancel()
     }
 
     @Test
     fun search_results_update_state() = runTest {
-        val bookRepository = FakeBookRepository().apply {
-            searchResult = listOf(sampleBook("result1"), sampleBook("result2"))
-        }
+        val bookRepository = FakeBookRepository()
         val bookshelfRepository = FakeBookshelfRepository()
+        val searchUseCase = FakeSearchBooksUseCase().apply {
+            searchResults = listOf(sampleBook("result1"), sampleBook("result2"))
+        }
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = searchUseCase,
             shelfId = TEST_SHELF_ID
         )
 
@@ -328,14 +326,16 @@ class BookshelfSearchViewModelTest {
 
     @Test
     fun search_error_handling() = runTest {
-        val bookRepository = FakeBookRepository().apply {
-            shouldReturnError = true
-        }
+        val bookRepository = FakeBookRepository()
         val bookshelfRepository = FakeBookshelfRepository()
+        val searchUseCase = FakeSearchBooksUseCase().apply {
+            errorToReturn = DataError.Remote.REQUEST_TIMEOUT
+        }
         val vm = BookshelfViewModel(
             bookRepository = bookRepository,
             bookshelfRepository = bookshelfRepository,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = searchUseCase,
             shelfId = TEST_SHELF_ID
         )
         

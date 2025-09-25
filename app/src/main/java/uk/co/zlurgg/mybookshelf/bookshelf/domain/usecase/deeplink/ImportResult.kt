@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink
 
 sealed class ImportResult {
     data object Success : ImportResult()

@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.search
 
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
@@ -10,19 +10,20 @@ import uk.co.zlurgg.mybookshelf.core.domain.Result
 import uk.co.zlurgg.mybookshelf.core.domain.map
 
 /**
- * UseCase responsible for searching books with proper business logic separation.
- * Combines network data retrieval with domain-specific sorting algorithms.
+ * Implementation of SearchBooksUseCase that combines network data retrieval with domain sorting.
+ * Follows Clean Architecture by coordinating between data and domain layers.
  */
-class SearchBooksUseCase(
+class SearchBooksUseCaseImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
     private val bookSorter: BookSorter
-) {
-    suspend fun execute(
+) : SearchBooksUseCase {
+
+    override suspend fun execute(
         query: String,
         sortBy: BookSearchSort,
-        language: String? = null,
-        authorFilter: String? = null,
-        titleFilter: String? = null
+        language: String?,
+        authorFilter: String?,
+        titleFilter: String?
     ): Result<List<Book>, DataError.Remote> {
         // Determine server-side sort parameter
         val serverSort = if (sortBy.useServerSide) sortBy.serverSortParam else null

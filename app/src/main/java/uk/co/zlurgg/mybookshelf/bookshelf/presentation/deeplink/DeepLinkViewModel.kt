@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.DeepLinkImportUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.ImportResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.ImportResult
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 class DeepLinkViewModel(

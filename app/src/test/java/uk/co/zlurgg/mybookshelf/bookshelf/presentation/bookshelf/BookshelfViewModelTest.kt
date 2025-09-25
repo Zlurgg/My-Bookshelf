@@ -20,6 +20,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.test.FakeSearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.test.FakeBookshelfExportService
 import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
 
@@ -50,15 +51,6 @@ class BookshelfViewModelTest {
             return Result.Success(null)
         }
 
-        override suspend fun searchBooks(
-            query: String,
-            sortBy: uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort,
-            language: String?,
-            authorFilter: String?,
-            titleFilter: String?
-        ): Result<List<Book>, DataError.Remote> {
-            return Result.Success(searchResults)
-        }
     }
 
     private class FakeBookshelfRepository : BookshelfRepository {
@@ -131,6 +123,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         val book = sampleBook("B1")
@@ -149,6 +142,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -172,6 +166,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         val book = sampleBook("B1")
@@ -191,6 +186,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -214,6 +210,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -242,6 +239,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -265,6 +263,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -292,6 +291,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -315,6 +315,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -338,6 +339,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -364,6 +366,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -385,6 +388,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
@@ -405,6 +409,7 @@ class BookshelfViewModelTest {
             bookRepository = bookRepo,
             bookshelfRepository = bookshelfRepo,
             bookshelfExportService = FakeBookshelfExportService(),
+            searchBooksUseCase = FakeSearchBooksUseCase(),
             shelfId = "S1"
         )
         
