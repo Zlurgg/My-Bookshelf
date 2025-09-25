@@ -152,11 +152,11 @@ class BookcaseViewModel(
                         )
                     }
                 }
-                .collect { result ->
+                .collect { bookcase ->
                     _state.update {
                         it.copy(
-                            bookshelves = result.shelves,
-                            bookCounts = result.bookCounts,
+                            bookshelves = bookcase.bookshelves,
+                            bookCounts = bookcase.bookCounts,
                             isLoading = false,
                             errorMessage = null
                         )
