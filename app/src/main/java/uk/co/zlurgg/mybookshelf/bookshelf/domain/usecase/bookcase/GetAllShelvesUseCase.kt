@@ -1,13 +1,13 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import kotlinx.coroutines.flow.Flow
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.AllShelvesResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
 
 /**
- * UseCase for getting all bookshelves with their book counts.
+ * UseCase for getting the complete bookcase with all shelves and their book counts.
  * Provides reactive updates when shelves or books change.
- * Returns shelves with populated book counts for display purposes.
+ * Returns the bookcase with populated book counts for display purposes.
  */
 interface GetAllShelvesUseCase {
-    suspend fun execute(): Flow<AllShelvesResult>
+    suspend fun execute(): Flow<Bookcase>
 }
