@@ -5,13 +5,33 @@ sealed interface DataError: Error {
         REQUEST_TIMEOUT,
         TOO_MANY_REQUESTS,
         NO_INTERNET,
-        SERVER,
+        SERVER_ERROR,
+        CLIENT_ERROR,
+        UNAUTHORIZED,
+        FORBIDDEN,
+        NOT_FOUND,
         SERIALIZATION,
+        MALFORMED_REQUEST,
         UNKNOWN
     }
 
     enum class Local: DataError {
         DISK_FULL,
+        STORAGE_ACCESS_DENIED,
+        DATABASE_ERROR,
+        INVALID_INPUT,
+        DUPLICATE_ENTRY,
+        NOT_FOUND,
+        SERIALIZATION_ERROR,
         UNKNOWN
+    }
+
+    enum class Validation: DataError {
+        EMPTY_FIELD,
+        INVALID_FORMAT,
+        TOO_SHORT,
+        TOO_LONG,
+        INVALID_CHARACTERS,
+        DUPLICATE_VALUE
     }
 }

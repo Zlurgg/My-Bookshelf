@@ -40,7 +40,7 @@ suspend inline fun <reified T> responseToResult(
         }
         408 -> Result.Error(DataError.Remote.REQUEST_TIMEOUT)
         429 -> Result.Error(DataError.Remote.TOO_MANY_REQUESTS)
-        in 500..599 -> Result.Error(DataError.Remote.SERVER)
+        in 500..599 -> Result.Error(DataError.Remote.SERVER_ERROR)
         else -> Result.Error(DataError.Remote.UNKNOWN)
     }
 }
