@@ -10,20 +10,14 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 class BookDetailViewModel(
     private val bookRepository: BookRepository,
-    private val bookshelfRepository: BookshelfRepository,
-    private val addBookToShelfUseCase: AddBookToShelfUseCase,
-    private val removeBookFromShelfUseCase: RemoveBookFromShelfUseCase,
-    private val getBookDetailsUseCase: GetBookDetailsUseCase,
+    private val bookDetailUseCases: BookDetailUseCases,
     private val bookId: String,
     private val shelfId: String
 ) : ViewModel() {
@@ -33,7 +27,7 @@ class BookDetailViewModel(
         .onStart {
             viewModelScope.launch {
                 // Use GetBookDetailsUseCase to get reactive book details and shelf status
-                getBookDetailsUseCase.execute(bookId, shelfId).collect { bookDetails ->
+                bookDetailUseCases.getBookDetails.execute(bookId, shelfId).collect { bookDetails ->
                     _state.update { currentState ->
                         currentState.copy(
                             book = bookDetails.book,
@@ -45,7 +39,7 @@ class BookDetailViewModel(
 
                 // Load book description separately (non-blocking)
                 launch {
-                    getBookDetailsUseCase.loadBookDescription(bookId)
+                    bookDetailUseCases.getBookDetails.loadBookDescription(bookId)
                         .onSuccess {
                             // Description loading handled by the UseCase
                             // State will update via the reactive flow above
@@ -77,7 +71,7 @@ class BookDetailViewModel(
                     val book: Book = action.book
 
                     if (onShelf) {
-                        when (removeBookFromShelfUseCase.execute(book.id, shelfId)) {
+                        when (bookDetailUseCases.removeBookFromShelf.execute(book.id, shelfId)) {
                             is Result.Success -> {
                                 _state.update { it.copy(onShelf = false) }
                                 onNavigateBack?.invoke()
@@ -87,7 +81,7 @@ class BookDetailViewModel(
                             }
                         }
                     } else {
-                        when (addBookToShelfUseCase.execute(book, shelfId)) {
+                        when (bookDetailUseCases.addBookToShelf.execute(book, shelfId)) {
                             is Result.Success -> {
                                 _state.update { it.copy(onShelf = true) }
                                 onNavigateBack?.invoke()
@@ -124,7 +118,7 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
-                    when (removeBookFromShelfUseCase.execute(bookId, shelfId)) {
+                    when (bookDetailUseCases.removeBookFromShelf.execute(bookId, shelfId)) {
                         is Result.Success -> {
                             _state.update { it.copy(onShelf = false) }
                             onNavigateBack?.invoke()
