@@ -75,7 +75,7 @@ class DeepLinkViewModel(
                 is Result.Error -> {
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = "Failed to import bookshelf with the new name."
+                        error = "Failed to import bookshelf: ${result.error}"
                     )
                 }
             }
