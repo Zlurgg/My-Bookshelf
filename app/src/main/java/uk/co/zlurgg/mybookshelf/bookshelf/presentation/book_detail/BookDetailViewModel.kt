@@ -3,9 +3,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
@@ -21,38 +20,38 @@ class BookDetailViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookDetailState())
-    val state = _state
-        .onStart {
-            viewModelScope.launch {
-                // Use GetBookDetailsUseCase to get reactive book details and shelf status
-                bookDetailUseCases.getBookDetails.execute(bookId, shelfId).collect { bookDetails ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            book = bookDetails.book,
-                            onShelf = bookDetails.isOnShelf,
-                            isLoading = false
-                        )
-                    }
-                }
+    val state: StateFlow<BookDetailState> = _state.asStateFlow()
 
-                // Load book description separately (non-blocking)
-                launch {
-                    bookDetailUseCases.getBookDetails.loadBookDescription(bookId)
-                        .onSuccess {
-                            // Description loading handled by the UseCase
-                            // State will update via the reactive flow above
-                        }
-                        .onError {
-                            // ignore, keep UI usable
-                        }
+    init {
+        loadBookDetails()
+    }
+
+    private fun loadBookDetails() {
+        viewModelScope.launch {
+            // Use GetBookDetailsUseCase to get reactive book details and shelf status
+            bookDetailUseCases.getBookDetails.execute(bookId, shelfId).collect { bookDetails ->
+                _state.update { currentState ->
+                    currentState.copy(
+                        book = bookDetails.book,
+                        onShelf = bookDetails.isOnShelf,
+                        isLoading = false
+                    )
                 }
             }
         }
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5_000L),
-            _state.value
-        )
+
+        // Load book description separately (non-blocking)
+        viewModelScope.launch {
+            bookDetailUseCases.getBookDetails.loadBookDescription(bookId)
+                .onSuccess {
+                    // Description loading handled by the UseCase
+                    // State will update via the reactive flow above
+                }
+                .onError {
+                    // ignore, keep UI usable
+                }
+        }
+    }
 
     // Navigation callback
     private var onNavigateBack: (() -> Unit)? = null

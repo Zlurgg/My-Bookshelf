@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 class GetShelfByIdUseCaseImpl(
@@ -14,7 +15,7 @@ class GetShelfByIdUseCaseImpl(
             val shelf = bookcaseRepository.getShelfById(shelfId)
             Result.Success(shelf)
         } catch (e: Exception) {
-            Result.Error(DataError.Local.UNKNOWN)
+            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
         }
     }
 }

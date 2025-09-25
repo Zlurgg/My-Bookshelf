@@ -5,12 +5,14 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -19,7 +21,7 @@ class BookcaseViewModel(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
-    val state: StateFlow<BookcaseState> = _state
+    val state: StateFlow<BookcaseState> = _state.asStateFlow()
 
     init {
         loadBookshelves()
@@ -72,7 +74,7 @@ class BookcaseViewModel(
                                 current.copy(
                                     bookshelves = current.bookshelves + action.bookshelf,
                                     recentlyDeleted = null,
-                                    errorMessage = "Failed to remove shelf"
+                                    errorMessage = ErrorFormatter.formatOperationError("remove shelf", Exception("Delete operation failed"))
                                 )
                             }
                         }
@@ -97,7 +99,7 @@ class BookcaseViewModel(
                             is Result.Error -> {
                                 _state.update { current ->
                                     current.copy(
-                                        errorMessage = "Failed to restore shelf"
+                                        errorMessage = ErrorFormatter.formatOperationError("restore shelf", Exception("Restore operation failed"))
                                     )
                                 }
                             }
@@ -129,7 +131,7 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Failed to add shelf"
+                            errorMessage = ErrorFormatter.formatOperationError("add shelf", Exception("Add operation failed"))
                         )
                     }
                 }
@@ -146,7 +148,7 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Failed to load shelves"
+                            errorMessage = ErrorFormatter.formatOperationError("load shelves", Exception("Load operation failed"))
                         )
                     }
                 }
@@ -175,7 +177,7 @@ class BookcaseViewModel(
                     // Revert on error by reloading from database
                     _state.update {
                         it.copy(
-                            errorMessage = "Failed to reorder shelves"
+                            errorMessage = ErrorFormatter.formatOperationError("reorder shelves", Exception("Reorder operation failed"))
                         )
                     }
                     loadBookshelves()
