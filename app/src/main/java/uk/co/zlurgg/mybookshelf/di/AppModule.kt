@@ -17,7 +17,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.util.BookSorter
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.LocalShareTokenService
@@ -59,6 +60,7 @@ val appModule = module {
     }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
     singleOf(::BookSorter)
+    singleOf(::SearchBooksUseCase)
     singleOf(::DeepLinkImportUseCase)
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
@@ -78,6 +80,7 @@ val appModule = module {
             bookRepository = get(),
             bookshelfRepository = get(),
             bookshelfExportService = get(),
+            searchBooksUseCase = get(),
             shelfId = shelfId
         )
     }
