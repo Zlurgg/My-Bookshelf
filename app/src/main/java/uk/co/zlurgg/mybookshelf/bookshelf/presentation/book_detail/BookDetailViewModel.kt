@@ -13,6 +13,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 import uk.co.zlurgg.mybookshelf.core.domain.Result
@@ -22,6 +23,7 @@ class BookDetailViewModel(
     private val bookshelfRepository: BookshelfRepository,
     private val addBookToShelfUseCase: AddBookToShelfUseCase,
     private val removeBookFromShelfUseCase: RemoveBookFromShelfUseCase,
+    private val getBookDetailsUseCase: GetBookDetailsUseCase,
     private val bookId: String,
     private val shelfId: String
 ) : ViewModel() {
@@ -30,27 +32,28 @@ class BookDetailViewModel(
     val state = _state
         .onStart {
             viewModelScope.launch {
-                // Load base book from local DB if present
-                val base = bookRepository.getBookById(bookId)
-                _state.update { it.copy(book = base, isLoading = false) }
-
-                // Observe shelf membership and reflect in UI
-                launch {
-                    bookshelfRepository.isBookOnShelf(bookId, shelfId).collect { onShelf ->
-                        _state.update { s -> s.copy(onShelf = onShelf) }
+                // Use GetBookDetailsUseCase to get reactive book details and shelf status
+                getBookDetailsUseCase.execute(bookId, shelfId).collect { bookDetails ->
+                    _state.update { currentState ->
+                        currentState.copy(
+                            book = bookDetails.book,
+                            onShelf = bookDetails.isOnShelf,
+                            isLoading = false
+                        )
                     }
                 }
 
-                // Fetch description from remote and merge
-                bookRepository.getBookDescription(bookId)
-                    .onSuccess { description ->
-                        _state.update { s -> s.copy(book = s.book?.copy(description = description)) }
-                        // Optionally persist back
-                        _state.value.book?.let { bookRepository.upsertBook(it) }
-                    }
-                    .onError {
-                        // ignore, keep UI usable
-                    }
+                // Load book description separately (non-blocking)
+                launch {
+                    getBookDetailsUseCase.loadBookDescription(bookId)
+                        .onSuccess {
+                            // Description loading handled by the UseCase
+                            // State will update via the reactive flow above
+                        }
+                        .onError {
+                            // ignore, keep UI usable
+                        }
+                }
             }
         }
         .stateIn(

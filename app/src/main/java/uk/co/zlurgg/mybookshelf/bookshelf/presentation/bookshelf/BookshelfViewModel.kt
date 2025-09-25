@@ -16,6 +16,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
@@ -30,6 +31,7 @@ class BookshelfViewModel(
     private val searchBooksUseCase: SearchBooksUseCase,
     private val addBookToShelfUseCase: AddBookToShelfUseCase,
     private val removeBookFromShelfUseCase: RemoveBookFromShelfUseCase,
+    private val getShelfBooksUseCase: GetShelfBooksUseCase,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -66,10 +68,12 @@ class BookshelfViewModel(
             is BookshelfAction.OnBookClick -> {
                 // Persist clicked book so details screen can load it by ID safely
                 viewModelScope.launch {
+                    // Simple operation - keep as direct repository call for now
+                    // This could be moved to a UseCase in Phase 4 if needed
                     try {
                         bookRepository.upsertBook(action.book)
                     } catch (e: Exception) {
-                        _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("cache book", e)) }
+                        _state.update { it.copy(errorMessage = "Failed to cache book") }
                     }
                 }
             }
@@ -154,17 +158,8 @@ class BookshelfViewModel(
 
     private fun loadBooks() {
         viewModelScope.launch {
-            try {
-                bookshelfRepository.getBooksForShelf(shelfId).collect { books ->
-                    _state.update { it.copy(books = books, isLoading = false) }
-                }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        errorMessage = ErrorFormatter.formatOperationError("load books", e),
-                        isLoading = false
-                    )
-                }
+            getShelfBooksUseCase.execute(shelfId).collect { books ->
+                _state.update { it.copy(books = books, isLoading = false) }
             }
         }
     }
