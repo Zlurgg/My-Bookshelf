@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 
 /**
  * Facade aggregating all bookshelf related UseCases.
@@ -11,5 +12,7 @@ class BookshelfUseCases(
     val searchBooks: SearchBooksUseCase,
     val getShelfBooks: GetShelfBooksUseCase,
     val addBookToShelf: AddBookToShelfUseCase,
-    val removeBookFromShelf: RemoveBookFromShelfUseCase
+    val removeBookFromShelf: RemoveBookFromShelfUseCase,
+    val upsertBook: UpsertBookUseCase,
+    val shareBookshelf: ShareBookshelfUseCase
 )

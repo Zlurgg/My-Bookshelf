@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.ImportResult
@@ -29,33 +30,33 @@ class DeepLinkViewModel(
 
     private fun importFromToken(token: String) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, error = null, nameConflict = null)
+            _state.update { it.copy(isLoading = true, error = null, nameConflict = null) }
 
             when (val result = deepLinkImportUseCase.importBookshelfFromToken(token)) {
                 is Result.Success -> {
                     when (val importResult = result.data) {
                         is ImportResult.Success -> {
-                            _state.value = _state.value.copy(
+                            _state.update { it.copy(
                                 isLoading = false,
                                 importSuccessful = true
-                            )
+                            ) }
                         }
                         is ImportResult.NameConflict -> {
-                            _state.value = _state.value.copy(
+                            _state.update { it.copy(
                                 isLoading = false,
                                 nameConflict = NameConflictData(
                                     existingName = importResult.existingName,
                                     jsonData = importResult.jsonData
                                 )
-                            )
+                            ) }
                         }
                     }
                 }
                 is Result.Error -> {
-                    _state.value = _state.value.copy(
+                    _state.update { it.copy(
                         isLoading = false,
                         error = "Failed to import bookshelf. The link may be expired or invalid: ${result.error}"
-                    )
+                    ) }
                 }
             }
         }
@@ -63,34 +64,34 @@ class DeepLinkViewModel(
 
     private fun resolveNameConflict(jsonData: String, newName: String) {
         viewModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, nameConflict = null)
+            _state.update { it.copy(isLoading = true, nameConflict = null) }
 
             when (val result = deepLinkImportUseCase.importBookshelfWithCustomName(jsonData, newName)) {
                 is Result.Success -> {
-                    _state.value = _state.value.copy(
+                    _state.update { it.copy(
                         isLoading = false,
                         importSuccessful = true
-                    )
+                    ) }
                 }
                 is Result.Error -> {
-                    _state.value = _state.value.copy(
+                    _state.update { it.copy(
                         isLoading = false,
                         error = "Failed to import bookshelf: ${result.error}"
-                    )
+                    ) }
                 }
             }
         }
     }
 
     private fun dismissError() {
-        _state.value = _state.value.copy(error = null)
+        _state.update { it.copy(error = null) }
     }
 
     private fun dismissSuccess() {
-        _state.value = _state.value.copy(importSuccessful = false)
+        _state.update { it.copy(importSuccessful = false) }
     }
 
     private fun dismissNameConflict() {
-        _state.value = _state.value.copy(nameConflict = null)
+        _state.update { it.copy(nameConflict = null) }
     }
 }

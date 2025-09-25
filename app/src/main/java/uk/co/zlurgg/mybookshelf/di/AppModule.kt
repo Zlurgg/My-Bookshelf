@@ -58,6 +58,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookPurchaseUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookPurchaseUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.ImageLoaderFactory
@@ -91,10 +97,13 @@ val appModule = module {
     singleOf(::DeleteShelfUseCaseImpl).bind<DeleteShelfUseCase>()
     singleOf(::GetAllShelvesUseCaseImpl).bind<GetAllShelvesUseCase>()
     singleOf(::ReorderShelvesUseCaseImpl).bind<ReorderShelvesUseCase>()
+    singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
+    singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
+    singleOf(::ShareBookshelfUseCaseImpl).bind<ShareBookshelfUseCase>()
 
     // UseCase Facades
-    single { BookDetailUseCases(get(), get(), get()) }
-    single { BookshelfUseCases(get(), get(), get(), get()) }
+    single { BookDetailUseCases(get(), get(), get(), get(), get()) }
+    single { BookshelfUseCases(get(), get(), get(), get(), get(), get()) }
     single { BookcaseUseCases(get(), get(), get(), get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
@@ -111,16 +120,13 @@ val appModule = module {
 
     viewModel { (shelfId: String) ->
         BookshelfViewModel(
-            bookRepository = get(),
-            bookshelfExportService = get(),
             bookshelfUseCases = get(),
             shelfId = shelfId
         )
     }
-    viewModel { BookcaseViewModel(get(), get()) }
+    viewModel { BookcaseViewModel(get()) }
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
-            bookRepository = get(),
             bookDetailUseCases = get(),
             bookId = bookId,
             shelfId = shelfId

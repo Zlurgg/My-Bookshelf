@@ -7,5 +7,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 class BookDetailUseCases(
     val getBookDetails: GetBookDetailsUseCase,
     val addBookToShelf: AddBookToShelfUseCase,
-    val removeBookFromShelf: RemoveBookFromShelfUseCase
+    val removeBookFromShelf: RemoveBookFromShelfUseCase,
+    val upsertBook: UpsertBookUseCase,
+    val toggleBookPurchase: ToggleBookPurchaseUseCase
 )
