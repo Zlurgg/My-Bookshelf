@@ -45,15 +45,6 @@ class BookDetailViewModelTest {
             return Result.Success(description)
         }
 
-        override suspend fun searchBooks(
-            query: String,
-            sortBy: uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort,
-            language: String?,
-            authorFilter: String?,
-            titleFilter: String?
-        ): Result<List<Book>, DataError.Remote> {
-            return Result.Success(emptyList())
-        }
 
         override suspend fun upsertBook(book: Book) {
             upserted = book

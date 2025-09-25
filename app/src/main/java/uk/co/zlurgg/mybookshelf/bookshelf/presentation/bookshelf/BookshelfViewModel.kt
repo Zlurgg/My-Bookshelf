@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
@@ -23,6 +24,7 @@ class BookshelfViewModel(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val bookshelfExportService: BookshelfExportService,
+    private val searchBooksUseCase: SearchBooksUseCase,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -206,8 +208,8 @@ class BookshelfViewModel(
             _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
 
             val currentState = _state.value
-            bookRepository
-                .searchBooks(
+            searchBooksUseCase
+                .execute(
                     query = query,
                     sortBy = currentState.selectedSort,
                     language = null,
