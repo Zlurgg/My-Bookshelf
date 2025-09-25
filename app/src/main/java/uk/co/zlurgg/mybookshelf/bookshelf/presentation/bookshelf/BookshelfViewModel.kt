@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.search.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter

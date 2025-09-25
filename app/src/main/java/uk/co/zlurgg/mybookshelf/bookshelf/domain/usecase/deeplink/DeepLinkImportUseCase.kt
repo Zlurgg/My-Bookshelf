@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
