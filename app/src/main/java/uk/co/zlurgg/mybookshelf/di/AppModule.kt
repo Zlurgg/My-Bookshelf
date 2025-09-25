@@ -43,6 +43,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToSh
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.ImageLoaderFactory
@@ -70,6 +74,8 @@ val appModule = module {
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
     singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
     singleOf(::RemoveBookFromShelfUseCaseImpl).bind<RemoveBookFromShelfUseCase>()
+    singleOf(::GetBookDetailsUseCaseImpl).bind<GetBookDetailsUseCase>()
+    singleOf(::GetShelfBooksUseCaseImpl).bind<GetShelfBooksUseCase>()
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
@@ -91,6 +97,7 @@ val appModule = module {
             searchBooksUseCase = get(),
             addBookToShelfUseCase = get(),
             removeBookFromShelfUseCase = get(),
+            getShelfBooksUseCase = get(),
             shelfId = shelfId
         )
     }
@@ -101,6 +108,7 @@ val appModule = module {
             bookshelfRepository = get(),
             addBookToShelfUseCase = get(),
             removeBookFromShelfUseCase = get(),
+            getBookDetailsUseCase = get(),
             bookId = bookId,
             shelfId = shelfId
         )
