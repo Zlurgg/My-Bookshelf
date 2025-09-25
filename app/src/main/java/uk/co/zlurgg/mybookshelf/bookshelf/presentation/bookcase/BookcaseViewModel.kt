@@ -6,23 +6,16 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
-    private val bookcaseUseCases: BookcaseUseCases,
-    private val bookshelfExportService: BookshelfExportService
+    private val bookcaseUseCases: BookcaseUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())

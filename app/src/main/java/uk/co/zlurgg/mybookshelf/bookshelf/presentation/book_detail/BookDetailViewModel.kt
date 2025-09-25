@@ -9,14 +9,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 class BookDetailViewModel(
-    private val bookRepository: BookRepository,
     private val bookDetailUseCases: BookDetailUseCases,
     private val bookId: String,
     private val shelfId: String
@@ -52,7 +50,7 @@ class BookDetailViewModel(
         }
         .stateIn(
             viewModelScope,
-            SharingStarted.WhileSubscribed(5000L),
+            SharingStarted.WhileSubscribed(5_000L),
             _state.value
         )
 
@@ -95,14 +93,17 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnPurchaseClick -> {
                 viewModelScope.launch {
-                    try {
-                        val currentBook = state.value.book
-                        if (currentBook != null) {
-                            val updatedBook = currentBook.copy(purchased = true)
-                            bookRepository.upsertBook(updatedBook)
-                            _state.update { it.copy(book = updatedBook) }
+                    val currentBook = state.value.book
+                    if (currentBook != null) {
+                        when (val result = bookDetailUseCases.toggleBookPurchase.execute(currentBook, true)) {
+                            is Result.Success -> {
+                                _state.update { it.copy(book = result.data) }
+                            }
+                            is Result.Error -> {
+                                // Silent failure as in original implementation
+                            }
                         }
-                    } catch (_: Exception) { }
+                    }
                 }
             }
             is BookDetailAction.OnRateBookDetailClick -> {

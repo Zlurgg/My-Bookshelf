@@ -12,20 +12,22 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
 class BookshelfViewModel(
-    private val bookRepository: BookRepository,
-    private val bookshelfExportService: BookshelfExportService,
     private val bookshelfUseCases: BookshelfUseCases,
     private val shelfId: String
 ) : ViewModel() {
+
+    companion object {
+        private const val SEARCH_DEBOUNCE_MS = 450L
+        private const val MIN_SEARCH_QUERY_LENGTH = 2
+        private const val STATE_SUBSCRIPTION_TIMEOUT_MS = 5_000L
+    }
 
     // Initialize state flow with default value
     private val _state = MutableStateFlow(BookshelfState(shelfId = shelfId))
@@ -60,12 +62,13 @@ class BookshelfViewModel(
             is BookshelfAction.OnBookClick -> {
                 // Persist clicked book so details screen can load it by ID safely
                 viewModelScope.launch {
-                    // Simple operation - keep as direct repository call for now
-                    // This could be moved to a UseCase in Phase 4 if needed
-                    try {
-                        bookRepository.upsertBook(action.book)
-                    } catch (e: Exception) {
-                        _state.update { it.copy(errorMessage = "Failed to cache book") }
+                    when (bookshelfUseCases.upsertBook.execute(action.book)) {
+                        is Result.Success -> {
+                            // Success - book cached successfully
+                        }
+                        is Result.Error -> {
+                            _state.update { it.copy(errorMessage = "Failed to cache book") }
+                        }
                     }
                 }
             }
@@ -119,7 +122,7 @@ class BookshelfViewModel(
 
                 // Re-trigger search if there's an active query
                 val currentQuery = _state.value.searchQuery.trim()
-                if (currentQuery.length >= 2) {
+                if (currentQuery.length >= MIN_SEARCH_QUERY_LENGTH) {
                     performSearch(currentQuery)
                 }
             }
@@ -131,7 +134,7 @@ class BookshelfViewModel(
 
                 // Re-trigger search if there's an active query
                 val currentQuery = _state.value.searchQuery.trim()
-                if (currentQuery.length >= 2) {
+                if (currentQuery.length >= MIN_SEARCH_QUERY_LENGTH) {
                     performSearch(currentQuery)
                 }
             }
@@ -140,7 +143,7 @@ class BookshelfViewModel(
 
                 // Re-trigger search if there's an active query
                 val currentQuery = _state.value.searchQuery.trim()
-                if (currentQuery.length >= 2) {
+                if (currentQuery.length >= MIN_SEARCH_QUERY_LENGTH) {
                     performSearch(currentQuery)
                 }
             }
@@ -160,12 +163,12 @@ class BookshelfViewModel(
     private fun observeDebouncedQuery() {
         viewModelScope.launch {
             queryFlow
-                .debounce(450)
+                .debounce(SEARCH_DEBOUNCE_MS)
                 .distinctUntilChanged()
                 .collectLatest { raw ->
                     val query = raw.trim()
 
-                    if (query.length < 2) {
+                    if (query.length < MIN_SEARCH_QUERY_LENGTH) {
                         _state.update {
                             it.copy(
                                 isSearchLoading = false,
@@ -237,8 +240,8 @@ class BookshelfViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isShareLoading = true, errorMessage = null, shareSuccess = false) }
 
-            bookshelfExportService.shareBookshelf(shelfId)
-                .onSuccess {
+            when (bookshelfUseCases.shareBookshelf.execute(shelfId)) {
+                is Result.Success -> {
                     _state.update {
                         it.copy(
                             isShareLoading = false,
@@ -246,14 +249,15 @@ class BookshelfViewModel(
                         )
                     }
                 }
-                .onError { error ->
+                is Result.Error -> {
                     _state.update {
                         it.copy(
                             isShareLoading = false,
-                            errorMessage = ErrorFormatter.formatOperationError("share bookshelf", Exception(error.toString()))
+                            errorMessage = "Failed to share bookshelf"
                         )
                     }
                 }
+            }
         }
     }
 }
