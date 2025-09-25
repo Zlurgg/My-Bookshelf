@@ -22,8 +22,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewMode
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.toMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportErrorDialog
@@ -99,13 +97,10 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                         NavigationRoute.Bookshelf.KEY_ID
                     ) ?: ""
 
-                    val sharedVm = koinViewModel<SharedMyBookshelfViewModel>()
-                    LaunchedEffect(shelfId) { sharedVm.selectShelf(shelfId) }
-                    val selectedShelf = sharedVm.selectedShelf.collectAsStateWithLifecycle().value
-
                     val viewModel = koinViewModel<BookshelfViewModel>(
                         parameters = { parametersOf(shelfId) }
                     )
+                    val state = viewModel.state.collectAsStateWithLifecycle().value
 
                     BookshelfScreenRoot(
                         viewModel = viewModel,
@@ -120,8 +115,8 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                             }
                         },
                         onBackClick = { navController.popBackStack() },
-                        shelfName = selectedShelf?.name,
-                        shelfMaterial = selectedShelf?.shelfStyle?.toMaterial(),
+                        shelfName = state.shelfName,
+                        shelfMaterial = state.shelfMaterial,
                     )
                 }
 

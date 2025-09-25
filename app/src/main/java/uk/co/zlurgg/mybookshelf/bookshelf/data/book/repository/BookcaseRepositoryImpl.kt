@@ -18,6 +18,9 @@ class BookcaseRepositoryImpl(
     override fun getBookCountForShelf(shelfId: String): Flow<Int> =
         dao.getBookCountForShelf(shelfId)
 
+    override suspend fun getShelfById(shelfId: String): Bookshelf? =
+        dao.getShelfById(shelfId)?.toDomain()
+
     override suspend fun addShelf(shelf: Bookshelf) {
         dao.upsertShelf(shelf.toEntity())
     }
