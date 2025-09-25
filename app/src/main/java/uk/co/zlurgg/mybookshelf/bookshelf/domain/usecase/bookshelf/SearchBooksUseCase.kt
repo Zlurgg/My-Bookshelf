@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.search
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort

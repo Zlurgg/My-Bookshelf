@@ -18,8 +18,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositor
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.search.SearchBooksUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.search.SearchBooksUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.LocalShareTokenService
