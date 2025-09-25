@@ -71,7 +71,7 @@ class BookshelfViewModel(
                             // Success - book cached successfully
                         }
                         is Result.Error -> {
-                            _state.update { it.copy(errorMessage = "Failed to cache book") }
+                            _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("cache book", Exception("Cache operation failed"))) }
                         }
                     }
                 }
@@ -86,7 +86,7 @@ class BookshelfViewModel(
                             // Success handled by UI update below
                         }
                         is Result.Error -> {
-                            _state.update { it.copy(errorMessage = "Failed to remove book from shelf") }
+                            _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("remove book from shelf", Exception("Remove operation failed"))) }
                         }
                     }
                 }
@@ -177,7 +177,7 @@ class BookshelfViewModel(
                     }
                 }
                 is Result.Error -> {
-                    _state.update { it.copy(errorMessage = "Failed to load shelf details") }
+                    _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("load shelf details", Exception("Load operation failed"))) }
                 }
             }
         }
@@ -217,7 +217,7 @@ class BookshelfViewModel(
                 is Result.Error -> {
                     _state.update {
                         it.copy(
-                            errorMessage = "Failed to add book to shelf",
+                            errorMessage = ErrorFormatter.formatOperationError("add book to shelf", Exception("Add operation failed")),
                             isLoading = false
                         )
                     }
@@ -277,7 +277,7 @@ class BookshelfViewModel(
                     _state.update {
                         it.copy(
                             isShareLoading = false,
-                            errorMessage = "Failed to share bookshelf"
+                            errorMessage = ErrorFormatter.formatOperationError("share bookshelf", Exception("Share operation failed"))
                         )
                     }
                 }

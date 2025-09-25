@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.ImportResult
+import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 class DeepLinkViewModel(
@@ -55,7 +56,7 @@ class DeepLinkViewModel(
                 is Result.Error -> {
                     _state.update { it.copy(
                         isLoading = false,
-                        error = "Failed to import bookshelf. The link may be expired or invalid: ${result.error}"
+                        error = ErrorFormatter.formatOperationError("import bookshelf", Exception("Link may be expired or invalid: ${result.error}"))
                     ) }
                 }
             }
@@ -76,7 +77,7 @@ class DeepLinkViewModel(
                 is Result.Error -> {
                     _state.update { it.copy(
                         isLoading = false,
-                        error = "Failed to import bookshelf: ${result.error}"
+                        error = ErrorFormatter.formatOperationError("import bookshelf", Exception(result.error.toString()))
                     ) }
                 }
             }
