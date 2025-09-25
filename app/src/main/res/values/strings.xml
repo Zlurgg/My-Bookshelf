@@ -69,4 +69,38 @@
     <string name="action_import">Import</string>
     <string name="action_ok">OK</string>
     <string name="importing_shelf">Importing shelf…</string>
+
+    <!-- Error messages - Remote -->
+    <string name="error_request_timeout">Request timed out. Please check your internet connection.</string>
+    <string name="error_too_many_requests">Too many requests. Please try again later.</string>
+    <string name="error_no_internet">No internet connection available.</string>
+    <string name="error_server_error">Server error occurred. Please try again later.</string>
+    <string name="error_client_error">Request error. Please check your input.</string>
+    <string name="error_unauthorized">Authentication required.</string>
+    <string name="error_forbidden">Access denied.</string>
+    <string name="error_not_found_remote">Requested resource not found.</string>
+    <string name="error_serialization_remote">Data format error.</string>
+    <string name="error_malformed_request">Invalid request format.</string>
+    <string name="error_unknown_remote">Unknown network error occurred.</string>
+
+    <!-- Error messages - Local -->
+    <string name="error_disk_full">Storage space is full.</string>
+    <string name="error_storage_access_denied">Storage access denied.</string>
+    <string name="error_database_error">Database operation failed.</string>
+    <string name="error_invalid_input">Invalid input provided.</string>
+    <string name="error_duplicate_entry">Entry already exists.</string>
+    <string name="error_not_found_local">Item not found.</string>
+    <string name="error_serialization_local">Data processing error.</string>
+    <string name="error_unknown_local">Unknown local error occurred.</string>
+
+    <!-- Error messages - Validation -->
+    <string name="error_empty_field">Required field is empty.</string>
+    <string name="error_invalid_format">Invalid format.</string>
+    <string name="error_too_short">Input is too short.</string>
+    <string name="error_too_long">Input is too long.</string>
+    <string name="error_invalid_characters">Contains invalid characters.</string>
+    <string name="error_duplicate_value">Value already exists.</string>
+
+    <!-- Error message template -->
+    <string name="error_operation_failed">Failed to %1$s: %2$s</string>
 </resources>
