@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.Result
@@ -23,7 +22,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
 class BookshelfViewModel(
     private val bookRepository: BookRepository,
-    private val bookshelfRepository: BookshelfRepository,
     private val bookshelfExportService: BookshelfExportService,
     private val bookshelfUseCases: BookshelfUseCases,
     private val shelfId: String
@@ -228,7 +226,7 @@ class BookshelfViewModel(
                         it.copy(
                             searchResults = emptyList(),
                             isSearchLoading = false,
-                            errorMessage = error.toString()
+                            errorMessage = ErrorFormatter.formatOperationError("perform search", Exception(error.toString()))
                         )
                     }
                 }
