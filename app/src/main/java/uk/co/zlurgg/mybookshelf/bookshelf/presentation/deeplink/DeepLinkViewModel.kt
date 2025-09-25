@@ -54,7 +54,7 @@ class DeepLinkViewModel(
                 is Result.Error -> {
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = "Failed to import bookshelf. The link may be expired or invalid."
+                        error = "Failed to import bookshelf. The link may be expired or invalid: ${result.error}"
                     )
                 }
             }
