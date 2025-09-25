@@ -98,7 +98,6 @@ val appModule = module {
     viewModel { (shelfId: String) ->
         BookshelfViewModel(
             bookRepository = get(),
-            bookshelfRepository = get(),
             bookshelfExportService = get(),
             bookshelfUseCases = get(),
             shelfId = shelfId
