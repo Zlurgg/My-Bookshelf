@@ -14,9 +14,12 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.Result
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
@@ -25,6 +28,8 @@ class BookshelfViewModel(
     private val bookshelfRepository: BookshelfRepository,
     private val bookshelfExportService: BookshelfExportService,
     private val searchBooksUseCase: SearchBooksUseCase,
+    private val addBookToShelfUseCase: AddBookToShelfUseCase,
+    private val removeBookFromShelfUseCase: RemoveBookFromShelfUseCase,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -73,10 +78,13 @@ class BookshelfViewModel(
             }
             is BookshelfAction.OnRemoveBook -> {
                 viewModelScope.launch {
-                    try {
-                        bookshelfRepository.removeBookFromShelf(shelfId, action.book.id)
-                    } catch (e: Exception) {
-                        _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("remove book", e)) }
+                    when (removeBookFromShelfUseCase.execute(action.book.id, shelfId)) {
+                        is Result.Success -> {
+                            // Success handled by UI update below
+                        }
+                        is Result.Error -> {
+                            _state.update { it.copy(errorMessage = "Failed to remove book from shelf") }
+                        }
                     }
                 }
                 _state.update { current ->
@@ -188,16 +196,17 @@ class BookshelfViewModel(
 
     private fun addBookToShelf(book: Book) {
         viewModelScope.launch {
-            try {
-                // First save the book, then add to shelf
-                bookRepository.upsertBook(book)
-                bookshelfRepository.addBookToShelf(shelfId, book.id)
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        errorMessage = ErrorFormatter.formatOperationError("add book", e),
-                        isLoading = false
-                    )
+            when (addBookToShelfUseCase.execute(book, shelfId)) {
+                is Result.Success -> {
+                    // Success - book added successfully
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            errorMessage = "Failed to add book to shelf",
+                            isLoading = false
+                        )
+                    }
                 }
             }
         }
