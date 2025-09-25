@@ -45,8 +45,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookF
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.ImageLoaderFactory
@@ -77,6 +79,10 @@ val appModule = module {
     singleOf(::GetBookDetailsUseCaseImpl).bind<GetBookDetailsUseCase>()
     singleOf(::GetShelfBooksUseCaseImpl).bind<GetShelfBooksUseCase>()
 
+    // UseCase Facades
+    single { BookDetailUseCases(get(), get(), get()) }
+    single { BookshelfUseCases(get(), get(), get(), get()) }
+
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
     single {
@@ -94,10 +100,7 @@ val appModule = module {
             bookRepository = get(),
             bookshelfRepository = get(),
             bookshelfExportService = get(),
-            searchBooksUseCase = get(),
-            addBookToShelfUseCase = get(),
-            removeBookFromShelfUseCase = get(),
-            getShelfBooksUseCase = get(),
+            bookshelfUseCases = get(),
             shelfId = shelfId
         )
     }
@@ -105,10 +108,7 @@ val appModule = module {
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookRepository = get(),
-            bookshelfRepository = get(),
-            addBookToShelfUseCase = get(),
-            removeBookFromShelfUseCase = get(),
-            getBookDetailsUseCase = get(),
+            bookDetailUseCases = get(),
             bookId = bookId,
             shelfId = shelfId
         )

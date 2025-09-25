@@ -13,10 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
@@ -28,10 +25,7 @@ class BookshelfViewModel(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val bookshelfExportService: BookshelfExportService,
-    private val searchBooksUseCase: SearchBooksUseCase,
-    private val addBookToShelfUseCase: AddBookToShelfUseCase,
-    private val removeBookFromShelfUseCase: RemoveBookFromShelfUseCase,
-    private val getShelfBooksUseCase: GetShelfBooksUseCase,
+    private val bookshelfUseCases: BookshelfUseCases,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -82,7 +76,7 @@ class BookshelfViewModel(
             }
             is BookshelfAction.OnRemoveBook -> {
                 viewModelScope.launch {
-                    when (removeBookFromShelfUseCase.execute(action.book.id, shelfId)) {
+                    when (bookshelfUseCases.removeBookFromShelf.execute(action.book.id, shelfId)) {
                         is Result.Success -> {
                             // Success handled by UI update below
                         }
@@ -158,7 +152,7 @@ class BookshelfViewModel(
 
     private fun loadBooks() {
         viewModelScope.launch {
-            getShelfBooksUseCase.execute(shelfId).collect { books ->
+            bookshelfUseCases.getShelfBooks.execute(shelfId).collect { books ->
                 _state.update { it.copy(books = books, isLoading = false) }
             }
         }
@@ -191,7 +185,7 @@ class BookshelfViewModel(
 
     private fun addBookToShelf(book: Book) {
         viewModelScope.launch {
-            when (addBookToShelfUseCase.execute(book, shelfId)) {
+            when (bookshelfUseCases.addBookToShelf.execute(book, shelfId)) {
                 is Result.Success -> {
                     // Success - book added successfully
                 }
@@ -212,7 +206,7 @@ class BookshelfViewModel(
             _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
 
             val currentState = _state.value
-            searchBooksUseCase
+            bookshelfUseCases.searchBooks
                 .execute(
                     query = query,
                     sortBy = currentState.selectedSort,
