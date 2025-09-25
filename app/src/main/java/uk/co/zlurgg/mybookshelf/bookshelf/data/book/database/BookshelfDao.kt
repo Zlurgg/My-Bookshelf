@@ -24,6 +24,9 @@ interface BookshelfDao {
     @Query("SELECT * FROM BookshelfEntity ORDER BY position ASC")
     fun getAllShelves(): Flow<List<BookshelfEntity>>
 
+    @Query("SELECT * FROM BookshelfEntity WHERE id = :id")
+    suspend fun getShelfById(id: String): BookshelfEntity?
+
     @Query("DELETE FROM BookshelfEntity WHERE id = :id")
     suspend fun deleteShelf(id: String)
 

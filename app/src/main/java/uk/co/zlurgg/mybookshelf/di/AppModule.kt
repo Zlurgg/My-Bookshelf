@@ -36,7 +36,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
@@ -57,6 +56,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCaseImpl
@@ -97,6 +98,7 @@ val appModule = module {
     singleOf(::DeleteShelfUseCaseImpl).bind<DeleteShelfUseCase>()
     singleOf(::GetAllShelvesUseCaseImpl).bind<GetAllShelvesUseCase>()
     singleOf(::ReorderShelvesUseCaseImpl).bind<ReorderShelvesUseCase>()
+    singleOf(::GetShelfByIdUseCaseImpl).bind<GetShelfByIdUseCase>()
     singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
     singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
     singleOf(::ShareBookshelfUseCaseImpl).bind<ShareBookshelfUseCase>()
@@ -104,7 +106,7 @@ val appModule = module {
     // UseCase Facades
     single { BookDetailUseCases(get(), get(), get(), get(), get()) }
     single { BookshelfUseCases(get(), get(), get(), get(), get(), get()) }
-    single { BookcaseUseCases(get(), get(), get(), get()) }
+    single { BookcaseUseCases(get(), get(), get(), get(), get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
@@ -114,13 +116,12 @@ val appModule = module {
     }
     single { get<BookshelfDatabase>().bookshelfDao }
 
-    // Shared shelves VM
-    viewModelOf(::SharedMyBookshelfViewModel)
     viewModelOf(::DeepLinkViewModel)
 
     viewModel { (shelfId: String) ->
         BookshelfViewModel(
             bookshelfUseCases = get(),
+            bookcaseUseCases = get(),
             shelfId = shelfId
         )
     }

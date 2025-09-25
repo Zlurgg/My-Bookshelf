@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import uk.co.zlurgg.mybookshelf.core.domain.onError
@@ -20,6 +22,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
 
 class BookshelfViewModel(
     private val bookshelfUseCases: BookshelfUseCases,
+    private val bookcaseUseCases: BookcaseUseCases,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -39,6 +42,7 @@ class BookshelfViewModel(
     init {
         observeDebouncedQuery()
         loadBooks()
+        loadShelfDetails()
     }
 
     fun onAction(action: BookshelfAction) {
@@ -155,6 +159,26 @@ class BookshelfViewModel(
         viewModelScope.launch {
             bookshelfUseCases.getShelfBooks.execute(shelfId).collect { books ->
                 _state.update { it.copy(books = books, isLoading = false) }
+            }
+        }
+    }
+
+    private fun loadShelfDetails() {
+        viewModelScope.launch {
+            when (val result = bookcaseUseCases.getShelfById.execute(shelfId)) {
+                is Result.Success -> {
+                    result.data?.let { shelf ->
+                        _state.update {
+                            it.copy(
+                                shelfName = shelf.name,
+                                shelfMaterial = ShelfMaterial.fromShelfStyle(shelf.shelfStyle)
+                            )
+                        }
+                    }
+                }
+                is Result.Error -> {
+                    _state.update { it.copy(errorMessage = "Failed to load shelf details") }
+                }
             }
         }
     }

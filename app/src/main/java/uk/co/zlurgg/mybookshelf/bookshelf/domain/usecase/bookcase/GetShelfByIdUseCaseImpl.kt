@@ -1,0 +1,20 @@
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
+
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.core.domain.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.Result
+
+class GetShelfByIdUseCaseImpl(
+    private val bookcaseRepository: BookcaseRepository
+) : GetShelfByIdUseCase {
+
+    override suspend fun execute(shelfId: String): Result<Bookshelf?, DataError.Local> {
+        return try {
+            val shelf = bookcaseRepository.getShelfById(shelfId)
+            Result.Success(shelf)
+        } catch (e: Exception) {
+            Result.Error(DataError.Local.UNKNOWN)
+        }
+    }
+}
