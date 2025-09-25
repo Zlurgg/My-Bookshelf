@@ -49,6 +49,15 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.CreateShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.CreateShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.DeleteShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.DeleteShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.ImageLoaderFactory
@@ -78,10 +87,15 @@ val appModule = module {
     singleOf(::RemoveBookFromShelfUseCaseImpl).bind<RemoveBookFromShelfUseCase>()
     singleOf(::GetBookDetailsUseCaseImpl).bind<GetBookDetailsUseCase>()
     singleOf(::GetShelfBooksUseCaseImpl).bind<GetShelfBooksUseCase>()
+    singleOf(::CreateShelfUseCaseImpl).bind<CreateShelfUseCase>()
+    singleOf(::DeleteShelfUseCaseImpl).bind<DeleteShelfUseCase>()
+    singleOf(::GetAllShelvesUseCaseImpl).bind<GetAllShelvesUseCase>()
+    singleOf(::ReorderShelvesUseCaseImpl).bind<ReorderShelvesUseCase>()
 
     // UseCase Facades
     single { BookDetailUseCases(get(), get(), get()) }
     single { BookshelfUseCases(get(), get(), get(), get()) }
+    single { BookcaseUseCases(get(), get(), get(), get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
@@ -103,7 +117,7 @@ val appModule = module {
             shelfId = shelfId
         )
     }
-    viewModel { BookcaseViewModel(get(), get(), get()) }
+    viewModel { BookcaseViewModel(get(), get()) }
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookRepository = get(),

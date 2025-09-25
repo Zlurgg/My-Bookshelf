@@ -13,16 +13,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
-    private val repository: BookcaseRepository,
-    private val idGenerator: BookshelfIdGenerator,
+    private val bookcaseUseCases: BookcaseUseCases,
     private val bookshelfExportService: BookshelfExportService
 ) : ViewModel() {
 
@@ -70,16 +69,19 @@ class BookcaseViewModel(
                 }
                 // Persist deletion
                 viewModelScope.launch {
-                    try {
-                        repository.removeShelf(action.bookshelf.id)
-                    } catch (e: Exception) {
-                        // Revert UI on failure
-                        _state.update { current ->
-                            current.copy(
-                                bookshelves = current.bookshelves + action.bookshelf,
-                                recentlyDeleted = null,
-                                errorMessage = ErrorFormatter.formatOperationError("remove shelf", e)
-                            )
+                    when (bookcaseUseCases.deleteShelf.execute(action.bookshelf.id)) {
+                        is Result.Success -> {
+                            // Success - optimistic update already applied
+                        }
+                        is Result.Error -> {
+                            // Revert UI on failure
+                            _state.update { current ->
+                                current.copy(
+                                    bookshelves = current.bookshelves + action.bookshelf,
+                                    recentlyDeleted = null,
+                                    errorMessage = "Failed to remove shelf"
+                                )
+                            }
                         }
                     }
                 }
@@ -89,20 +91,22 @@ class BookcaseViewModel(
                 val toRestore = state.value.recentlyDeleted
                 if (toRestore != null) {
                     viewModelScope.launch {
-                        try {
-                            repository.addShelf(toRestore)
-                            _state.update { current ->
-                                current.copy(
-                                    bookshelves = current.bookshelves + toRestore,
-                                    recentlyDeleted = null,
-                                    operationSuccess = true
-                                )
+                        when (bookcaseUseCases.deleteShelf.restore(toRestore)) {
+                            is Result.Success -> {
+                                _state.update { current ->
+                                    current.copy(
+                                        bookshelves = current.bookshelves + toRestore,
+                                        recentlyDeleted = null,
+                                        operationSuccess = true
+                                    )
+                                }
                             }
-                        } catch (e: Exception) {
-                            _state.update { current ->
-                                current.copy(
-                                    errorMessage = ErrorFormatter.formatOperationError("restore shelf", e)
-                                )
+                            is Result.Error -> {
+                                _state.update { current ->
+                                    current.copy(
+                                        errorMessage = "Failed to restore shelf"
+                                    )
+                                }
                             }
                         }
                     }
@@ -117,30 +121,24 @@ class BookcaseViewModel(
 
     private fun addBookshelf(name: String, style: ShelfStyle) {
         viewModelScope.launch {
-            try {
-                val nextPosition = state.value.bookshelves.maxOfOrNull { it.position }?.plus(1) ?: 0
-                val newShelf = Bookshelf(
-                    id = idGenerator.generateId(),
-                    name = name,
-                    books = emptyList(),
-                    shelfStyle = style,
-                    position = nextPosition
-                )
-                repository.addShelf(newShelf)
-                _state.update {
-                    it.copy(
-                        bookshelves = it.bookshelves + newShelf,
-                        isLoading = false,
-                        operationSuccess = true,
-                        showAddDialog = false
-                    )
+            when (val result = bookcaseUseCases.createShelf.execute(name, style, state.value.bookshelves)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            bookshelves = it.bookshelves + result.data,
+                            isLoading = false,
+                            operationSuccess = true,
+                            showAddDialog = false
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        errorMessage = ErrorFormatter.formatOperationError("add shelf", e),
-                    )
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Failed to add shelf"
+                        )
+                    }
                 }
             }
         }
@@ -150,39 +148,21 @@ class BookcaseViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             
-            repository.getAllShelves()
-                .flatMapLatest { shelves ->
-                    // Create a flow of book counts for all shelves
-                    if (shelves.isEmpty()) {
-                        // If no shelves, just emit the shelves with empty counts
-                        flowOf(shelves to emptyMap())
-                    } else {
-                        // Create individual flows for each shelf's book count
-                        val countFlows = shelves.map { shelf ->
-                            repository.getBookCountForShelf(shelf.id)
-                                .map { count -> shelf.id to count }
-                        }
-                        
-                        // Combine all count flows together
-                        combine(countFlows) { counts ->
-                            shelves to counts.toMap()
-                        }
-                    }
-                }
+            bookcaseUseCases.getAllShelves.execute()
                 .catch { e ->
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = ErrorFormatter.formatOperationError("load shelves", e as Exception),
+                            errorMessage = "Failed to load shelves"
                         )
                     }
                 }
-                .collect { (shelves, bookCounts) ->
+                .collect { shelves ->
                     _state.update {
                         it.copy(
                             bookshelves = shelves,
-                            bookCounts = bookCounts,
                             isLoading = false,
+                            errorMessage = null
                         )
                     }
                 }
@@ -191,43 +171,22 @@ class BookcaseViewModel(
 
     private fun reorderShelf(shelf: Bookshelf, newPosition: Int) {
         viewModelScope.launch {
-            try {
-                val currentShelves = state.value.bookshelves
-                val currentShelfIndex = currentShelves.indexOfFirst { it.id == shelf.id }
-                
-                if (currentShelfIndex == -1) return@launch
-                
-                // Create reordered list with updated positions
-                val reorderedList = currentShelves.toMutableList().apply {
-                    removeAt(currentShelfIndex)
-                    add(newPosition.coerceIn(0, size), shelf.copy(position = newPosition))
+            val currentShelves = state.value.bookshelves
+
+            when (val result = bookcaseUseCases.reorderShelves.execute(shelf, newPosition, currentShelves)) {
+                is Result.Success -> {
+                    // Optimistic UI update with the reordered shelves
+                    _state.update { it.copy(bookshelves = result.data) }
                 }
-                
-                // Update positions for all affected shelves
-                val updatedShelves = reorderedList.mapIndexed { index, bookshelf ->
-                    bookshelf.copy(position = index)
+                is Result.Error -> {
+                    // Revert on error by reloading from database
+                    _state.update {
+                        it.copy(
+                            errorMessage = "Failed to reorder shelves"
+                        )
+                    }
+                    loadBookshelves()
                 }
-                
-                // Optimistic UI update
-                _state.update { it.copy(bookshelves = updatedShelves) }
-                
-                // Persist changes - only update shelves whose positions actually changed
-                val originalPositions = currentShelves.associate { it.id to it.position }
-                val shelvesToUpdate = updatedShelves.filter { 
-                    originalPositions[it.id] != it.position 
-                }
-                shelvesToUpdate.forEach { updatedShelf ->
-                    repository.updateShelf(updatedShelf)
-                }
-                
-            } catch (e: Exception) {
-                // Revert on error by reloading from database
-                _state.update {
-                    it.copy(
-                        errorMessage = ErrorFormatter.formatOperationError("reorder shelves", e)
-                    )
-                }
-                loadBookshelves()
             }
         }
     }
