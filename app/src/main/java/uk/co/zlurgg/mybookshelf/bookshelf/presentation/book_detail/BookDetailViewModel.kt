@@ -11,12 +11,17 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
+import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 class BookDetailViewModel(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
+    private val addBookToShelfUseCase: AddBookToShelfUseCase,
+    private val removeBookFromShelfUseCase: RemoveBookFromShelfUseCase,
     private val bookId: String,
     private val shelfId: String
 ) : ViewModel() {
@@ -65,21 +70,30 @@ class BookDetailViewModel(
         when (action) {
             is BookDetailAction.OnAddBookClick -> {
                 viewModelScope.launch {
-                    try {
-                        val onShelf = state.value.onShelf
-                        val book: Book = action.book
-                        
-                        if (onShelf) {
-                            bookshelfRepository.removeBookFromShelf(shelfId, book.id)
-                            _state.update { it.copy(onShelf = false) }
-                        } else {
-                            // Ensure book is saved first
-                            bookRepository.upsertBook(book)
-                            bookshelfRepository.addBookToShelf(shelfId, book.id)
-                            _state.update { it.copy(onShelf = true) }
+                    val onShelf = state.value.onShelf
+                    val book: Book = action.book
+
+                    if (onShelf) {
+                        when (removeBookFromShelfUseCase.execute(book.id, shelfId)) {
+                            is Result.Success -> {
+                                _state.update { it.copy(onShelf = false) }
+                                onNavigateBack?.invoke()
+                            }
+                            is Result.Error -> {
+                                // Handle error silently as in original implementation
+                            }
                         }
-                        onNavigateBack?.invoke()
-                    } catch (_: Exception) { }
+                    } else {
+                        when (addBookToShelfUseCase.execute(book, shelfId)) {
+                            is Result.Success -> {
+                                _state.update { it.copy(onShelf = true) }
+                                onNavigateBack?.invoke()
+                            }
+                            is Result.Error -> {
+                                // Handle error silently as in original implementation
+                            }
+                        }
+                    }
                 }
             }
             is BookDetailAction.OnPurchaseClick -> {
@@ -107,11 +121,15 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
-                    try {
-                        bookshelfRepository.removeBookFromShelf(shelfId, bookId)
-                        _state.update { it.copy(onShelf = false) }
-                        onNavigateBack?.invoke()
-                    } catch (_: Exception) { }
+                    when (removeBookFromShelfUseCase.execute(bookId, shelfId)) {
+                        is Result.Success -> {
+                            _state.update { it.copy(onShelf = false) }
+                            onNavigateBack?.invoke()
+                        }
+                        is Result.Error -> {
+                            // Handle error silently as in original implementation
+                        }
+                    }
                 }
             }
         }
