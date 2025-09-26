@@ -14,7 +14,7 @@ class FakeUpsertBookUseCase(
         return try {
             bookRepository.upsertBook(book)
             Result.Success(Unit)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
