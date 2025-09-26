@@ -112,7 +112,7 @@ fun BookcaseScreen(
                         IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                             if (state.isReorderMode) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.outline_lock_open_24),
+                                    painter = painterResource(id = R.drawable.ic_unlocked),
                                     contentDescription = stringResource(id = R.string.cd_lock_reorder_mode)
                                 )
                             } else {
