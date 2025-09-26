@@ -12,7 +12,7 @@
 
 - 🧱 **Drag-and-Drop Shelf Builder** – Add and arrange books on custom shelves
 - 🔍 **Search & Add Books** – Use Open Library API for easy book lookup
-- 💬 **Personal Notes** – Add thoughts, ratings, or quotes to each book
+- 💬 **Personal Rating / Reading Status** – Ratings / progress tracking for each book
 - 🔗 **Bookshelf Sharing** – Export and share your shelves via deep links
 - 🎨 **Custom Shelf Styles** – Choose from different materials and colors
 - 📱 **Offline-First** – All your data stored locally on your device
@@ -57,11 +57,6 @@ Instructions for setting up the project locally will be added here.
 
 ---
 
-## 🙌 Contributions
-
-Contributions are welcome! If you’re a reader, a dev, or someone with great taste in lighting, feel free to fork or suggest features.
-
----
 
 ## 📝 License
 
