@@ -23,6 +23,10 @@ sealed interface DataError: Error {
         DUPLICATE_ENTRY,
         NOT_FOUND,
         SERIALIZATION_ERROR,
+        VALIDATION_ERROR,
+        NAME_CONFLICT,
+        UNSUPPORTED_FORMAT_VERSION,
+        SHARE_FAILED,
         UNKNOWN
     }
 
