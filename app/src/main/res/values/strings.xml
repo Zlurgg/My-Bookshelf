@@ -91,6 +91,10 @@
     <string name="error_duplicate_entry">Entry already exists.</string>
     <string name="error_not_found_local">Item not found.</string>
     <string name="error_serialization_local">Data processing error.</string>
+    <string name="error_validation_error">Data validation failed.</string>
+    <string name="error_name_conflict">Name already exists.</string>
+    <string name="error_unsupported_format_version">Unsupported file format version.</string>
+    <string name="error_share_failed">Sharing failed.</string>
     <string name="error_unknown_local">Unknown local error occurred.</string>
 
     <!-- Error messages - Validation -->

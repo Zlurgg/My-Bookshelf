@@ -8,6 +8,7 @@ import kotlinx.serialization.json.Json
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
@@ -18,6 +19,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -31,6 +33,8 @@ class AndroidBookshelfExportService(
     private val shareTokenService: ShareTokenService,
     private val context: Context
 ) : BookshelfExportService {
+
+    private val bookshelfExportMapper = BookshelfExportMapper(timeProvider, idGenerator)
 
     private val json = Json {
         prettyPrint = true
@@ -51,7 +55,7 @@ class AndroidBookshelfExportService(
             // Load books and create export data
             val books = bookshelfRepository.getBooksForShelf(shelfId).first()
             val shelfWithBooks = shelf.copy(books = books)
-            val exportData = createExportData(shelfWithBooks)
+            val exportData = bookshelfExportMapper.toExportData(shelfWithBooks)
             val jsonString = json.encodeToString(BookshelfExportData.serializer(), exportData)
 
             // Generate token with the JSON data
@@ -78,7 +82,7 @@ class AndroidBookshelfExportService(
                 is Result.Error -> Result.Error(tokenResult.error)
             }
         } catch (e: Exception) {
-            Result.Error(DataError.Local.UNKNOWN)
+            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
         }
     }
 
@@ -88,10 +92,10 @@ class AndroidBookshelfExportService(
 
             // Validate format version
             if (exportData.formatVersion > 1) {
-                return Result.Error(DataError.Local.UNKNOWN) // Unsupported version
+                return Result.Error(DataError.Local.UNSUPPORTED_FORMAT_VERSION)
             }
 
-            val importedShelf = createBookshelfFromImport(exportData.bookshelf)
+            val importedShelf = bookshelfExportMapper.fromExportData(exportData)
 
             // Add all books to the repository first
             importedShelf.books.forEach { book ->
@@ -108,9 +112,9 @@ class AndroidBookshelfExportService(
 
             Result.Success(Unit)
         } catch (e: SerializationException) {
-            Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
+            Result.Error(DataError.Local.SERIALIZATION_ERROR)
         } catch (e: Exception) {
-            Result.Error(DataError.Local.UNKNOWN)
+            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
         }
     }
 
@@ -120,7 +124,7 @@ class AndroidBookshelfExportService(
 
             // Validate format version
             if (exportData.formatVersion > 1) {
-                return Result.Error(DataError.Local.UNKNOWN) // Unsupported version
+                return Result.Error(DataError.Local.UNSUPPORTED_FORMAT_VERSION)
             }
 
             val existingShelves = bookcaseRepository.getAllShelves().first()
@@ -128,9 +132,9 @@ class AndroidBookshelfExportService(
 
             Result.Success(conflictingShelf?.name)
         } catch (e: SerializationException) {
-            Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
+            Result.Error(DataError.Local.SERIALIZATION_ERROR)
         } catch (e: Exception) {
-            Result.Error(DataError.Local.UNKNOWN)
+            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
         }
     }
 
@@ -140,10 +144,10 @@ class AndroidBookshelfExportService(
 
             // Validate format version
             if (exportData.formatVersion > 1) {
-                return Result.Error(DataError.Local.UNKNOWN) // Unsupported version
+                return Result.Error(DataError.Local.UNSUPPORTED_FORMAT_VERSION)
             }
 
-            val importedShelf = createBookshelfFromImport(exportData.bookshelf).copy(name = customName)
+            val importedShelf = bookshelfExportMapper.fromExportData(exportData, customName)
 
             // Add all books to the repository first
             importedShelf.books.forEach { book ->
@@ -160,72 +164,10 @@ class AndroidBookshelfExportService(
 
             Result.Success(Unit)
         } catch (e: SerializationException) {
-            Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
+            Result.Error(DataError.Local.SERIALIZATION_ERROR)
         } catch (e: Exception) {
-            Result.Error(DataError.Local.UNKNOWN)
+            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
         }
     }
 
-    private fun createExportData(shelf: Bookshelf): BookshelfExportData {
-        return BookshelfExportData(
-            exportedAt = LocalDateTime.ofInstant(
-                java.time.Instant.ofEpochMilli(timeProvider.currentTimeMillis()),
-                java.time.ZoneId.systemDefault()
-            ).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
-            bookshelf = shelf.toExportedBookshelf()
-        )
-    }
-
-    private fun createBookshelfFromImport(exportedShelf: ExportedBookshelf): Bookshelf {
-        return Bookshelf(
-            id = idGenerator.generateId(),
-            name = exportedShelf.name,
-            books = exportedShelf.books.map { it.toBook() },
-            shelfStyle = exportedShelf.shelfStyle
-        )
-    }
-
-    private fun Bookshelf.toExportedBookshelf(): ExportedBookshelf {
-        return ExportedBookshelf(
-            name = name,
-            shelfStyle = shelfStyle,
-            books = books.map { it.toExportedBook() }
-        )
-    }
-
-    private fun Book.toExportedBook(): ExportedBook {
-        return ExportedBook(
-            id = id,
-            title = title,
-            authors = authors,
-            imageUrl = imageUrl,
-            description = description,
-            languages = languages,
-            firstPublishYear = firstPublishYear,
-            averageRating = averageRating,
-            ratingCount = ratingCount,
-            numPages = numPages,
-            numEditions = numEditions,
-            purchased = purchased,
-            spineColor = spineColor
-        )
-    }
-
-    private fun ExportedBook.toBook(): Book {
-        return Book(
-            id = id,
-            title = title,
-            authors = authors,
-            imageUrl = imageUrl,
-            description = description,
-            languages = languages,
-            firstPublishYear = firstPublishYear,
-            averageRating = averageRating,
-            ratingCount = ratingCount,
-            numPages = numPages,
-            numEditions = numEditions,
-            purchased = purchased,
-            spineColor = spineColor
-        )
-    }
 }
