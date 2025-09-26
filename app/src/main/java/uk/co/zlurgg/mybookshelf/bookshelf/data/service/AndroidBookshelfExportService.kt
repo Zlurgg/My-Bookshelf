@@ -77,7 +77,7 @@ class AndroidBookshelfExportService(
                 }
                 is Result.Error -> Result.Error(tokenResult.error)
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
@@ -107,9 +107,9 @@ class AndroidBookshelfExportService(
             }
 
             Result.Success(Unit)
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
@@ -127,9 +127,9 @@ class AndroidBookshelfExportService(
             val conflictingShelf = existingShelves.find { it.name == exportData.bookshelf.name }
 
             Result.Success(conflictingShelf?.name)
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
@@ -159,9 +159,9 @@ class AndroidBookshelfExportService(
             }
 
             Result.Success(Unit)
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Result.Error(DataError.Local.UNKNOWN) // Invalid JSON format
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
