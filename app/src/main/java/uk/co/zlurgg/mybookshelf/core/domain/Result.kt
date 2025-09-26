@@ -13,6 +13,13 @@ inline fun <T, E: Error, R> Result<T, E>.map(map: (T) -> R): Result<R, E> {
     }
 }
 
+inline fun <T, E: Error, R> Result<T, E>.flatMap(transform: (T) -> Result<R, E>): Result<R, E> {
+    return when(this) {
+        is Result.Error -> Result.Error(error)
+        is Result.Success -> transform(data)
+    }
+}
+
 fun <T, E: Error> Result<T, E>.asEmptyDataResult(): EmptyResult<E> {
     return map {  }
 }
