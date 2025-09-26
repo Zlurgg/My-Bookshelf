@@ -6,9 +6,9 @@ import io.ktor.client.request.parameter
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
 import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
-import uk.co.zlurgg.mybookshelf.core.data.safeCall
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.data.network.safeCall
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 private const val BASE_URL = "https://openlibrary.org"
 

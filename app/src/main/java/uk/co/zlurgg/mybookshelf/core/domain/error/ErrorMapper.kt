@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.domain
+package uk.co.zlurgg.mybookshelf.core.domain.error
 
 import java.io.IOException
 import java.net.SocketTimeoutException

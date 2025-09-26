@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.data
+package uk.co.zlurgg.mybookshelf.core.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine

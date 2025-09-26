@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * Data class representing complete book details including shelf membership

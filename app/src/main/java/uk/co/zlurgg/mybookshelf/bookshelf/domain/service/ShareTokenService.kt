@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.service
 
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 interface ShareTokenService {
     suspend fun generateToken(shelfJsonData: String): Result<String, DataError.Local>

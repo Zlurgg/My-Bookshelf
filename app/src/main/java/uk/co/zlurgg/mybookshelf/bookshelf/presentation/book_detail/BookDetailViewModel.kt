@@ -11,7 +11,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.onError
 import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class BookDetailViewModel(
     private val bookDetailUseCases: BookDetailUseCases,

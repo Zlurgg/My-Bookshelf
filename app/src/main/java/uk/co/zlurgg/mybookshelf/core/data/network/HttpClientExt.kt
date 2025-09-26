@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.data
+package uk.co.zlurgg.mybookshelf.core.data.network
 
 import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
@@ -6,8 +6,8 @@ import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.ensureActive
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import kotlin.coroutines.coroutineContext
 
 suspend inline fun <reified T> safeCall(

@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * UseCase for creating a new bookshelf with the given name and style.

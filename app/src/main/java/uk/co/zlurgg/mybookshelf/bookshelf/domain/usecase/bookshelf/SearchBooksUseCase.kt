@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * UseCase interface for searching books with proper business logic separation.

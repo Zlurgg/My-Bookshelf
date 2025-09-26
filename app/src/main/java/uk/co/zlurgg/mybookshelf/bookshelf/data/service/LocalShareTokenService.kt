@@ -3,8 +3,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.util.concurrent.ConcurrentHashMap
 
 /**

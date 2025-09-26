@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * UseCase for removing a book from a specific bookshelf.

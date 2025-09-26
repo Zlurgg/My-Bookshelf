@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.data
+package uk.co.zlurgg.mybookshelf.core.data.image
 
 import android.content.Context
 import coil3.ImageLoader
