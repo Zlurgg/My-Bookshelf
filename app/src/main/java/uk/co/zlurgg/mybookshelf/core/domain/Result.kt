@@ -92,7 +92,7 @@ inline fun <T1, T2, E: Error, R> Result<T1, E>.combine(
 inline fun <T> runCatching(action: () -> T): Result<T, DataError.Local> {
     return try {
         Result.Success(action())
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         Result.Error(DataError.Local.UNKNOWN)
     }
 }

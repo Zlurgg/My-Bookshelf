@@ -20,7 +20,7 @@ class AndroidShareService(
      * @param shareData The share data containing token and shelf name
      * @return Result indicating success or failure of the share operation
      */
-    suspend fun shareBookshelf(shareData: ShareData): Result<Unit, DataError.Local> {
+    fun shareBookshelf(shareData: ShareData): Result<Unit, DataError.Local> {
         return try {
             val encodedName = URLEncoder.encode(shareData.shelfName, "UTF-8")
             val shareUrl = "$SHARE_BASE_URL/?name=$encodedName#${shareData.token}"
