@@ -25,7 +25,7 @@ fun RatingBar(
     Row(modifier = modifier) {
         for (i in 1..maxRating) {
             Icon(
-                imageVector = if (i <= rating) Icons.Default.Star else ImageVector.vectorResource(R.drawable.outline_star_24),
+                imageVector = if (i <= rating) Icons.Default.Star else ImageVector.vectorResource(R.drawable.ic_star_outline),
                 contentDescription = pluralStringResource(
                     id = R.plurals.cd_star_count,
                     count = i,
