@@ -186,7 +186,6 @@ fun BookshelfScreen(
                     // Second pass: apply position-aware styling with consistent parameters
                     val endIndex = minOf(bookIndex + booksInRow, books.size)
                     val rowBooks = books.subList(bookIndex, endIndex)
-                    val isLastRow = endIndex >= books.size
                     val totalAvailableWidth = availableWidth.value
                     
                     // Apply final styling with proper position context
