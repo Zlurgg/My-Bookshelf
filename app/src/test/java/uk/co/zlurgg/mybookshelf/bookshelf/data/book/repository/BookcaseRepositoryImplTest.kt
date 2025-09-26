@@ -59,6 +59,10 @@ class BookcaseRepositoryImplTest {
         override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = MutableStateFlow(false)
         override fun getShelvesForBook(bookId: String): Flow<List<String>> = MutableStateFlow(emptyList())
 
+        override suspend fun getShelfById(id: String): BookshelfEntity? {
+            return shelves[id]
+        }
+
         fun setCount(shelfId: String, count: Int) {
             bookCountFlows.getOrPut(shelfId) { MutableStateFlow(0) }.value = count
         }
