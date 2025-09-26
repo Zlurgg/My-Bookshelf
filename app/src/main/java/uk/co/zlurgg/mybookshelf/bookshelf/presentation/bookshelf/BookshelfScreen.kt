@@ -1,13 +1,18 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -96,36 +101,40 @@ fun BookshelfScreen(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { onAction(BookshelfAction.OnShareShelf) },
-                        enabled = !state.isShareLoading
-                    ) {
-                        if (state.isShareLoading) {
-                            CircularProgressIndicator()
-                        } else {
-                            Icon(
-                                imageVector = Icons.Filled.Share,
-                                contentDescription = "Share bookshelf"
-                            )
-                        }
-                    }
                     IconButton(onClick = { onAction(BookshelfAction.OnToggleTidyMode) }) {
                         Icon(
-                            imageVector = if (state.isTidyMode) Icons.Filled.Star else Icons.Filled.Menu,
-                            contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf"
+                            imageVector = if (state.isTidyMode) ImageVector.vectorResource(R.drawable.ic_untidy_books) else ImageVector.vectorResource(R.drawable.ic_tidy_books),
+                            contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf",
+                            modifier = Modifier.size(28.dp)
                         )
                     }
                 }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onAction(BookshelfAction.OnSearchClick) }
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add book to shelf"
-                )
+            Row {
+                FloatingActionButton(
+                    onClick = { onAction(BookshelfAction.OnShareShelf) },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    if (state.isShareLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                    } else {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            contentDescription = "Share bookshelf"
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                FloatingActionButton(
+                    onClick = { onAction(BookshelfAction.OnSearchClick) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add book to shelf"
+                    )
+                }
             }
         }
     ) { paddingValues ->
