@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
-import android.content.Context
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ExportBookshelfUseCase
@@ -17,8 +16,7 @@ class AndroidBookshelfExportService(
     private val exportBookshelfUseCase: ExportBookshelfUseCase,
     private val importBookshelfUseCase: ImportBookshelfUseCase,
     private val checkImportConflictUseCase: CheckImportConflictUseCase,
-    private val androidShareService: AndroidShareService,
-    private val context: Context
+    private val androidShareService: AndroidShareService
 ) : BookshelfExportService {
 
 

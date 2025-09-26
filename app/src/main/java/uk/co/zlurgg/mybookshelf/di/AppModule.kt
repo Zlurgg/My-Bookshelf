@@ -21,8 +21,19 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
-import uk.co.zlurgg.mybookshelf.core.data.service.AndroidSystemLanguageProvider
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidShareService
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.BookshelfImportValidatorImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.DatabaseBookshelfDataOrchestrator
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.JsonBookshelfSerializer
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.LocalShareTokenService
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfDataOrchestrator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfImportValidator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfSerializer
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ExportBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.core.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.UuidIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
@@ -87,6 +98,17 @@ val appModule = module {
         )
     }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
+
+    // Export/Import Services and Use Cases
+    singleOf(::AndroidShareService)
+    singleOf(::JsonBookshelfSerializer).bind<BookshelfSerializer>()
+    singleOf(::BookshelfImportValidatorImpl).bind<BookshelfImportValidator>()
+    singleOf(::DatabaseBookshelfDataOrchestrator).bind<BookshelfDataOrchestrator>()
+    singleOf(::BookshelfExportMapper)
+    singleOf(::ExportBookshelfUseCase)
+    singleOf(::ImportBookshelfUseCase)
+    singleOf(::CheckImportConflictUseCase)
+
     singleOf(::BookSorter)
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
