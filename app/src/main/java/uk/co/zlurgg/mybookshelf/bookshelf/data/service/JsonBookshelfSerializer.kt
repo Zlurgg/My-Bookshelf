@@ -28,7 +28,7 @@ class JsonBookshelfSerializer(
             val exportData = exportMapper.toExportData(shelf)
             val jsonString = json.encodeToString(BookshelfExportData.serializer(), exportData)
             Result.Success(jsonString)
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Result.Error(DataError.Local.SERIALIZATION_ERROR)
         } catch (e: Exception) {
             Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
@@ -39,7 +39,7 @@ class JsonBookshelfSerializer(
         return try {
             val exportData = json.decodeFromString<BookshelfExportData>(jsonData)
             Result.Success(exportData)
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Result.Error(DataError.Local.SERIALIZATION_ERROR)
         } catch (e: Exception) {
             Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
