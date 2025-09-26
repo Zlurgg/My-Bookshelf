@@ -8,7 +8,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.map
+import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 class BookRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,

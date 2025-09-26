@@ -20,9 +20,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.test.FakeSearchBooksUseCase
-import uk.co.zlurgg.mybookshelf.test.FakeBookshelfExportService
-import uk.co.zlurgg.mybookshelf.test.TestIdGenerator
+import uk.co.zlurgg.mybookshelf.test.*
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -119,11 +119,24 @@ class BookshelfViewModelTest {
     fun onBookClick_persists_book() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         val book = sampleBook("B1")
@@ -138,11 +151,24 @@ class BookshelfViewModelTest {
     fun onBookClick_sets_error_on_repository_failure() = runTest {
         val bookRepo = FakeBookRepository().apply { shouldFailUpsert = true }
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -162,11 +188,24 @@ class BookshelfViewModelTest {
     fun onAddBookClick_adds_book_to_shelf() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         val book = sampleBook("B1")
@@ -182,11 +221,24 @@ class BookshelfViewModelTest {
     fun onAddBookClick_sets_error_on_failure() = runTest {
         val bookRepo = FakeBookRepository().apply { shouldFailUpsert = true }
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -206,11 +258,24 @@ class BookshelfViewModelTest {
     fun onRemoveBook_removes_book_and_shows_undo() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -235,11 +300,24 @@ class BookshelfViewModelTest {
     fun onRemoveBook_sets_error_on_repository_failure() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository().apply { shouldFailRemove = true }
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -259,11 +337,24 @@ class BookshelfViewModelTest {
     fun onUndoRemove_restores_book() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -287,11 +378,24 @@ class BookshelfViewModelTest {
     fun onUndoRemove_does_nothing_when_no_deleted_book() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -311,11 +415,24 @@ class BookshelfViewModelTest {
     fun onToggleTidyMode_toggles_state() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -335,11 +452,24 @@ class BookshelfViewModelTest {
     fun onBackClick_does_nothing() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -362,11 +492,24 @@ class BookshelfViewModelTest {
         val testBooks = listOf(sampleBook("B1"), sampleBook("B2"))
         bookshelfRepo.setBooksForShelf("S1", testBooks)
         
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -384,11 +527,24 @@ class BookshelfViewModelTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository().apply { shouldFailLoad = true }
         
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         
@@ -405,11 +561,24 @@ class BookshelfViewModelTest {
     fun books_flow_updates_state_continuously() = runTest {
         val bookRepo = FakeBookRepository()
         val bookshelfRepo = FakeBookshelfRepository()
+        val bookshelfUseCases = BookshelfUseCases(
+            searchBooks = FakeSearchBooksUseCase(),
+            getShelfBooks = FakeGetShelfBooksUseCase(bookshelfRepo),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            shareBookshelf = FakeShareBookshelfUseCase()
+        )
+        val bookcaseUseCases = BookcaseUseCases(
+            getAllShelves = FakeGetAllShelvesUseCase(),
+            createShelf = FakeCreateShelfUseCase(),
+            deleteShelf = FakeDeleteShelfUseCase(),
+            reorderShelves = FakeReorderShelvesUseCase(),
+            getShelfById = FakeGetShelfByIdUseCase()
+        )
         val vm = BookshelfViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookshelfExportService = FakeBookshelfExportService(),
-            searchBooksUseCase = FakeSearchBooksUseCase(),
+            bookshelfUseCases = bookshelfUseCases,
+            bookcaseUseCases = bookcaseUseCases,
             shelfId = "S1"
         )
         

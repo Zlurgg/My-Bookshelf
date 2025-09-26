@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.core.domain.result
 
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.Error
 
 sealed interface Result<out D, out E: Error> {
