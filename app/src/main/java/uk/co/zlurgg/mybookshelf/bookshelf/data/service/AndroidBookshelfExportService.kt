@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import android.content.Context
-import android.content.Intent
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ExportBookshelfUseCase
@@ -9,7 +8,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfU
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import uk.co.zlurgg.mybookshelf.core.domain.flatMap
-import java.net.URLEncoder
 
 /**
  * Refactored Android export service that delegates to use cases.
@@ -23,9 +21,6 @@ class AndroidBookshelfExportService(
     private val context: Context
 ) : BookshelfExportService {
 
-    companion object {
-        private const val SHARE_BASE_URL = "https://zlurgg.github.io/My-Bookshelf/share"
-    }
 
     override suspend fun shareBookshelf(shelfId: String): Result<Unit, DataError.Local> {
         return exportBookshelfUseCase.execute(shelfId)

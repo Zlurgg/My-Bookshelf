@@ -39,7 +39,7 @@ class AndroidShareService(
 
             context.startActivity(chooserIntent)
             Result.Success(Unit)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.SHARE_FAILED)
         }
     }
