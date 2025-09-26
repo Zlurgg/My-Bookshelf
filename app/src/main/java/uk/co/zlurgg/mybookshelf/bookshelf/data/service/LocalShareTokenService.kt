@@ -43,7 +43,7 @@ class LocalShareTokenService(
             )
 
             Result.Success(token)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
@@ -61,7 +61,7 @@ class LocalShareTokenService(
             }
 
             Result.Success(tokenData.shelfData)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
@@ -72,7 +72,7 @@ class LocalShareTokenService(
             val expiredTokens = tokenStorage.filterValues { it.expiresAt < now }.keys
             expiredTokens.forEach { tokenStorage.remove(it) }
             Result.Success(Unit)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Local.UNKNOWN)
         }
     }
