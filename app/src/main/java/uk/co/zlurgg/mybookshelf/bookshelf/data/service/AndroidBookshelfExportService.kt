@@ -14,9 +14,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import java.time.LocalDateTime
@@ -26,7 +26,7 @@ class AndroidBookshelfExportService(
     private val bookcaseRepository: BookcaseRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val bookRepository: BookRepository,
-    private val bookshelfIdGenerator: BookshelfIdGenerator,
+    private val idGenerator: IdGenerator,
     private val timeProvider: TimeProvider,
     private val shareTokenService: ShareTokenService,
     private val context: Context
@@ -178,7 +178,7 @@ class AndroidBookshelfExportService(
 
     private fun createBookshelfFromImport(exportedShelf: ExportedBookshelf): Bookshelf {
         return Bookshelf(
-            id = bookshelfIdGenerator.generateId(),
+            id = idGenerator.generateId(),
             name = exportedShelf.name,
             books = exportedShelf.books.map { it.toBook() },
             shelfStyle = exportedShelf.shelfStyle
