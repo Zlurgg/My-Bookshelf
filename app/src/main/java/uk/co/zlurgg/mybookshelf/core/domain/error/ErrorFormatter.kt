@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.domain
+package uk.co.zlurgg.mybookshelf.core.domain.error
 
 import android.content.Context
 import uk.co.zlurgg.mybookshelf.R

@@ -66,8 +66,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookP
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
-import uk.co.zlurgg.mybookshelf.core.data.HttpClientFactory
-import uk.co.zlurgg.mybookshelf.core.data.ImageLoaderFactory
+import uk.co.zlurgg.mybookshelf.core.data.network.HttpClientFactory
+import uk.co.zlurgg.mybookshelf.core.data.image.ImageLoaderFactory
 
 val appModule = module {
     single<HttpClientEngine> {

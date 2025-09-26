@@ -5,8 +5,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.map
 
 /**

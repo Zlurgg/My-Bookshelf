@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.test
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.ImportResult
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * Fake implementation of DeepLinkImportUseCase for testing.

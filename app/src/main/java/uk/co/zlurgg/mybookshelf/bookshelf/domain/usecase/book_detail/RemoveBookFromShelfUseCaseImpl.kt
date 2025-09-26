@@ -1,9 +1,9 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.ErrorMapper
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * Implementation of RemoveBookFromShelfUseCase that handles removing book-shelf associations.

@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.ImportResult
-import uk.co.zlurgg.mybookshelf.core.domain.ErrorFormatter
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class DeepLinkViewModel(
     private val deepLinkImportUseCase: DeepLinkImportUseCase

@@ -16,7 +16,7 @@ object TextUtils {
      * @param s2 Second string
      * @return Levenshtein distance as an integer
      */
-    fun levenshteinDistance(s1: String, s2: String): Int {
+    private fun levenshteinDistance(s1: String, s2: String): Int {
         val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
 
         for (i in 0..s1.length) dp[i][0] = i

@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.domain
+package uk.co.zlurgg.mybookshelf.core.domain.error
 
 sealed interface DataError: Error {
     enum class Remote: DataError {
