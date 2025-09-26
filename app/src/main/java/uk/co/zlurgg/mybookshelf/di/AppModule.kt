@@ -21,18 +21,18 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidSystemLanguageProvider
+import uk.co.zlurgg.mybookshelf.core.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.LocalShareTokenService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.SystemTimeProvider
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UuidBookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.core.data.service.SystemTimeProvider
+import uk.co.zlurgg.mybookshelf.core.data.service.UuidIdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.SystemLanguageProvider
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
+import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
@@ -77,7 +77,7 @@ val appModule = module {
     single<ImageLoader> { ImageLoaderFactory.create(get<Context>()) }
 
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
-    singleOf(::UuidBookshelfIdGenerator).bind<BookshelfIdGenerator>()
+    singleOf(::UuidIdGenerator).bind<IdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
     singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
     single<ShareTokenService> {

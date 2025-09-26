@@ -1,8 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.TimeProvider
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result
 import java.util.concurrent.ConcurrentHashMap
@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
  * In a production app, this would typically use a database or cloud storage.
  */
 class LocalShareTokenService(
-    private val tokenGenerator: BookshelfIdGenerator,
+    private val tokenGenerator: IdGenerator,
     private val timeProvider: TimeProvider
 ) : ShareTokenService {
 

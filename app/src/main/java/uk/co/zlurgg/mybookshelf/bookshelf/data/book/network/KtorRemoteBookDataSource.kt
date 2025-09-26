@@ -5,7 +5,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.SystemLanguageProvider
+import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.data.safeCall
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.Result

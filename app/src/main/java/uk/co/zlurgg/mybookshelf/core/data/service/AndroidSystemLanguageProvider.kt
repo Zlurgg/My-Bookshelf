@@ -1,7 +1,7 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.data.service
+package uk.co.zlurgg.mybookshelf.core.data.service
 
 import android.content.Context
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.SystemLanguageProvider
+import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import java.util.Locale
 
 class AndroidSystemLanguageProvider(

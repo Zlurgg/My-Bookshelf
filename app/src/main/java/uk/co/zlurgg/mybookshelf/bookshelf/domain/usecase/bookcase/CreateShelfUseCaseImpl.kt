@@ -2,7 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.ErrorMapper
@@ -10,7 +10,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.Result
 
 class CreateShelfUseCaseImpl(
     private val repository: BookcaseRepository,
-    private val idGenerator: BookshelfIdGenerator
+    private val idGenerator: IdGenerator
 ) : CreateShelfUseCase {
 
     override suspend fun execute(

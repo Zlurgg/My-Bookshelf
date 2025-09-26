@@ -17,7 +17,7 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.test.FakeBookshelfExportService
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,7 +27,7 @@ class BookcaseViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    private class FakeIdGenerator : BookshelfIdGenerator {
+    private class FakeIdGenerator : IdGenerator {
         override fun generateId(): String = "test-id"
     }
 
