@@ -12,7 +12,6 @@
 
 - 🧱 **Drag-and-Drop Shelf Builder** – Add and arrange books on custom shelves
 - 🔍 **Search & Add Books** – Use Open Library API for easy book lookup
-- 💬 **Personal Rating / Reading Status** – Ratings / progress tracking for each book
 - 🔗 **Bookshelf Sharing** – Export and share your shelves via deep links
 - 🎨 **Custom Shelf Styles** – Choose from different materials and colors
 - 📱 **Offline-First** – All your data stored locally on your device
@@ -42,6 +41,7 @@ Instructions for setting up the project locally will be added here.
 
 ## 🚀 Planned Features
 
+- Personal ratings and reading status tracking
 - Google Books API as fallback search
 - Manga & comic support via AniList/ComicVine APIs
 - Affiliate link integration (Amazon Associates, Bookshop.org)
