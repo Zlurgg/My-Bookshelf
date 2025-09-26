@@ -32,7 +32,6 @@
 
 ---
 
-
 ## 🛠 Setup (Coming Soon)
 
 Instructions for setting up the project locally will be added here.
@@ -42,6 +41,7 @@ Instructions for setting up the project locally will be added here.
 ## 🚀 Planned Features
 
 - Personal ratings and reading status tracking
+- Search and filter books within shelves
 - Google Books API as fallback search
 - Manga & comic support via AniList/ComicVine APIs
 - Affiliate link integration (Amazon Associates, Bookshop.org)
@@ -54,13 +54,6 @@ Instructions for setting up the project locally will be added here.
 ## 📸 Preview
 
 *UI screenshots / animations coming soon.*
-
----
-
-
-## 📝 License
-
-[MIT License](LICENSE)
 
 ---
 
