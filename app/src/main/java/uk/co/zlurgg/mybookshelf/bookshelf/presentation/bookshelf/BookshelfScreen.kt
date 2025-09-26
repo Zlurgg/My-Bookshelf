@@ -6,13 +6,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -114,14 +115,18 @@ fun BookshelfScreen(
                             contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf"
                         )
                     }
-                    IconButton(onClick = { onAction(BookshelfAction.OnSearchClick) }) {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = stringResource(id = R.string.search_hint)
-                        )
-                    }
                 }
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onAction(BookshelfAction.OnSearchClick) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "Add book to shelf"
+                )
+            }
         }
     ) { paddingValues ->
         if (!state.isLoading && books.isEmpty()) {
@@ -138,8 +143,7 @@ fun BookshelfScreen(
                         books = emptyList(),
                         onBookClick = { /* no-op */ },
                         bookshelfMaterial = state.shelfMaterial,
-                        showAddSlot = true,
-                        onAddClick = { onAction(BookshelfAction.OnSearchClick) },
+                        showAddSlot = false,
                         isTidyMode = state.isTidyMode
                     )
                 }
@@ -152,26 +156,23 @@ fun BookshelfScreen(
                     // Calculate how many books fit in a row based on their individual styles
                     var currentRowWidth = 0f
                     var booksInRow = 0
-                    val addButtonWidth = 60f + 6f // add button space if this is the last row
                     val rowBookStyles = mutableListOf<BookDisplayStyle>()
                     
                     // First pass: determine how many books fit using simpler non-position-dependent styling
                     while (bookIndex + booksInRow < books.size) {
                         val book = books[bookIndex + booksInRow]
-                        val tempIsLast = (bookIndex + booksInRow + 1) >= books.size
-                        
+
                         // Use basic style for width estimation (avoids circular dependency)
                         val bookStyle = if (state.isTidyMode) {
                             BookDisplayStyle.VERTICAL
                         } else {
                             getBookDisplayStyle(book) // Use simple hash-based style
                         }
-                        
+
                         val bookWidth = getBookWidth(book, bookStyle) + 6f // width + spacing
                         val potentialRowWidth = currentRowWidth + bookWidth
-                        val totalNeededWidth = potentialRowWidth + if (tempIsLast) addButtonWidth else 0f
-                        
-                        if (totalNeededWidth <= availableWidth.value) {
+
+                        if (potentialRowWidth <= availableWidth.value) {
                             currentRowWidth = potentialRowWidth
                             booksInRow++
                         } else {
@@ -186,7 +187,7 @@ fun BookshelfScreen(
                     val endIndex = minOf(bookIndex + booksInRow, books.size)
                     val rowBooks = books.subList(bookIndex, endIndex)
                     val isLastRow = endIndex >= books.size
-                    val totalAvailableWidth = availableWidth.value - if (isLastRow) addButtonWidth else 0f
+                    val totalAvailableWidth = availableWidth.value
                     
                     // Apply final styling with proper position context
                     rowBooks.forEachIndexed { index, book ->
@@ -223,8 +224,7 @@ fun BookshelfScreen(
                             bookStyles = rowBookStyles,
                             onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
                             bookshelfMaterial = state.shelfMaterial,
-                            showAddSlot = isLastRow,
-                            onAddClick = { onAction(BookshelfAction.OnSearchClick) },
+                            showAddSlot = false,
                             isTidyMode = state.isTidyMode
                         )
                     }
