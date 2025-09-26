@@ -4,7 +4,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.util.TextUtils
 import kotlin.math.ln
-import kotlin.math.max
 
 class BookSorter {
 
