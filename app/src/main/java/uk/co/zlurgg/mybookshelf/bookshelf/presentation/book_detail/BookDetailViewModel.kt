@@ -9,8 +9,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
-import uk.co.zlurgg.mybookshelf.core.domain.onError
-import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
+import uk.co.zlurgg.mybookshelf.core.domain.result.onError
+import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class BookDetailViewModel(

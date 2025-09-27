@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.core.domain.error
 
 import kotlinx.serialization.SerializationException
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException

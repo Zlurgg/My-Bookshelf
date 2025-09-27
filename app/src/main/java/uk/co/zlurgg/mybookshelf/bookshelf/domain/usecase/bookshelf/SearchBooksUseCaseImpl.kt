@@ -7,7 +7,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.map
+import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 /**
  * Implementation of SearchBooksUseCase that combines network data retrieval with domain sorting.

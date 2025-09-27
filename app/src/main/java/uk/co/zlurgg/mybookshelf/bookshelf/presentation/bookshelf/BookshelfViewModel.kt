@@ -17,8 +17,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCas
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.onError
-import uk.co.zlurgg.mybookshelf.core.domain.onSuccess
+import uk.co.zlurgg.mybookshelf.core.domain.result.onError
+import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 
 class BookshelfViewModel(
     private val bookshelfUseCases: BookshelfUseCases,

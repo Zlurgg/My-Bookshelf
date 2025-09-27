@@ -3,10 +3,10 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCase
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
-import uk.co.zlurgg.mybookshelf.core.domain.flatMap
-import uk.co.zlurgg.mybookshelf.core.domain.map
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.result.flatMap
+import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 /**
  * Implementation of DeepLinkImportUseCase that orchestrates token validation and bookshelf import.

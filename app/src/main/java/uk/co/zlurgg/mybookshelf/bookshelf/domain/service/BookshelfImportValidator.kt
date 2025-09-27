@@ -1,8 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.service
 
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * Domain service interface for validating bookshelf import data.
