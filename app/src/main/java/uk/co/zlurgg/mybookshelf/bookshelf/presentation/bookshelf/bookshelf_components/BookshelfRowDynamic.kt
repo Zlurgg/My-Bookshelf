@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -15,8 +16,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.BookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 
 @Composable
@@ -52,6 +53,7 @@ fun BookshelfRowDynamic(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(170.dp) // Ensure minimum height even when empty
                     .background(bookshelfMaterial.shelfBackground)
                     .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 0.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),

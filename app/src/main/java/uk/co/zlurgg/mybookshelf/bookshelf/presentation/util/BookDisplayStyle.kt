@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.util
 
 enum class BookDisplayStyle {
     VERTICAL,

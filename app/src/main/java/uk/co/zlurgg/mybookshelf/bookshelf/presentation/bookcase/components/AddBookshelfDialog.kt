@@ -27,8 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.toMaterial
-
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 
 @Composable
 fun AddBookshelfDialog(
@@ -66,7 +65,7 @@ fun AddBookshelfDialog(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
                             Image(
-                                painter = style.toMaterial().painter(),
+                                painter = ShelfMaterial.fromShelfStyle(style).painter(),
                                 contentDescription = style.name,
                                 modifier = Modifier
                                     .height(48.dp)

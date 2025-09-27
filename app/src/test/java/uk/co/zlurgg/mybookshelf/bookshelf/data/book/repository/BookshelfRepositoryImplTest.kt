@@ -78,6 +78,8 @@ class BookshelfRepositoryImplTest {
 
         override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = MutableStateFlow(false)
         override fun getShelvesForBook(bookId: String): Flow<List<String>> = MutableStateFlow(emptyList())
+
+        override suspend fun getShelfById(id: String): BookshelfEntity? = null
     }
 
     private fun sampleBook(id: String = TestIdGenerator.generateBookId("OL")) = Book(
