@@ -1,47 +1,41 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
-import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.core.domain.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.Result
+import uk.co.zlurgg.mybookshelf.core.domain.flatMap
+import uk.co.zlurgg.mybookshelf.core.domain.map
 
 /**
  * Implementation of DeepLinkImportUseCase that orchestrates token validation and bookshelf import.
- * Follows Clean Architecture by coordinating between domain services.
+ * Refactored to use dedicated use cases following Clean Architecture principles.
  */
 class DeepLinkImportUseCaseImpl(
     private val shareTokenService: ShareTokenService,
-    private val bookshelfExportService: BookshelfExportService
+    private val checkImportConflictUseCase: CheckImportConflictUseCase,
+    private val importBookshelfUseCase: ImportBookshelfUseCase
 ) : DeepLinkImportUseCase {
 
     override suspend fun importBookshelfFromToken(token: String): Result<ImportResult, DataError.Local> {
-        return when (val tokenResult = shareTokenService.getShelfDataByToken(token)) {
-            is Result.Success -> {
-                // Check for name conflicts first
-                when (val conflictResult = bookshelfExportService.checkImportNameConflict(tokenResult.data)) {
-                    is Result.Success -> {
-                        if (conflictResult.data != null) {
+        return shareTokenService.getShelfDataByToken(token)
+            .flatMap { jsonData ->
+                checkImportConflictUseCase.execute(jsonData)
+                    .flatMap { conflictingName ->
+                        if (conflictingName != null) {
                             // Name conflict exists, return conflict info
-                            Result.Success(ImportResult.NameConflict(conflictResult.data, tokenResult.data))
+                            Result.Success(ImportResult.NameConflict(conflictingName, jsonData))
                         } else {
                             // No conflict, proceed with import
-                            when (val importResult = bookshelfExportService.importBookshelf(tokenResult.data)) {
-                                is Result.Success -> Result.Success(ImportResult.Success)
-                                is Result.Error -> Result.Error(importResult.error)
-                            }
+                            importBookshelfUseCase.execute(jsonData)
+                                .map { ImportResult.Success }
                         }
                     }
-                    is Result.Error -> Result.Error(conflictResult.error)
-                }
             }
-            is Result.Error -> Result.Error(tokenResult.error)
-        }
     }
 
     override suspend fun importBookshelfWithCustomName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
-        return when (val importResult = bookshelfExportService.importBookshelfWithName(jsonData, customName)) {
-            is Result.Success -> Result.Success(Unit)
-            is Result.Error -> Result.Error(importResult.error)
-        }
+        return importBookshelfUseCase.execute(jsonData, customName)
     }
 }

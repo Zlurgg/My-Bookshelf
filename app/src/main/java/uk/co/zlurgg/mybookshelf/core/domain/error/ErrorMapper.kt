@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.core.domain.error
 
+import kotlinx.serialization.SerializationException
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
@@ -12,6 +13,9 @@ object ErrorMapper {
             is SocketTimeoutException -> DataError.Remote.REQUEST_TIMEOUT
             is UnknownHostException -> DataError.Remote.NO_INTERNET
             is IOException -> DataError.Remote.UNKNOWN
+
+            // Serialization exceptions
+            is SerializationException -> DataError.Local.SERIALIZATION_ERROR
 
             // Database/Storage exceptions
             is SecurityException -> DataError.Local.STORAGE_ACCESS_DENIED
