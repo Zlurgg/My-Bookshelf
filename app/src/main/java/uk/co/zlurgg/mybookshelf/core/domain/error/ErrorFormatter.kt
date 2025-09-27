@@ -32,6 +32,10 @@ object ErrorFormatter {
             DataError.Local.DUPLICATE_ENTRY -> R.string.error_duplicate_entry
             DataError.Local.NOT_FOUND -> R.string.error_not_found_local
             DataError.Local.SERIALIZATION_ERROR -> R.string.error_serialization_local
+            DataError.Local.VALIDATION_ERROR -> R.string.error_validation_error
+            DataError.Local.NAME_CONFLICT -> R.string.error_name_conflict
+            DataError.Local.UNSUPPORTED_FORMAT_VERSION -> R.string.error_unsupported_format_version
+            DataError.Local.SHARE_FAILED -> R.string.error_share_failed
             DataError.Local.UNKNOWN -> R.string.error_unknown_local
 
             // Validation errors
