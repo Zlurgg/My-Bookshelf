@@ -21,6 +21,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.test.*
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -118,9 +120,15 @@ class BookDetailViewModelTest {
         }
         val bookshelfRepo = FakeBookshelfRepository()
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
+            bookDetailUseCases = bookDetailUseCases,
             bookId = TEST_BOOK_ID,
             shelfId = TEST_SHELF_ID
         )
@@ -148,9 +156,15 @@ class BookDetailViewModelTest {
         }
         val bookshelfRepo = FakeBookshelfRepository()
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
+            bookDetailUseCases = bookDetailUseCases,
             bookId = TEST_BOOK_ID,
             shelfId = TEST_SHELF_ID
         )
@@ -183,9 +197,15 @@ class BookDetailViewModelTest {
             setIsOnShelf(true)
         }
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
+            bookDetailUseCases = bookDetailUseCases,
             bookId = TEST_BOOK_ID,
             shelfId = TEST_SHELF_ID
         )
@@ -216,9 +236,15 @@ class BookDetailViewModelTest {
         }
         val bookshelfRepo = FakeBookshelfRepository()
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
+            bookDetailUseCases = bookDetailUseCases,
             bookId = TEST_BOOK_ID,
             shelfId = TEST_SHELF_ID
         )
@@ -248,9 +274,15 @@ class BookDetailViewModelTest {
         }
         val bookshelfRepo = FakeBookshelfRepository()
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
+            bookDetailUseCases = bookDetailUseCases,
             bookId = TEST_BOOK_ID,
             shelfId = TEST_SHELF_ID
         )
@@ -281,9 +313,15 @@ class BookDetailViewModelTest {
         }
         val bookshelfRepo = FakeBookshelfRepository()
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
+            bookDetailUseCases = bookDetailUseCases,
             bookId = TEST_BOOK_ID,
             shelfId = TEST_SHELF_ID
         )
@@ -312,10 +350,16 @@ class BookDetailViewModelTest {
         }
         val bookshelfRepo = FakeBookshelfRepository()
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
-            bookId = "NOT_FOUND", 
+            bookDetailUseCases = bookDetailUseCases,
+            bookId = "NOT_FOUND",
             shelfId = "S1"
         )
         
@@ -341,9 +385,15 @@ class BookDetailViewModelTest {
         }
         val bookshelfRepo = FakeBookshelfRepository()
         
+        val bookDetailUseCases = BookDetailUseCases(
+            getBookDetails = FakeGetBookDetailsUseCase(),
+            addBookToShelf = FakeAddBookToShelfUseCase(),
+            removeBookFromShelf = FakeRemoveBookFromShelfUseCase(),
+            upsertBook = FakeUpsertBookUseCase(bookRepo),
+            toggleBookPurchase = FakeToggleBookPurchaseUseCase()
+        )
         val vm = BookDetailViewModel(
-            bookRepository = bookRepo,
-            bookshelfRepository = bookshelfRepo,
+            bookDetailUseCases = bookDetailUseCases,
             bookId = TEST_BOOK_ID,
             shelfId = TEST_SHELF_ID
         )
