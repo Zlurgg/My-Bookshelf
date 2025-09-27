@@ -18,7 +18,7 @@ class CreateShelfUseCaseImpl(
         style: ShelfStyle,
         existingShelves: List<Bookshelf>
     ): Result<Bookshelf, DataError.Local> {
-        return try {
+        return ErrorMapper.safeCall {
             val nextPosition = existingShelves.maxOfOrNull { it.position }?.plus(1) ?: 0
             val newShelf = Bookshelf(
                 id = idGenerator.generateId(),
@@ -29,9 +29,7 @@ class CreateShelfUseCaseImpl(
             )
 
             repository.addShelf(newShelf)
-            Result.Success(newShelf)
-        } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            newShelf
         }
     }
 }

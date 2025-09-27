@@ -6,8 +6,8 @@ import io.ktor.client.request.parameter
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
 import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
-import uk.co.zlurgg.mybookshelf.core.data.network.safeCall
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 private const val BASE_URL = "https://openlibrary.org"
@@ -25,7 +25,7 @@ class KtorRemoteBookDataSource(
         titleFilter: String?,
         sort: String?
     ): Result<SearchResponseDto, DataError.Remote> {
-        return safeCall<SearchResponseDto> {
+        return ErrorMapper.httpNetworkCall<SearchResponseDto> {
             httpClient.get(
                 urlString = "$BASE_URL/search.json"
             ) {
@@ -71,7 +71,7 @@ class KtorRemoteBookDataSource(
     }
 
     override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
-        return safeCall<BookWorkDto> {
+        return ErrorMapper.httpNetworkCall<BookWorkDto> {
             httpClient.get(
                 urlString = "$BASE_URL/works/$bookWorkId.json"
             )
