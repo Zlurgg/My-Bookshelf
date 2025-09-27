@@ -48,6 +48,9 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         lastSearchQuery = null
         lastSearchParams = null
         configuredSearchResponse = null
+        configuredBookDetails = null
+        getBookDetailsCallCount = 0
+        lastBookWorkId = null
         networkError = DataError.Remote.REQUEST_TIMEOUT
     }
 
@@ -78,8 +81,22 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         }
     }
 
+    private var configuredBookDetails: BookWorkDto? = null
+    var getBookDetailsCallCount = 0
+    var lastBookWorkId: String? = null
+
+    fun configureBookDetailsResponse(bookDetails: BookWorkDto) {
+        configuredBookDetails = bookDetails
+    }
+
     override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
-        // Not needed for SearchBooksUseCase test, but required by interface
-        TODO("Not implemented for SearchBooksUseCase testing")
+        getBookDetailsCallCount++
+        lastBookWorkId = bookWorkId
+
+        return when {
+            shouldThrowException -> Result.Error(networkError)
+            configuredBookDetails != null -> Result.Success(configuredBookDetails!!)
+            else -> Result.Success(BookWorkDto(description = "Default test description"))
+        }
     }
 }
