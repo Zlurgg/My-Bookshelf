@@ -27,7 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookThickness
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookThickness
 
 @Composable
 fun BookVertical(
