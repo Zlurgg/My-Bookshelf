@@ -8,24 +8,26 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
+import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
 
 class BookMappersTest {
 
     @Test
     fun `toBook maps SearchedBookDto with coverKey`() {
-        val dto = SearchedBookDto(
-            id = "/works/OL123W",
-            title = "Test Title",
-            coverKey = "OLCOVER1M",
-            coverAlternativeKey = 123,
-            authorNames = listOf("Author One"),
-            languages = listOf("eng"),
-            firstPublishYear = 1999,
-            ratingsAverage = 4.5,
-            ratingsCount = 10,
-            numPagesMedian = 321,
-            numEditions = 2,
-        )
+        val dto = TestSearchedBookDtoBuilder()
+            .withId("/works/OL123W")
+            .withTitle("Test Title")
+            .withCoverKey("OLCOVER1M")
+            .withCoverAlternativeKey(123)
+            .withAuthorNames(listOf("Author One"))
+            .withLanguages(listOf("eng"))
+            .withFirstPublishYear(1999)
+            .withRatingsAverage(4.5)
+            .withRatingsCount(10)
+            .withNumPagesMedian(321)
+            .withNumEditions(2)
+            .build()
 
         val book = dto.toBook()
 
@@ -45,19 +47,19 @@ class BookMappersTest {
 
     @Test
     fun `toBook maps SearchedBookDto without coverKey uses alternative`() {
-        val dto = SearchedBookDto(
-            id = "/works/OL999W",
-            title = "No Cover Key",
-            coverKey = null,
-            coverAlternativeKey = 555,
-            authorNames = null,
-            languages = null,
-            firstPublishYear = 2001,
-            ratingsAverage = 3.0,
-            ratingsCount = 0,
-            numPagesMedian = 100,
-            numEditions = null,
-        )
+        val dto = TestSearchedBookDtoBuilder()
+            .withId("/works/OL999W")
+            .withTitle("No Cover Key")
+            .withCoverKey(null)
+            .withCoverAlternativeKey(555)
+            .withAuthorNames(null)
+            .withLanguages(null)
+            .withFirstPublishYear(2001)
+            .withRatingsAverage(3.0)
+            .withRatingsCount(0)
+            .withNumPagesMedian(100)
+            .withNumEditions(null)
+            .build()
 
         val book = dto.toBook()
 
@@ -69,21 +71,21 @@ class BookMappersTest {
 
     @Test
     fun `book roundtrip entity mapping`() {
-        val original = Book(
-            id = "ID1",
-            title = "Title",
-            imageUrl = "http://example.com/img.jpg",
-            authors = listOf("A1", "A2"),
-            description = "Desc",
-            languages = listOf("eng"),
-            firstPublishYear = "1988",
-            averageRating = 4.0,
-            ratingCount = 42,
-            numPages = 250,
-            numEditions = 3,
-            purchased = true,
-            spineColor = 0xFF112233.toInt()
-        )
+        val original = TestBookBuilder()
+            .withId("ID1")
+            .withTitle("Title")
+            .withImageUrl("http://example.com/img.jpg")
+            .withAuthors(listOf("A1", "A2"))
+            .withDescription("Desc")
+            .withLanguages(listOf("eng"))
+            .withFirstPublishYear("1988")
+            .withAverageRating(4.0)
+            .withRatingCount(42)
+            .withNumPages(250)
+            .withNumEditions(3)
+            .withPurchased(true)
+            .withSpineColor(0xFF112233.toInt())
+            .build()
 
         val entity: BookEntity = original.toBookEntity()
         val mappedBack = entity.toBook()
