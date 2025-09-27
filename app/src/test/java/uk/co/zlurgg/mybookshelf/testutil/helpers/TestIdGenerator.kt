@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.testutil
+package uk.co.zlurgg.mybookshelf.testutil.helpers
 
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import java.util.concurrent.atomic.AtomicInteger

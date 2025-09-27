@@ -22,11 +22,15 @@ app/src/test/java/uk/co/zlurgg/mybookshelf/
 │       └── book_detail/        # BookDetailViewModel tests
 ├── core/domain/service/         # Core service tests
 └── testutil/                    # Shared test utilities
-    ├── builders/               # Test data builders (TestShelfBuilder, etc.)
-    ├── helpers/                # Test helpers (ViewModelTestHelper, etc.)
-    ├── mocks/                  # Reusable mock implementations
-    ├── TestIdGenerator.kt      # Test ID generation
-    └── TestTimeProvider.kt     # Test time control
+    ├── builders/               # Test data builders (TestShelfBuilder, TestBookcaseBuilder)
+    ├── helpers/                # Test helpers and utilities
+    │   ├── ViewModelTestHelper.kt  # StateFlow testing utilities
+    │   ├── UseCaseTestHelper.kt    # UseCase mock configuration
+    │   ├── TestIdGenerator.kt      # Deterministic ID generation
+    │   └── TestTimeProvider.kt     # Time control for tests
+    └── mocks/                  # Reusable mock implementations
+        ├── MockBookcaseRepository.kt # Configurable repository mock
+        └── MockUseCases.kt         # All UseCase mocks with tracking
 ```
 
 ## 🧪 Testing Principles
