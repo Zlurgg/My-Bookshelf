@@ -5,6 +5,7 @@ import android.content.Intent
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ShareData
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import java.net.URLEncoder
 
 /**
@@ -23,7 +24,7 @@ class AndroidShareService(
     fun shareBookshelf(shareData: ShareData): Result<Unit, DataError.Local> {
         return try {
             val encodedName = URLEncoder.encode(shareData.shelfName, "UTF-8")
-            val shareUrl = "$SHARE_BASE_URL/?name=$encodedName#${shareData.token}"
+            val shareUrl = "${ApiConfig.shareBaseUrl}/?name=$encodedName#${shareData.token}"
             val message = "Check out my ${shareData.shelfName}!\n$shareUrl"
 
             val shareIntent = Intent().apply {
@@ -44,7 +45,4 @@ class AndroidShareService(
         }
     }
 
-    companion object {
-        private const val SHARE_BASE_URL = "https://zlurgg.github.io/My-Bookshelf/share"
-    }
 }

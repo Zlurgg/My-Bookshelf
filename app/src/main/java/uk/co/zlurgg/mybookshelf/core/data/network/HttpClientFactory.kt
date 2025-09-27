@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.core.data.network
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -9,6 +10,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.userAgent
 import io.ktor.serialization.kotlinx.json.json
@@ -26,8 +28,33 @@ object HttpClientFactory {
                 )
             }
             install(HttpTimeout) {
-                socketTimeoutMillis = 20_000L
-                requestTimeoutMillis = 20_000L
+                socketTimeoutMillis = ApiConfig.Http.socketTimeout
+                requestTimeoutMillis = ApiConfig.Http.requestTimeout
+                connectTimeoutMillis = ApiConfig.Http.connectTimeout
+            }
+
+            install(HttpRequestRetry) {
+                maxRetries = 3
+                retryIf { _, httpResponse ->
+                    // Retry on server errors (5xx) and rate limiting (429)
+                    httpResponse.status == HttpStatusCode.InternalServerError ||
+                    httpResponse.status == HttpStatusCode.BadGateway ||
+                    httpResponse.status == HttpStatusCode.ServiceUnavailable ||
+                    httpResponse.status == HttpStatusCode.GatewayTimeout ||
+                    httpResponse.status == HttpStatusCode.TooManyRequests
+                }
+                retryOnExceptionIf { _, cause ->
+                    // Retry on network-related exceptions
+                    cause is java.net.SocketTimeoutException ||
+                    cause is java.net.UnknownHostException ||
+                    cause is java.net.ConnectException ||
+                    cause is io.ktor.client.network.sockets.SocketTimeoutException ||
+                    cause is io.ktor.util.network.UnresolvedAddressException
+                }
+                exponentialDelay(
+                    base = 1.0,
+                    maxDelayMs = 10_000L
+                )
             }
             install(Logging) {
                 logger = object : Logger {
@@ -39,7 +66,7 @@ object HttpClientFactory {
             }
             defaultRequest {
                 contentType(ContentType.Application.Json)
-                userAgent("MyBookshelf/1.0 (Android App; github.com/zlurgg/mybookshelf)")
+                userAgent(ApiConfig.Http.USER_AGENT)
             }
         }
     }
