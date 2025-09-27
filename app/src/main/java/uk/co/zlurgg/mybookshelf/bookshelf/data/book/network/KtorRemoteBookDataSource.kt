@@ -1,19 +1,15 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.network
 
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import io.ktor.client.request.parameter
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
 import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-
-private const val BASE_URL = "https://openlibrary.org"
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryBookApi
 
 class KtorRemoteBookDataSource(
-    private val httpClient: HttpClient,
+    private val apiService: OpenLibraryBookApi,
     private val systemLanguageProvider: SystemLanguageProvider
 ): RemoteBookDataSource {
 
@@ -26,21 +22,15 @@ class KtorRemoteBookDataSource(
         sort: String?
     ): Result<SearchResponseDto, DataError.Remote> {
         return ErrorMapper.httpNetworkCall<SearchResponseDto> {
-            httpClient.get(
-                urlString = "$BASE_URL/search.json"
-            ) {
-                // Build query with field-specific filters
-                val finalQuery = buildQuery(query, authorFilter, titleFilter)
-                parameter("q", finalQuery)
+            // Build query with field-specific filters
+            val finalQuery = buildQuery(query, authorFilter, titleFilter)
 
-                parameter("limit", resultLimit)
-                parameter("language", language ?: systemLanguageProvider.getCurrentLanguageCode())
-
-                // Add server-side sort if specified
-                sort?.let { parameter("sort", it) }
-
-                parameter("fields", "key,title,author_name,author_key,cover_edition_key,cover_i,ratings_average,ratings_count,first_publish_year,language,number_of_pages_median,edition_count")
-            }
+            apiService.searchBooks(
+                query = finalQuery,
+                resultLimit = resultLimit,
+                language = language ?: systemLanguageProvider.getCurrentLanguageCode(),
+                sort = sort
+            )
         }
     }
 
@@ -72,9 +62,7 @@ class KtorRemoteBookDataSource(
 
     override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
         return ErrorMapper.httpNetworkCall<BookWorkDto> {
-            httpClient.get(
-                urlString = "$BASE_URL/works/$bookWorkId.json"
-            )
+            apiService.getBookDetails(bookWorkId)
         }
     }
 }

@@ -14,6 +14,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.DatabaseFactory
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.KtorRemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryApiService
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryBookApi
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
@@ -87,6 +89,7 @@ val appModule = module {
     single { HttpClientFactory.create(get(), enableLogging = BuildConfig.DEBUG) }
     single<ImageLoader> { ImageLoaderFactory.create(get<Context>()) }
 
+    singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
     singleOf(::UuidIdGenerator).bind<IdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
