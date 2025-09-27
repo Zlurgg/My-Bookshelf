@@ -1,22 +1,30 @@
 package uk.co.zlurgg.mybookshelf.core.domain.error
 
+import io.ktor.client.call.NoTransformationFoundException
+import io.ktor.client.call.body
+import io.ktor.client.statement.HttpResponse
+import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.SerializationException
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
+import kotlin.coroutines.coroutineContext
 
 object ErrorMapper {
 
     fun mapExceptionToDataError(exception: Exception): DataError {
         return when (exception) {
-            // Network-related exceptions
-            is SocketTimeoutException -> DataError.Remote.REQUEST_TIMEOUT
+            // Network-related exceptions (UnresolvedAddressException and SocketTimeoutException are Ktor-specific)
+            is UnresolvedAddressException -> DataError.Remote.NO_INTERNET
             is UnknownHostException -> DataError.Remote.NO_INTERNET
+            is SocketTimeoutException -> DataError.Remote.REQUEST_TIMEOUT  // Handles both Java and Ktor variants
             is IOException -> DataError.Remote.UNKNOWN
 
-            // Serialization exceptions
-            is SerializationException -> DataError.Local.SERIALIZATION_ERROR
+            // Serialization exceptions (check specific types first)
+            is NoTransformationFoundException -> DataError.Remote.SERIALIZATION
+            is SerializationException -> DataError.Remote.SERIALIZATION
 
             // Database/Storage exceptions
             is SecurityException -> DataError.Local.STORAGE_ACCESS_DENIED
@@ -50,11 +58,39 @@ object ErrorMapper {
         }
     }
 
-    inline fun <T> networkCall(action: () -> T): Result<T, DataError.Remote> {
-        return try {
-            Result.Success(action())
+    /**
+     * HTTP-specific network call that handles Ktor HTTP operations.
+     * Combines exception handling with HTTP status code analysis.
+     */
+    suspend inline fun <reified T> httpNetworkCall(
+        execute: () -> HttpResponse
+    ): Result<T, DataError.Remote> {
+        val response = try {
+            execute()
         } catch (e: Exception) {
-            Result.Error(mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN)
+            coroutineContext.ensureActive()
+            return Result.Error(mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN)
+        }
+
+        return responseToResult(response)
+    }
+
+    /**
+     * Converts HTTP response to Result based on status code and response body.
+     * Integrates with mapHttpStatusToDataError for comprehensive status handling.
+     */
+    suspend inline fun <reified T> responseToResult(
+        response: HttpResponse
+    ): Result<T, DataError.Remote> {
+        return when (response.status.value) {
+            in 200..299 -> {
+                try {
+                    Result.Success(response.body<T>())
+                } catch (e: Exception) {
+                    Result.Error(mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.SERIALIZATION)
+                }
+            }
+            else -> Result.Error(mapHttpStatusToDataError(response.status.value))
         }
     }
 }
