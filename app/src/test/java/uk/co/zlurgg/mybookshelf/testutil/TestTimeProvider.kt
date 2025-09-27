@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.test
+package uk.co.zlurgg.mybookshelf.testutil
 
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 

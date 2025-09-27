@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.test
+package uk.co.zlurgg.mybookshelf.testutil
 
 import java.util.concurrent.atomic.AtomicInteger
 
