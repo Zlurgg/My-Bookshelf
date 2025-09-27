@@ -22,6 +22,11 @@ app/src/test/java/uk/co/zlurgg/mybookshelf/
 │       └── book_detail/        # BookDetailViewModel tests
 ├── core/domain/service/         # Core service tests
 └── testutil/                    # Shared test utilities
+    ├── builders/               # Test data builders (TestShelfBuilder, etc.)
+    ├── helpers/                # Test helpers (ViewModelTestHelper, etc.)
+    ├── mocks/                  # Reusable mock implementations
+    ├── TestIdGenerator.kt      # Test ID generation
+    └── TestTimeProvider.kt     # Test time control
 ```
 
 ## 🧪 Testing Principles
@@ -31,10 +36,11 @@ app/src/test/java/uk/co/zlurgg/mybookshelf/
 - Use descriptive test names: `creates shelf with correct data when no existing shelves`
 - Clear Given-When-Then structure
 
-### 2. **Use Simple Mocks, Not Complex Fakes**
-- Create focused mock implementations within test classes
-- Mock only what you need for the specific test
-- Avoid 15+ method fake implementations
+### 2. **Use Reusable Mocks and Test Utilities**
+- Use shared mock implementations from `testutil/mocks/`
+- Use test data builders from `testutil/builders/` for consistent test data
+- Use test helpers from `testutil/helpers/` for common patterns
+- Avoid duplicating mock implementations across test classes
 
 ### 3. **Test Business Logic in Isolation**
 - UseCase tests should mock repository dependencies
@@ -50,7 +56,7 @@ app/src/test/java/uk/co/zlurgg/mybookshelf/
 
 ### UseCase Tests (Domain Layer)
 
-**Pattern**: Test business logic with mocked repositories
+**Pattern**: Test business logic with shared mock repositories and test builders
 
 ```kotlin
 class CreateShelfUseCaseTest {
@@ -72,23 +78,32 @@ class CreateShelfUseCaseTest {
         assertTrue("Should return success", result is Result.Success)
         val shelf = (result as Result.Success).data
         assertEquals("Should have correct name", name, shelf.name)
-        // ... more assertions
+        assertTrue("Should call repository", mockRepository.addShelfCalled)
     }
 
-    // Simple, focused mock
-    private class MockBookcaseRepository : BookcaseRepository {
-        var addShelfCalled = false
-        override suspend fun addShelf(shelf: Bookshelf) {
-            addShelfCalled = true
-        }
-        // ... minimal implementations
+    @Test
+    fun `calculates correct position when existing shelves present`() = runTest {
+        // Given - Use TestShelfBuilder for consistent test data
+        val existingShelves = listOf(
+            TestShelfBuilder().withId("1").withPosition(0).build(),
+            TestShelfBuilder().withId("2").withPosition(2).build(),
+            TestShelfBuilder().withId("3").withPosition(1).build()
+        )
+
+        // When
+        val result = useCase.execute("New Shelf", ShelfStyle.SilverMetal, existingShelves)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val shelf = (result as Result.Success).data
+        assertEquals("Should position after highest existing shelf", 3, shelf.position)
     }
 }
 ```
 
 ### ViewModel Tests (Presentation Layer)
 
-**Pattern**: Test UI state changes with minimal UseCase mocking
+**Pattern**: Test UI state changes with shared test helpers and UseCase mocks
 
 ```kotlin
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -97,26 +112,37 @@ class BookcaseViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @Test
-    fun `ShowAddDialog action toggles dialog visibility`() = runTest {
-        // Given
-        val viewModel = BookcaseViewModel(createMinimalUseCases())
-        var currentState: BookcaseState? = null
-        val job = launch {
-            viewModel.state.collect { currentState = it }
-        }
+    private val testDispatcher = UnconfinedTestDispatcher()
+    private val useCaseHelper = UseCaseTestHelper()
 
-        // When
-        viewModel.onAction(BookcaseAction.ShowAddDialog(true))
-        advanceUntilIdle()
-
-        // Then
-        assertTrue("Should show dialog", currentState?.showAddDialog == true)
-        job.cancel()
+    @After
+    fun tearDown() {
+        useCaseHelper.resetAll()
     }
 
-    // Minimal mocking for UI testing
-    private fun createMinimalUseCases() = BookcaseUseCases(...)
+    @Test
+    fun `ShowAddDialog action toggles dialog visibility`() = runTest(testDispatcher) {
+        // Given
+        val viewModel = BookcaseViewModel(useCaseHelper.createBookcaseUseCases())
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // When - show dialog
+        val stateAfterShow = stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.ShowAddDialog(true))
+        }
+
+        // Then
+        assertTrue("Should show dialog", stateAfterShow?.showAddDialog == true)
+
+        // When - hide dialog
+        val stateAfterHide = stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.ShowAddDialog(false))
+        }
+
+        // Then
+        assertFalse("Should hide dialog", stateAfterHide?.showAddDialog == true)
+        stateHelper.cleanup()
+    }
 }
 ```
 
@@ -190,12 +216,78 @@ fun `test state changes`() = runTest {
 - [ ] Test data mapping
 - [ ] Use real Room/database when possible
 
+## 🛠️ Shared Test Utilities
+
+### Test Data Builders
+```kotlin
+// Create test shelves with fluent API
+val shelf = TestShelfBuilder()
+    .withId("fiction-1")
+    .withName("Fiction")
+    .withStyle(ShelfStyle.DarkWood)
+    .withPosition(0)
+    .build()
+
+// Use predefined common test data
+val commonShelves = TestShelfBuilder.createTestShelves(3)
+val fictionShelf = TestShelfBuilder.fiction()
+val emptyShelf = TestShelfBuilder.emptyShelf()
+
+// Create test bookcases
+val bookcase = TestBookcaseBuilder.withCommonShelves().build()
+```
+
+### Reusable Mock Repositories
+```kotlin
+class SomeUseCaseTest {
+    private val mockRepository = MockBookcaseRepository()
+
+    @Test
+    fun `test with configured mock`() = runTest {
+        // Configure mock behavior
+        mockRepository.configureShelves(TestShelfBuilder.createTestShelves(2))
+        mockRepository.shouldThrowException = false
+
+        // Test your UseCase
+        val result = useCase.execute()
+
+        // Verify mock interactions
+        assertTrue("Should call repository", mockRepository.addShelfCalled)
+        assertEquals("Should add correct shelf", expectedShelf, mockRepository.lastAddedShelf)
+    }
+}
+```
+
+### ViewModel Test Helpers
+```kotlin
+class SomeViewModelTest {
+    private val useCaseHelper = UseCaseTestHelper()
+
+    @Test
+    fun `test ViewModel state changes`() = runTest {
+        val viewModel = SomeViewModel(useCaseHelper.createBookcaseUseCases())
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Execute action and get resulting state
+        val newState = stateHelper.executeAndGetState {
+            viewModel.onAction(SomeAction)
+        }
+
+        // Assert state changes
+        assertEquals("Expected state", expectedValue, newState?.someProperty)
+        stateHelper.cleanup()
+    }
+}
+```
+
 ## 🚀 Current Test Status
 
 - **All tests passing**: ✅ 7 tests total
 - **Clean package structure**: ✅ Mirrors source architecture
+- **Shared utilities**: ✅ Reusable mocks, builders, and helpers
 - **Testing patterns established**: ✅ UseCase + ViewModel examples
 - **Zero technical debt**: ✅ No failing or outdated tests
+- **Zero duplication**: ✅ Shared utilities eliminate code duplication
 
 ## 📈 Next Steps for Test Expansion
 

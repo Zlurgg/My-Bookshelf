@@ -1,19 +1,17 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
-import java.util.concurrent.atomic.AtomicInteger
+import uk.co.zlurgg.mybookshelf.testutil.TestIdGenerator
+import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 
 /**
  * Clean UseCase test demonstrating focused testing principles:
@@ -54,9 +52,9 @@ class CreateShelfUseCaseTest {
     fun `calculates correct position when existing shelves present`() = runTest {
         // Given
         val existingShelves = listOf(
-            createTestShelf(id = "1", position = 0),
-            createTestShelf(id = "2", position = 2),
-            createTestShelf(id = "3", position = 1)
+            TestShelfBuilder().withId("1").withPosition(0).build(),
+            TestShelfBuilder().withId("2").withPosition(2).build(),
+            TestShelfBuilder().withId("3").withPosition(1).build()
         )
 
         // When
@@ -97,46 +95,4 @@ class CreateShelfUseCaseTest {
         assertTrue("Should have different IDs", shelf1.id != shelf2.id)
     }
 
-    // Simple mock repository - focused on what we need to test
-    private class MockBookcaseRepository : BookcaseRepository {
-        var addShelfCalled = false
-        var shouldThrowException = false
-
-        override suspend fun addShelf(shelf: Bookshelf) {
-            addShelfCalled = true
-            if (shouldThrowException) {
-                throw RuntimeException("Test exception")
-            }
-        }
-
-        override fun getAllShelves(): Flow<List<Bookshelf>> = flowOf(emptyList())
-        override fun getBookCountForShelf(shelfId: String): Flow<Int> = flowOf(0)
-        override suspend fun getShelfById(shelfId: String): Bookshelf? = null
-        override suspend fun removeShelf(shelfId: String) {}
-        override suspend fun updateShelf(shelf: Bookshelf) {}
-    }
-
-    // Simple test IdGenerator
-    private class TestIdGenerator : IdGenerator {
-        private val counter = AtomicInteger(0)
-
-        override fun generateId(): String = "test-id-${counter.incrementAndGet()}"
-
-        fun reset() {
-            counter.set(0)
-        }
-    }
-
-    // Test helper
-    private fun createTestShelf(
-        id: String,
-        name: String = "Test Shelf",
-        position: Int = 0
-    ) = Bookshelf(
-        id = id,
-        name = name,
-        books = emptyList(),
-        shelfStyle = ShelfStyle.DarkWood,
-        position = position
-    )
 }
