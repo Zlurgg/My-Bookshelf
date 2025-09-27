@@ -2,10 +2,10 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfImportValidator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfSerializer
-import uk.co.zlurgg.mybookshelf.core.domain.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.Result
-import uk.co.zlurgg.mybookshelf.core.domain.flatMap
-import uk.co.zlurgg.mybookshelf.core.domain.map
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.result.flatMap
+import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 /**
  * Use case for checking if importing a bookshelf would cause name conflicts.
