@@ -1,10 +1,12 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
+package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 
 class BookMappersTest {
