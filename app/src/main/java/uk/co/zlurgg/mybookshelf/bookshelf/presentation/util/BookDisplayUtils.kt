@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.util
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 

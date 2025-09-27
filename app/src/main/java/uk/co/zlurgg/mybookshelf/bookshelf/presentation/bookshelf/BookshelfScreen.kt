@@ -40,9 +40,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_compo
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchState
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.BookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.util.getBookWidth
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
@@ -100,12 +100,14 @@ fun BookshelfScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { onAction(BookshelfAction.OnToggleTidyMode) }) {
-                        Icon(
-                            imageVector = if (state.isTidyMode) ImageVector.vectorResource(R.drawable.ic_untidy_books) else ImageVector.vectorResource(R.drawable.ic_tidy_books),
-                            contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf",
-                            modifier = Modifier.size(28.dp)
-                        )
+                    if (books.isNotEmpty()) {
+                        IconButton(onClick = { onAction(BookshelfAction.OnToggleTidyMode) }) {
+                            Icon(
+                                imageVector = if (state.isTidyMode) ImageVector.vectorResource(R.drawable.ic_untidy_books) else ImageVector.vectorResource(R.drawable.ic_tidy_books),
+                                contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf",
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
                 }
             )
