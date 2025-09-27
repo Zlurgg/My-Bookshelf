@@ -5,7 +5,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 object ErrorMapper {
 
