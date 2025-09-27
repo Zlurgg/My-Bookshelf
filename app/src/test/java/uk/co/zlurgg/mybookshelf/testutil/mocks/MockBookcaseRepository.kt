@@ -11,6 +11,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
  */
 class MockBookcaseRepository : BookcaseRepository {
 
+    private val shelves = mutableMapOf<String, Bookshelf>()
+
     // Configuration properties
     var shouldThrowException = false
     var shelvesToReturn = emptyList<Bookshelf>()
@@ -21,6 +23,8 @@ class MockBookcaseRepository : BookcaseRepository {
     var addShelfCalled = false
     var removeShelfCalled = false
     var updateShelfCalled = false
+    var addShelfCallCount = 0
+    var removeShelfCallCount = 0
     var lastAddedShelf: Bookshelf? = null
     var lastRemovedShelfId: String? = null
     var lastUpdatedShelf: Bookshelf? = null
@@ -36,15 +40,23 @@ class MockBookcaseRepository : BookcaseRepository {
     }
 
     override suspend fun addShelf(shelf: Bookshelf) {
-        if (shouldThrowException) throw RuntimeException("Test exception")
         addShelfCalled = true
+        addShelfCallCount++
         lastAddedShelf = shelf
+
+        if (shouldThrowException) throw RuntimeException("Test exception")
+
+        shelves[shelf.id] = shelf
     }
 
     override suspend fun removeShelf(shelfId: String) {
-        if (shouldThrowException) throw RuntimeException("Test exception")
         removeShelfCalled = true
+        removeShelfCallCount++
         lastRemovedShelfId = shelfId
+
+        if (shouldThrowException) throw RuntimeException("Test exception")
+
+        shelves.remove(shelfId)
     }
 
     override suspend fun updateShelf(shelf: Bookshelf) {
@@ -55,6 +67,7 @@ class MockBookcaseRepository : BookcaseRepository {
 
     // Helper methods for test setup
     fun reset() {
+        shelves.clear()
         shouldThrowException = false
         shelvesToReturn = emptyList()
         shelfByIdToReturn = null
@@ -62,6 +75,8 @@ class MockBookcaseRepository : BookcaseRepository {
         addShelfCalled = false
         removeShelfCalled = false
         updateShelfCalled = false
+        addShelfCallCount = 0
+        removeShelfCallCount = 0
         lastAddedShelf = null
         lastRemovedShelfId = null
         lastUpdatedShelf = null
@@ -74,4 +89,12 @@ class MockBookcaseRepository : BookcaseRepository {
     fun configureBookCounts(counts: Map<String, Int>) {
         bookCountsToReturn = counts
     }
+
+    fun addShelfForTest(shelf: Bookshelf) {
+        shelves[shelf.id] = shelf
+    }
+
+    fun hasShelf(shelfId: String): Boolean = shelves.containsKey(shelfId)
+
+    fun getShelf(shelfId: String): Bookshelf? = shelves[shelfId]
 }
