@@ -141,7 +141,7 @@ uk.co.zlurgg.mybookshelf/
 - **Async Testing**: Tests use `runTest`, `advanceUntilIdle()`, and proper coroutine test patterns
 - **Test Coverage**: Repository layer, ViewModel layer, data mappers, and integration tests
 - **State Flow Testing**: ViewModels using `stateIn()` require state collection via `launch { vm.state.collect { } }` to trigger initialization
-- **Current Status**: 11 test files, 53 tests total, **ALL PASSING** ✅ (0 failures)
+- **Current Status**: 11 test files, 53 tests total, **16 FAILING** ❌ (test fixes needed)
 - **Test Utilities**: `TestIdGenerator`, `TestTimeProvider` for deterministic testing
 - **Coverage Analysis**: 14% file coverage (11 test files / 79 source files) - **needs expansion**
 - **Test Quality**: High-quality tests with proper fakes, mocks, and integration testing
@@ -279,17 +279,14 @@ uk.co.zlurgg.mybookshelf/
 
 ### 🎯 IMMEDIATE NEXT PRIORITIES
 
-#### 1. **Testing Coverage Expansion** (HIGH PRIORITY)
-- **Current State**: 14% file coverage (11 test files / 79 source files), all tests passing ✅
-- **Target**: 50%+ coverage focusing on business logic and error paths
-- **Focus Areas**:
-  - Deep link import/export functionality testing
-  - Network layer (`KtorRemoteBookDataSource`) error scenarios
-  - Database migration testing (v2 → v5)
-  - Share flow error handling and state management
-  - Name conflict resolution logic
-- **Timeline**: 2-3 development sessions
-- **Benefits**: Production readiness, refactoring confidence, bug prevention
+#### 1. **Test Fixes and Coverage Expansion** (CRITICAL PRIORITY)
+- **Current State**: 14% file coverage (11 test files / 79 source files), **16 tests failing** ❌
+- **Immediate Need**: Fix failing tests before expanding coverage
+- **Failing Tests**: BookDetailViewModel, BookcaseViewModel, BookshelfViewModel tests
+- **Root Cause**: Likely UseCase refactoring broke existing test assertions
+- **Target**: Fix all tests, then expand to 50%+ coverage
+- **Timeline**: 1-2 development sessions for fixes, 2-3 more for expansion
+- **Benefits**: Stable testing foundation, production readiness
 
 #### 2. **Performance & Polish** (MEDIUM PRIORITY)
 - **Configuration Management**: Move hardcoded BASE_URL to BuildConfig for maintainability
@@ -327,16 +324,16 @@ uk.co.zlurgg.mybookshelf/
 - ✅ **Architecture**: Enterprise-level Clean Architecture with perfect UseCase pattern implementation
 - ✅ **Code Quality**: 100% consistent patterns across ViewModels and UseCases with standardized error handling
 - ✅ **User Experience**: Professional, intuitive, responsive
-- ⚠️ **Testing**: Needs expansion (14% → 50%+ coverage) - main blocker for 100%
+- ❌ **Testing**: 16 tests failing, requires immediate fixes before expansion - main blocker for 100%
 - ✅ **Performance**: Optimized with efficient reactive patterns
 - ✅ **Security**: Proper practices, no secrets exposed
 
 #### **Next Development Session Goals**
-1. **Test Coverage Expansion**: Primary focus - implement comprehensive test coverage for new UseCases and refactored ViewModels
-2. **Error Scenario Testing**: Test network failures, malformed data, and edge cases with new error handling patterns
-3. **UseCase Integration Testing**: Verify all new UseCase implementations work correctly end-to-end
-4. **Migration Testing**: Verify database schema migrations work correctly with new repository methods
-5. **Performance Validation**: Ensure refactored architecture maintains optimal performance characteristics
+1. **Fix Failing Tests**: IMMEDIATE priority - diagnose and fix 16 failing tests caused by UseCase refactoring
+2. **Test Architecture Alignment**: Update test assertions to work with new UseCase-based ViewModel architecture
+3. **StateFlow Testing**: Ensure proper state collection patterns for new ViewModel implementations
+4. **Error Handling Validation**: Verify new centralized error handling works correctly in test scenarios
+5. **Test Coverage Baseline**: Once tests pass, establish stable foundation for coverage expansion
 
 ## Navigation Structure
 ```
@@ -379,12 +376,11 @@ MyBookshelfGraph/
 ### 🔄 CURRENT MEDIUM PRIORITY ISSUES
 
 #### 6. Test Status
-**Status**: ✅ RESOLVED - All tests now passing!
-**Current Status**: 53 tests passing, 0 failures 🎉
-**Recent Fixes**:
-- Fixed `BookDetailViewModelTest.onPurchaseClick_marks_book_as_purchased` - implemented missing purchase functionality
-- Fixed `BookcaseViewModelTest.showAddDialog_toggles_dialog_visibility` - fixed dialog state management
-**Note**: Search tests are all passing ✅
+**Status**: ❌ CRITICAL - 16 tests failing after UseCase refactoring
+**Current Status**: 37 tests passing, 16 failures ❌
+**Failing Tests**: BookDetailViewModel, BookcaseViewModel, BookshelfViewModel tests
+**Root Cause**: UseCase refactoring broke test assertions expecting direct repository calls
+**Action Required**: Immediate test fixes before any new development
 
 ### Medium Priority Issues
 
@@ -480,7 +476,7 @@ The codebase demonstrates **excellent engineering practices** with a solid archi
 - Material 3 design system implementation
 
 #### Quality & Reliability ✅
-- All tests passing (53 tests, 0 failures)
+- 16 tests failing (requires immediate fixes)
 - API compliance (User-Agent, conditional logging)
 - Security hardening (ProGuard, HTTPS, no secrets)
 - Build system optimization
