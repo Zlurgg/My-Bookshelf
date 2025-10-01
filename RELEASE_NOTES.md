@@ -1,4 +1,4 @@
-# 📚 MyBookshelf v1.0.0 - Portfolio Release
+# 📚 MyBookshelf v1.0.0-alpha - Pre Release
 
 **Personal Library Management for Android**
 
@@ -58,7 +58,7 @@
 2. Enable "Install from unknown sources" in Android Settings > Security
 3. Install and enjoy your personal bookshelf organizer!
 
-**Note**: This is a portfolio release for demonstration purposes. No data collection or analytics.
+**Note**: This is an alpha pre-release for portfolio demonstration. The app is fully functional but may receive updates. No data collection or analytics.
 
 ---
 
@@ -109,4 +109,4 @@ Built by **Joseph Brightman** ([@zlurgg](https://github.com/zlurgg)) as part of 
 
 ---
 
-*Released: October 2025 | Version: 1.0.0 | Build: Production*
+*Released: October 2025 | Version: 1.0.0-alpha | Build: Pre-Release*
