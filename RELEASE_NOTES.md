@@ -54,7 +54,7 @@
 - Internet connection for book search
 
 ### **Download & Install**
-1. Download `MyBookshelf-v1.0.0.apk` from the Assets section below
+1. Download `MyBookshelf-v1.0.0-alpha.apk` from the Assets section below
 2. Enable "Install from unknown sources" in Android Settings > Security
 3. Install and enjoy your personal bookshelf organizer!
 
