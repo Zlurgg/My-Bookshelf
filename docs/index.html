@@ -150,24 +150,20 @@
 
         <div class="download-section">
             <h3>Get MyBookshelf</h3>
-            <a href="#" class="download-btn primary" onclick="showComingSoon()">
-                📱 Download on Google Play
+            <a href="https://github.com/zlurgg/MyBookshelf/releases/latest" class="download-btn primary">
+                📱 View on GitHub
             </a>
             <br>
-            <a href="#" class="download-btn" onclick="showComingSoon()">
+            <a href="https://github.com/zlurgg/MyBookshelf/releases/latest/download/MyBookshelf-v1.0.0.apk" class="download-btn">
                 📦 Download APK
             </a>
-            <p class="coming-soon" id="coming-soon" style="display: none;">
-                Coming soon! App is currently in development.
+            <p class="coming-soon">
+                Portfolio release - Professional Android development showcase
             </p>
         </div>
     </div>
 
     <script>
-        function showComingSoon() {
-            document.getElementById('coming-soon').style.display = 'block';
-        }
-
         // Handle any deep links that might come to main page
         window.onload = function() {
             const hash = window.location.hash;
