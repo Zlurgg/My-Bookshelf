@@ -180,14 +180,22 @@
             <p class="loading-text">Click the title above to open in MyBookshelf app</p>
 
             <div id="fallback-info" class="fallback" style="display: none;">
-                <p>Don't have MyBookshelf? <a href="../index.html">Get the app</a></p>
+                <h2>📱 App Not Installed?</h2>
+                <p>Download MyBookshelf and try this link again:</p>
 
-                <div class="token-section">
-                    <div class="token-label">Import code for manual use:</div>
-                    <div id="token-display" class="token-display"></div>
-                    <button onclick="copyToken()" class="copy-btn" id="copy-btn">
-                        📋 Copy Code
-                    </button>
+                <a href="https://github.com/zlurgg/MyBookshelf/releases/latest/download/MyBookshelf-v1.0.0.apk" class="download-btn">
+                    📦 Download MyBookshelf APK
+                </a>
+
+                <p style="margin-top: 1rem; font-size: 0.9rem;">
+                    Or <a href="https://github.com/zlurgg/MyBookshelf/releases/latest" style="color: #ffd700;">view on GitHub</a>
+                </p>
+
+                <div class="instructions">
+                    <strong>📋 How to import this bookshelf:</strong><br>
+                    1. Download and install MyBookshelf APK<br>
+                    2. Click this link again to automatically import the bookshelf<br>
+                    3. The bookshelf will be added to your collection!
                 </div>
             </div>
         </div>
@@ -252,56 +260,6 @@
 
         function showFallback() {
             document.getElementById('fallback-info').style.display = 'block';
-
-            if (shareToken) {
-                document.getElementById('token-display').textContent = shareToken;
-            } else {
-                document.getElementById('token-display').textContent = 'Token not found';
-            }
-        }
-
-        function copyToken() {
-            const tokenText = document.getElementById('token-display').textContent;
-
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(tokenText).then(() => {
-                    const btn = document.getElementById('copy-btn');
-                    const originalText = btn.textContent;
-                    btn.textContent = '✅ Copied!';
-                    setTimeout(() => {
-                        btn.textContent = originalText;
-                    }, 2000);
-                }).catch(err => {
-                    console.error('Failed to copy: ', err);
-                    fallbackCopy(tokenText);
-                });
-            } else {
-                fallbackCopy(tokenText);
-            }
-        }
-
-        function fallbackCopy(text) {
-            // Fallback for older browsers
-            const textArea = document.createElement('textarea');
-            textArea.value = text;
-            textArea.style.position = 'fixed';
-            textArea.style.opacity = '0';
-            document.body.appendChild(textArea);
-            textArea.select();
-
-            try {
-                document.execCommand('copy');
-                const btn = document.getElementById('copy-btn');
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Copied!';
-                setTimeout(() => {
-                    btn.textContent = originalText;
-                }, 2000);
-            } catch (err) {
-                console.error('Fallback copy failed:', err);
-            }
-
-            document.body.removeChild(textArea);
         }
 
         // Initialize when page loads
