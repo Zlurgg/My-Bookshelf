@@ -85,9 +85,6 @@ uk.co.zlurgg.mybookshelf/
 
 ### **Source Code**
 - **Repository**: [GitHub.com/zlurgg/MyBookshelf](https://github.com/zlurgg/MyBookshelf)
-- **Architecture Documentation**: See `CLAUDE.md` in repository
-- **Testing Patterns**: See `TESTING_PATTERNS.md` in test directory
-
 ---
 
 ## 🎯 Portfolio Context
