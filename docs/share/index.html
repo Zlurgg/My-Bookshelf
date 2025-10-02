@@ -12,54 +12,128 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #FAF7F3;
+            position: relative;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            text-align: center;
             padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* Shelf texture background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../assets/shelf_wood_textured_brown.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        /* Subtle paper grain overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(109, 76, 65, 0.02) 2px,
+                    rgba(109, 76, 65, 0.02) 4px
+                );
+            z-index: -1;
+            pointer-events: none;
         }
 
         .container {
-            max-width: 500px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 3rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            max-width: 540px;
+            width: 100%;
+            background: #F5EFEA;
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow:
+                0 4px 6px rgba(109, 76, 65, 0.1),
+                0 12px 24px rgba(109, 76, 65, 0.08);
+            border: 1px solid rgba(109, 76, 65, 0.1);
+            position: relative;
+            animation: slideUp 0.4s ease-out;
         }
 
-        .loading-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
                 transform: translateY(0);
             }
-            40% {
-                transform: translateY(-10px);
+        }
+
+        .book-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            animation: gentle-bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes gentle-bounce {
+            0%, 100% {
+                transform: translateY(0);
             }
-            60% {
-                transform: translateY(-5px);
+            50% {
+                transform: translateY(-8px);
             }
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 700;
+            font-size: 2.25rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #6D4C41;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: rgba(109, 76, 65, 0.3);
+            text-underline-offset: 6px;
+            transition: all 0.2s ease;
         }
 
-        .loading-text {
-            font-size: 1.2rem;
+        h1:hover {
+            color: #4B372F;
+            text-decoration-color: #6D4C41;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #51443D;
             margin-bottom: 2rem;
-            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .action-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(142, 108, 136, 0.1);
+            color: #6D4C41;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(142, 108, 136, 0.2);
         }
 
         .fallback {
@@ -68,134 +142,165 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .fallback h2 {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             margin-bottom: 1rem;
-            color: #ffd700;
+            color: #6D4C41;
+            font-weight: 500;
         }
 
         .fallback p {
-            margin-bottom: 1.5rem;
-            font-size: 1.1rem;
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
             line-height: 1.6;
+            color: #51443D;
         }
 
         .download-btn {
-            background: #4285f4;
+            background: #8E6C88;
             color: white;
             border: none;
             padding: 1rem 2rem;
             margin: 0.5rem;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             text-decoration: none;
             display: inline-block;
+            box-shadow: 0 2px 4px rgba(142, 108, 136, 0.2);
         }
 
         .download-btn:hover {
-            background: #3367d6;
+            background: #7A5976;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(142, 108, 136, 0.3);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
         }
 
         .secondary-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: transparent;
+            color: #6D4C41;
+            border: 2px solid #D7CCC8;
         }
 
         .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .token-section {
-            margin-top: 2rem;
-            padding: 1rem;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-
-        .token-label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 0.5rem;
-        }
-
-        .token-display {
-            font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
-            word-break: break-all;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 0.5rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-        }
-
-        .copy-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
+            background: rgba(109, 76, 65, 0.05);
+            border-color: #6D4C41;
         }
 
         .instructions {
             margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: rgba(215, 204, 200, 0.3);
+            border-radius: 12px;
             font-size: 0.95rem;
-            opacity: 0.9;
-            line-height: 1.5;
+            color: #51443D;
+            line-height: 1.6;
+            border: 1px solid rgba(109, 76, 65, 0.1);
+        }
+
+        .instructions strong {
+            color: #6D4C41;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(
+                to right,
+                transparent,
+                rgba(109, 76, 65, 0.2) 20%,
+                rgba(109, 76, 65, 0.2) 80%,
+                transparent
+            );
+            margin: 1.5rem 0;
+        }
+
+        a {
+            color: #8E6C88;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #6D4C41;
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
             .container {
                 margin: 1rem;
-                padding: 2rem;
+                padding: 2rem 1.5rem;
             }
 
             h1 {
-                font-size: 2rem;
+                font-size: 1.85rem;
             }
 
-            .loading-text {
+            .subtitle {
                 font-size: 1rem;
             }
+
+            .download-btn {
+                width: 100%;
+                margin: 0.5rem 0;
+            }
+        }
+
+        /* Loading animation for book icon */
+        .loading .book-icon {
+            animation: gentle-bounce 1s infinite ease-in-out;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="main-section">
-            <div class="loading-icon">📖</div>
-            <h1 id="bookshelf-title" onclick="launchApp()" style="cursor: pointer; text-decoration: underline;">
+        <div id="main-section" class="loading">
+            <div class="book-icon">📖</div>
+            <h1 id="bookshelf-title" onclick="launchApp()">
                 Loading Bookshelf...
             </h1>
-            <p class="loading-text">👆 Click the title above to open in MyBookshelf app</p>
+            <p class="subtitle">Tap the title above to open in MyBookshelf</p>
 
-            <div id="fallback-info" class="fallback" style="display: none;">
-                <h2>📱 App Not Installed?</h2>
-                <p>Download MyBookshelf and try this link again:</p>
+            <div class="action-hint">
+                👆 Click to import into your collection
+            </div>
 
-                <a href="https://github.com/Zlurgg/My-Bookshelf/releases/download/v1.0.0-alpha/MyBookshelf-v1.0.0-alpha.apk" class="download-btn">
-                    📦 Download MyBookshelf APK
+            <div id="fallback-info" class="fallback">
+                <div class="divider"></div>
+
+                <h2>📱 MyBookshelf Not Installed?</h2>
+                <p>Download the app to import this bookshelf into your collection.</p>
+
+                <a href="https://github.com/Zlurgg/My-Bookshelf/releases/latest" class="download-btn">
+                    📦 Download MyBookshelf
                 </a>
 
                 <p style="margin-top: 1rem; font-size: 0.9rem;">
-                    Or <a href="https://github.com/Zlurgg/My-Bookshelf/releases/tag/v1.0.0-alpha" style="color: #ffd700;">view on GitHub</a>
+                    Or <a href="https://github.com/Zlurgg/My-Bookshelf/releases">browse all releases</a>
                 </p>
 
                 <div class="instructions">
-                    <strong>📋 How to import this bookshelf:</strong><br>
+                    <strong>📋 How to import this bookshelf:</strong>
                     1. Download and install MyBookshelf APK<br>
-                    2. Click this link again to automatically import the bookshelf<br>
-                    3. The bookshelf will be added to your collection!
+                    2. Return to this page and tap the title above<br>
+                    3. The bookshelf will be imported automatically!
                 </div>
             </div>
         </div>
@@ -207,17 +312,14 @@
         let appLaunchAttempted = false;
 
         function getBookshelfNameFromUrl() {
-            // Try to get name from URL parameter (legacy support)
             const params = new URLSearchParams(window.location.search);
             return params.get('name') || null;
         }
 
         function getTokenFromUrl() {
-            // Get token from URL fragment (#token) or hash parameter
             const hash = window.location.hash.substring(1);
             const params = new URLSearchParams(window.location.search);
             const encodedToken = hash || params.get('token') || params.get('t');
-            // Decode the URL-encoded token
             return encodedToken ? decodeURIComponent(encodedToken) : '';
         }
 
@@ -228,14 +330,9 @@
         }
 
         function extractShelfNameFromToken() {
-            // Try to extract shelf name from the encoded JSON data
             try {
                 const token = getTokenFromUrl();
                 if (!token) return null;
-
-                // Decode Base64 and decompress to get JSON
-                // This is just for display purposes - actual import happens in the app
-                // For now, we'll just show "Bookshelf" as default
                 return null;
             } catch (e) {
                 console.log('Could not extract shelf name from token:', e);
@@ -257,19 +354,18 @@
 
             console.log('Attempting to launch app with token:', shareToken.substring(0, 20) + '...');
 
-            // Try to launch the app
             const appUrl = `mybookshelf://share/${shareToken}`;
 
-            // Method 1: Direct navigation
+            // Direct navigation
             window.location.href = appUrl;
 
-            // Method 2: Iframe attempt (fallback)
+            // Iframe fallback
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             iframe.src = appUrl;
             document.body.appendChild(iframe);
 
-            // Show fallback after delay (only on first attempt)
+            // Show fallback after delay
             if (!appLaunchAttempted) {
                 setTimeout(showFallback, 3000);
                 appLaunchAttempted = true;
@@ -277,26 +373,22 @@
         }
 
         function showFallback() {
+            document.getElementById('main-section').classList.remove('loading');
             document.getElementById('fallback-info').style.display = 'block';
         }
 
-        // Initialize when page loads
+        // Initialize
         window.onload = function() {
             console.log('Share page loaded');
 
-            // Update page title - try to get name from URL or use default
             const nameFromUrl = getBookshelfNameFromUrl();
             const nameFromToken = extractShelfNameFromToken();
             updatePageTitle(nameFromUrl || nameFromToken || 'Bookshelf');
-
-            // Don't auto-launch - let user click to avoid looking like phishing
-            // Auto-launch triggers security warnings in Chrome
         };
 
-        // Handle page visibility change (user switching back to browser)
+        // Handle visibility change
         document.addEventListener('visibilitychange', function() {
             if (!document.hidden && appLaunchAttempted) {
-                // User came back to browser, probably app launch failed
                 setTimeout(showFallback, 1000);
             }
         });
