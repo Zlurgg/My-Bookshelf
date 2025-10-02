@@ -1,4 +1,36 @@
-# 📚 MyBookshelf v1.0.0-alpha - Pre Release
+# 📚 MyBookshelf Release Notes
+
+**Personal Library Management for Android**
+
+---
+
+## v1.0.1-alpha - Self-Contained Sharing (October 2025)
+
+### 🚀 **New Features**
+- **Self-Contained Share Links** - Share URLs now contain all data (no server/storage required)
+- **Permanent Links** - Share links never expire and work even after closing the app
+- **URL Compression** - GZip compression reduces share URL size by 70-80%
+- **Shorter URLs** - Removed redundant parameters for cleaner sharing
+- **URL Length Validation** - Automatic validation prevents sharing shelves that are too large
+
+### 🔒 **Security & UX Improvements**
+- **Fixed Chrome Security Warnings** - Removed auto-redirect behavior that triggered "unsafe site" warnings
+- **Click-to-Open UX** - User now clicks to open app (more trustworthy, better UX)
+- **Enhanced Error Messages** - More helpful messages for share link issues
+
+### 🧪 **Testing & Quality**
+- **25 New Tests** - Comprehensive test coverage for encoding/decoding functionality
+- **TDD Implementation** - Base64Encoder and UrlEncodedShareTokenService built test-first
+- **Clean Architecture** - Proper layer separation with no architecture violations
+
+### 🏗️ **Technical Improvements**
+- **Base64 + GZip Encoding** - Efficient data encoding with URL-safe characters
+- **Domain Layer Cleanup** - Moved infrastructure concerns to proper layers
+- **Error Handling** - New `SHARE_LINK_TOO_LARGE` error with user-friendly messages
+
+---
+
+## v1.0.0-alpha - Pre Release (October 2025)
 
 **Personal Library Management for Android**
 
