@@ -177,7 +177,7 @@
             <h1 id="bookshelf-title" onclick="launchApp()" style="cursor: pointer; text-decoration: underline;">
                 Loading Bookshelf...
             </h1>
-            <p class="loading-text">Click the title above to open in MyBookshelf app</p>
+            <p class="loading-text">👆 Click the title above to open in MyBookshelf app</p>
 
             <div id="fallback-info" class="fallback" style="display: none;">
                 <h2>📱 App Not Installed?</h2>
@@ -289,8 +289,8 @@
             const nameFromToken = extractShelfNameFromToken();
             updatePageTitle(nameFromUrl || nameFromToken || 'Bookshelf');
 
-            // Small delay to ensure page is ready, then try to launch app automatically
-            setTimeout(attemptAppLaunch, 1000);
+            // Don't auto-launch - let user click to avoid looking like phishing
+            // Auto-launch triggers security warnings in Chrome
         };
 
         // Handle page visibility change (user switching back to browser)
