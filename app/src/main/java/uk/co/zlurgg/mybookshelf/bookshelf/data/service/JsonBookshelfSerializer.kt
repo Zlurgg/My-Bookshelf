@@ -19,7 +19,7 @@ class JsonBookshelfSerializer(
 ) : BookshelfSerializer {
 
     private val json = Json {
-        prettyPrint = true
+        prettyPrint = false  // Minified JSON for smaller URL size with GZip compression
         ignoreUnknownKeys = true
     }
 

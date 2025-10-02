@@ -27,7 +27,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidShareService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.BookshelfImportValidatorImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.DatabaseBookshelfDataOrchestrator
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.JsonBookshelfSerializer
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.LocalShareTokenService
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UrlEncodedShareTokenService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfDataOrchestrator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfImportValidator
@@ -95,10 +95,7 @@ val appModule = module {
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
     singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
     single<ShareTokenService> {
-        LocalShareTokenService(
-            tokenGenerator = get(),
-            timeProvider = get()
-        )
+        UrlEncodedShareTokenService()
     }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
 
