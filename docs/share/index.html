@@ -248,8 +248,6 @@
         }
 
         function attemptAppLaunch() {
-            if (appLaunchAttempted) return;
-
             shareToken = getTokenFromUrl();
 
             if (!shareToken) {
@@ -271,10 +269,11 @@
             iframe.src = appUrl;
             document.body.appendChild(iframe);
 
-            appLaunchAttempted = true;
-
-            // Show fallback after delay
-            setTimeout(showFallback, 3000);
+            // Show fallback after delay (only on first attempt)
+            if (!appLaunchAttempted) {
+                setTimeout(showFallback, 3000);
+                appLaunchAttempted = true;
+            }
         }
 
         function showFallback() {
