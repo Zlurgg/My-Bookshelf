@@ -4,6 +4,26 @@
 
 ---
 
+## v1.0.3-alpha - Web Page Redesign (October 2025)
+
+### 🎨 **Visual Improvements**
+- **Material 3 Theme** - GitHub Pages now match app's professional bookstore aesthetic
+- **Authentic Shelf Textures** - Wood texture backgrounds from app's drawable resources
+- **Consistent Branding** - Brown/cream color palette consistent across web and mobile
+- **Enhanced Typography** - Roboto font with improved hierarchy and spacing
+
+### 🌐 **Web Experience**
+- **Redesigned Landing Page** - Professional showcase with updated v1.0.3-alpha badge
+- **Improved Share Page** - Clean import flow with better visual feedback
+- **Mobile Optimized** - Fully responsive design for all screen sizes
+- **Performance** - Lightweight design with optimized asset loading
+
+### 📦 **Assets**
+- **New Assets Directory** - `docs/assets/` for web resources
+- **Shelf Texture Integration** - Real wood texture at 15% opacity for subtle effect
+
+---
+
 ## v1.0.1-alpha - Self-Contained Sharing (October 2025)
 
 ### 🚀 **New Features**
