@@ -207,8 +207,9 @@
         let appLaunchAttempted = false;
 
         function getBookshelfNameFromUrl() {
+            // Try to get name from URL parameter (legacy support)
             const params = new URLSearchParams(window.location.search);
-            return params.get('name') || 'Bookshelf';
+            return params.get('name') || null;
         }
 
         function getTokenFromUrl() {
@@ -220,10 +221,26 @@
             return encodedToken ? decodeURIComponent(encodedToken) : '';
         }
 
-        function updatePageTitle() {
-            bookshelfName = decodeURIComponent(getBookshelfNameFromUrl());
+        function updatePageTitle(shelfName = 'Bookshelf') {
+            bookshelfName = shelfName;
             document.getElementById('page-title').textContent = `${bookshelfName} - MyBookshelf`;
             document.getElementById('bookshelf-title').textContent = bookshelfName;
+        }
+
+        function extractShelfNameFromToken() {
+            // Try to extract shelf name from the encoded JSON data
+            try {
+                const token = getTokenFromUrl();
+                if (!token) return null;
+
+                // Decode Base64 and decompress to get JSON
+                // This is just for display purposes - actual import happens in the app
+                // For now, we'll just show "Bookshelf" as default
+                return null;
+            } catch (e) {
+                console.log('Could not extract shelf name from token:', e);
+                return null;
+            }
         }
 
         function launchApp() {
@@ -268,8 +285,10 @@
         window.onload = function() {
             console.log('Share page loaded');
 
-            // Update page title and bookshelf name
-            updatePageTitle();
+            // Update page title - try to get name from URL or use default
+            const nameFromUrl = getBookshelfNameFromUrl();
+            const nameFromToken = extractShelfNameFromToken();
+            updatePageTitle(nameFromUrl || nameFromToken || 'Bookshelf');
 
             // Small delay to ensure page is ready, then try to launch app automatically
             setTimeout(attemptAppLaunch, 1000);

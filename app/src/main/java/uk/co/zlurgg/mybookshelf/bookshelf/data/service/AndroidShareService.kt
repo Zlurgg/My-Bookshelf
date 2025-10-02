@@ -23,16 +23,14 @@ class AndroidShareService(
      */
     fun shareBookshelf(shareData: ShareData): Result<Unit, DataError.Local> {
         return try {
-            val encodedName = URLEncoder.encode(shareData.shelfName, "UTF-8")
             val encodedToken = URLEncoder.encode(shareData.token, "UTF-8")
-            val shareUrl = "${ApiConfig.shareBaseUrl}/?name=$encodedName#$encodedToken"
-            val message = "Check out my ${shareData.shelfName}!\n$shareUrl"
+            val shareUrl = "${ApiConfig.shareBaseUrl}#$encodedToken"
 
             val shareIntent = Intent().apply {
                 action = Intent.ACTION_SEND
                 type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, message)
-                putExtra(Intent.EXTRA_SUBJECT, "My Bookshelf: ${shareData.shelfName}")
+                putExtra(Intent.EXTRA_TEXT, shareUrl)
+                putExtra(Intent.EXTRA_SUBJECT, "Bookshelf: ${shareData.shelfName}")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
 
