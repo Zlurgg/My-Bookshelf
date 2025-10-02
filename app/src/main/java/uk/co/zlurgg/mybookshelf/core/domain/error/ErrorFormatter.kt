@@ -36,6 +36,7 @@ object ErrorFormatter {
             DataError.Local.NAME_CONFLICT -> R.string.error_name_conflict
             DataError.Local.UNSUPPORTED_FORMAT_VERSION -> R.string.error_unsupported_format_version
             DataError.Local.SHARE_FAILED -> R.string.error_share_failed
+            DataError.Local.SHARE_LINK_TOO_LARGE -> R.string.error_share_link_too_large
             DataError.Local.UNKNOWN -> R.string.error_unknown_local
 
             // Validation errors
