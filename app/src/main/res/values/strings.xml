@@ -95,6 +95,7 @@
     <string name="error_name_conflict">Name already exists.</string>
     <string name="error_unsupported_format_version">Unsupported file format version.</string>
     <string name="error_share_failed">Sharing failed.</string>
+    <string name="error_share_link_too_large">This bookshelf is too large to share. Try sharing a smaller shelf or splitting it into multiple shelves.</string>
     <string name="error_unknown_local">Unknown local error occurred.</string>
 
     <!-- Error messages - Validation -->

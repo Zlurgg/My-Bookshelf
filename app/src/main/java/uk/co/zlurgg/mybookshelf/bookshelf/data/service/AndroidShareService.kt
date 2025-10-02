@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import android.content.Context
 import android.content.Intent
+import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ShareData
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -11,13 +12,22 @@ import java.net.URLEncoder
 /**
  * Android infrastructure service for handling platform-specific sharing functionality.
  * Responsible for creating Android sharing intents and managing platform integration.
+ * Validates URL length to ensure compatibility with older browsers and messaging apps.
  */
 class AndroidShareService(
     private val context: Context
 ) {
 
+    companion object {
+        // Conservative limit for maximum browser compatibility (IE, older browsers)
+        private const val MAX_URL_LENGTH = 2000
+        // Absolute maximum - definitely too large
+        private const val ABSOLUTE_MAX_URL_LENGTH = 10000
+    }
+
     /**
      * Creates and launches an Android share intent with the provided share data.
+     * Validates URL length before sharing to prevent issues with large bookshelves.
      * @param shareData The share data containing token and shelf name
      * @return Result indicating success or failure of the share operation
      */
@@ -25,6 +35,22 @@ class AndroidShareService(
         return try {
             val encodedToken = URLEncoder.encode(shareData.token, "UTF-8")
             val shareUrl = "${ApiConfig.shareBaseUrl}#$encodedToken"
+
+            // Validate URL length (infrastructure concern - appropriate here)
+            when {
+                shareUrl.length > ABSOLUTE_MAX_URL_LENGTH -> {
+                    return Result.Error(DataError.Local.SHARE_LINK_TOO_LARGE)
+                }
+                shareUrl.length > MAX_URL_LENGTH -> {
+                    // Log warning in debug builds but allow (may work on modern browsers)
+                    if (BuildConfig.DEBUG) {
+                        android.util.Log.w(
+                            "AndroidShareService",
+                            "Share URL length (${shareUrl.length}) exceeds 2KB recommendation. May not work on older browsers."
+                        )
+                    }
+                }
+            }
 
             val shareIntent = Intent().apply {
                 action = Intent.ACTION_SEND
