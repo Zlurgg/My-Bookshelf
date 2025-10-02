@@ -215,7 +215,9 @@
             // Get token from URL fragment (#token) or hash parameter
             const hash = window.location.hash.substring(1);
             const params = new URLSearchParams(window.location.search);
-            return hash || params.get('token') || params.get('t');
+            const encodedToken = hash || params.get('token') || params.get('t');
+            // Decode the URL-encoded token
+            return encodedToken ? decodeURIComponent(encodedToken) : '';
         }
 
         function updatePageTitle() {
