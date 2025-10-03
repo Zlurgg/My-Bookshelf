@@ -16,12 +16,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
@@ -32,11 +30,11 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
