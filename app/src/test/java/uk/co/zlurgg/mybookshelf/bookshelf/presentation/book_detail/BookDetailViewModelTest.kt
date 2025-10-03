@@ -57,7 +57,7 @@ class BookDetailViewModelTest {
         mockToggleBookPurchase.reset()
     }
 
-    private fun createViewModel(bookId: String, shelfId: String): BookDetailViewModel {
+    private fun createViewModel(): BookDetailViewModel {
         val useCases = BookDetailUseCases(
             getBookDetails = mockGetBookDetails,
             addBookToShelf = mockAddBookToShelf,
@@ -65,7 +65,7 @@ class BookDetailViewModelTest {
             upsertBook = mockUpsertBook,
             toggleBookPurchase = mockToggleBookPurchase
         )
-        return BookDetailViewModel(useCases, bookId, shelfId)
+        return BookDetailViewModel(useCases, "book-1", "test-shelf")
     }
 
     @Test
@@ -75,7 +75,7 @@ class BookDetailViewModelTest {
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = false)
 
         // When
-        val viewModel = createViewModel("book-1", "test-shelf")
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
         val initialState = stateHelper.awaitState()
 
@@ -92,7 +92,7 @@ class BookDetailViewModelTest {
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = false)
 
-        val viewModel = createViewModel("book-1", "test-shelf")
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
         // Wait for initial load
@@ -114,7 +114,7 @@ class BookDetailViewModelTest {
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
 
-        val viewModel = createViewModel("book-1", "test-shelf")
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
         // Wait for initial load
@@ -138,7 +138,7 @@ class BookDetailViewModelTest {
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
         mockToggleBookPurchase.bookToReturn = purchasedBook
 
-        val viewModel = createViewModel("book-1", "test-shelf")
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
         // Wait for initial load
@@ -160,7 +160,7 @@ class BookDetailViewModelTest {
         val testBook = TestBookBuilder().withId("book-1").build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
 
-        val viewModel = createViewModel("book-1", "test-shelf")
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
         // Wait for initial load
