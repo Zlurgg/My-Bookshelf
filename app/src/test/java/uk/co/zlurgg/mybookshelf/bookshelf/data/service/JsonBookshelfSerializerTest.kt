@@ -4,9 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
-import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBook
-import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
