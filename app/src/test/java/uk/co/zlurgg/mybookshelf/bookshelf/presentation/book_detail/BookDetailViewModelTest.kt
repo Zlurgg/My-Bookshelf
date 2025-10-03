@@ -57,7 +57,7 @@ class BookDetailViewModelTest {
         mockToggleBookPurchase.reset()
     }
 
-    private fun createViewModel(bookId: String = "test-book", shelfId: String = "test-shelf"): BookDetailViewModel {
+    private fun createViewModel(bookId: String, shelfId: String): BookDetailViewModel {
         val useCases = BookDetailUseCases(
             getBookDetails = mockGetBookDetails,
             addBookToShelf = mockAddBookToShelf,
