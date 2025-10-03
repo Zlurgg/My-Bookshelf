@@ -52,7 +52,7 @@ class ShareBookshelfUseCaseTest {
 
         // Then
         assertTrue("Should return error", result is Result.Error)
-        // Error is correctly typed as DataError.Local after unwrapping Result.Error
+        assertTrue("Should call export service", mockExportService.shareBookshelfCalled)
     }
 
     @Test
@@ -62,7 +62,7 @@ class ShareBookshelfUseCaseTest {
         mockExportService.shareResult = Result.Error(DataError.Local.UNKNOWN)
 
         // When
-        val result = useCase.execute(emptyShelfId)
+        useCase.execute(emptyShelfId)
 
         // Then
         assertTrue("Should call export service with empty ID", mockExportService.shareBookshelfCalled)
