@@ -1,0 +1,241 @@
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail
+
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailsWithShelfStatus
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookPurchaseUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
+import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
+
+/**
+ * ViewModel test demonstrating UI state testing with simplified inline mocks.
+ * Tests focus on presentation logic and state changes, not business logic.
+ * Business logic is tested in UseCase layer.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
+class BookDetailViewModelTest {
+
+    @get:Rule
+    val instantTaskExecutorRule = InstantTaskExecutorRule()
+
+    private val testDispatcher = UnconfinedTestDispatcher()
+
+    // Simplified inline mocks for ViewModel UI testing
+    private val mockGetBookDetails = SimpleGetBookDetailsUseCase()
+    private val mockAddBookToShelf = SimpleAddBookToShelfUseCase()
+    private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
+    private val mockUpsertBook = SimpleUpsertBookUseCase()
+    private val mockToggleBookPurchase = SimpleToggleBookPurchaseUseCase()
+
+    @After
+    fun tearDown() {
+        mockGetBookDetails.reset()
+        mockAddBookToShelf.reset()
+        mockRemoveBookFromShelf.reset()
+        mockUpsertBook.reset()
+        mockToggleBookPurchase.reset()
+    }
+
+    private fun createViewModel(bookId: String = "test-book", shelfId: String = "test-shelf"): BookDetailViewModel {
+        val useCases = BookDetailUseCases(
+            getBookDetails = mockGetBookDetails,
+            addBookToShelf = mockAddBookToShelf,
+            removeBookFromShelf = mockRemoveBookFromShelf,
+            upsertBook = mockUpsertBook,
+            toggleBookPurchase = mockToggleBookPurchase
+        )
+        return BookDetailViewModel(useCases, bookId, shelfId)
+    }
+
+    @Test
+    fun `initial book load populates state correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = false)
+
+        // When
+        val viewModel = createViewModel("book-1", "test-shelf")
+        val stateHelper = viewModel.state.testHelper(this)
+        val initialState = stateHelper.awaitState()
+
+        // Then
+        assertEquals("Should load book", testBook, initialState?.book)
+        assertFalse("Should set onShelf status", initialState?.onShelf == true)
+        assertFalse("Should clear loading flag", initialState?.isLoading == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `add book to shelf updates onShelf state`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = false)
+        mockAddBookToShelf.shouldSucceed = true
+
+        val viewModel = createViewModel("book-1", "test-shelf")
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterAdd = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnAddBookClick(testBook))
+        }
+
+        // Then
+        assertTrue("Should update onShelf to true", stateAfterAdd?.onShelf == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `remove book from shelf updates onShelf state`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+        mockRemoveBookFromShelf.shouldSucceed = true
+
+        val viewModel = createViewModel("book-1", "test-shelf")
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterRemove = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnRemoveBookClick(testBook))
+        }
+
+        // Then
+        assertFalse("Should update onShelf to false", stateAfterRemove?.onShelf == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `toggle purchase updates book purchased status`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withPurchased(false).build()
+        val purchasedBook = testBook.copy(purchased = true)
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+        mockToggleBookPurchase.bookToReturn = purchasedBook
+
+        val viewModel = createViewModel("book-1", "test-shelf")
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnPurchaseClick)
+        }
+
+        // Then
+        assertTrue("Should update book purchased status", stateAfterToggle?.book?.purchased == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `rate book updates rating in state`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+
+        val viewModel = createViewModel("book-1", "test-shelf")
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val newRating = 4
+        val stateAfterRating = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnRateBookDetailClick(newRating))
+        }
+
+        // Then
+        assertEquals("Should update rating", newRating, stateAfterRating?.rating)
+        assertEquals("Should update book rating count", newRating, stateAfterRating?.book?.ratingCount)
+        stateHelper.cleanup()
+    }
+
+    // Simplified inline mock implementations for UI testing
+    private class SimpleGetBookDetailsUseCase : GetBookDetailsUseCase {
+        var bookDetailsToReturn: BookDetailsWithShelfStatus = BookDetailsWithShelfStatus(null, false)
+
+        override suspend fun execute(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> =
+            flowOf(bookDetailsToReturn)
+
+        override suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local> =
+            Result.Success(Unit)
+
+        fun reset() {
+            bookDetailsToReturn = BookDetailsWithShelfStatus(null, false)
+        }
+    }
+
+    private class SimpleAddBookToShelfUseCase : AddBookToShelfUseCase {
+        var shouldSucceed = true
+
+        override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> =
+            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+
+        fun reset() {
+            shouldSucceed = true
+        }
+    }
+
+    private class SimpleRemoveBookFromShelfUseCase : RemoveBookFromShelfUseCase {
+        var shouldSucceed = true
+
+        override suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local> =
+            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+
+        fun reset() {
+            shouldSucceed = true
+        }
+    }
+
+    private class SimpleUpsertBookUseCase : UpsertBookUseCase {
+        var shouldSucceed = true
+
+        override suspend fun execute(book: Book): Result<Unit, DataError.Local> =
+            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+
+        fun reset() {
+            shouldSucceed = true
+        }
+    }
+
+    private class SimpleToggleBookPurchaseUseCase : ToggleBookPurchaseUseCase {
+        var bookToReturn: Book? = null
+
+        override suspend fun execute(book: Book, purchased: Boolean): Result<Book, DataError.Local> =
+            bookToReturn?.let { Result.Success(it) } ?: Result.Error(DataError.Local.UNKNOWN)
+
+        fun reset() {
+            bookToReturn = null
+        }
+    }
+}

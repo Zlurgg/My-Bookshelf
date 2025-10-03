@@ -4,24 +4,24 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.After
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.testutil.helpers.UseCaseTestHelper
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
 
 /**
- * Clean ViewModel test demonstrating proper ViewModel testing patterns:
- * - Focus on testing UI state changes and user interactions
- * - Use StateFlow collection for proper async testing
- * - Test presentation logic without complex mocking
- * - Use InstantTaskExecutorRule for StateFlow testing
- * - Use Robolectric for Android components
+ * ViewModel test demonstrating UI state testing with simplified inline mocks.
+ * Tests focus on presentation logic and state changes, not business logic.
+ * Business logic is tested in UseCase layer.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -31,17 +31,22 @@ class BookcaseViewModelTest {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private val testDispatcher = UnconfinedTestDispatcher()
-    private val useCaseHelper = UseCaseTestHelper()
 
-    @After
-    fun tearDown() {
-        useCaseHelper.resetAll()
+    private fun createViewModel(): BookcaseViewModel {
+        val useCases = BookcaseUseCases(
+            getAllShelves = MockGetAllShelvesUseCase(),
+            createShelf = MockCreateShelfUseCase(),
+            deleteShelf = MockDeleteShelfUseCase(),
+            reorderShelves = MockReorderShelvesUseCase(),
+            getShelfById = MockGetShelfByIdUseCase()
+        )
+        return BookcaseViewModel(useCases)
     }
 
     @Test
     fun `ShowAddDialog action toggles dialog visibility`() = runTest(testDispatcher) {
         // Given
-        val viewModel = BookcaseViewModel(useCaseHelper.createBookcaseUseCases())
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
         // When - show dialog
@@ -65,7 +70,7 @@ class BookcaseViewModelTest {
     @Test
     fun `ToggleReorderMode changes reorder state`() = runTest(testDispatcher) {
         // Given
-        val viewModel = BookcaseViewModel(useCaseHelper.createBookcaseUseCases())
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
         // Initial state should be false
@@ -93,7 +98,7 @@ class BookcaseViewModelTest {
     @Test
     fun `ResetOperationState clears error and success flags`() = runTest(testDispatcher) {
         // Given
-        val viewModel = BookcaseViewModel(useCaseHelper.createBookcaseUseCases())
+        val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
         // When - reset operation state
