@@ -91,7 +91,6 @@ class BookDetailViewModelTest {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = false)
-        mockAddBookToShelf.shouldSucceed = true
 
         val viewModel = createViewModel("book-1", "test-shelf")
         val stateHelper = viewModel.state.testHelper(this)
@@ -114,7 +113,6 @@ class BookDetailViewModelTest {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
-        mockRemoveBookFromShelf.shouldSucceed = true
 
         val viewModel = createViewModel("book-1", "test-shelf")
         val stateHelper = viewModel.state.testHelper(this)
