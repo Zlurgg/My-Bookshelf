@@ -38,6 +38,11 @@ class MockBookshelfRepository : BookshelfRepository {
         shelfBookRelations[shelfId] = bookIds.toMutableSet()
     }
 
+    fun configureBooksForShelf(shelfId: String, books: List<Book>) {
+        books.forEach { configureBook(it) }
+        configureShelfWithBooks(shelfId, books.map { it.id })
+    }
+
     fun getShelfBookRelations(): Map<String, Set<String>> {
         return shelfBookRelations.mapValues { it.value.toSet() }
     }
