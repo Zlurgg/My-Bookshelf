@@ -20,5 +20,5 @@ keystore.properties
 
 # Personal Development Files
 CLAUDE.md
-HONEST_CODE_REVIEW.md
+CODE_REVIEW.md
 app/src/test/java/uk/co/zlurgg/mybookshelf/TESTING_PATTERNS.md
