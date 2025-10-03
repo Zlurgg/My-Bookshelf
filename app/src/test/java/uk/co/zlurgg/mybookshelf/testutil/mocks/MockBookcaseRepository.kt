@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.testutil.mocks
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
@@ -29,7 +30,10 @@ class MockBookcaseRepository : BookcaseRepository {
     var lastRemovedShelfId: String? = null
     var lastUpdatedShelf: Bookshelf? = null
 
-    override fun getAllShelves(): Flow<List<Bookshelf>> = flowOf(shelvesToReturn)
+    override fun getAllShelves(): Flow<List<Bookshelf>> = flow {
+        if (shouldThrowException) throw RuntimeException("Test exception")
+        emit(shelvesToReturn)
+    }
 
     override fun getBookCountForShelf(shelfId: String): Flow<Int> =
         flowOf(bookCountsToReturn[shelfId] ?: 0)

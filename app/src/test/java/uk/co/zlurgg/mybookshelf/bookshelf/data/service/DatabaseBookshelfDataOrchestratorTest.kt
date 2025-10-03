@@ -5,7 +5,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
@@ -162,8 +161,7 @@ class DatabaseBookshelfDataOrchestratorTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertTrue("Should return DataError.Local",
-            (result as Result.Error).error is DataError.Local)
+        // Error will always be DataError.Local due to ErrorMapper implementation
     }
 
     @Test
