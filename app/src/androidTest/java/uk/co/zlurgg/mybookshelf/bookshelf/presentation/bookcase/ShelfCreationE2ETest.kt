@@ -135,7 +135,7 @@ class ShelfCreationE2ETest {
         val state = viewModel.state.first()
         assertEquals(0, state.bookshelves.size)
         assertFalse(state.operationSuccess)
-        assertTrue(state.errorMessage!!.contains("blank") || state.errorMessage!!.contains("empty"))
+        assertTrue(state.errorMessage!!.contains("blank") || state.errorMessage.contains("empty"))
 
         // And - No shelf should be in database
         val allShelves = database.bookshelfDao.getAllShelves().first()
