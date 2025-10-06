@@ -5,10 +5,6 @@ import uk.co.zlurgg.mybookshelf.R
 
 object ErrorFormatter {
 
-    fun formatOperationError(operation: String, exception: Exception): String {
-        return "Failed to $operation: ${exception.message}"
-    }
-
     fun formatDataError(context: Context, error: DataError, operation: String = ""): String {
         val errorMessageRes = when (error) {
             // Remote errors
@@ -55,10 +51,6 @@ object ErrorFormatter {
         } else {
             errorMessage
         }
-    }
-
-    fun formatResultError(context: Context, error: DataError, operation: String): String {
-        return formatDataError(context, error, operation)
     }
 
     /**
