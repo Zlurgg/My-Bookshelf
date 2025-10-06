@@ -46,7 +46,6 @@ android {
         debug {
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
-            buildConfigField("String", "API_VERSION", "\"v1\"")
             buildConfigField("String", "SHARE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf/share\"")
         }
         release {
@@ -59,7 +58,6 @@ android {
             )
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
-            buildConfigField("String", "API_VERSION", "\"v1\"")
             buildConfigField("String", "SHARE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf/share\"")
         }
     }
