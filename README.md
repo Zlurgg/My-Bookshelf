@@ -42,7 +42,6 @@ Instructions for setting up the project locally will be added here.
 
 - Personal ratings and reading status tracking
 - Search and filter books within shelves
-- Google Books API as fallback search
 - Manga & comic support via AniList/ComicVine APIs
 - Affiliate link integration (Amazon Associates, Bookshop.org)
 - Reading habit reminders and progress tracking

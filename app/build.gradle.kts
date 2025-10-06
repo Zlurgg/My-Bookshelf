@@ -45,11 +45,9 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
-            buildConfigField("String", "GOOGLE_BOOKS_BASE_URL", "\"https://www.googleapis.com/books/v1\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
             buildConfigField("String", "API_VERSION", "\"v1\"")
             buildConfigField("String", "SHARE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf/share\"")
-            buildConfigField("String", "PRIMARY_BOOK_API", "\"OPEN_LIBRARY\"")
         }
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -60,11 +58,9 @@ android {
                 "proguard-rules.pro"
             )
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
-            buildConfigField("String", "GOOGLE_BOOKS_BASE_URL", "\"https://www.googleapis.com/books/v1\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
             buildConfigField("String", "API_VERSION", "\"v1\"")
             buildConfigField("String", "SHARE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf/share\"")
-            buildConfigField("String", "PRIMARY_BOOK_API", "\"OPEN_LIBRARY\"")
         }
     }
     compileOptions {
