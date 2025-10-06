@@ -29,7 +29,6 @@ class BookshelfViewModel(
     companion object {
         private const val SEARCH_DEBOUNCE_MS = 450L
         private const val MIN_SEARCH_QUERY_LENGTH = 2
-        private const val STATE_SUBSCRIPTION_TIMEOUT_MS = 5_000L
     }
 
     // Initialize state flow with default value
