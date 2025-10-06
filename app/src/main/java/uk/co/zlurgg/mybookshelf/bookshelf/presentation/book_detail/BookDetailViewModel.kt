@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -68,23 +69,27 @@ class BookDetailViewModel(
                     val book: Book = action.book
 
                     if (onShelf) {
-                        when (bookDetailUseCases.removeBookFromShelf.execute(book.id, shelfId)) {
+                        when (val removeResult = bookDetailUseCases.removeBookFromShelf.execute(book.id, shelfId)) {
                             is Result.Success -> {
                                 _state.update { it.copy(onShelf = false) }
                                 onNavigateBack?.invoke()
                             }
                             is Result.Error -> {
-                                // Handle error silently as in original implementation
+                                _state.update {
+                                    it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(removeResult.error, "remove book from shelf"))
+                                }
                             }
                         }
                     } else {
-                        when (bookDetailUseCases.addBookToShelf.execute(book, shelfId)) {
+                        when (val addResult = bookDetailUseCases.addBookToShelf.execute(book, shelfId)) {
                             is Result.Success -> {
                                 _state.update { it.copy(onShelf = true) }
                                 onNavigateBack?.invoke()
                             }
                             is Result.Error -> {
-                                // Handle error silently as in original implementation
+                                _state.update {
+                                    it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(addResult.error, "add book to shelf"))
+                                }
                             }
                         }
                     }
@@ -94,12 +99,14 @@ class BookDetailViewModel(
                 viewModelScope.launch {
                     val currentBook = state.value.book
                     if (currentBook != null) {
-                        when (val result = bookDetailUseCases.toggleBookPurchase.execute(currentBook, true)) {
+                        when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(currentBook, true)) {
                             is Result.Success -> {
-                                _state.update { it.copy(book = result.data) }
+                                _state.update { it.copy(book = purchaseResult.data) }
                             }
                             is Result.Error -> {
-                                // Silent failure as in original implementation
+                                _state.update {
+                                    it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(purchaseResult.error, "toggle book purchase"))
+                                }
                             }
                         }
                     }
@@ -118,13 +125,15 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
-                    when (bookDetailUseCases.removeBookFromShelf.execute(bookId, shelfId)) {
+                    when (val removeResult = bookDetailUseCases.removeBookFromShelf.execute(bookId, shelfId)) {
                         is Result.Success -> {
                             _state.update { it.copy(onShelf = false) }
                             onNavigateBack?.invoke()
                         }
                         is Result.Error -> {
-                            // Handle error silently as in original implementation
+                            _state.update {
+                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(removeResult.error, "remove book from shelf"))
+                            }
                         }
                     }
                 }
