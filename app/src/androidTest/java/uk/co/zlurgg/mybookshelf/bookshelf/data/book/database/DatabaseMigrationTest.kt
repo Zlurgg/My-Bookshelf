@@ -27,7 +27,7 @@ class DatabaseMigrationTest {
     val helper: MigrationTestHelper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
         BookshelfDatabase::class.java,
-        listOf(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5),
+        emptyList(),
         FrameworkSQLiteOpenHelperFactory()
     )
 
