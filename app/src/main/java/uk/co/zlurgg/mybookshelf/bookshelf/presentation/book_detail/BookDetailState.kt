@@ -7,5 +7,6 @@ data class BookDetailState(
     val rating: Int? = null,
     val isPurchased: Boolean = false,
     val book: Book? = null,
-    val onShelf: Boolean = false
+    val onShelf: Boolean = false,
+    val errorMessage: String? = null
 )
