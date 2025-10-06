@@ -178,6 +178,110 @@ class BookDetailViewModelTest {
         stateHelper.cleanup()
     }
 
+    @Test
+    fun `add book to shelf handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = false)
+        mockAddBookToShelf.shouldSucceed = false
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterAdd = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnAddBookClick(testBook))
+        }
+
+        // Then
+        assertFalse("Should keep onShelf as false", stateAfterAdd?.onShelf == true)
+        assertTrue("Should set error message", stateAfterAdd?.errorMessage != null)
+        assertTrue("Should contain operation context",
+            stateAfterAdd?.errorMessage?.contains("Failed to add book to shelf") == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `remove book from shelf when onShelf handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+        mockRemoveBookFromShelf.shouldSucceed = false
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterRemove = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnAddBookClick(testBook))
+        }
+
+        // Then
+        assertTrue("Should keep onShelf as true", stateAfterRemove?.onShelf == true)
+        assertTrue("Should set error message", stateAfterRemove?.errorMessage != null)
+        assertTrue("Should contain operation context",
+            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `toggle purchase handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withPurchased(false).build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+        mockToggleBookPurchase.bookToReturn = null // Triggers error
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnPurchaseClick)
+        }
+
+        // Then
+        assertFalse("Should keep book purchased status as false", stateAfterToggle?.book?.purchased == true)
+        assertTrue("Should set error message", stateAfterToggle?.errorMessage != null)
+        assertTrue("Should contain operation context",
+            stateAfterToggle?.errorMessage?.contains("Failed to toggle book purchase") == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `remove book click handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+        mockRemoveBookFromShelf.shouldSucceed = false
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterRemove = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnRemoveBookClick(testBook))
+        }
+
+        // Then
+        assertTrue("Should keep onShelf as true", stateAfterRemove?.onShelf == true)
+        assertTrue("Should set error message", stateAfterRemove?.errorMessage != null)
+        assertTrue("Should contain operation context",
+            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true)
+        stateHelper.cleanup()
+    }
+
     // Simplified inline mock implementations for UI testing
     private class SimpleGetBookDetailsUseCase : GetBookDetailsUseCase {
         var bookDetailsToReturn: BookDetailsWithShelfStatus = BookDetailsWithShelfStatus(null, false)
