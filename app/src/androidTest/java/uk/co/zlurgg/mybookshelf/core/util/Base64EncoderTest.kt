@@ -9,7 +9,7 @@ import org.junit.runner.RunWith
 class Base64EncoderTest {
 
     @Test
-    fun `encode simple string and decode back returns original`() {
+    fun encodeSimpleStringAndDecodeBackReturnsOriginal() {
         // Given
         val original = "Hello, World!"
 
@@ -22,7 +22,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode empty string returns valid Base64`() {
+    fun encodeEmptyStringReturnsValidBase64() {
         // Given
         val original = ""
 
@@ -36,7 +36,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode JSON data and decode back returns original`() {
+    fun encodeJsonDataAndDecodeBackReturnsOriginal() {
         // Given
         val jsonData = """
             {
@@ -76,7 +76,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode large JSON data and decode back returns original`() {
+    fun encodeLargeJsonDataAndDecodeBackReturnsOriginal() {
         // Given - 5 books similar to URL_ENCODING_PLAN example
         val largeJson = buildString {
             append("""{"formatVersion":1,"exportedAt":"2025-10-01T16:29:00Z","appName":"My Bookshelf","bookshelf":{"name":"Large Shelf","shelfStyle":"OAK","books":[""")
@@ -96,7 +96,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode produces URL-safe characters only`() {
+    fun encodeProducesUrlSafeCharactersOnly() {
         // Given
         val testData = "Test data with special chars: +/=[]{}()"
 
@@ -114,7 +114,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode with Unicode characters preserves data`() {
+    fun encodeWithUnicodeCharactersPreservesData() {
         // Given
         val unicodeData = "Test with émojis 😀🎉 and spëcial chäracters: 日本語, 中文, العربية"
 
@@ -127,7 +127,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode compresses data significantly`() {
+    fun encodeCompressesDataSignificantly() {
         // Given - Highly repetitive data (very compressible)
         val repetitiveData = "AAAAAAAA".repeat(100) // 800 bytes of repeated 'A'
 
@@ -144,7 +144,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode JSON with pretty print vs minified shows compression benefit`() {
+    fun encodeJsonWithPrettyPrintVsMinifiedShowsCompressionBenefit() {
         // Given
         val minifiedJson = """{"name":"Test","books":[{"title":"Book1"}]}"""
         val prettyJson = """
@@ -175,7 +175,7 @@ class Base64EncoderTest {
     }
 
     @Test(expected = Exception::class)
-    fun `decode invalid Base64 throws exception`() {
+    fun decodeInvalidBase64ThrowsException() {
         // Given
         val invalidBase64 = "This is not valid Base64!@#$%"
 
@@ -186,7 +186,7 @@ class Base64EncoderTest {
     }
 
     @Test(expected = Exception::class)
-    fun `decode corrupted GZip data throws exception`() {
+    fun decodeCorruptedGZipDataThrowsException() {
         // Given - Valid Base64 but not valid GZip
         val notGZipData = android.util.Base64.encodeToString(
             "Not GZip data".toByteArray(),
@@ -200,7 +200,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `encode then decode multiple times produces consistent results`() {
+    fun encodeThenDecodeMultipleTimesProducesConsistentResults() {
         // Given
         val original = "Test data for consistency"
 
@@ -217,7 +217,7 @@ class Base64EncoderTest {
     }
 
     @Test
-    fun `realistic 5-book shelf stays under 2KB URL limit`() {
+    fun realistic5BookShelfStaysUnder2kbUrlLimit() {
         // Given - Realistic 5-book shelf JSON (minified)
         val fiveBookShelf = buildString {
             append("""{"formatVersion":1,"exportedAt":"2025-10-01T16:29:00Z","appName":"My Bookshelf","bookshelf":{"name":"My Reading List","shelfStyle":"WALNUT","books":[""")
