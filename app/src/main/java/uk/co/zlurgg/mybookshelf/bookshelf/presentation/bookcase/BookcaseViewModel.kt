@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -64,7 +66,7 @@ class BookcaseViewModel(
                 }
                 // Persist deletion
                 viewModelScope.launch {
-                    when (bookcaseUseCases.deleteShelf.execute(action.bookshelf.id)) {
+                    when (val deleteResult = bookcaseUseCases.deleteShelf.execute(action.bookshelf.id)) {
                         is Result.Success -> {
                             // Success - optimistic update already applied
                         }
@@ -74,7 +76,7 @@ class BookcaseViewModel(
                                 current.copy(
                                     bookshelves = current.bookshelves + action.bookshelf,
                                     recentlyDeleted = null,
-                                    errorMessage = ErrorFormatter.formatOperationError("remove shelf", Exception("Delete operation failed"))
+                                    errorMessage = ErrorFormatter.formatDataErrorMessage(deleteResult.error, "remove shelf")
                                 )
                             }
                         }
@@ -86,7 +88,7 @@ class BookcaseViewModel(
                 val toRestore = state.value.recentlyDeleted
                 if (toRestore != null) {
                     viewModelScope.launch {
-                        when (bookcaseUseCases.deleteShelf.restore(toRestore)) {
+                        when (val restoreResult = bookcaseUseCases.deleteShelf.restore(toRestore)) {
                             is Result.Success -> {
                                 _state.update { current ->
                                     current.copy(
@@ -99,7 +101,7 @@ class BookcaseViewModel(
                             is Result.Error -> {
                                 _state.update { current ->
                                     current.copy(
-                                        errorMessage = ErrorFormatter.formatOperationError("restore shelf", Exception("Restore operation failed"))
+                                        errorMessage = ErrorFormatter.formatDataErrorMessage(restoreResult.error, "restore shelf")
                                     )
                                 }
                             }
@@ -131,7 +133,7 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = ErrorFormatter.formatOperationError("add shelf", Exception("Add operation failed"))
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "add shelf")
                         )
                     }
                 }
@@ -145,10 +147,15 @@ class BookcaseViewModel(
             
             bookcaseUseCases.getAllShelves.execute()
                 .catch { e ->
+                    val error = if (e is Exception) {
+                        ErrorMapper.mapExceptionToDataError(e)
+                    } else {
+                        DataError.Local.UNKNOWN
+                    }
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = ErrorFormatter.formatOperationError("load shelves", Exception("Load operation failed"))
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "load shelves")
                         )
                     }
                 }
@@ -178,7 +185,7 @@ class BookcaseViewModel(
                     // Revert on error by reloading from database
                     _state.update {
                         it.copy(
-                            errorMessage = ErrorFormatter.formatOperationError("reorder shelves", Exception("Reorder operation failed"))
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "reorder shelves")
                         )
                     }
                     loadBookshelves()
