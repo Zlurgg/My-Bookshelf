@@ -1,0 +1,205 @@
+package uk.co.zlurgg.mybookshelf.bookshelf.data.service
+
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
+import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBook
+import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+
+/**
+ * Integration test for BookshelfImportValidatorImpl with real database.
+ * Tests validation logic and name conflict detection with actual Room database queries.
+ *
+ * This is a medium-scope test (Google's 20% integration test recommendation).
+ */
+@RunWith(AndroidJUnit4::class)
+class ValidatorIntegrationTest {
+
+    private lateinit var database: BookshelfDatabase
+    private lateinit var bookcaseRepository: BookcaseRepositoryImpl
+    private lateinit var validator: BookshelfImportValidatorImpl
+
+    @Before
+    fun setup() {
+        database = Room.inMemoryDatabaseBuilder(
+            ApplicationProvider.getApplicationContext(),
+            BookshelfDatabase::class.java
+        ).build()
+
+        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao)
+        validator = BookshelfImportValidatorImpl(bookcaseRepository)
+    }
+
+    @After
+    fun tearDown() {
+        database.close()
+    }
+
+    @Test
+    fun validateFormatAcceptsValidData() = runTest {
+        // Given - Valid export data
+        val exportData = BookshelfExportData(
+            formatVersion = 1,
+            exportedAt = "2024-01-01T00:00:00",
+            appName = "My Bookshelf",
+            bookshelf = ExportedBookshelf(
+                name = "Fiction",
+                shelfStyle = ShelfStyle.DarkWood,
+                books = listOf(
+                    createTestExportedBook("book-1", "Test Book")
+                )
+            )
+        )
+
+        // When - Validate format
+        val result = validator.validateFormat(exportData)
+
+        // Then - Should succeed
+        assertTrue("Validation should succeed", result is Result.Success)
+    }
+
+    @Test
+    fun validateFormatRejectsUnsupportedVersion() = runTest {
+        // Given - Export data with unsupported version
+        val exportData = BookshelfExportData(
+            formatVersion = 999,
+            exportedAt = "2024-01-01T00:00:00",
+            appName = "My Bookshelf",
+            bookshelf = ExportedBookshelf(
+                name = "Fiction",
+                shelfStyle = ShelfStyle.DarkWood,
+                books = emptyList()
+            )
+        )
+
+        // When - Validate format
+        val result = validator.validateFormat(exportData)
+
+        // Then - Should fail with unsupported version error
+        assertTrue("Validation should fail", result is Result.Error)
+        assertEquals(
+            "Should return unsupported format error",
+            DataError.Local.UNSUPPORTED_FORMAT_VERSION,
+            (result as Result.Error).error
+        )
+    }
+
+    @Test
+    fun validateFormatRejectsBlankShelfName() = runTest {
+        // Given - Export data with blank shelf name
+        val exportData = BookshelfExportData(
+            formatVersion = 1,
+            exportedAt = "2024-01-01T00:00:00",
+            appName = "My Bookshelf",
+            bookshelf = ExportedBookshelf(
+                name = "   ",
+                shelfStyle = ShelfStyle.DarkWood,
+                books = emptyList()
+            )
+        )
+
+        // When - Validate format
+        val result = validator.validateFormat(exportData)
+
+        // Then - Should fail with validation error
+        assertTrue("Validation should fail", result is Result.Error)
+        assertEquals(
+            "Should return validation error",
+            DataError.Local.VALIDATION_ERROR,
+            (result as Result.Error).error
+        )
+    }
+
+    @Test
+    fun checkNameConflictReturnsNullWhenNoConflict() = runTest {
+        // Given - Database with existing shelf
+        val existingShelf = Bookshelf(
+            id = "shelf-1",
+            name = "Existing Shelf",
+            books = emptyList(),
+            shelfStyle = ShelfStyle.DarkWood,
+            position = 0
+        )
+        bookcaseRepository.addShelf(existingShelf)
+
+        // When - Check for different name
+        val result = validator.checkNameConflict("New Shelf")
+
+        // Then - Should return null (no conflict)
+        assertTrue("Check should succeed", result is Result.Success)
+        assertNull("Should have no conflict", (result as Result.Success).data)
+    }
+
+    @Test
+    fun checkNameConflictReturnsNameWhenConflictExists() = runTest {
+        // Given - Database with existing shelf
+        val existingShelf = Bookshelf(
+            id = "shelf-1",
+            name = "Fiction",
+            books = emptyList(),
+            shelfStyle = ShelfStyle.DarkWood,
+            position = 0
+        )
+        bookcaseRepository.addShelf(existingShelf)
+
+        // When - Check for same name
+        val result = validator.checkNameConflict("Fiction")
+
+        // Then - Should return conflicting name
+        assertTrue("Check should succeed", result is Result.Success)
+        assertEquals("Fiction", (result as Result.Success).data)
+    }
+
+    @Test
+    fun checkNameConflictIsCaseSensitive() = runTest {
+        // Given - Database with existing shelf
+        val existingShelf = Bookshelf(
+            id = "shelf-1",
+            name = "Fiction",
+            books = emptyList(),
+            shelfStyle = ShelfStyle.DarkWood,
+            position = 0
+        )
+        bookcaseRepository.addShelf(existingShelf)
+
+        // When - Check for different case
+        val result = validator.checkNameConflict("fiction")
+
+        // Then - Should return no conflict (case sensitive)
+        assertTrue("Check should succeed", result is Result.Success)
+        assertNull("Should have no conflict", (result as Result.Success).data)
+    }
+
+    private fun createTestExportedBook(id: String, title: String): ExportedBook {
+        return ExportedBook(
+            id = id,
+            title = title,
+            authors = listOf("Test Author"),
+            imageUrl = "https://example.com/cover.jpg",
+            description = "Test description",
+            languages = listOf("en"),
+            firstPublishYear = "2024",
+            averageRating = 4.5,
+            ratingCount = 100,
+            numPages = 300,
+            numEditions = 5,
+            purchased = false,
+            spineColor = 0xFF8B4513.toInt()
+        )
+    }
+}
