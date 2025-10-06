@@ -56,7 +56,7 @@ class DeepLinkViewModel(
                 is Result.Error -> {
                     _state.update { it.copy(
                         isLoading = false,
-                        error = ErrorFormatter.formatOperationError("import bookshelf", Exception("Link is invalid or corrupted: ${result.error}"))
+                        error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
                     ) }
                 }
             }
@@ -77,7 +77,7 @@ class DeepLinkViewModel(
                 is Result.Error -> {
                     _state.update { it.copy(
                         isLoading = false,
-                        error = ErrorFormatter.formatOperationError("import bookshelf", Exception(result.error.toString()))
+                        error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
                     ) }
                 }
             }

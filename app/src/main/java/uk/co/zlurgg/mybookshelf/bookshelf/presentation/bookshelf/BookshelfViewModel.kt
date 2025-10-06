@@ -66,12 +66,12 @@ class BookshelfViewModel(
             is BookshelfAction.OnBookClick -> {
                 // Persist clicked book so details screen can load it by ID safely
                 viewModelScope.launch {
-                    when (bookshelfUseCases.upsertBook.execute(action.book)) {
+                    when (val cacheResult = bookshelfUseCases.upsertBook.execute(action.book)) {
                         is Result.Success -> {
                             // Success - book cached successfully
                         }
                         is Result.Error -> {
-                            _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("cache book", Exception("Cache operation failed"))) }
+                            _state.update { it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(cacheResult.error, "cache book")) }
                         }
                     }
                 }
@@ -81,12 +81,12 @@ class BookshelfViewModel(
             }
             is BookshelfAction.OnRemoveBook -> {
                 viewModelScope.launch {
-                    when (bookshelfUseCases.removeBookFromShelf.execute(action.book.id, shelfId)) {
+                    when (val removeResult = bookshelfUseCases.removeBookFromShelf.execute(action.book.id, shelfId)) {
                         is Result.Success -> {
                             // Success handled by UI update below
                         }
                         is Result.Error -> {
-                            _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("remove book from shelf", Exception("Remove operation failed"))) }
+                            _state.update { it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(removeResult.error, "remove book from shelf")) }
                         }
                     }
                 }
@@ -177,7 +177,7 @@ class BookshelfViewModel(
                     }
                 }
                 is Result.Error -> {
-                    _state.update { it.copy(errorMessage = ErrorFormatter.formatOperationError("load shelf details", Exception("Load operation failed"))) }
+                    _state.update { it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "load shelf details")) }
                 }
             }
         }
@@ -210,14 +210,14 @@ class BookshelfViewModel(
 
     private fun addBookToShelf(book: Book) {
         viewModelScope.launch {
-            when (bookshelfUseCases.addBookToShelf.execute(book, shelfId)) {
+            when (val addResult = bookshelfUseCases.addBookToShelf.execute(book, shelfId)) {
                 is Result.Success -> {
                     // Success - book added successfully
                 }
                 is Result.Error -> {
                     _state.update {
                         it.copy(
-                            errorMessage = ErrorFormatter.formatOperationError("add book to shelf", Exception("Add operation failed")),
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(addResult.error, "add book to shelf"),
                             isLoading = false
                         )
                     }
@@ -253,7 +253,7 @@ class BookshelfViewModel(
                         it.copy(
                             searchResults = emptyList(),
                             isSearchLoading = false,
-                            errorMessage = ErrorFormatter.formatOperationError("perform search", Exception(error.toString()))
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
                         )
                     }
                 }
@@ -264,7 +264,7 @@ class BookshelfViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isShareLoading = true, errorMessage = null, shareSuccess = false) }
 
-            when (bookshelfUseCases.shareBookshelf.execute(shelfId)) {
+            when (val shareResult = bookshelfUseCases.shareBookshelf.execute(shelfId)) {
                 is Result.Success -> {
                     _state.update {
                         it.copy(
@@ -277,7 +277,7 @@ class BookshelfViewModel(
                     _state.update {
                         it.copy(
                             isShareLoading = false,
-                            errorMessage = ErrorFormatter.formatOperationError("share bookshelf", Exception("Share operation failed"))
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(shareResult.error, "share bookshelf")
                         )
                     }
                 }
