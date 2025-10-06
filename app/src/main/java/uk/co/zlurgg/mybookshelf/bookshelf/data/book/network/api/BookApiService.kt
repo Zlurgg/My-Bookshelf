@@ -4,8 +4,7 @@ import io.ktor.client.statement.HttpResponse
 
 /**
  * Generic interface for book API service implementations.
- * Provides a contract for different book API providers (OpenLibrary, GoogleBooks, etc.)
- * This abstraction allows for easy switching between providers or adding fallbacks.
+ * Provides a contract for book API providers.
  */
 interface BookApiService {
 
@@ -37,9 +36,3 @@ interface BookApiService {
  * Useful for dependency injection and provider-specific configurations.
  */
 interface OpenLibraryBookApi : BookApiService
-
-/**
- * Marker interface for future Google Books API implementation.
- * Pre-defined for architectural consistency.
- */
-interface GoogleBooksBookApi : BookApiService
