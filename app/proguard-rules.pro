@@ -39,7 +39,6 @@
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel { <init>(...); }
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel { <init>(...); }
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel { <init>(...); }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.shared.SharedMyBookshelfViewModel { <init>(...); }
 
 # ====== UI State Classes ======
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseState { *; }
@@ -82,8 +81,8 @@
 }
 
 # ====== Coil Image Loading ======
--keep class coil.network.HttpException { *; }
--keep class coil.decode.DataSource { *; }
+-keep class coil3.network.HttpException { *; }
+-keep class coil3.decode.DataSource { *; }
 
 # ====== Enum Classes ======
 -keepclassmembers enum uk.co.zlurgg.mybookshelf.** {
