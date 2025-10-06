@@ -1,5 +1,7 @@
 # 📚 My Bookshelf
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 **My Bookshelf** is a beautifully designed Android app built with Kotlin and Jetpack Compose that lets users create, customize, and organize their personal book collections. Designed for readers and collectors who want a simple, elegant way to manage their library.
 
 > 📚 Organize your collection.
@@ -15,6 +17,20 @@
 - 🔗 **Bookshelf Sharing** – Export and share your shelves via deep links
 - 🎨 **Custom Shelf Styles** – Choose from different materials and colors
 - 📱 **Offline-First** – All your data stored locally on your device
+
+---
+
+## 🔒 Privacy & Data
+
+**MyBookshelf is a privacy-first, local-only application:**
+- ✅ All data stored locally on your device
+- ✅ No user accounts or authentication required
+- ✅ No analytics, tracking, or telemetry
+- ✅ No data collection or transmission to external servers
+- ✅ Internet connection only used for book search via Open Library API
+- ✅ Open source and transparent - review the code yourself
+
+**Your library data never leaves your device.**
 
 ---
 
@@ -56,6 +72,14 @@ Instructions for setting up the project locally will be added here.
 
 ---
 
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright © 2025 Joseph Brightman ([@zlurgg](https://github.com/zlurgg))
+
+---
+
 ## 📧 Contact
 
-Built by Zlurgg  
+Built by Joseph Brightman ([@zlurgg](https://github.com/zlurgg))
