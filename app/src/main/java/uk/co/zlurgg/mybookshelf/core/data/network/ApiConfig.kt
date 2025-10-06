@@ -7,7 +7,6 @@ object ApiConfig {
     private val openLibraryBaseUrl: String = BuildConfig.OPEN_LIBRARY_BASE_URL
     val shareBaseUrl: String = BuildConfig.SHARE_BASE_URL
     val httpTimeoutMillis: Long = BuildConfig.HTTP_TIMEOUT_MILLIS
-    val apiVersion: String = BuildConfig.API_VERSION
 
     object OpenLibrary {
         val baseUrl: String = openLibraryBaseUrl
