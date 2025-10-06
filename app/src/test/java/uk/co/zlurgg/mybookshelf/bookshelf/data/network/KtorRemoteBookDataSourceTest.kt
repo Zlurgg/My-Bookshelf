@@ -5,11 +5,8 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRemoteBookDataSource
 
 /**
