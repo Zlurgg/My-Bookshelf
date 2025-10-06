@@ -128,6 +128,29 @@ class DeepLinkViewModelTest {
     }
 
     @Test
+    fun `resolve name conflict with custom name handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val jsonData = "{\"test\":\"data\"}"
+        val newName = "New Shelf Name"
+        mockDeepLinkImport.customNameResultToReturn = Result.Error(DataError.Local.DATABASE_ERROR)
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // When
+        val stateAfterResolve = stateHelper.executeAndGetState {
+            viewModel.onAction(DeepLinkAction.ResolveNameConflictWithNewName(jsonData, newName))
+        }
+
+        // Then
+        assertNotNull("Should set error message", stateAfterResolve?.error)
+        assertTrue("Should contain operation context",
+            stateAfterResolve?.error?.contains("Failed to import bookshelf") == true)
+        assertFalse("Should clear loading flag", stateAfterResolve?.isLoading == true)
+        assertFalse("Should not set success flag", stateAfterResolve?.importSuccessful == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
     fun `dismiss error clears error message`() = runTest(testDispatcher) {
         // Given
         mockDeepLinkImport.shouldReturnError = true
