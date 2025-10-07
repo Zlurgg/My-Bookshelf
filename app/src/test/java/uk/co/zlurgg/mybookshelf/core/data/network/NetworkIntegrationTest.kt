@@ -118,7 +118,6 @@ class NetworkIntegrationTest {
         assertTrue("Should have NO_INTERNET", DataError.Remote.NO_INTERNET in remoteErrors)
         assertTrue("Should have SERVER_ERROR", DataError.Remote.SERVER_ERROR in remoteErrors)
         assertTrue("Should have SERIALIZATION", DataError.Remote.SERIALIZATION in remoteErrors)
-        assertTrue("Should have at least 4 error types", remoteErrors.size >= 4)
     }
 
     @Test
@@ -132,7 +131,6 @@ class NetworkIntegrationTest {
         // Then - Should have expected error types
         assertTrue("Should have NOT_FOUND", DataError.Local.NOT_FOUND in localErrors)
         assertTrue("Should have UNKNOWN", DataError.Local.UNKNOWN in localErrors)
-        assertTrue("Should have at least 2 error types", localErrors.size >= 2)
     }
 
     @Test
@@ -174,35 +172,6 @@ class NetworkIntegrationTest {
         }
     }
 
-    @Test
-    fun `httpNetworkCall handles HTTP operations correctly - error cases`() = runTest {
-        // Given - Network operations that throw exceptions
-        val networkTimeoutOperation = { throw java.net.SocketTimeoutException("Network timeout") }
-        val unknownHostOperation = { throw java.net.UnknownHostException("Unknown host") }
-        val serializationOperation = { throw kotlinx.serialization.SerializationException("Bad JSON") }
-
-        // When - Using ErrorMapper.httpNetworkCall
-        val timeoutResult = try {
-            ErrorMapper.httpNetworkCall<String> { networkTimeoutOperation() }
-        } catch (_: Exception) {
-            Result.Error(DataError.Remote.UNKNOWN)
-        }
-
-        val hostResult = try {
-            ErrorMapper.httpNetworkCall<String> { unknownHostOperation() }
-        } catch (_: Exception) {
-            Result.Error(DataError.Remote.UNKNOWN)
-        }
-
-        val serializationResult = try {
-            ErrorMapper.httpNetworkCall<String> { serializationOperation() }
-        } catch (_: Exception) {
-            Result.Error(DataError.Remote.UNKNOWN)
-        }
-
-        // Then - Should handle all error cases
-        // Note: These manually construct Result.Error, so type checks removed as redundant
-    }
 
     @Test
     fun `ErrorMapper supports both Ktor and Java exceptions`() = runTest {
