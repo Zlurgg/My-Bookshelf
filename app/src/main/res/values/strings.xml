@@ -70,6 +70,13 @@
     <string name="action_ok">OK</string>
     <string name="importing_shelf">Importing shelf…</string>
 
+    <!-- Welcome screen -->
+    <string name="welcome_title">Welcome to My Bookshelf</string>
+    <string name="welcome_subtitle">Organize your personal book collection with beautiful virtual shelves</string>
+    <string name="welcome_privacy_title">Privacy Notice</string>
+    <string name="welcome_privacy_message">All your data is stored locally on your device. We don\'t collect, store, or transmit any personal information. Your privacy is our priority.</string>
+    <string name="welcome_get_started">Get Started</string>
+
     <!-- Error messages - Remote -->
     <string name="error_request_timeout">Request timed out. Please check your internet connection.</string>
     <string name="error_too_many_requests">Too many requests. Please try again later.</string>

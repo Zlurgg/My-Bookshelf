@@ -79,8 +79,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookP
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeViewModel
 import uk.co.zlurgg.mybookshelf.core.data.network.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.image.ImageLoaderFactory
+import uk.co.zlurgg.mybookshelf.core.data.preferences.WelcomePreferencesImpl
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 
 val appModule = module {
     single<HttpClientEngine> {
@@ -94,6 +97,7 @@ val appModule = module {
     singleOf(::UuidIdGenerator).bind<IdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
     singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
+    single<WelcomePreferences> { WelcomePreferencesImpl(get()) }
     single<ShareTokenService> {
         UrlEncodedShareTokenService()
     }
@@ -139,6 +143,7 @@ val appModule = module {
     single { get<BookshelfDatabase>().bookshelfDao }
 
     viewModelOf(::DeepLinkViewModel)
+    viewModelOf(::WelcomeViewModel)
 
     viewModel { (shelfId: String) ->
         BookshelfViewModel(
