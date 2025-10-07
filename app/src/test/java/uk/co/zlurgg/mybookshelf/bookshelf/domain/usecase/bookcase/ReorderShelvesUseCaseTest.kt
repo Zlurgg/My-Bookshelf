@@ -253,7 +253,7 @@ class ReorderShelvesUseCaseTest {
         // Then
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
-        assertTrue("Should return local error", error is DataError.Local)
+        assertEquals(DataError.Local.UNKNOWN, error)
     }
 
     @Test

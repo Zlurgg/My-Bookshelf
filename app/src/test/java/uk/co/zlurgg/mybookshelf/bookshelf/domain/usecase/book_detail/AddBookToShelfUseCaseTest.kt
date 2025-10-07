@@ -130,7 +130,7 @@ class AddBookToShelfUseCaseTest {
         // Then
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
-        assertTrue("Should return local error", error is DataError.Local)
+        assertEquals(DataError.Local.UNKNOWN, error)
         assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
         assertEquals("Should not call addBookToShelf", 0, mockBookshelfRepository.addBookToShelfCallCount)
     }
@@ -148,7 +148,7 @@ class AddBookToShelfUseCaseTest {
         // Then
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
-        assertTrue("Should return local error", error is DataError.Local)
+        assertEquals(DataError.Local.UNKNOWN, error)
         assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
         assertEquals("Should call addBookToShelf once", 1, mockBookshelfRepository.addBookToShelfCallCount)
     }

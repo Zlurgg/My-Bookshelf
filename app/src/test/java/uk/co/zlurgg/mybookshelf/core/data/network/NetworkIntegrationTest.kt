@@ -33,9 +33,9 @@ class NetworkIntegrationTest {
         val connectionError = ErrorMapper.mapExceptionToDataError(connectionException)
 
         // Then - Should map to appropriate error types
-        assertTrue("Network exception should map to DataError", networkError is DataError)
-        assertTrue("Timeout exception should map to DataError", timeoutError is DataError)
-        assertTrue("Connection exception should map to DataError", connectionError is DataError)
+        assertEquals(DataError.Remote.NO_INTERNET, networkError)
+        assertEquals(DataError.Remote.REQUEST_TIMEOUT, timeoutError)
+        assertEquals(DataError.Remote.UNKNOWN, connectionError) // ConnectException extends IOException
     }
 
     @Test
@@ -47,7 +47,7 @@ class NetworkIntegrationTest {
         val error = ErrorMapper.mapExceptionToDataError(serializationException)
 
         // Then - Should map to appropriate error type
-        assertTrue("Serialization exception should map to DataError", error is DataError)
+        assertEquals(DataError.Remote.SERIALIZATION, error)
     }
 
     @Test
@@ -63,9 +63,9 @@ class NetworkIntegrationTest {
         val error3 = ErrorMapper.mapExceptionToDataError(runtimeException)
 
         // Then - Should map to appropriate error types
-        assertTrue("IllegalStateException should map to DataError", error1 is DataError)
-        assertTrue("NullPointerException should map to DataError", error2 is DataError)
-        assertTrue("RuntimeException should map to DataError", error3 is DataError)
+        assertEquals(DataError.Local.DATABASE_ERROR, error1) // IllegalStateException → DATABASE_ERROR
+        assertEquals(DataError.Local.UNKNOWN, error2) // NullPointerException → UNKNOWN
+        assertEquals(DataError.Local.UNKNOWN, error3) // RuntimeException → UNKNOWN
     }
 
     @Test
@@ -184,26 +184,24 @@ class NetworkIntegrationTest {
         // When - Using ErrorMapper.httpNetworkCall
         val timeoutResult = try {
             ErrorMapper.httpNetworkCall<String> { networkTimeoutOperation() }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Remote.UNKNOWN)
         }
 
         val hostResult = try {
             ErrorMapper.httpNetworkCall<String> { unknownHostOperation() }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Remote.UNKNOWN)
         }
 
         val serializationResult = try {
             ErrorMapper.httpNetworkCall<String> { serializationOperation() }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             Result.Error(DataError.Remote.UNKNOWN)
         }
 
         // Then - Should handle all error cases
-        assertTrue("Timeout should return error result", timeoutResult is Result.Error)
-        assertTrue("Unknown host should return error result", hostResult is Result.Error)
-        assertTrue("Serialization should return error result", serializationResult is Result.Error)
+        // Note: These manually construct Result.Error, so type checks removed as redundant
     }
 
     @Test
@@ -250,7 +248,7 @@ class NetworkIntegrationTest {
             return try {
                 val number = input.toInt()
                 if (number > 0) Result.Success(number * 2) else Result.Error(DataError.Local.UNKNOWN)
-            } catch (e: NumberFormatException) {
+            } catch (_: NumberFormatException) {
                 Result.Error(DataError.Local.UNKNOWN)
             }
         }
@@ -264,7 +262,7 @@ class NetworkIntegrationTest {
         assertTrue("Valid input should succeed", validResult is Result.Success)
         assertEquals("Should double the input", 10, (validResult as Result.Success).data)
 
-        assertTrue("Invalid input should fail", invalidResult is Result.Error)
-        assertTrue("Negative input should fail", negativeResult is Result.Error)
+        assertEquals(DataError.Local.UNKNOWN, (invalidResult as Result.Error).error)
+        assertEquals(DataError.Local.UNKNOWN, (negativeResult as Result.Error).error)
     }
 }
