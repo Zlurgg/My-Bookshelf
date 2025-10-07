@@ -4,7 +4,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -44,7 +46,7 @@ class ShelfDeletionE2ETest {
     }
 
     @Before
-    fun setup() {
+    fun setup() = runBlocking {
         // Setup real database
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
@@ -64,7 +66,7 @@ class ShelfDeletionE2ETest {
         )
 
         // Create test shelves in database
-        runTest {
+        runBlocking {
             val shelf1 = Bookshelf("shelf-1", "Fiction", emptyList(), ShelfStyle.DarkWood, 0)
             val shelf2 = Bookshelf("shelf-2", "Non-Fiction", emptyList(), ShelfStyle.SilverMetal, 1)
             val shelf3 = Bookshelf("shelf-3", "Science", emptyList(), ShelfStyle.WhiteMetal, 2)
@@ -74,6 +76,7 @@ class ShelfDeletionE2ETest {
         }
 
         // Setup ViewModel with full dependency chain
+        delay(500) // Allow ViewModel state to initialize
         viewModel = BookcaseViewModel(useCases)
     }
 
@@ -83,7 +86,10 @@ class ShelfDeletionE2ETest {
     }
 
     @Test
-    fun deleteShelfUpdatesStateAndPersistsToDatabase() = runTest {
+    fun deleteShelfUpdatesStateAndPersistsToDatabase() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Three shelves exist
         val initialState = viewModel.state.first()
         assertEquals(3, initialState.bookshelves.size)
@@ -91,6 +97,7 @@ class ShelfDeletionE2ETest {
 
         // When - User deletes a shelf
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(shelfToDelete))
+        delay(500) // Allow async operation to complete
 
         // Then - ViewModel state should update
         val state = viewModel.state.first()
@@ -107,18 +114,26 @@ class ShelfDeletionE2ETest {
         // And - Other shelves should still exist
         val allShelves = database.bookshelfDao.getAllShelves().first()
         assertEquals(2, allShelves.size)
+
+        job.cancel()
     }
 
     @Test
-    fun deleteAllShelvesLeavesEmptyDatabase() = runTest {
+    fun deleteAllShelvesLeavesEmptyDatabase() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Three shelves exist
         val initialState = viewModel.state.first()
         assertEquals(3, initialState.bookshelves.size)
 
         // When - User deletes all shelves
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(initialState.bookshelves[0]))
+        delay(500) // Allow async operation to complete
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(initialState.bookshelves[1]))
+        delay(500) // Allow async operation to complete
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(initialState.bookshelves[2]))
+        delay(500) // Allow async operation to complete
 
         // Then - State should be empty
         val state = viewModel.state.first()
@@ -127,10 +142,15 @@ class ShelfDeletionE2ETest {
         // And - Database should be empty
         val allShelves = database.bookshelfDao.getAllShelves().first()
         assertEquals(0, allShelves.size)
+
+        job.cancel()
     }
 
     @Test
-    fun deleteShelfCascadesAndRemovesCrossRefs() = runTest {
+    fun deleteShelfCascadesAndRemovesCrossRefs() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Shelf with books
         val shelfId = "shelf-with-books"
         val bookId = "book-1"
@@ -172,6 +192,7 @@ class ShelfDeletionE2ETest {
         val state = viewModel.state.first()
         val shelfToDelete = state.bookshelves.first { it.id == shelfId }
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(shelfToDelete))
+        delay(500) // Allow async operation to complete
 
         // Then - Cross-references should be deleted
         val booksAfterDelete = database.bookshelfDao.getBooksForShelf(shelfId).first()
@@ -184,10 +205,15 @@ class ShelfDeletionE2ETest {
         // But - Book entity should still exist
         val bookEntity2 = database.bookshelfDao.getBookById(bookId)
         assertEquals("Test Book", bookEntity2?.title)
+
+        job.cancel()
     }
 
     @Test
-    fun deleteNonExistentShelfShowsError() = runTest {
+    fun deleteNonExistentShelfShowsError() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - A shelf that doesn't exist in database
         val nonExistentShelf = Bookshelf(
             id = "nonexistent",
@@ -199,28 +225,38 @@ class ShelfDeletionE2ETest {
 
         // When - User tries to delete non-existent shelf
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(nonExistentShelf))
+        delay(500) // Allow async operation to complete
 
         // Then - Error should be shown
         val state = viewModel.state.first()
         assertFalse(state.operationSuccess)
         // Note: Error handling may vary, but operation should not succeed
+
+        job.cancel()
     }
 
     @Test
-    fun deleteShelfOperationCanBeReset() = runTest {
+    fun deleteShelfOperationCanBeReset() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Successful deletion
         val initialState = viewModel.state.first()
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(initialState.bookshelves[0]))
+        delay(500) // Allow async operation to complete
 
         val successState = viewModel.state.first()
         assertTrue(successState.operationSuccess)
 
         // When - User resets operation state
         viewModel.onAction(BookcaseAction.ResetOperationState)
+        delay(500) // Allow async operation to complete
 
         // Then - Operation success should be reset
         val resetState = viewModel.state.first()
         assertFalse(resetState.operationSuccess)
         assertNull(resetState.errorMessage)
+
+        job.cancel()
     }
 }

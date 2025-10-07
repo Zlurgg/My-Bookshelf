@@ -4,7 +4,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -103,7 +105,7 @@ class BookRemovalE2ETest {
     }
 
     @Before
-    fun setup() {
+    fun setup() = runBlocking {
         // Setup real database
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
@@ -116,7 +118,7 @@ class BookRemovalE2ETest {
         bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
 
         // Create test shelf in database
-        runTest {
+        runBlocking {
             val testShelf = Bookshelf(
                 id = testShelfId,
                 name = "Test Shelf",
@@ -155,6 +157,7 @@ class BookRemovalE2ETest {
         )
 
         // Setup ViewModel with full dependency chain
+        delay(500) // Allow ViewModel state to initialize
         bookshelfViewModel = BookshelfViewModel(
             bookshelfUseCases = bookshelfUseCases,
             bookcaseUseCases = bookcaseUseCases,
@@ -168,7 +171,10 @@ class BookRemovalE2ETest {
     }
 
     @Test
-    fun removeBookUpdatesStateAndPersistsToDatabase() = runTest {
+    fun removeBookUpdatesStateAndPersistsToDatabase() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - Shelf with books
         val initialState = bookshelfViewModel.state.first()
         assertEquals(2, initialState.books.size)
@@ -176,6 +182,7 @@ class BookRemovalE2ETest {
 
         // When - User removes a book
         bookshelfViewModel.onAction(BookshelfAction.OnRemoveBook(bookToRemove))
+        delay(500) // Allow async operation to complete
 
         // Then - ViewModel state should update
         val state = bookshelfViewModel.state.first()
@@ -185,42 +192,56 @@ class BookRemovalE2ETest {
         assertEquals(bookToRemove.id, state.recentlyDeleted?.id)
 
         // And - Book should be removed from database
-        val booksInShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
+        val booksInShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
         assertEquals(1, booksInShelf.size)
         assertEquals("book-2", booksInShelf[0].id)
+
+        job.cancel()
     }
 
     @Test
-    fun removeAllBooksLeavesEmptyShelf() = runTest {
+    fun removeAllBooksLeavesEmptyShelf() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - Shelf with books
         val initialState = bookshelfViewModel.state.first()
         assertEquals(2, initialState.books.size)
 
         // When - User removes all books
         bookshelfViewModel.onAction(BookshelfAction.OnRemoveBook(initialState.books[0]))
+        delay(500) // Allow async operation to complete
         bookshelfViewModel.onAction(BookshelfAction.OnRemoveBook(initialState.books[1]))
+        delay(500) // Allow async operation to complete
 
         // Then - Shelf should be empty in state
         val state = bookshelfViewModel.state.first()
         assertEquals(0, state.books.size)
 
         // And - Shelf should be empty in database
-        val booksInShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
+        val booksInShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
         assertEquals(0, booksInShelf.size)
+
+        job.cancel()
     }
 
     @Test
-    fun undoRemoveRestoresBookToShelf() = runTest {
+    fun undoRemoveRestoresBookToShelf() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - Shelf with books
         val initialState = bookshelfViewModel.state.first()
         val bookToRemove = initialState.books[0]
 
         // When - User removes a book and then undoes
         bookshelfViewModel.onAction(BookshelfAction.OnRemoveBook(bookToRemove))
+        delay(500) // Allow async operation to complete
         val stateAfterRemove = bookshelfViewModel.state.first()
         assertNotNull(stateAfterRemove.recentlyDeleted)
 
         bookshelfViewModel.onAction(BookshelfAction.OnUndoRemove)
+        delay(500) // Allow async operation to complete
 
         // Then - Book should be restored in state
         val stateAfterUndo = bookshelfViewModel.state.first()
@@ -228,12 +249,17 @@ class BookRemovalE2ETest {
         assertNull(stateAfterUndo.recentlyDeleted)
 
         // And - Book should be restored in database
-        val booksInShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
+        val booksInShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
         assertEquals(2, booksInShelf.size)
+
+        job.cancel()
     }
 
     @Test
-    fun removeBookOnlyRemovesFromCurrentShelf() = runTest {
+    fun removeBookOnlyRemovesFromCurrentShelf() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - Book exists on two shelves
         val anotherShelfId = "another-shelf"
         val anotherShelf = Bookshelf(
@@ -252,20 +278,23 @@ class BookRemovalE2ETest {
         val state = bookshelfViewModel.state.first()
         val bookToRemove = state.books.first { it.id == "book-1" }
         bookshelfViewModel.onAction(BookshelfAction.OnRemoveBook(bookToRemove))
+        delay(500) // Allow async operation to complete
 
         // Then - Book should be removed from test shelf
-        val booksInTestShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
+        val booksInTestShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
         assertEquals(1, booksInTestShelf.size)
         assertEquals("book-2", booksInTestShelf[0].id)
 
         // But - Book should still exist on another shelf
-        val booksInAnotherShelf = database.bookshelfDao.getBooksForShelf(anotherShelfId).first()
+        val booksInAnotherShelf = bookshelfRepository.getBooksForShelf(anotherShelfId).first()
         assertEquals(1, booksInAnotherShelf.size)
         assertEquals("book-1", booksInAnotherShelf[0].id)
 
         // And - Book entity should still exist in database
         val bookEntity = database.bookshelfDao.getBookById("book-1")
         assertNotNull("Book entity should still exist", bookEntity)
+
+        job.cancel()
     }
 
     private fun createTestBook(id: String, title: String): Book {

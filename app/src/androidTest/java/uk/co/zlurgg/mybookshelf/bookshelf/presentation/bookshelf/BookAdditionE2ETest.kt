@@ -3,8 +3,10 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -50,6 +52,7 @@ class BookAdditionE2ETest {
     private lateinit var database: BookshelfDatabase
     private lateinit var bookshelfViewModel: BookshelfViewModel
     private lateinit var bookcaseRepositoryImpl: BookcaseRepositoryImpl
+    private lateinit var bookshelfRepository: BookshelfRepositoryImpl
     private val testShelfId = "test-shelf-1"
 
     private val testTimeProvider = object : TimeProvider {
@@ -108,11 +111,11 @@ class BookAdditionE2ETest {
 
         // Setup repositories
         bookcaseRepositoryImpl = BookcaseRepositoryImpl(database.bookshelfDao)
-        val bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
+        bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
         val bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
 
         // Create test shelf in database
-        runTest {
+        runBlocking {
             val testShelf = Bookshelf(
                 id = testShelfId,
                 name = "Test Shelf",
@@ -156,12 +159,16 @@ class BookAdditionE2ETest {
     }
 
     @Test
-    fun addBookToShelfUpdatesStateAndPersistsToDatabase() = runTest {
+    fun addBookToShelfUpdatesStateAndPersistsToDatabase() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - A book to add
         val book = createTestBook("book-1", "Test Book")
 
         // When - User adds book to shelf
         bookshelfViewModel.onAction(BookshelfAction.OnAddBookClick(book))
+        delay(500) // Allow async operation to complete
 
         // Then - ViewModel state should update
         val state = bookshelfViewModel.state.first()
@@ -170,13 +177,18 @@ class BookAdditionE2ETest {
         assertEquals(null, state.errorMessage)
 
         // And - Book should persist in database
-        val booksInShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
+        val booksInShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
         assertEquals(1, booksInShelf.size)
         assertEquals("book-1", booksInShelf[0].id)
+
+        job.cancel()
     }
 
     @Test
-    fun addMultipleBooksPreservesOrder() = runTest {
+    fun addMultipleBooksPreservesOrder() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - Multiple books to add
         val book1 = createTestBook("book-1", "Book One")
         val book2 = createTestBook("book-2", "Book Two")
@@ -186,36 +198,48 @@ class BookAdditionE2ETest {
         bookshelfViewModel.onAction(BookshelfAction.OnAddBookClick(book1))
         bookshelfViewModel.onAction(BookshelfAction.OnAddBookClick(book2))
         bookshelfViewModel.onAction(BookshelfAction.OnAddBookClick(book3))
+        delay(500) // Allow async operations to complete
 
         // Then - All books should be in state
         val state = bookshelfViewModel.state.first()
         assertEquals(3, state.books.size)
 
         // And - Books should persist in database
-        val booksInShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
+        val booksInShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
         assertEquals(3, booksInShelf.size)
+
+        job.cancel()
     }
 
     @Test
-    fun addSameBookTwiceOnlyAddsOnce() = runTest {
+    fun addSameBookTwiceOnlyAddsOnce() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - A book
         val book = createTestBook("book-1", "Test Book")
 
         // When - User adds same book twice
         bookshelfViewModel.onAction(BookshelfAction.OnAddBookClick(book))
         bookshelfViewModel.onAction(BookshelfAction.OnAddBookClick(book))
+        delay(500) // Allow async operations to complete
 
         // Then - Book should only appear once in state
         val state = bookshelfViewModel.state.first()
         assertEquals(1, state.books.size)
 
         // And - Book should only exist once in database
-        val booksInShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
+        val booksInShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
         assertEquals(1, booksInShelf.size)
+
+        job.cancel()
     }
 
     @Test
-    fun addBookUpsertsSameBookWithDifferentShelf() = runTest {
+    fun addBookUpsertsSameBookWithDifferentShelf() = runBlocking {
+        // Setup state collection
+        val job = launch { bookshelfViewModel.state.collect {} }
+
         // Given - Book on another shelf
         val book = createTestBook("book-1", "Test Book")
         val anotherShelfId = "another-shelf"
@@ -242,15 +266,18 @@ class BookAdditionE2ETest {
 
         // When - User adds same book to test shelf
         bookshelfViewModel.onAction(BookshelfAction.OnAddBookClick(book))
+        delay(500) // Allow async operation to complete
 
         // Then - Book should be in both shelves
-        val booksInTestShelf = database.bookshelfDao.getBooksForShelf(testShelfId).first()
-        val booksInAnotherShelf = database.bookshelfDao.getBooksForShelf(anotherShelfId).first()
+        val booksInTestShelf = bookshelfRepository.getBooksForShelf(testShelfId).first()
+        val booksInAnotherShelf = bookshelfRepository.getBooksForShelf(anotherShelfId).first()
 
         assertEquals(1, booksInTestShelf.size)
         assertEquals(1, booksInAnotherShelf.size)
         assertEquals("book-1", booksInTestShelf[0].id)
         assertEquals("book-1", booksInAnotherShelf[0].id)
+
+        job.cancel()
     }
 
     private fun createTestBook(id: String, title: String): Book {

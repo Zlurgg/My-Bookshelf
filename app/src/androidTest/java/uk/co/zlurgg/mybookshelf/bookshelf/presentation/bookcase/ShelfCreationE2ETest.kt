@@ -4,7 +4,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -42,7 +44,7 @@ class ShelfCreationE2ETest {
     }
 
     @Before
-    fun setup() {
+    fun setup() = runBlocking {
         // Setup real database
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
@@ -71,7 +73,10 @@ class ShelfCreationE2ETest {
     }
 
     @Test
-    fun createShelfUpdatesStateAndPersistsToDatabase() = runTest {
+    fun createShelfUpdatesStateAndPersistsToDatabase() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Initial state with no shelves
         val initialState = viewModel.state.first()
         assertEquals(0, initialState.bookshelves.size)
@@ -79,6 +84,7 @@ class ShelfCreationE2ETest {
 
         // When - User creates a new shelf
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Fiction", ShelfStyle.DarkWood))
+        delay(500) // Allow async operation to complete
 
         // Then - ViewModel state should update
         val updatedState = viewModel.state.first()
@@ -92,18 +98,26 @@ class ShelfCreationE2ETest {
         val persistedShelf = database.bookshelfDao.getShelfById("test-shelf-0")
         assertEquals("Fiction", persistedShelf?.name)
         assertEquals("DarkWood", persistedShelf?.shelfMaterial)
+
+        job.cancel()
     }
 
     @Test
-    fun createMultipleShelvesAssignsCorrectPositions() = runTest {
+    fun createMultipleShelvesAssignsCorrectPositions() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - No existing shelves
         val initialState = viewModel.state.first()
         assertEquals(0, initialState.bookshelves.size)
 
         // When - User creates three shelves
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Fiction", ShelfStyle.DarkWood))
+        delay(500) // Allow async operation to complete
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Non-Fiction", ShelfStyle.SilverMetal))
+        delay(500) // Allow async operation to complete
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Science", ShelfStyle.WhiteMetal))
+        delay(500) // Allow async operation to complete
 
         // Then - All shelves should be in state
         val state = viewModel.state.first()
@@ -120,16 +134,22 @@ class ShelfCreationE2ETest {
         assertEquals("Fiction", allShelves[0].name)
         assertEquals("Non-Fiction", allShelves[1].name)
         assertEquals("Science", allShelves[2].name)
+
+        job.cancel()
     }
 
     @Test
-    fun createShelfWithBlankNameShowsError() = runTest {
+    fun createShelfWithBlankNameShowsError() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Initial state
         val initialState = viewModel.state.first()
         assertEquals(0, initialState.bookshelves.size)
 
         // When - User tries to create shelf with blank name
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("   ", ShelfStyle.DarkWood))
+        delay(500) // Allow async operation to complete
 
         // Then - Error should be shown
         val state = viewModel.state.first()
@@ -140,16 +160,22 @@ class ShelfCreationE2ETest {
         // And - No shelf should be in database
         val allShelves = database.bookshelfDao.getAllShelves().first()
         assertEquals(0, allShelves.size)
+
+        job.cancel()
     }
 
     @Test
-    fun addDialogVisibilityToggles() = runTest {
+    fun addDialogVisibilityToggles() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Dialog initially hidden
         val initialState = viewModel.state.first()
         assertFalse(initialState.showAddDialog)
 
         // When - User opens add dialog
         viewModel.onAction(BookcaseAction.ShowAddDialog(true))
+        delay(500) // Allow async operation to complete
 
         // Then - Dialog should be visible
         val openedState = viewModel.state.first()
@@ -157,25 +183,35 @@ class ShelfCreationE2ETest {
 
         // When - User closes dialog
         viewModel.onAction(BookcaseAction.ShowAddDialog(false))
+        delay(500) // Allow async operation to complete
 
         // Then - Dialog should be hidden
         val closedState = viewModel.state.first()
         assertFalse(closedState.showAddDialog)
+
+        job.cancel()
     }
 
     @Test
-    fun operationSuccessCanBeReset() = runTest {
+    fun operationSuccessCanBeReset() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Shelf created successfully
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Fiction", ShelfStyle.DarkWood))
+        delay(500) // Allow async operation to complete
         val successState = viewModel.state.first()
         assertTrue(successState.operationSuccess)
 
         // When - User resets operation state
         viewModel.onAction(BookcaseAction.ResetOperationState)
+        delay(500) // Allow async operation to complete
 
         // Then - Operation success should be reset
         val resetState = viewModel.state.first()
         assertFalse(resetState.operationSuccess)
         assertNull(resetState.errorMessage)
+
+        job.cancel()
     }
 }
