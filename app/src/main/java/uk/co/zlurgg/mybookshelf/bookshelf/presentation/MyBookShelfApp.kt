@@ -180,7 +180,7 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
             deepLinkState.importSuccessful -> {
                 ImportSuccessDialog(
                     onDismiss = {
-                        deepLinkViewModel.onAction(DeepLinkAction.DismissSuccess)
+                        deepLinkViewModel.onAction(DeepLinkAction.OnDismissSuccess)
                     }
                 )
             }
@@ -188,21 +188,21 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                 ImportErrorDialog(
                     errorMessage = deepLinkState.error,
                     onDismiss = {
-                        deepLinkViewModel.onAction(DeepLinkAction.DismissError)
+                        deepLinkViewModel.onAction(DeepLinkAction.OnDismissError)
                     }
                 )
             }
-            deepLinkState.nameConflict != null -> {
+            deepLinkState.conflictExistingName != null && deepLinkState.conflictJsonData != null -> {
                 ImportNameConflictDialog(
-                    existingName = deepLinkState.nameConflict.existingName,
+                    existingName = deepLinkState.conflictExistingName,
                     isLoading = deepLinkState.isLoading,
                     onDismiss = {
-                        deepLinkViewModel.onAction(DeepLinkAction.DismissNameConflict)
+                        deepLinkViewModel.onAction(DeepLinkAction.OnDismissNameConflict)
                     },
                     onResolveConflict = { newName ->
                         deepLinkViewModel.onAction(
                             DeepLinkAction.ResolveNameConflictWithNewName(
-                                jsonData = deepLinkState.nameConflict.jsonData,
+                                jsonData = deepLinkState.conflictJsonData,
                                 newName = newName
                             )
                         )
