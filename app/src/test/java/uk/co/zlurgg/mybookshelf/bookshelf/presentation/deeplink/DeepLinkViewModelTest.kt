@@ -99,9 +99,10 @@ class DeepLinkViewModelTest {
         }
 
         // Then
-        assertNotNull("Should set name conflict data", stateAfterImport?.nameConflict)
-        assertEquals("Should have correct existing name", conflictName, stateAfterImport?.nameConflict?.existingName)
-        assertEquals("Should have correct JSON data", jsonData, stateAfterImport?.nameConflict?.jsonData)
+        assertNotNull("Should set existing name", stateAfterImport?.conflictExistingName)
+        assertNotNull("Should set JSON data", stateAfterImport?.conflictJsonData)
+        assertEquals("Should have correct existing name", conflictName, stateAfterImport?.conflictExistingName)
+        assertEquals("Should have correct JSON data", jsonData, stateAfterImport?.conflictJsonData)
         assertFalse("Should clear loading flag", stateAfterImport?.isLoading == true)
         stateHelper.cleanup()
     }
@@ -123,7 +124,8 @@ class DeepLinkViewModelTest {
         // Then
         assertTrue("Should set import successful flag", stateAfterResolve?.importSuccessful == true)
         assertFalse("Should clear loading flag", stateAfterResolve?.isLoading == true)
-        assertNull("Should clear name conflict", stateAfterResolve?.nameConflict)
+        assertNull("Should clear conflict existing name", stateAfterResolve?.conflictExistingName)
+        assertNull("Should clear conflict JSON data", stateAfterResolve?.conflictJsonData)
         stateHelper.cleanup()
     }
 
@@ -164,7 +166,7 @@ class DeepLinkViewModelTest {
 
         // When
         val stateAfterDismiss = stateHelper.executeAndGetState {
-            viewModel.onAction(DeepLinkAction.DismissError)
+            viewModel.onAction(DeepLinkAction.OnDismissError)
         }
 
         // Then
@@ -186,7 +188,7 @@ class DeepLinkViewModelTest {
 
         // When
         val stateAfterDismiss = stateHelper.executeAndGetState {
-            viewModel.onAction(DeepLinkAction.DismissSuccess)
+            viewModel.onAction(DeepLinkAction.OnDismissSuccess)
         }
 
         // Then
@@ -208,11 +210,12 @@ class DeepLinkViewModelTest {
 
         // When
         val stateAfterDismiss = stateHelper.executeAndGetState {
-            viewModel.onAction(DeepLinkAction.DismissNameConflict)
+            viewModel.onAction(DeepLinkAction.OnDismissNameConflict)
         }
 
         // Then
-        assertNull("Should clear name conflict", stateAfterDismiss?.nameConflict)
+        assertNull("Should clear conflict existing name", stateAfterDismiss?.conflictExistingName)
+        assertNull("Should clear conflict JSON data", stateAfterDismiss?.conflictJsonData)
         stateHelper.cleanup()
     }
 
