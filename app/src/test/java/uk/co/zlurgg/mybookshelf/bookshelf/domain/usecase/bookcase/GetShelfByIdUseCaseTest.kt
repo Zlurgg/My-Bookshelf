@@ -142,7 +142,7 @@ class GetShelfByIdUseCaseTest {
     @Test
     fun `execute returns shelf with different shelf styles`() = runTest {
         // Test each shelf style
-        val shelfStyles = ShelfStyle.values()
+        val shelfStyles = ShelfStyle.entries.toTypedArray()
 
         for ((index, style) in shelfStyles.withIndex()) {
             // Given
