@@ -28,7 +28,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.Impor
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportLoadingDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportNameConflictDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportSuccessDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeScreenRoot
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
+import org.koin.compose.koinInject
 
 @Composable
 fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
@@ -36,6 +39,8 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
         val navController = rememberNavController()
         val deepLinkViewModel = koinViewModel<DeepLinkViewModel>()
         val deepLinkState = deepLinkViewModel.state.collectAsStateWithLifecycle().value
+        val welcomePreferences = koinInject<WelcomePreferences>()
+        val hasShownWelcome = welcomePreferences.hasShownWelcome().collectAsStateWithLifecycle(initialValue = true).value
 
         // Handle deep links at the app composition level
         LaunchedEffect(deepLinkIntent) {
@@ -44,14 +49,31 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
             }
         }
 
+        val startDestination = if (hasShownWelcome) {
+            NavigationRoute.Bookcase.createRoute()
+        } else {
+            NavigationRoute.Welcome.createRoute()
+        }
+
         NavHost(
             navController = navController,
             startDestination = NavigationRoute.MyBookshelfGraph.ROUTE
         ) {
             navigation(
                 route = NavigationRoute.MyBookshelfGraph.ROUTE,
-                startDestination = NavigationRoute.Bookcase.createRoute()
+                startDestination = startDestination
             ) {
+                composable(
+                    route = NavigationRoute.Welcome.ROUTE
+                ) {
+                    WelcomeScreenRoot(
+                        onNavigateToBookcase = {
+                            navController.navigate(NavigationRoute.Bookcase.createRoute()) {
+                                popUpTo(NavigationRoute.Welcome.ROUTE) { inclusive = true }
+                            }
+                        }
+                    )
+                }
                 composable(
                     route = NavigationRoute.Bookcase.ROUTE,
                     arguments = listOf(

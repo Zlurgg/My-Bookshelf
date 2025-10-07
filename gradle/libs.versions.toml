@@ -17,6 +17,7 @@ kotlinSerialization = "1.9.0"
 material3 = "1.4.0"
 ksp = "2.2.20-2.0.3"
 room = "2.8.1"
+datastore = "1.0.0"
 
 robolectric = "4.16"
 androidxTestCore = "1.7.0"
@@ -67,6 +68,8 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 androidx-test-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "androidxTestCore" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCore" }
+
+datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
