@@ -16,20 +16,23 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  * DataStore-based implementation of WelcomePreferences.
  * Handles persistent storage of welcome screen state using AndroidX DataStore.
  */
-class WelcomePreferencesImpl(private val context: Context) : WelcomePreferences {
+class WelcomePreferencesImpl(
+    private val context: Context,
+    private val dataStore: DataStore<Preferences> = context.dataStore
+) : WelcomePreferences {
 
     private object PreferencesKeys {
         val WELCOME_SHOWN = booleanPreferencesKey("welcome_shown")
     }
 
     override suspend fun setWelcomeShown() {
-        context.dataStore.edit { preferences ->
+        dataStore.edit { preferences ->
             preferences[PreferencesKeys.WELCOME_SHOWN] = true
         }
     }
 
     override fun hasShownWelcome(): Flow<Boolean> {
-        return context.dataStore.data.map { preferences ->
+        return dataStore.data.map { preferences ->
             preferences[PreferencesKeys.WELCOME_SHOWN] ?: false
         }
     }
