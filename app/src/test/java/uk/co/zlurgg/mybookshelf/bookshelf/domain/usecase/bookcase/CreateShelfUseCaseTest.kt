@@ -77,7 +77,7 @@ class CreateShelfUseCaseTest {
         // Then
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
-        assertTrue("Should be DataError.Local", error is DataError.Local)
+        assertEquals(DataError.Local.UNKNOWN, error)
     }
 
     @Test
