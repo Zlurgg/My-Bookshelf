@@ -4,7 +4,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -44,7 +46,7 @@ class ShelfReorderE2ETest {
     }
 
     @Before
-    fun setup() {
+    fun setup() = runBlocking {
         // Setup real database
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
@@ -64,7 +66,7 @@ class ShelfReorderE2ETest {
         )
 
         // Create test shelves in database with specific order
-        runTest {
+        runBlocking {
             val shelf1 = Bookshelf("shelf-1", "First", emptyList(), ShelfStyle.DarkWood, 0)
             val shelf2 = Bookshelf("shelf-2", "Second", emptyList(), ShelfStyle.SilverMetal, 1)
             val shelf3 = Bookshelf("shelf-3", "Third", emptyList(), ShelfStyle.WhiteMetal, 2)
@@ -76,6 +78,7 @@ class ShelfReorderE2ETest {
         }
 
         // Setup ViewModel with full dependency chain
+        delay(500) // Allow ViewModel state to initialize
         viewModel = BookcaseViewModel(useCases)
     }
 
@@ -85,7 +88,10 @@ class ShelfReorderE2ETest {
     }
 
     @Test
-    fun reorderShelvesMoveFromTopToBottom() = runTest {
+    fun reorderShelvesMoveFromTopToBottom() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
         assertEquals(4, initialState.bookshelves.size)
@@ -94,6 +100,7 @@ class ShelfReorderE2ETest {
         // When - User moves first shelf to bottom (position 3)
         val shelfToMove = initialState.bookshelves[0]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = shelfToMove, newPosition = 3))
+        delay(500) // Allow async operation to complete
 
         // Then - State should reflect new order
         val state = viewModel.state.first()
@@ -112,10 +119,15 @@ class ShelfReorderE2ETest {
         assertEquals(0, allShelves[0].position)
         assertEquals("First", allShelves[3].name)
         assertEquals(3, allShelves[3].position)
+
+        job.cancel()
     }
 
     @Test
-    fun reorderShelvesMoveFromBottomToTop() = runTest {
+    fun reorderShelvesMoveFromBottomToTop() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
         assertEquals(4, initialState.bookshelves.size)
@@ -124,6 +136,7 @@ class ShelfReorderE2ETest {
         // When - User moves last shelf to top (position 0)
         val shelfToMove = initialState.bookshelves[3]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = shelfToMove, newPosition = 0))
+        delay(500) // Allow async operation to complete
 
         // Then - State should reflect new order
         val state = viewModel.state.first()
@@ -139,10 +152,15 @@ class ShelfReorderE2ETest {
         assertEquals(0, allShelves[0].position)
         assertEquals("Third", allShelves[3].name)
         assertEquals(3, allShelves[3].position)
+
+        job.cancel()
     }
 
     @Test
-    fun reorderShelvesMoveUpByOnePosition() = runTest {
+    fun reorderShelvesMoveUpByOnePosition() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
         assertEquals("Third", initialState.bookshelves[2].name)
@@ -150,6 +168,7 @@ class ShelfReorderE2ETest {
         // When - User moves third shelf up by one position
         val shelfToMove = initialState.bookshelves[2]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = shelfToMove, newPosition = 1))
+        delay(500) // Allow async operation to complete
 
         // Then - State should reflect new order
         val state = viewModel.state.first()
@@ -164,10 +183,15 @@ class ShelfReorderE2ETest {
         assertEquals(1, allShelves[1].position)
         assertEquals("Second", allShelves[2].name)
         assertEquals(2, allShelves[2].position)
+
+        job.cancel()
     }
 
     @Test
-    fun reorderShelvesMultipleReorders() = runTest {
+    fun reorderShelvesMultipleReorders() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
         assertEquals(4, initialState.bookshelves.size)
@@ -175,10 +199,12 @@ class ShelfReorderE2ETest {
         // When - User performs multiple reorders
         val firstShelf = initialState.bookshelves[0]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = firstShelf, newPosition = 2)) // First → Third position
+        delay(500) // Allow async operation to complete
 
         val stateAfterFirst = viewModel.state.first()
         val fourthShelf = stateAfterFirst.bookshelves[3]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = fourthShelf, newPosition = 1)) // Fourth → Second position
+        delay(500) // Allow async operation to complete
 
         // Then - State should reflect final order
         val state = viewModel.state.first()
@@ -194,10 +220,15 @@ class ShelfReorderE2ETest {
         assertEquals(0, allShelves[0].position)
         assertEquals("Fourth", allShelves[1].name)
         assertEquals(1, allShelves[1].position)
+
+        job.cancel()
     }
 
     @Test
-    fun reorderShelvesNoOpWhenSamePosition() = runTest {
+    fun reorderShelvesNoOpWhenSamePosition() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
         val originalOrder = initialState.bookshelves.map { it.name }
@@ -205,6 +236,7 @@ class ShelfReorderE2ETest {
         // When - User "moves" shelf to same position
         val shelfToMove = initialState.bookshelves[1]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = shelfToMove, newPosition = 1))
+        delay(500) // Allow async operation to complete
 
         // Then - Order should remain unchanged
         val state = viewModel.state.first()
@@ -217,21 +249,28 @@ class ShelfReorderE2ETest {
         assertEquals(0, allShelves[0].position)
         assertEquals("Second", allShelves[1].name)
         assertEquals(1, allShelves[1].position)
+
+        job.cancel()
     }
 
     @Test
-    fun reorderShelvesAfterToggleMode() = runTest {
+    fun reorderShelvesAfterToggleMode() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Reorder mode is off
         val initialState = viewModel.state.first()
         assertFalse(initialState.isReorderMode)
 
         // When - User toggles reorder mode and reorders
         viewModel.onAction(BookcaseAction.ToggleReorderMode)
+        delay(500) // Allow async operation to complete
         val modeState = viewModel.state.first()
         assertTrue(modeState.isReorderMode)
 
         val shelfToMove = modeState.bookshelves[0]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = shelfToMove, newPosition = 2))
+        delay(500) // Allow async operation to complete
 
         // Then - Reorder should succeed regardless of mode
         val state = viewModel.state.first()
@@ -241,24 +280,33 @@ class ShelfReorderE2ETest {
 
         // And - Mode should still be active
         assertTrue(state.isReorderMode)
+
+        job.cancel()
     }
 
     @Test
-    fun reorderOperationCanBeReset() = runTest {
+    fun reorderOperationCanBeReset() = runBlocking {
+        // Setup state collection
+        val job = launch { viewModel.state.collect {} }
+
         // Given - Successful reorder
         val initialState = viewModel.state.first()
         val shelfToMove = initialState.bookshelves[0]
         viewModel.onAction(BookcaseAction.OnReorderShelf(bookshelf = shelfToMove, newPosition = 2))
+        delay(500) // Allow async operation to complete
 
         val successState = viewModel.state.first()
         assertTrue(successState.operationSuccess)
 
         // When - User resets operation state
         viewModel.onAction(BookcaseAction.ResetOperationState)
+        delay(500) // Allow async operation to complete
 
         // Then - Operation success should be reset
         val resetState = viewModel.state.first()
         assertFalse(resetState.operationSuccess)
         assertNull(resetState.errorMessage)
+
+        job.cancel()
     }
 }
