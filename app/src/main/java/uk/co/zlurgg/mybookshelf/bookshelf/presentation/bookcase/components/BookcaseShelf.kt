@@ -93,6 +93,7 @@ fun BookcaseShelf(
         val haptic = LocalHapticFeedback.current
         var shouldRemoveOnRelease by remember { mutableStateOf(false) }
 
+        @Suppress("DEPRECATION")
         val swipeState = rememberSwipeToDismissBoxState(
             confirmValueChange = { _ ->
                 if (shouldRemoveOnRelease) {
