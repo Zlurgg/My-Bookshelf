@@ -22,16 +22,21 @@ class DeepLinkViewModel(
     fun onAction(action: DeepLinkAction) {
         when (action) {
             is DeepLinkAction.ImportFromToken -> importFromToken(action.token)
-            is DeepLinkAction.DismissError -> dismissError()
-            is DeepLinkAction.DismissSuccess -> dismissSuccess()
-            is DeepLinkAction.DismissNameConflict -> dismissNameConflict()
+            is DeepLinkAction.OnDismissError -> dismissError()
+            is DeepLinkAction.OnDismissSuccess -> dismissSuccess()
+            is DeepLinkAction.OnDismissNameConflict -> dismissNameConflict()
             is DeepLinkAction.ResolveNameConflictWithNewName -> resolveNameConflict(action.jsonData, action.newName)
         }
     }
 
     private fun importFromToken(token: String) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null, nameConflict = null) }
+            _state.update { it.copy(
+                isLoading = true,
+                error = null,
+                conflictExistingName = null,
+                conflictJsonData = null
+            ) }
 
             when (val result = deepLinkImportUseCase.importBookshelfFromToken(token)) {
                 is Result.Success -> {
@@ -45,10 +50,8 @@ class DeepLinkViewModel(
                         is ImportResult.NameConflict -> {
                             _state.update { it.copy(
                                 isLoading = false,
-                                nameConflict = NameConflictData(
-                                    existingName = importResult.existingName,
-                                    jsonData = importResult.jsonData
-                                )
+                                conflictExistingName = importResult.existingName,
+                                conflictJsonData = importResult.jsonData
                             ) }
                         }
                     }
@@ -65,7 +68,11 @@ class DeepLinkViewModel(
 
     private fun resolveNameConflict(jsonData: String, newName: String) {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, nameConflict = null) }
+            _state.update { it.copy(
+                isLoading = true,
+                conflictExistingName = null,
+                conflictJsonData = null
+            ) }
 
             when (val result = deepLinkImportUseCase.importBookshelfWithCustomName(jsonData, newName)) {
                 is Result.Success -> {
@@ -93,6 +100,9 @@ class DeepLinkViewModel(
     }
 
     private fun dismissNameConflict() {
-        _state.update { it.copy(nameConflict = null) }
+        _state.update { it.copy(
+            conflictExistingName = null,
+            conflictJsonData = null
+        ) }
     }
 }

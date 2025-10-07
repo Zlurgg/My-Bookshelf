@@ -4,10 +4,6 @@ data class DeepLinkState(
     val isLoading: Boolean = false,
     val importSuccessful: Boolean = false,
     val error: String? = null,
-    val nameConflict: NameConflictData? = null
-)
-
-data class NameConflictData(
-    val existingName: String,
-    val jsonData: String
+    val conflictExistingName: String? = null,
+    val conflictJsonData: String? = null
 )
