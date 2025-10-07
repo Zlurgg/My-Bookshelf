@@ -3,8 +3,9 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -49,6 +50,7 @@ class ShelfImportE2ETest {
     private lateinit var viewModel: DeepLinkViewModel
     private lateinit var shareTokenService: UrlEncodedShareTokenService
     private lateinit var bookcaseRepository: BookcaseRepositoryImpl
+    private lateinit var bookshelfRepository: BookshelfRepositoryImpl
 
     private val testIdGenerator = object : IdGenerator {
         private var counter = 0
@@ -69,7 +71,7 @@ class ShelfImportE2ETest {
 
         // Setup repositories with real database
         bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao)
-        val bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
+        bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
 
         // Create a stub for RemoteBookDataSource (not needed for import tests)
         val stubRemoteDataSource = object : RemoteBookDataSource {
@@ -123,7 +125,7 @@ class ShelfImportE2ETest {
     }
 
     @Test
-    fun importShelfSuccessfully() = runTest {
+    fun importShelfSuccessfully() = runBlocking {
         // Given - A valid share token for a shelf
         val shelf = createTestShelf("Fiction", listOf(createTestBook("book-1", "1984")))
         val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testTimeProvider, testIdGenerator))
@@ -132,6 +134,7 @@ class ShelfImportE2ETest {
 
         // When - User imports shelf via token
         viewModel.onAction(DeepLinkAction.ImportFromToken(shareToken))
+        delay(500) // Allow async operation to complete (real delay, not test time)
 
         // Then - State should show success
         val state = viewModel.state.first()
@@ -144,12 +147,15 @@ class ShelfImportE2ETest {
         val shelves = bookcaseRepository.getAllShelves().first()
         assertEquals("Should have 1 shelf", 1, shelves.size)
         assertEquals("Should have correct name", "Fiction", shelves[0].name)
-        assertEquals("Should have 1 book", 1, shelves[0].books.size)
-        assertEquals("Should have correct book title", "1984", shelves[0].books[0].title)
+
+        // Validate books using bookshelfRepository
+        val books = bookshelfRepository.getBooksForShelf(shelves[0].id).first()
+        assertEquals("Should have 1 book", 1, books.size)
+        assertEquals("Should have correct book title", "1984", books[0].title)
     }
 
     @Test
-    fun importShelfWithNameConflictShowsConflictState() = runTest {
+    fun importShelfWithNameConflictShowsConflictState() = runBlocking {
         // Given - Existing shelf with same name
         val existingShelf = createTestShelf("Fiction", emptyList())
         bookcaseRepository.addShelf(existingShelf)
@@ -161,6 +167,7 @@ class ShelfImportE2ETest {
 
         // When - User imports shelf with conflicting name
         viewModel.onAction(DeepLinkAction.ImportFromToken(shareToken))
+        delay(500) // Allow async operation to complete (real delay, not test time)
 
         // Then - State should show conflict
         val state = viewModel.state.first()
@@ -173,11 +180,14 @@ class ShelfImportE2ETest {
         // And - Database should still have only 1 shelf
         val shelves = bookcaseRepository.getAllShelves().first()
         assertEquals("Should still have only 1 shelf", 1, shelves.size)
-        assertEquals("Should be the original shelf", 0, shelves[0].books.size)
+
+        // Validate original shelf still has no books
+        val books = bookshelfRepository.getBooksForShelf(shelves[0].id).first()
+        assertEquals("Should be the original shelf with no books", 0, books.size)
     }
 
     @Test
-    fun resolveNameConflictWithCustomNameSucceeds() = runTest {
+    fun resolveNameConflictWithCustomNameSucceeds() = runBlocking {
         // Given - Existing shelf and conflict detected
         val existingShelf = createTestShelf("Fiction", emptyList())
         bookcaseRepository.addShelf(existingShelf)
@@ -189,11 +199,13 @@ class ShelfImportE2ETest {
 
         // Trigger conflict detection first
         viewModel.onAction(DeepLinkAction.ImportFromToken(shareToken))
+        delay(500) // Allow async operation to complete (real delay, not test time)
         val conflictState = viewModel.state.first()
         val jsonData = conflictState.conflictJsonData!!
 
         // When - User resolves with custom name
         viewModel.onAction(DeepLinkAction.ResolveNameConflictWithNewName(jsonData, "Fiction 2"))
+        delay(500) // Allow async operation to complete (real delay, not test time)
 
         // Then - State should show success
         val state = viewModel.state.first()
@@ -206,17 +218,28 @@ class ShelfImportE2ETest {
         // And - Both shelves should exist in database
         val shelves = bookcaseRepository.getAllShelves().first()
         assertEquals("Should have 2 shelves", 2, shelves.size)
-        assertTrue("Should have original Fiction shelf", shelves.any { it.name == "Fiction" && it.books.isEmpty() })
-        assertTrue("Should have new Fiction 2 shelf", shelves.any { it.name == "Fiction 2" && it.books.size == 1 })
+
+        // Validate Fiction shelf has no books
+        val fictionShelf = shelves.find { it.name == "Fiction" }
+        assertNotNull("Should have original Fiction shelf", fictionShelf)
+        val fictionBooks = bookshelfRepository.getBooksForShelf(fictionShelf!!.id).first()
+        assertEquals("Fiction shelf should have no books", 0, fictionBooks.size)
+
+        // Validate Fiction 2 shelf has 1 book
+        val fiction2Shelf = shelves.find { it.name == "Fiction 2" }
+        assertNotNull("Should have new Fiction 2 shelf", fiction2Shelf)
+        val fiction2Books = bookshelfRepository.getBooksForShelf(fiction2Shelf!!.id).first()
+        assertEquals("Fiction 2 shelf should have 1 book", 1, fiction2Books.size)
     }
 
     @Test
-    fun importShelfWithInvalidTokenShowsError() = runTest {
+    fun importShelfWithInvalidTokenShowsError() = runBlocking {
         // Given - Invalid/corrupted share token
         val invalidToken = "invalid-garbage-token-xyz123"
 
         // When - User tries to import invalid token
         viewModel.onAction(DeepLinkAction.ImportFromToken(invalidToken))
+        delay(500) // Allow async operation to complete (real delay, not test time)
 
         // Then - State should show error
         val state = viewModel.state.first()
@@ -231,20 +254,21 @@ class ShelfImportE2ETest {
     }
 
     @Test
-    fun importShelfWithMultipleBooksPreservesAllData() = runTest {
+    fun importShelfWithMultipleBooksPreservesAllData() = runBlocking {
         // Given - Shelf with multiple books
-        val books = listOf(
+        val testBooks = listOf(
             createTestBook("book-1", "1984"),
             createTestBook("book-2", "Animal Farm"),
             createTestBook("book-3", "Brave New World")
         )
-        val shelf = createTestShelf("Dystopian", books)
+        val shelf = createTestShelf("Dystopian", testBooks)
         val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testTimeProvider, testIdGenerator))
         val jsonData = serializer.serialize(shelf).getOrThrow()
         val shareToken = shareTokenService.generateToken(jsonData).getOrThrow()
 
         // When - User imports shelf
         viewModel.onAction(DeepLinkAction.ImportFromToken(shareToken))
+        delay(500) // Allow async operation to complete (real delay, not test time)
 
         // Then - State should show success
         val state = viewModel.state.first()
@@ -255,9 +279,12 @@ class ShelfImportE2ETest {
         val shelves = bookcaseRepository.getAllShelves().first()
         assertEquals("Should have 1 shelf", 1, shelves.size)
         assertEquals("Should have correct name", "Dystopian", shelves[0].name)
-        assertEquals("Should have 3 books", 3, shelves[0].books.size)
 
-        val bookTitles = shelves[0].books.map { it.title }
+        // Validate all 3 books were imported
+        val books = bookshelfRepository.getBooksForShelf(shelves[0].id).first()
+        assertEquals("Should have 3 books", 3, books.size)
+
+        val bookTitles = books.map { it.title }
         assertTrue("Should contain 1984", bookTitles.contains("1984"))
         assertTrue("Should contain Animal Farm", bookTitles.contains("Animal Farm"))
         assertTrue("Should contain Brave New World", bookTitles.contains("Brave New World"))
