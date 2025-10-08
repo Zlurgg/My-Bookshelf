@@ -33,6 +33,7 @@ import uk.co.zlurgg.mybookshelf.R
  * @param isLoading Whether an operation is in progress (disables interaction)
  * @param titleRes String resource ID for dialog title
  * @param confirmTextRes String resource ID for confirm button text
+ * @param prefixMessage Optional message to display above the TextField (for context/explanations)
  * @param onDismiss Callback when dialog is dismissed
  * @param onConfirm Callback when user confirms with trimmed name
  */
@@ -44,7 +45,8 @@ fun ShelfNameInputDialog(
     titleRes: Int,
     confirmTextRes: Int,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: (String) -> Unit,
+    prefixMessage: String? = null
 ) {
     var name by remember { mutableStateOf(currentName) }
     val focusRequester = remember { FocusRequester() }
@@ -56,6 +58,15 @@ fun ShelfNameInputDialog(
         title = { Text(stringResource(id = titleRes)) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
+                // Optional prefix message (e.g., for conflict explanations)
+                if (prefixMessage != null) {
+                    Text(
+                        text = prefixMessage,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
+
                 TextField(
                     value = name,
                     onValueChange = { name = it },

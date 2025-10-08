@@ -36,6 +36,16 @@ class DeepLinkImportUseCaseImpl(
     }
 
     override suspend fun importBookshelfWithCustomName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
-        return importBookshelfUseCase.execute(jsonData, customName)
+        // First check if the custom name also conflicts
+        return checkImportConflictUseCase.checkShelfName(customName)
+            .flatMap { conflictingName ->
+                if (conflictingName != null) {
+                    // Custom name still conflicts - return error
+                    Result.Error(DataError.Local.NAME_CONFLICT)
+                } else {
+                    // No conflict - proceed with import
+                    importBookshelfUseCase.execute(jsonData, customName)
+                }
+            }
     }
 }

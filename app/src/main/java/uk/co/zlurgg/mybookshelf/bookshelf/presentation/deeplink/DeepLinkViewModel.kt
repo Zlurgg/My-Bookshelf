@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.ImportResult
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
@@ -70,22 +71,37 @@ class DeepLinkViewModel(
         viewModelScope.launch {
             _state.update { it.copy(
                 isLoading = true,
-                conflictExistingName = null,
-                conflictJsonData = null
+                conflictError = null  // Clear previous error
             ) }
 
             when (val result = deepLinkImportUseCase.importBookshelfWithCustomName(jsonData, newName)) {
                 is Result.Success -> {
                     _state.update { it.copy(
                         isLoading = false,
-                        importSuccessful = true
+                        importSuccessful = true,
+                        conflictExistingName = null,
+                        conflictJsonData = null,
+                        conflictError = null
                     ) }
                 }
                 is Result.Error -> {
-                    _state.update { it.copy(
-                        isLoading = false,
-                        error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
-                    ) }
+                    // Check if it's a name conflict error (inline error) or general error (dismiss dialog)
+                    if (result.error == DataError.Local.NAME_CONFLICT) {
+                        // Show inline error in dialog, keep dialog open
+                        _state.update { it.copy(
+                            isLoading = false,
+                            conflictError = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
+                        ) }
+                    } else {
+                        // General error - dismiss dialog and show error dialog
+                        _state.update { it.copy(
+                            isLoading = false,
+                            conflictExistingName = null,
+                            conflictJsonData = null,
+                            conflictError = null,
+                            error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
+                        ) }
+                    }
                 }
             }
         }
@@ -102,7 +118,8 @@ class DeepLinkViewModel(
     private fun dismissNameConflict() {
         _state.update { it.copy(
             conflictExistingName = null,
-            conflictJsonData = null
+            conflictJsonData = null,
+            conflictError = null  // Clear inline error when dismissing
         ) }
     }
 }

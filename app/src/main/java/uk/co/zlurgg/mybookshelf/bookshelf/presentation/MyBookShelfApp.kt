@@ -196,6 +196,7 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                 ImportNameConflictDialog(
                     existingName = deepLinkState.conflictExistingName,
                     isLoading = deepLinkState.isLoading,
+                    errorMessage = deepLinkState.conflictError,
                     onDismiss = {
                         deepLinkViewModel.onAction(DeepLinkAction.OnDismissNameConflict)
                     },

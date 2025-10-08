@@ -25,4 +25,13 @@ class CheckImportConflictUseCase(
                 validator.checkNameConflict(shelfName)
             }
     }
+
+    /**
+     * Check if a specific shelf name conflicts with existing shelves.
+     * Used when validating custom names during conflict resolution.
+     * Returns the conflicting name if one exists, null otherwise.
+     */
+    suspend fun checkShelfName(shelfName: String): Result<String?, DataError.Local> {
+        return validator.checkNameConflict(shelfName)
+    }
 }

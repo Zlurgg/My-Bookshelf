@@ -5,5 +5,6 @@ data class DeepLinkState(
     val importSuccessful: Boolean = false,
     val error: String? = null,
     val conflictExistingName: String? = null,
-    val conflictJsonData: String? = null
+    val conflictJsonData: String? = null,
+    val conflictError: String? = null  // Inline error for conflict resolution dialog
 )
