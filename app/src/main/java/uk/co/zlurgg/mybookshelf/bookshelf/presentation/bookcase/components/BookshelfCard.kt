@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,13 +36,17 @@ fun BookshelfCard(
     bookCount: Int,
     isReorderMode: Boolean,
     onBookshelfClick: (Bookshelf) -> Unit,
+    onLongClick: (Bookshelf) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .height(80.dp)
-            .clickable { onBookshelfClick(shelf) },
+            .combinedClickable(
+                onClick = { onBookshelfClick(shelf) },
+                onLongClick = { onLongClick(shelf) }
+            ),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -110,13 +114,15 @@ fun BookshelfCardPreview() {
                 shelf = bookshelf,
                 bookCount = 5,
                 isReorderMode = false,
-                onBookshelfClick = {}
+                onBookshelfClick = {},
+                onLongClick = {}
             )
             BookshelfCard(
                 shelf = bookshelf.copy(name = "My Reading List"),
                 bookCount = 12,
                 isReorderMode = true,
-                onBookshelfClick = {}
+                onBookshelfClick = {},
+                onLongClick = {}
             )
         }
     }

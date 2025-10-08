@@ -35,6 +35,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBookshelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
@@ -157,6 +158,9 @@ fun BookcaseScreen(
                         onBookshelfClick = {
                             onAction(BookcaseAction.OnBookshelfClick(shelf))
                         },
+                        onLongClick = { shelfToRename ->
+                            onAction(BookcaseAction.ShowRenameDialog(shelfToRename))
+                        },
                         modifier = Modifier.animateItem(),
                         bookCountOverride = state.bookCounts[shelf.id] ?: 0,
                         isReorderMode = state.isReorderMode,
@@ -178,6 +182,18 @@ fun BookcaseScreen(
                 onAction(BookcaseAction.OnAddBookshelfClick(shelfName, style))
             },
             isLoading = state.isLoading
+        )
+    }
+
+    if (state.showRenameDialog && state.shelfToRename != null) {
+        RenameShelfDialog(
+            currentName = state.shelfToRename.name,
+            onDismiss = {
+                onAction(BookcaseAction.DismissRenameDialog)
+            },
+            onRename = { newName ->
+                onAction(BookcaseAction.OnRenameShelf(state.shelfToRename.id, newName))
+            }
         )
     }
 }
