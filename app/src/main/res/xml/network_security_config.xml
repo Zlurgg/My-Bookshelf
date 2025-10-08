@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Base configuration for all connections -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- Trust system certificate authorities -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Domain-specific configurations -->
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- Open Library API - HTTPS only -->
+        <domain includeSubdomains="true">openlibrary.org</domain>
+
+        <!-- GitHub Pages (share links) - HTTPS only -->
+        <domain includeSubdomains="true">zlurgg.github.io</domain>
+    </domain-config>
+
+    <!-- Debug configuration for localhost testing (excluded in release builds) -->
+    <debug-overrides>
+        <trust-anchors>
+            <!-- Allow localhost for debugging -->
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

@@ -41,7 +41,12 @@ fun BookSearchBar(
     ) {
         OutlinedTextField(
             value = searchQuery,
-            onValueChange = onSearchQueryChange,
+            onValueChange = { newValue ->
+                // UX: Prevent typing beyond 200 chars (UseCase also validates)
+                if (newValue.length <= 200) {
+                    onSearchQueryChange(newValue)
+                }
+            },
             shape = RoundedCornerShape(100),
             colors = OutlinedTextFieldDefaults.colors(
                 cursorColor = MaterialTheme.colorScheme.primary,

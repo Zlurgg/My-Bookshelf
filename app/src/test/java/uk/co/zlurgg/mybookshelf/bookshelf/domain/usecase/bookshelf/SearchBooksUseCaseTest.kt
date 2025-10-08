@@ -249,4 +249,121 @@ class SearchBooksUseCaseTest {
         assertEquals("Should maintain server order", "OL1W", books[0].id)
         assertEquals("Should maintain server order", "OL2W", books[1].id)
     }
+
+    @Test
+    fun `execute rejects query exceeding 200 characters`() = runTest {
+        // Given - Query with 201 characters
+        val longQuery = "a".repeat(201)
+
+        // When
+        val result = useCase.execute(query = longQuery)
+
+        // Then
+        assertTrue("Should return error for long query", result is Result.Error)
+        val error = (result as Result.Error).error
+        assertEquals("Should return validation error", DataError.Remote.MALFORMED_REQUEST, error)
+        assertEquals("Should not call remote data source", 0, mockRemoteDataSource.searchBooksCallCount)
+    }
+
+    @Test
+    fun `execute accepts query at exactly 200 characters`() = runTest {
+        // Given - Query with exactly 200 characters
+        val maxQuery = "a".repeat(200)
+
+        // When
+        val result = useCase.execute(query = maxQuery)
+
+        // Then
+        assertTrue("Should return success for max length query", result is Result.Success)
+        assertEquals("Should call remote data source", 1, mockRemoteDataSource.searchBooksCallCount)
+    }
+
+    @Test
+    fun `execute rejects author filter exceeding 100 characters`() = runTest {
+        // Given - Author filter with 101 characters
+        val longAuthor = "a".repeat(101)
+
+        // When
+        val result = useCase.execute(
+            query = "test",
+            authorFilter = longAuthor
+        )
+
+        // Then
+        assertTrue("Should return error for long author filter", result is Result.Error)
+        val error = (result as Result.Error).error
+        assertEquals("Should return validation error", DataError.Remote.MALFORMED_REQUEST, error)
+        assertEquals("Should not call remote data source", 0, mockRemoteDataSource.searchBooksCallCount)
+    }
+
+    @Test
+    fun `execute accepts author filter at exactly 100 characters`() = runTest {
+        // Given - Author filter with exactly 100 characters
+        val maxAuthor = "a".repeat(100)
+
+        // When
+        val result = useCase.execute(
+            query = "test",
+            authorFilter = maxAuthor
+        )
+
+        // Then
+        assertTrue("Should return success for max length author", result is Result.Success)
+        assertEquals("Should call remote data source", 1, mockRemoteDataSource.searchBooksCallCount)
+    }
+
+    @Test
+    fun `execute rejects title filter exceeding 200 characters`() = runTest {
+        // Given - Title filter with 201 characters
+        val longTitle = "a".repeat(201)
+
+        // When
+        val result = useCase.execute(
+            query = "test",
+            titleFilter = longTitle
+        )
+
+        // Then
+        assertTrue("Should return error for long title filter", result is Result.Error)
+        val error = (result as Result.Error).error
+        assertEquals("Should return validation error", DataError.Remote.MALFORMED_REQUEST, error)
+        assertEquals("Should not call remote data source", 0, mockRemoteDataSource.searchBooksCallCount)
+    }
+
+    @Test
+    fun `execute accepts title filter at exactly 200 characters`() = runTest {
+        // Given - Title filter with exactly 200 characters
+        val maxTitle = "a".repeat(200)
+
+        // When
+        val result = useCase.execute(
+            query = "test",
+            titleFilter = maxTitle
+        )
+
+        // Then
+        assertTrue("Should return success for max length title", result is Result.Success)
+        assertEquals("Should call remote data source", 1, mockRemoteDataSource.searchBooksCallCount)
+    }
+
+    @Test
+    fun `execute rejects when multiple filters exceed limits`() = runTest {
+        // Given - Both query and filters exceeding limits
+        val longQuery = "a".repeat(201)
+        val longAuthor = "b".repeat(101)
+        val longTitle = "c".repeat(201)
+
+        // When
+        val result = useCase.execute(
+            query = longQuery,
+            authorFilter = longAuthor,
+            titleFilter = longTitle
+        )
+
+        // Then
+        assertTrue("Should return error when any field exceeds limit", result is Result.Error)
+        val error = (result as Result.Error).error
+        assertEquals("Should return validation error", DataError.Remote.MALFORMED_REQUEST, error)
+        assertEquals("Should not call remote data source", 0, mockRemoteDataSource.searchBooksCallCount)
+    }
 }

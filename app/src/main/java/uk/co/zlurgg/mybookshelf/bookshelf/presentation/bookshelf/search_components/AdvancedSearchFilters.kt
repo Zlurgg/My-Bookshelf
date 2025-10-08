@@ -129,7 +129,12 @@ fun AdvancedSearchFilters(
 
                     OutlinedTextField(
                         value = authorFilter,
-                        onValueChange = onAuthorFilterChange,
+                        onValueChange = { newValue ->
+                            // UX: Prevent typing beyond 100 chars (UseCase also validates)
+                            if (newValue.length <= 100) {
+                                onAuthorFilterChange(newValue)
+                            }
+                        },
                         label = { Text(stringResource(id = R.string.filter_by_author), style = MaterialTheme.typography.labelSmall) },
                         placeholder = { Text(stringResource(id = R.string.author_hint), style = MaterialTheme.typography.labelSmall) },
                         textStyle = MaterialTheme.typography.bodySmall,
@@ -140,7 +145,12 @@ fun AdvancedSearchFilters(
 
                     OutlinedTextField(
                         value = titleFilter,
-                        onValueChange = onTitleFilterChange,
+                        onValueChange = { newValue ->
+                            // UX: Prevent typing beyond 200 chars (UseCase also validates)
+                            if (newValue.length <= 200) {
+                                onTitleFilterChange(newValue)
+                            }
+                        },
                         label = { Text(stringResource(id = R.string.filter_by_title), style = MaterialTheme.typography.labelSmall) },
                         placeholder = { Text(stringResource(id = R.string.title_hint), style = MaterialTheme.typography.labelSmall) },
                         textStyle = MaterialTheme.typography.bodySmall,

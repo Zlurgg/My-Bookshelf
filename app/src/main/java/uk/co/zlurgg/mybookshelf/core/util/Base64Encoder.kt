@@ -13,8 +13,12 @@ import java.util.zip.GZIPOutputStream
  * 2. URL-safe Base64 encoding (avoids problematic URL characters)
  *
  * This allows typical 5-book shelves to fit under 2KB URL length limits.
+ *
+ * Security: Decompression has a 10MB size limit to prevent ZIP bomb attacks.
  */
 object Base64Encoder {
+
+    private const val MAX_DECOMPRESSED_SIZE = 10 * 1024 * 1024 // 10MB
 
     /**
      * Encodes a string with GZip compression and URL-safe Base64 encoding.
@@ -42,9 +46,11 @@ object Base64Encoder {
     /**
      * Decodes a Base64 encoded and GZip compressed string back to the original.
      *
+     * Security: Enforces a 10MB decompression limit to prevent ZIP bomb attacks.
+     *
      * @param encoded The URL-safe Base64 encoded string
      * @return The original uncompressed string
-     * @throws IllegalArgumentException if Base64 decoding fails
+     * @throws IllegalArgumentException if Base64 decoding fails or size limit exceeded
      * @throws Exception if GZip decompression fails
      */
     fun decode(encoded: String): String {
@@ -54,9 +60,27 @@ object Base64Encoder {
             android.util.Base64.URL_SAFE
         )
 
-        // Step 2: GZip decompression
+        // Step 2: GZip decompression with size limit (ZIP bomb protection)
         return GZIPInputStream(compressed.inputStream()).use { gzip ->
-            gzip.readBytes().toString(Charsets.UTF_8)
+            val buffer = ByteArrayOutputStream()
+            val chunk = ByteArray(8192)
+            var totalRead = 0
+            var bytesRead: Int
+
+            while (gzip.read(chunk).also { bytesRead = it } != -1) {
+                totalRead += bytesRead
+
+                // Check size limit before writing
+                if (totalRead > MAX_DECOMPRESSED_SIZE) {
+                    throw IllegalArgumentException(
+                        "Decompressed data exceeds $MAX_DECOMPRESSED_SIZE byte limit (potential ZIP bomb)"
+                    )
+                }
+
+                buffer.write(chunk, 0, bytesRead)
+            }
+
+            buffer.toByteArray().toString(Charsets.UTF_8)
         }
     }
 }
