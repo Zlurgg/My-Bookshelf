@@ -164,3 +164,30 @@ class MockGetShelfByIdUseCase : GetShelfByIdUseCase {
         shouldReturnError = false
     }
 }
+
+class MockRenameShelfUseCase : RenameShelfUseCase {
+    var callCount = 0
+    var lastShelfId: String? = null
+    var lastNewName: String? = null
+    var shouldReturnError = false
+    var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
+
+    override suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local> {
+        callCount++
+        lastShelfId = shelfId
+        lastNewName = newName
+        return if (shouldReturnError) {
+            Result.Error(errorToReturn)
+        } else {
+            Result.Success(Unit)
+        }
+    }
+
+    fun reset() {
+        callCount = 0
+        lastShelfId = null
+        lastNewName = null
+        shouldReturnError = false
+        errorToReturn = DataError.Local.UNKNOWN
+    }
+}

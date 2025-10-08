@@ -11,4 +11,6 @@ data class BookcaseState(
     val operationSuccess: Boolean = false,
     val bookCounts: Map<String, Int> = emptyMap(),
     val isReorderMode: Boolean = false,
+    val showRenameDialog: Boolean = false,
+    val shelfToRename: Bookshelf? = null,
 )

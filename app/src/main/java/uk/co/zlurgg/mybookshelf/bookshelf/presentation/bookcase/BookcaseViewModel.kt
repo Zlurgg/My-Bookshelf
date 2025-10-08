@@ -113,6 +113,28 @@ class BookcaseViewModel(
             is BookcaseAction.OnBookshelfClick -> {
                 // no-op: handled by the screen root for navigation
             }
+
+            is BookcaseAction.ShowRenameDialog -> {
+                _state.update {
+                    it.copy(
+                        showRenameDialog = true,
+                        shelfToRename = action.bookshelf
+                    )
+                }
+            }
+
+            is BookcaseAction.DismissRenameDialog -> {
+                _state.update {
+                    it.copy(
+                        showRenameDialog = false,
+                        shelfToRename = null
+                    )
+                }
+            }
+
+            is BookcaseAction.OnRenameShelf -> {
+                renameShelf(action.shelfId, action.newName)
+            }
         }
     }
 
@@ -189,6 +211,39 @@ class BookcaseViewModel(
                         )
                     }
                     loadBookshelves()
+                }
+            }
+        }
+    }
+
+    private fun renameShelf(shelfId: String, newName: String) {
+        viewModelScope.launch {
+            when (val renameResult = bookcaseUseCases.renameShelf.execute(shelfId, newName)) {
+                is Result.Success -> {
+                    // Update the shelf name in the current state
+                    _state.update { current ->
+                        val updatedShelves = current.bookshelves.map { shelf ->
+                            if (shelf.id == shelfId) {
+                                shelf.copy(name = newName)
+                            } else {
+                                shelf
+                            }
+                        }
+                        current.copy(
+                            bookshelves = updatedShelves,
+                            showRenameDialog = false,
+                            shelfToRename = null,
+                            operationSuccess = true,
+                            errorMessage = null
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(renameResult.error, "rename shelf")
+                        )
+                    }
                 }
             }
         }

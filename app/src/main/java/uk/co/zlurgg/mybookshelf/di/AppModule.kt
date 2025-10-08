@@ -71,6 +71,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelves
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCaseImpl
@@ -125,6 +127,7 @@ val appModule = module {
     singleOf(::GetAllShelvesUseCaseImpl).bind<GetAllShelvesUseCase>()
     singleOf(::ReorderShelvesUseCaseImpl).bind<ReorderShelvesUseCase>()
     singleOf(::GetShelfByIdUseCaseImpl).bind<GetShelfByIdUseCase>()
+    singleOf(::RenameShelfUseCaseImpl).bind<RenameShelfUseCase>()
     singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
     singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
     singleOf(::ShareBookshelfUseCaseImpl).bind<ShareBookshelfUseCase>()
@@ -132,7 +135,7 @@ val appModule = module {
     // UseCase Facades
     single { BookDetailUseCases(get(), get(), get(), get(), get()) }
     single { BookshelfUseCases(get(), get(), get(), get(), get(), get()) }
-    single { BookcaseUseCases(get(), get(), get(), get(), get()) }
+    single { BookcaseUseCases(get(), get(), get(), get(), get(), get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 

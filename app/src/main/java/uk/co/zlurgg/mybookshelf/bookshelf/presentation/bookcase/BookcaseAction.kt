@@ -13,4 +13,7 @@ sealed interface BookcaseAction {
     data object ResetOperationState : BookcaseAction
     data object ToggleReorderMode : BookcaseAction
     data class OnReorderShelf(val bookshelf: Bookshelf, val newPosition: Int) : BookcaseAction
+    data class ShowRenameDialog(val bookshelf: Bookshelf) : BookcaseAction
+    data object DismissRenameDialog : BookcaseAction
+    data class OnRenameShelf(val shelfId: String, val newName: String) : BookcaseAction
 }
