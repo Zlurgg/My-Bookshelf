@@ -60,6 +60,11 @@
     <string name="cd_unlock_reorder_mode">Enter reorder mode</string>
     <string name="dialog_rename_shelf_title">Rename Shelf</string>
     <string name="action_rename">Rename</string>
+    <string name="cd_shelf_options">Shelf options</string>
+    <string name="menu_rename_shelf">Rename</string>
+    <string name="menu_delete_shelf">Delete</string>
+    <string name="menu_share_shelf">Share</string>
+    <string name="menu_duplicate_shelf">Duplicate</string>
 
     <!-- Deep link import -->
     <string name="import_success_title">Import Successful</string>

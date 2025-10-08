@@ -161,6 +161,9 @@ fun BookcaseScreen(
                         onLongClick = { shelfToRename ->
                             onAction(BookcaseAction.ShowRenameDialog(shelfToRename))
                         },
+                        onDelete = { shelfToDelete ->
+                            onAction(BookcaseAction.OnRemoveBookShelf(shelfToDelete))
+                        },
                         modifier = Modifier.animateItem(),
                         bookCountOverride = state.bookCounts[shelf.id] ?: 0,
                         isReorderMode = state.isReorderMode,
