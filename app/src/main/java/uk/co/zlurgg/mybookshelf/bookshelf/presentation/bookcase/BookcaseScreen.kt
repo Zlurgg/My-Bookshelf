@@ -188,6 +188,7 @@ fun BookcaseScreen(
     if (state.showRenameDialog && state.shelfToRename != null) {
         RenameShelfDialog(
             currentName = state.shelfToRename.name,
+            errorMessage = state.renameError,
             onDismiss = {
                 onAction(BookcaseAction.DismissRenameDialog)
             },

@@ -127,7 +127,8 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showRenameDialog = false,
-                        shelfToRename = null
+                        shelfToRename = null,
+                        renameError = null
                     )
                 }
             }
@@ -234,14 +235,16 @@ class BookcaseViewModel(
                             showRenameDialog = false,
                             shelfToRename = null,
                             operationSuccess = true,
-                            errorMessage = null
+                            errorMessage = null,
+                            renameError = null
                         )
                     }
                 }
                 is Result.Error -> {
+                    // Set inline error and keep dialog open so user can see it
                     _state.update {
                         it.copy(
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(renameResult.error, "rename shelf")
+                            renameError = ErrorFormatter.formatDataErrorMessage(renameResult.error, "rename shelf")
                         )
                     }
                 }

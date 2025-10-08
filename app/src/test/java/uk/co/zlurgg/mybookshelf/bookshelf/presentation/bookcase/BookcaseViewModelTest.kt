@@ -307,17 +307,60 @@ class BookcaseViewModelTest {
         // Wait for initial load
         stateHelper.awaitState()
 
+        // Show rename dialog first
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.ShowRenameDialog(testShelf))
+        }
+
         // When - rename shelf with error
         val stateAfterRename = stateHelper.executeAndGetState {
             viewModel.onAction(BookcaseAction.OnRenameShelf("shelf-1", ""))  // Empty name causes error
         }
 
-        // Then
-        assertNotNull("Should set error message", stateAfterRename?.errorMessage)
+        // Then - Error should be inline in dialog, not global snackbar
+        assertNotNull("Should set inline rename error", stateAfterRename?.renameError)
         assertTrue("Should contain operation context",
-            stateAfterRename?.errorMessage?.contains("Failed to rename shelf") == true)
+            stateAfterRename?.renameError?.contains("Failed to rename shelf") == true)
+        assertTrue("Dialog should stay open to show error", stateAfterRename?.showRenameDialog == true)
         val shelf = stateAfterRename?.bookshelves?.find { it.id == "shelf-1" }
         assertTrue("Should not change shelf name", shelf?.name == "Old Name")
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `dismissing rename dialog clears inline error`() = runTest(testDispatcher) {
+        // Given
+        val testShelf = TestShelfBuilder().withId("shelf-1").withName("Old Name").build()
+        val bookcase = Bookcase(id = "bookcase", bookshelves = listOf(testShelf), bookCounts = emptyMap())
+        mockGetAllShelves.configureBookcase(bookcase)
+        mockRenameShelf.shouldReturnError = true
+        mockRenameShelf.errorToReturn = DataError.Local.VALIDATION_ERROR
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // Show rename dialog
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.ShowRenameDialog(testShelf))
+        }
+
+        // Trigger error
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.OnRenameShelf("shelf-1", ""))
+        }
+
+        // When - dismiss dialog
+        val stateAfterDismiss = stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.DismissRenameDialog)
+        }
+
+        // Then
+        assertFalse("Should hide rename dialog", stateAfterDismiss?.showRenameDialog == true)
+        assertTrue("Should clear shelf to rename", stateAfterDismiss?.shelfToRename == null)
+        assertTrue("Should clear inline rename error", stateAfterDismiss?.renameError == null)
         stateHelper.cleanup()
     }
 }

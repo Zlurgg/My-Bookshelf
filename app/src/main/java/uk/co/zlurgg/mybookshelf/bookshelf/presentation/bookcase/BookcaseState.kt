@@ -13,4 +13,5 @@ data class BookcaseState(
     val isReorderMode: Boolean = false,
     val showRenameDialog: Boolean = false,
     val shelfToRename: Bookshelf? = null,
+    val renameError: String? = null,
 )
