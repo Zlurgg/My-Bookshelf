@@ -275,31 +275,17 @@ fun BookshelfScreen(
                 }
                 override val onAddBook: (Book) -> Unit = { book ->
                     onAction(BookshelfAction.OnAddBookClick(book))
-                    onAction(BookshelfAction.OnDismissSearchDialog)
+                    // Keep dialog open for bulk adding (e.g., multiple books from same series)
                 }
                 override val onRemoveBook: (Book) -> Unit = { book ->
                     onAction(BookshelfAction.OnRemoveBook(book))
-                    onAction(BookshelfAction.OnDismissSearchDialog)
+                    // Keep dialog open for bulk removing
                 }
                 override val onBookClick: (Book) -> Unit = { book ->
                     onAction(BookshelfAction.OnBookClick(book))
                 }
                 override val onDismiss: () -> Unit = {
                     onAction(BookshelfAction.OnDismissSearchDialog)
-                }
-            }
-        )
-    }
-
-    // Share success dialog
-    if (state.shareSuccess) {
-        AlertDialog(
-            onDismissRequest = { onAction(BookshelfAction.OnDismissShareSuccess) },
-            title = { Text("Share Successful") },
-            text = { Text("Bookshelf shared successfully!") },
-            confirmButton = {
-                Button(onClick = { onAction(BookshelfAction.OnDismissShareSuccess) }) {
-                    Text("OK")
                 }
             }
         )
