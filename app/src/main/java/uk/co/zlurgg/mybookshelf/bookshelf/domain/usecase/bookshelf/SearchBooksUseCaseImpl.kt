@@ -18,6 +18,12 @@ class SearchBooksUseCaseImpl(
     private val bookSorter: BookSorter
 ) : SearchBooksUseCase {
 
+    companion object {
+        private const val MAX_QUERY_LENGTH = 200
+        private const val MAX_AUTHOR_FILTER_LENGTH = 100
+        private const val MAX_TITLE_FILTER_LENGTH = 200
+    }
+
     override suspend fun execute(
         query: String,
         sortBy: BookSearchSort,
@@ -25,6 +31,19 @@ class SearchBooksUseCaseImpl(
         authorFilter: String?,
         titleFilter: String?
     ): Result<List<Book>, DataError.Remote> {
+        // Validate input lengths to prevent abuse and performance issues
+        if (query.length > MAX_QUERY_LENGTH) {
+            return Result.Error(DataError.Remote.MALFORMED_REQUEST)
+        }
+
+        if (authorFilter != null && authorFilter.length > MAX_AUTHOR_FILTER_LENGTH) {
+            return Result.Error(DataError.Remote.MALFORMED_REQUEST)
+        }
+
+        if (titleFilter != null && titleFilter.length > MAX_TITLE_FILTER_LENGTH) {
+            return Result.Error(DataError.Remote.MALFORMED_REQUEST)
+        }
+
         // Determine server-side sort parameter
         val serverSort = if (sortBy.useServerSide) sortBy.serverSortParam else null
 

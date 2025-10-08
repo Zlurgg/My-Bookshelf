@@ -245,4 +245,42 @@ class Base64EncoderTest {
         // Verify decoding works
         assertEquals(fiveBookShelf, Base64Encoder.decode(encoded))
     }
+
+    @Test
+    fun decodeDataUnder10MBSucceeds() {
+        // Given - Data that will decompress to ~1MB (well under 10MB limit)
+        val largeLegitimateData = "A".repeat(1_000_000) // 1MB of uncompressed data
+
+        // When
+        val encoded = Base64Encoder.encode(largeLegitimateData)
+        val decoded = Base64Encoder.decode(encoded)
+
+        // Then
+        assertEquals("Data under 10MB should decode successfully", largeLegitimateData, decoded)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun decodeDataExceeding10MBThrowsException() {
+        // Given - Data that will decompress to >10MB (ZIP bomb protection)
+        val massiveData = "A".repeat(11_000_000) // 11MB of uncompressed data
+
+        // When
+        val encoded = Base64Encoder.encode(massiveData)
+        Base64Encoder.decode(encoded)
+
+        // Then - Should throw IllegalArgumentException before decompressing full data
+    }
+
+    @Test
+    fun decodeDataAtExactly10MBSucceeds() {
+        // Given - Data that decompresses to exactly 10MB (edge case)
+        val exactLimit = "B".repeat(10_485_760) // Exactly 10MB
+
+        // When
+        val encoded = Base64Encoder.encode(exactLimit)
+        val decoded = Base64Encoder.decode(encoded)
+
+        // Then
+        assertEquals("Data at exactly 10MB limit should succeed", exactLimit, decoded)
+    }
 }
