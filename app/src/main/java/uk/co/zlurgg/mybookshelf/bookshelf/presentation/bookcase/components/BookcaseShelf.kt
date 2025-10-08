@@ -44,6 +44,7 @@ fun BookcaseShelf(
     shelf: Bookshelf,
     onRemoveBookshelf: (Bookshelf) -> Unit,
     onBookshelfClick: (Bookshelf) -> Unit,
+    onLongClick: (Bookshelf) -> Unit,
     modifier: Modifier = Modifier,
     bookCountOverride: Int? = null,
     isReorderMode: Boolean = false,
@@ -85,7 +86,8 @@ fun BookcaseShelf(
                 shelf = shelf,
                 bookCount = bookCount,
                 isReorderMode = true,
-                onBookshelfClick = onBookshelfClick
+                onBookshelfClick = onBookshelfClick,
+                onLongClick = onLongClick
             )
         }
     } else {
@@ -155,7 +157,8 @@ fun BookcaseShelf(
                 shelf = shelf,
                 bookCount = bookCount,
                 isReorderMode = false,
-                onBookshelfClick = onBookshelfClick
+                onBookshelfClick = onBookshelfClick,
+                onLongClick = onLongClick
             )
         }
     }
@@ -171,12 +174,14 @@ fun BookcaseShelfPreview() {
                 shelf = bookshelf,
                 onRemoveBookshelf = {},
                 onBookshelfClick = {},
+                onLongClick = {},
                 isReorderMode = false
             )
             BookcaseShelf(
                 shelf = bookshelf.copy(name = "My Reading List"),
                 onRemoveBookshelf = {},
                 onBookshelfClick = {},
+                onLongClick = {},
                 isReorderMode = true
             )
         }
