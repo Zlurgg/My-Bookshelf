@@ -15,12 +15,14 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
 
 /**
@@ -42,12 +44,14 @@ class BookcaseViewModelTest {
     private val mockCreateShelf = MockCreateShelfUseCase()
     private val mockDeleteShelf = MockDeleteShelfUseCase()
     private val mockReorderShelves = MockReorderShelvesUseCase()
+    private val mockRenameShelf = MockRenameShelfUseCase()
 
     @After
     fun tearDown() {
         mockCreateShelf.reset()
         mockDeleteShelf.reset()
         mockReorderShelves.reset()
+        mockRenameShelf.reset()
     }
 
     private fun createViewModel(): BookcaseViewModel {
@@ -56,7 +60,8 @@ class BookcaseViewModelTest {
             createShelf = mockCreateShelf,
             deleteShelf = mockDeleteShelf,
             reorderShelves = mockReorderShelves,
-            getShelfById = MockGetShelfByIdUseCase()
+            getShelfById = MockGetShelfByIdUseCase(),
+            renameShelf = mockRenameShelf
         )
         return BookcaseViewModel(useCases)
     }
@@ -219,4 +224,100 @@ class BookcaseViewModelTest {
 
     // Note: Load shelves error test skipped - tested via Flow catch in init block,
     // requires complex Flow error mocking. Error handling code path validated by other tests.
+
+    @Test
+    fun `ShowRenameDialog action sets shelf to rename and shows dialog`() = runTest(testDispatcher) {
+        // Given
+        val testShelf = TestShelfBuilder().withId("shelf-1").withName("Test Shelf").build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // When - show rename dialog
+        val stateAfterShow = stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.ShowRenameDialog(testShelf))
+        }
+
+        // Then
+        assertTrue("Should show rename dialog", stateAfterShow?.showRenameDialog == true)
+        assertTrue("Should set shelf to rename", stateAfterShow?.shelfToRename?.id == "shelf-1")
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `DismissRenameDialog action hides dialog and clears shelf`() = runTest(testDispatcher) {
+        // Given
+        val testShelf = TestShelfBuilder().withId("shelf-1").withName("Test Shelf").build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Show dialog first
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.ShowRenameDialog(testShelf))
+        }
+
+        // When - dismiss dialog
+        val stateAfterDismiss = stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.DismissRenameDialog)
+        }
+
+        // Then
+        assertFalse("Should hide rename dialog", stateAfterDismiss?.showRenameDialog == true)
+        assertTrue("Should clear shelf to rename", stateAfterDismiss?.shelfToRename == null)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `rename shelf success updates shelf name in list`() = runTest(testDispatcher) {
+        // Given
+        val testShelf = TestShelfBuilder().withId("shelf-1").withName("Old Name").build()
+        val bookcase = Bookcase(id = "bookcase", bookshelves = listOf(testShelf), bookCounts = emptyMap())
+        mockGetAllShelves.configureBookcase(bookcase)
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When - rename shelf
+        val stateAfterRename = stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.OnRenameShelf("shelf-1", "New Name"))
+        }
+
+        // Then
+        val renamedShelf = stateAfterRename?.bookshelves?.find { it.id == "shelf-1" }
+        assertTrue("Should update shelf name", renamedShelf?.name == "New Name")
+        assertFalse("Should hide rename dialog", stateAfterRename?.showRenameDialog == true)
+        assertTrue("Should set operation success", stateAfterRename?.operationSuccess == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `rename shelf handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val testShelf = TestShelfBuilder().withId("shelf-1").withName("Old Name").build()
+        val bookcase = Bookcase(id = "bookcase", bookshelves = listOf(testShelf), bookCounts = emptyMap())
+        mockGetAllShelves.configureBookcase(bookcase)
+        mockRenameShelf.shouldReturnError = true
+        mockRenameShelf.errorToReturn = DataError.Local.VALIDATION_ERROR
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When - rename shelf with error
+        val stateAfterRename = stateHelper.executeAndGetState {
+            viewModel.onAction(BookcaseAction.OnRenameShelf("shelf-1", ""))  // Empty name causes error
+        }
+
+        // Then
+        assertNotNull("Should set error message", stateAfterRename?.errorMessage)
+        assertTrue("Should contain operation context",
+            stateAfterRename?.errorMessage?.contains("Failed to rename shelf") == true)
+        val shelf = stateAfterRename?.bookshelves?.find { it.id == "shelf-1" }
+        assertTrue("Should not change shelf name", shelf?.name == "Old Name")
+        stateHelper.cleanup()
+    }
 }
