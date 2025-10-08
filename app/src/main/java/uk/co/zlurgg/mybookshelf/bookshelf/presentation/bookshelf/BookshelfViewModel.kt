@@ -117,9 +117,6 @@ class BookshelfViewModel(
             BookshelfAction.OnShareShelf -> {
                 shareShelf()
             }
-            BookshelfAction.OnDismissShareSuccess -> {
-                _state.update { it.copy(shareSuccess = false) }
-            }
             is BookshelfAction.OnSortChange -> {
                 _state.update { it.copy(selectedSort = action.sort) }
 
@@ -261,16 +258,12 @@ class BookshelfViewModel(
 
     private fun shareShelf() {
         viewModelScope.launch {
-            _state.update { it.copy(isShareLoading = true, errorMessage = null, shareSuccess = false) }
+            _state.update { it.copy(isShareLoading = true, errorMessage = null) }
 
             when (val shareResult = bookshelfUseCases.shareBookshelf.execute(shelfId)) {
                 is Result.Success -> {
-                    _state.update {
-                        it.copy(
-                            isShareLoading = false,
-                            shareSuccess = true
-                        )
-                    }
+                    // Share sheet opened successfully - no success dialog needed
+                    _state.update { it.copy(isShareLoading = false) }
                 }
                 is Result.Error -> {
                     _state.update {

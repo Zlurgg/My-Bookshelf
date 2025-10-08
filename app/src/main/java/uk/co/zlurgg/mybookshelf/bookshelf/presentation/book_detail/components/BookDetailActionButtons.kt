@@ -39,11 +39,13 @@ fun BookDetailActionButtons(
                 Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.action_remove_short))
             }
         }
-        FloatingActionButton(
-            onClick = { onAction(BookDetailAction.OnPurchaseClick) },
-            containerColor = if (book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
-        ) {
-            Icon(Icons.Default.ShoppingCart, contentDescription = stringResource(id = R.string.action_purchase))
-        }
+
+        // TODO: Re-enable when affiliate purchasing is implemented
+        // FloatingActionButton(
+        //     onClick = { onAction(BookDetailAction.OnPurchaseClick) },
+        //     containerColor = if (book.purchased) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondary
+        // ) {
+        //     Icon(Icons.Default.ShoppingCart, contentDescription = stringResource(id = R.string.action_purchase))
+        // }
     }
 }

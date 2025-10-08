@@ -18,5 +18,4 @@ sealed interface BookshelfAction {
     data object OnBackClick : BookshelfAction
     data object OnToggleTidyMode : BookshelfAction
     data object OnShareShelf : BookshelfAction
-    data object OnDismissShareSuccess : BookshelfAction
 }

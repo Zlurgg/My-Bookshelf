@@ -102,8 +102,7 @@ class BookshelfViewModelTest {
             viewModel.onAction(BookshelfAction.OnShareShelf)
         }
 
-        // Then
-        assertTrue("Should set share success flag", stateAfterShare?.shareSuccess == true)
+        // Then - Share sheet opened, no success dialog shown
         assertFalse("Should clear loading flag", stateAfterShare?.isShareLoading == true)
         stateHelper.cleanup()
     }
@@ -124,24 +123,6 @@ class BookshelfViewModelTest {
         // Then
         assertNotNull("Should set error message", stateAfterShare?.errorMessage)
         assertFalse("Should clear loading flag", stateAfterShare?.isShareLoading == true)
-        assertFalse("Should not set success flag", stateAfterShare?.shareSuccess == true)
-        stateHelper.cleanup()
-    }
-
-    @Test
-    fun `dismiss share success dialog clears flag`() = runTest(testDispatcher) {
-        // Given
-        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
-        val viewModel = createViewModel()
-        val stateHelper = viewModel.state.testHelper(this)
-
-        // When
-        val stateAfterDismiss = stateHelper.executeAndGetState {
-            viewModel.onAction(BookshelfAction.OnDismissShareSuccess)
-        }
-
-        // Then
-        assertFalse("Should clear share success flag", stateAfterDismiss?.shareSuccess == true)
         stateHelper.cleanup()
     }
 
