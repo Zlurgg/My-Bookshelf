@@ -11,8 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -41,9 +39,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_componen
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchState
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
 @Composable
