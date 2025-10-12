@@ -29,3 +29,20 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         db.execSQL("ALTER TABLE BookEntity_new RENAME TO BookEntity")
     }
 }
+
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add personal metadata columns (NOT exported for privacy)
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN readingStatus TEXT NOT NULL DEFAULT 'WANT_TO_READ'")
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN personalRating REAL")
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN personalNotes TEXT")
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN dateAdded INTEGER")
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN purchaseDate INTEGER")
+
+        // Add enhanced metadata columns (shareable)
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN isbn TEXT")
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN publisher TEXT")
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN publishDate TEXT")
+        db.execSQL("ALTER TABLE BookEntity ADD COLUMN internetArchiveId TEXT")
+    }
+}
