@@ -13,5 +13,11 @@ data class Book(
     val numPages: Int?,
     val numEditions: Int,
     val purchased: Boolean,
-    val spineColor: Int // ARGB color as Int - generated once and persisted for consistency
+    val spineColor: Int, // ARGB color as Int - generated once and persisted for consistency
+
+    // Enhanced metadata from API
+    val isbn: String? = null,
+    val publisher: String? = null,
+    val publishDate: String? = null,
+    val internetArchiveId: String? = null
 )
