@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 
 
@@ -50,6 +51,13 @@ fun Book.toBookEntity(): BookEntity {
         numEditions = numEditions,
         purchased = purchased,
         spineColor = spineColor,
+        // Personal metadata
+        readingStatus = readingStatus.name,
+        personalRating = personalRating,
+        personalNotes = personalNotes,
+        dateAdded = dateAdded,
+        purchaseDate = purchaseDate,
+        // Enhanced metadata
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
@@ -72,6 +80,13 @@ fun BookEntity.toBook(): Book {
         numEditions = numEditions,
         purchased = purchased,
         spineColor = spineColor,
+        // Personal metadata
+        readingStatus = ReadingStatus.valueOf(readingStatus),
+        personalRating = personalRating,
+        personalNotes = personalNotes,
+        dateAdded = dateAdded,
+        purchaseDate = purchaseDate,
+        // Enhanced metadata
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,

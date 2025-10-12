@@ -19,7 +19,14 @@ data class BookEntity(
     val purchased: Boolean,
     val spineColor: Int,
 
-    // Enhanced metadata from API
+    // Personal metadata (NOT exported for privacy)
+    val readingStatus: String = "WANT_TO_READ",
+    val personalRating: Float? = null,
+    val personalNotes: String? = null,
+    val dateAdded: Long? = null,
+    val purchaseDate: Long? = null,
+
+    // Enhanced metadata from API (shareable)
     val isbn: String? = null,
     val publisher: String? = null,
     val publishDate: String? = null,
