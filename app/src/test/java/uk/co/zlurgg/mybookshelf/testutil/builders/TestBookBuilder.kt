@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.testutil.builders
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 
 /**
  * Builder pattern for creating test Book instances.
@@ -21,6 +22,19 @@ class TestBookBuilder {
     private var purchased = false
     private var spineColor = 0xFF112233.toInt()
 
+    // Personal metadata (NOT exported for privacy)
+    private var readingStatus = ReadingStatus.WANT_TO_READ
+    private var personalRating: Float? = null
+    private var personalNotes: String? = null
+    private var dateAdded: Long? = null
+    private var purchaseDate: Long? = null
+
+    // Enhanced metadata from API (shareable)
+    private var isbn: String? = null
+    private var publisher: String? = null
+    private var publishDate: String? = null
+    private var internetArchiveId: String? = null
+
     fun withId(id: String) = apply { this.id = id }
     fun withTitle(title: String) = apply { this.title = title }
     fun withImageUrl(imageUrl: String) = apply { this.imageUrl = imageUrl }
@@ -35,6 +49,19 @@ class TestBookBuilder {
     fun withPurchased(purchased: Boolean) = apply { this.purchased = purchased }
     fun withSpineColor(color: Int) = apply { this.spineColor = color }
 
+    // Personal metadata
+    fun withReadingStatus(status: ReadingStatus) = apply { this.readingStatus = status }
+    fun withPersonalRating(rating: Float?) = apply { this.personalRating = rating }
+    fun withPersonalNotes(notes: String?) = apply { this.personalNotes = notes }
+    fun withDateAdded(date: Long?) = apply { this.dateAdded = date }
+    fun withPurchaseDate(date: Long?) = apply { this.purchaseDate = date }
+
+    // Enhanced metadata
+    fun withIsbn(isbn: String?) = apply { this.isbn = isbn }
+    fun withPublisher(publisher: String?) = apply { this.publisher = publisher }
+    fun withPublishDate(date: String?) = apply { this.publishDate = date }
+    fun withInternetArchiveId(id: String?) = apply { this.internetArchiveId = id }
+
     fun build() = Book(
         id = id,
         title = title,
@@ -48,7 +75,18 @@ class TestBookBuilder {
         numPages = numPages,
         numEditions = numEditions,
         purchased = purchased,
-        spineColor = spineColor
+        spineColor = spineColor,
+        // Personal metadata
+        readingStatus = readingStatus,
+        personalRating = personalRating,
+        personalNotes = personalNotes,
+        dateAdded = dateAdded,
+        purchaseDate = purchaseDate,
+        // Enhanced metadata
+        isbn = isbn,
+        publisher = publisher,
+        publishDate = publishDate,
+        internetArchiveId = internetArchiveId
     )
 
     companion object {

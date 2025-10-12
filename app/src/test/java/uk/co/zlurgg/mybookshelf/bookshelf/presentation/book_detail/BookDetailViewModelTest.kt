@@ -15,12 +15,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailsWithShelfStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetBookDetailsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookPurchaseUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpdateBookMetadataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -47,6 +49,7 @@ class BookDetailViewModelTest {
     private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
     private val mockUpsertBook = SimpleUpsertBookUseCase()
     private val mockToggleBookPurchase = SimpleToggleBookPurchaseUseCase()
+    private val mockUpdateBookMetadata = SimpleUpdateBookMetadataUseCase()
 
     @After
     fun tearDown() {
@@ -55,6 +58,7 @@ class BookDetailViewModelTest {
         mockRemoveBookFromShelf.reset()
         mockUpsertBook.reset()
         mockToggleBookPurchase.reset()
+        mockUpdateBookMetadata.reset()
     }
 
     private fun createViewModel(): BookDetailViewModel {
@@ -63,7 +67,8 @@ class BookDetailViewModelTest {
             addBookToShelf = mockAddBookToShelf,
             removeBookFromShelf = mockRemoveBookFromShelf,
             upsertBook = mockUpsertBook,
-            toggleBookPurchase = mockToggleBookPurchase
+            toggleBookPurchase = mockToggleBookPurchase,
+            updateBookMetadata = mockUpdateBookMetadata
         )
         return BookDetailViewModel(useCases, "book-1", "test-shelf")
     }
@@ -338,6 +343,23 @@ class BookDetailViewModelTest {
 
         fun reset() {
             bookToReturn = null
+        }
+    }
+
+    private class SimpleUpdateBookMetadataUseCase : UpdateBookMetadataUseCase {
+        var shouldSucceed = true
+
+        override suspend fun execute(
+            bookId: String,
+            readingStatus: ReadingStatus?,
+            personalRating: Float?,
+            personalNotes: String?,
+            purchaseDate: Long?
+        ): Result<Unit, DataError> =
+            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+
+        fun reset() {
+            shouldSucceed = true
         }
     }
 }

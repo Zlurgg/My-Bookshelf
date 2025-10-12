@@ -78,6 +78,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookPurchaseUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookPurchaseUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpdateBookMetadataUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpdateBookMetadataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
@@ -130,10 +132,11 @@ val appModule = module {
     singleOf(::RenameShelfUseCaseImpl).bind<RenameShelfUseCase>()
     singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
     singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
+    singleOf(::UpdateBookMetadataUseCaseImpl).bind<UpdateBookMetadataUseCase>()
     singleOf(::ShareBookshelfUseCaseImpl).bind<ShareBookshelfUseCase>()
 
     // UseCase Facades
-    single { BookDetailUseCases(get(), get(), get(), get(), get()) }
+    single { BookDetailUseCases(get(), get(), get(), get(), get(), get()) }
     single { BookshelfUseCases(get(), get(), get(), get(), get(), get()) }
     single { BookcaseUseCases(get(), get(), get(), get(), get(), get()) }
 
