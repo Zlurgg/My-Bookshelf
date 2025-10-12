@@ -44,7 +44,9 @@ fun PersonalNotesCard(
                 value = notes ?: "",
                 onValueChange = { newNotes ->
                     if (newNotes.length <= 5000) {
-                        onNotesChange(newNotes.ifBlank { null })
+                        // Always send the value (even empty string) so UseCase can distinguish
+                        // between "no update" and "clear field"
+                        onNotesChange(newNotes.trim().ifEmpty { "" })
                     }
                 },
                 label = { Text("Personal notes (private)") },

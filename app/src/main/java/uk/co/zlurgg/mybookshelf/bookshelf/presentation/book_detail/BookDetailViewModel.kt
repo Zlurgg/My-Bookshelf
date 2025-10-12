@@ -36,10 +36,11 @@ class BookDetailViewModel(
                         book = bookDetails.book,
                         onShelf = bookDetails.isOnShelf,
                         isLoading = false,
-                        // Initialize personal metadata from book
+                        // Reactive updates from database - always use latest database values
                         readingStatus = bookDetails.book?.readingStatus ?: currentState.readingStatus,
                         personalRating = bookDetails.book?.personalRating,
-                        personalNotes = bookDetails.book?.personalNotes
+                        personalNotes = bookDetails.book?.personalNotes,
+                        isPurchased = bookDetails.book?.purchased ?: currentState.isPurchased
                     )
                 }
             }
@@ -149,6 +150,7 @@ class BookDetailViewModel(
                         readingStatus = action.status
                     )) {
                         is Result.Success -> {
+                            // Update state immediately following renameShelf pattern
                             _state.update { it.copy(readingStatus = action.status) }
                         }
                         is Result.Error -> {
@@ -166,6 +168,7 @@ class BookDetailViewModel(
                         personalRating = action.rating
                     )) {
                         is Result.Success -> {
+                            // Update state immediately following renameShelf pattern
                             _state.update { it.copy(personalRating = action.rating) }
                         }
                         is Result.Error -> {
@@ -183,7 +186,10 @@ class BookDetailViewModel(
                         personalNotes = action.notes
                     )) {
                         is Result.Success -> {
-                            _state.update { it.copy(personalNotes = action.notes) }
+                            // Update state immediately following renameShelf pattern
+                            // Normalize empty string to null to match database value
+                            val normalizedNotes = action.notes?.ifBlank { null }
+                            _state.update { it.copy(personalNotes = normalizedNotes) }
                         }
                         is Result.Error -> {
                             _state.update {

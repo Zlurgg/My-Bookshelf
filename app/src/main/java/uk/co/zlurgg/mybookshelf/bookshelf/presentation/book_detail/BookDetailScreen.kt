@@ -1,12 +1,11 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,9 +28,16 @@ import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.BookDetailActionButtons
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.BookDetailImage
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.RatingBar
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.BookOverviewCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.RecommendationStatusCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PersonalNotesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.CommunityRatingsCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.DescriptionCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PublicationDetailsCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.LanguagesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PurchasedToggleCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBook
 
 @Composable
@@ -79,57 +85,129 @@ fun BookDetailsScreen(
                     }
                 )
             },
-            floatingActionButton = {
-                BookDetailActionButtons(
-                    book = state.book,
-                    onShelf = state.onShelf,
-                    onAction = onAction
-                )
-            },
             modifier = modifier
         ) { innerPadding ->
-            Column(
+            // Image visibility state
+            var showImageWithSpacing by remember(state.book.imageUrl) {
+                mutableStateOf(state.book.imageUrl.isNotBlank())
+            }
+
+            LazyColumn(
                 modifier = Modifier
                     .padding(innerPadding)
-                    .verticalScroll(rememberScrollState())
-                    .fillMaxSize()
-                    .padding(16.dp)
+                    .fillMaxSize(),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
-                Text(
-                    text = "by ${state.book.authors.joinToString()}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                
-                var showImageWithSpacing by remember(state.book.imageUrl) { mutableStateOf(state.book.imageUrl.isNotBlank()) }
-                
-                if (showImageWithSpacing) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    BookDetailImage(
-                        imageUrl = state.book.imageUrl,
+                // 1. Book Overview Card
+                item {
+                    BookOverviewCard(
                         title = state.book.title,
-                        onImageLoadResult = { success ->
-                            if (!success) {
-                                showImageWithSpacing = false
-                            }
-                        }
+                        authors = state.book.authors,
+                        firstPublishYear = state.book.firstPublishYear,
+                        numPages = state.book.numPages,
+                        numEditions = state.book.numEditions
                     )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                RatingBar(
-                    rating = state.book.averageRating?.toInt() ?: 0,
-                    onRatingChanged = { rating -> onAction(BookDetailAction.OnRateBookDetailClick(rating)) }
-                )
+                // Book Image (if available)
+                if (showImageWithSpacing) {
+                    item {
+                        BookDetailImage(
+                            imageUrl = state.book.imageUrl,
+                            title = state.book.title,
+                            onImageLoadResult = { success ->
+                                if (!success) {
+                                    showImageWithSpacing = false
+                                }
+                            }
+                        )
+                    }
+                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                // 2. Recommendation Status Card (only if on shelf)
+                if (state.onShelf) {
+                    item {
+                        RecommendationStatusCard(
+                            readingStatus = state.readingStatus,
+                            personalRating = state.personalRating,
+                            onReadingStatusChange = { status ->
+                                onAction(BookDetailAction.OnReadingStatusChange(status))
+                            },
+                            onPersonalRatingChange = { rating ->
+                                onAction(BookDetailAction.OnPersonalRatingChange(rating))
+                            }
+                        )
+                    }
+                }
 
-                Text(
-                    text = state.book.description ?: "No description available.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                // 3. Personal Notes Card (only if on shelf)
+                if (state.onShelf) {
+                    item {
+                        PersonalNotesCard(
+                            notes = state.personalNotes,
+                            onNotesChange = { notes ->
+                                onAction(BookDetailAction.OnPersonalNotesChange(notes))
+                            }
+                        )
+                    }
+                }
+
+                // 4. Community Ratings Card
+                item {
+                    CommunityRatingsCard(
+                        averageRating = state.book.averageRating,
+                        ratingCount = state.book.ratingCount
+                    )
+                }
+
+                // 5. Description Card
+                item {
+                    DescriptionCard(
+                        description = state.book.description
+                    )
+                }
+
+                // 6. Publication Details Card
+                item {
+                    PublicationDetailsCard(
+                        isbn = state.book.isbn,
+                        publisher = state.book.publisher,
+                        publishDate = state.book.publishDate,
+                        internetArchiveId = state.book.internetArchiveId
+                    )
+                }
+
+                // 7. Languages Card
+                item {
+                    LanguagesCard(
+                        languages = state.book.languages
+                    )
+                }
+
+                // 8. Purchased Toggle Card
+                item {
+                    PurchasedToggleCard(
+                        purchased = state.isPurchased,
+                        onPurchaseToggle = {
+                            onAction(BookDetailAction.OnPurchaseClick)
+                        }
+                    )
+                }
+
+                // 9. Shelf Actions Card
+                item {
+                    ShelfActionsCard(
+                        book = state.book,
+                        onShelf = state.onShelf,
+                        onAddToShelf = { book ->
+                            onAction(BookDetailAction.OnAddBookClick(book))
+                        },
+                        onRemoveFromShelf = { book ->
+                            onAction(BookDetailAction.OnRemoveBookClick(book))
+                        }
+                    )
+                }
             }
         }
     } else {
