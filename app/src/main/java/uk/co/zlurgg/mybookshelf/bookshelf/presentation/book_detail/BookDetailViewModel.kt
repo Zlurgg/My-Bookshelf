@@ -2,9 +2,12 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
@@ -23,26 +26,29 @@ class BookDetailViewModel(
     private val _state = MutableStateFlow(BookDetailState())
     val state: StateFlow<BookDetailState> = _state.asStateFlow()
 
+    // Job for debounced auto-save of personal notes
+    private var saveNotesJob: Job? = null
+
     init {
         loadBookDetails()
     }
 
     private fun loadBookDetails() {
         viewModelScope.launch {
-            // Use GetBookDetailsUseCase to get reactive book details and shelf status
-            bookDetailUseCases.getBookDetails.execute(bookId, shelfId).collect { bookDetails ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        book = bookDetails.book,
-                        onShelf = bookDetails.isOnShelf,
-                        isLoading = false,
-                        // Reactive updates from database - always use latest database values
-                        readingStatus = bookDetails.book?.readingStatus ?: currentState.readingStatus,
-                        personalRating = bookDetails.book?.personalRating,
-                        personalNotes = bookDetails.book?.personalNotes,
-                        isPurchased = bookDetails.book?.purchased ?: currentState.isPurchased
-                    )
-                }
+            // Load book details once - no continuous collection to avoid race conditions
+            // Manual state updates in action handlers keep UI synchronized
+            val bookDetails = bookDetailUseCases.getBookDetails.execute(bookId, shelfId).first()
+            _state.update { currentState ->
+                currentState.copy(
+                    book = bookDetails.book,
+                    onShelf = bookDetails.isOnShelf,
+                    isLoading = false,
+                    // Initialize personal metadata from loaded book
+                    readingStatus = bookDetails.book?.readingStatus ?: currentState.readingStatus,
+                    personalRating = bookDetails.book?.personalRating,
+                    personalNotes = bookDetails.book?.personalNotes,
+                    isPurchased = bookDetails.book?.purchased ?: currentState.isPurchased
+                )
             }
         }
 
@@ -50,8 +56,9 @@ class BookDetailViewModel(
         viewModelScope.launch {
             bookDetailUseCases.getBookDetails.loadBookDescription(bookId)
                 .onSuccess {
-                    // Description loading handled by the UseCase
-                    // State will update via the reactive flow above
+                    // Reload book data once to get updated description
+                    val bookDetails = bookDetailUseCases.getBookDetails.execute(bookId, shelfId).first()
+                    _state.update { it.copy(book = bookDetails.book) }
                 }
                 .onError {
                     // ignore, keep UI usable
@@ -104,9 +111,14 @@ class BookDetailViewModel(
                 viewModelScope.launch {
                     val currentBook = state.value.book
                     if (currentBook != null) {
-                        when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(currentBook, true)) {
+                        // Toggle: pass opposite of current purchased status
+                        when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(currentBook, !currentBook.purchased)) {
                             is Result.Success -> {
-                                _state.update { it.copy(book = purchaseResult.data) }
+                                // Update state immediately following renameShelf pattern
+                                _state.update { it.copy(
+                                    book = purchaseResult.data,
+                                    isPurchased = purchaseResult.data.purchased
+                                ) }
                             }
                             is Result.Error -> {
                                 _state.update {
@@ -126,7 +138,20 @@ class BookDetailViewModel(
                 }
             }
             BookDetailAction.OnBackClick -> {
-                onNavigateBack?.invoke()
+                viewModelScope.launch {
+                    // Cancel any pending debounced save
+                    saveNotesJob?.cancel()
+
+                    // Always save current notes state before navigating (idempotent operation)
+                    bookDetailUseCases.updateBookMetadata.execute(
+                        bookId = bookId,
+                        personalNotes = state.value.personalNotes
+                    )
+                    // Note: Ignoring result - this is best-effort save before navigation
+
+                    // Navigate back after save completes
+                    onNavigateBack?.invoke()
+                }
             }
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
@@ -180,16 +205,26 @@ class BookDetailViewModel(
                 }
             }
             is BookDetailAction.OnPersonalNotesChange -> {
-                viewModelScope.launch {
+                // Cancel previous auto-save job if user is still typing
+                saveNotesJob?.cancel()
+
+                // Normalize empty string to null to match database value
+                val normalizedNotes = action.notes?.ifBlank { null }
+
+                // Update state immediately (optimistic UI)
+                _state.update { it.copy(personalNotes = normalizedNotes) }
+
+                // Start debounced auto-save (2 seconds after user stops typing)
+                saveNotesJob = viewModelScope.launch {
+                    delay(2000) // Wait 2 seconds
+
+                    // Execute actual save to database
                     when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
                         bookId = bookId,
-                        personalNotes = action.notes
+                        personalNotes = normalizedNotes
                     )) {
                         is Result.Success -> {
-                            // Update state immediately following renameShelf pattern
-                            // Normalize empty string to null to match database value
-                            val normalizedNotes = action.notes?.ifBlank { null }
-                            _state.update { it.copy(personalNotes = normalizedNotes) }
+                            // Save successful - state already updated above
                         }
                         is Result.Error -> {
                             _state.update {
