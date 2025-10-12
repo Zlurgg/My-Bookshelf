@@ -54,12 +54,7 @@ fun BookDetailsScreenRoot(
 
     BookDetailsScreen(
         state = state,
-        onAction = { action ->
-            when (action) {
-                BookDetailAction.OnBackClick -> onBackClick()
-                else -> viewModel.onAction(action)
-            }
-        }
+        onAction = viewModel::onAction
     )
 }
 

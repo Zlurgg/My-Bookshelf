@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -44,9 +45,8 @@ fun PersonalNotesCard(
                 value = notes ?: "",
                 onValueChange = { newNotes ->
                     if (newNotes.length <= 5000) {
-                        // Always send the value (even empty string) so UseCase can distinguish
-                        // between "no update" and "clear field"
-                        onNotesChange(newNotes.trim().ifEmpty { "" })
+                        // Call action immediately - ViewModel handles debouncing
+                        onNotesChange(newNotes.ifEmpty { null })
                     }
                 },
                 label = { Text("Personal notes (private)") },
@@ -57,7 +57,9 @@ fun PersonalNotesCard(
                 },
                 minLines = 4,
                 maxLines = 10,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 240.dp) // Constrain max height to prevent layout issues
             )
         }
     }
