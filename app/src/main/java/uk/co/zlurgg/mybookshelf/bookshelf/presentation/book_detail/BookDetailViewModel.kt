@@ -35,7 +35,11 @@ class BookDetailViewModel(
                     currentState.copy(
                         book = bookDetails.book,
                         onShelf = bookDetails.isOnShelf,
-                        isLoading = false
+                        isLoading = false,
+                        // Initialize personal metadata from book
+                        readingStatus = bookDetails.book?.readingStatus ?: currentState.readingStatus,
+                        personalRating = bookDetails.book?.personalRating,
+                        personalNotes = bookDetails.book?.personalNotes
                     )
                 }
             }
@@ -133,6 +137,57 @@ class BookDetailViewModel(
                         is Result.Error -> {
                             _state.update {
                                 it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(removeResult.error, "remove book from shelf"))
+                            }
+                        }
+                    }
+                }
+            }
+            is BookDetailAction.OnReadingStatusChange -> {
+                viewModelScope.launch {
+                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                        bookId = bookId,
+                        readingStatus = action.status
+                    )) {
+                        is Result.Success -> {
+                            _state.update { it.copy(readingStatus = action.status) }
+                        }
+                        is Result.Error -> {
+                            _state.update {
+                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(metadataResult.error, "update reading status"))
+                            }
+                        }
+                    }
+                }
+            }
+            is BookDetailAction.OnPersonalRatingChange -> {
+                viewModelScope.launch {
+                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                        bookId = bookId,
+                        personalRating = action.rating
+                    )) {
+                        is Result.Success -> {
+                            _state.update { it.copy(personalRating = action.rating) }
+                        }
+                        is Result.Error -> {
+                            _state.update {
+                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(metadataResult.error, "update personal rating"))
+                            }
+                        }
+                    }
+                }
+            }
+            is BookDetailAction.OnPersonalNotesChange -> {
+                viewModelScope.launch {
+                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                        bookId = bookId,
+                        personalNotes = action.notes
+                    )) {
+                        is Result.Success -> {
+                            _state.update { it.copy(personalNotes = action.notes) }
+                        }
+                        is Result.Error -> {
+                            _state.update {
+                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(metadataResult.error, "update personal notes"))
                             }
                         }
                     }
