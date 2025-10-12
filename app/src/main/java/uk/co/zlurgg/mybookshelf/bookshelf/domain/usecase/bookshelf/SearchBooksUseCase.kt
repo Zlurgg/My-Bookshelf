@@ -13,6 +13,7 @@ interface SearchBooksUseCase {
     suspend fun execute(
         query: String,
         sortBy: BookSearchSort = BookSearchSort.BEST_MATCH,
+        resultLimit: Int? = null,
         language: String? = null,
         authorFilter: String? = null,
         titleFilter: String? = null

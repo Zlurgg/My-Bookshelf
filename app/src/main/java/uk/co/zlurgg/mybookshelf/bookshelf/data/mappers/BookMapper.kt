@@ -53,8 +53,13 @@ object BookMapper {
             isbn = exportedBook.isbn,
             publisher = exportedBook.publisher,
             publishDate = exportedBook.publishDate,
-            internetArchiveId = exportedBook.internetArchiveId
-            // NOTE: Personal metadata defaults to null/WANT_TO_READ on import (fresh start)
+            internetArchiveId = exportedBook.internetArchiveId,
+            // Personal metadata defaults to null/WANT_TO_READ on import (fresh start for privacy)
+            readingStatus = uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ,
+            personalRating = null,
+            personalNotes = null,
+            dateAdded = null,
+            purchaseDate = null
         )
     }
 }

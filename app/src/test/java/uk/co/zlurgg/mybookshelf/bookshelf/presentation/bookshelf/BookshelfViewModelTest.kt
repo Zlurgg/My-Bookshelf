@@ -294,6 +294,7 @@ class BookshelfViewModelTest {
         override suspend fun execute(
             query: String,
             sortBy: BookSearchSort,
+            resultLimit: Int?,
             language: String?,
             authorFilter: String?,
             titleFilter: String?

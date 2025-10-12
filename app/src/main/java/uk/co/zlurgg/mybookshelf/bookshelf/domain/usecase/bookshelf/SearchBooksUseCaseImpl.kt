@@ -27,6 +27,7 @@ class SearchBooksUseCaseImpl(
     override suspend fun execute(
         query: String,
         sortBy: BookSearchSort,
+        resultLimit: Int?,
         language: String?,
         authorFilter: String?,
         titleFilter: String?
@@ -49,6 +50,7 @@ class SearchBooksUseCaseImpl(
 
         return remoteBookDataSource.searchBooks(
             query = query,
+            resultLimit = resultLimit,
             language = language,
             authorFilter = authorFilter,
             titleFilter = titleFilter,

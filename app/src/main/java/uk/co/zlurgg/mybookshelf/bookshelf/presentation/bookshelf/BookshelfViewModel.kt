@@ -231,6 +231,7 @@ class BookshelfViewModel(
                 .execute(
                     query = query,
                     sortBy = currentState.selectedSort,
+                    resultLimit = 50,  // Limit results for faster searches and less data transfer
                     language = null,
                     authorFilter = currentState.authorFilter.takeIf { it.isNotBlank() },
                     titleFilter = currentState.titleFilter.takeIf { it.isNotBlank() }

@@ -41,11 +41,16 @@ class UpdateBookMetadataUseCaseImpl(
             val existingBook = bookRepository.getBookById(bookId)
                 ?: return Result.Error(DataError.Local.NOT_FOUND)
 
+            // Normalize empty strings to null for consistency
+            val normalizedNotes = personalNotes?.ifBlank { null }
+
             // Update book with new metadata
+            // For personalNotes: if parameter is provided (even as empty string), use it
+            // This allows clearing notes by passing empty string
             val updatedBook = existingBook.copy(
                 readingStatus = readingStatus ?: existingBook.readingStatus,
                 personalRating = personalRating ?: existingBook.personalRating,
-                personalNotes = personalNotes ?: existingBook.personalNotes,
+                personalNotes = if (personalNotes != null) normalizedNotes else existingBook.personalNotes,
                 purchaseDate = purchaseDate ?: existingBook.purchaseDate,
                 // Auto-set dateAdded if not already set
                 dateAdded = existingBook.dateAdded ?: timeProvider.currentTimeMillis()

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CommunityRatingsCard(
     averageRating: Double?,
-    ratingCount: Int,
+    ratingCount: Int?,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -65,7 +65,7 @@ fun CommunityRatingsCard(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "($ratingCount ratings)",
+                        text = "(${ratingCount ?: 0} ratings)",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

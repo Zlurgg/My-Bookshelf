@@ -23,6 +23,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.CreateShelfUse
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.DeleteShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
@@ -62,7 +63,8 @@ class ShelfReorderE2ETest {
             createShelf = CreateShelfUseCaseImpl(repository, testIdGenerator),
             deleteShelf = DeleteShelfUseCaseImpl(repository),
             reorderShelves = ReorderShelvesUseCaseImpl(repository),
-            getShelfById = GetShelfByIdUseCaseImpl(repository)
+            getShelfById = GetShelfByIdUseCaseImpl(repository),
+            renameShelf = RenameShelfUseCaseImpl(repository)
         )
 
         // Create test shelves in database with specific order

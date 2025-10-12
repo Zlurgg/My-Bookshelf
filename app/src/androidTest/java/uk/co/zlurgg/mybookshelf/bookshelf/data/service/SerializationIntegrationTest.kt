@@ -10,10 +10,13 @@ import org.junit.runner.RunWith
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 
 /**
  * Integration test for JSON serialization with real data.
@@ -58,7 +61,16 @@ class SerializationIntegrationTest {
             numPages = 300,
             numEditions = 5,
             purchased = false,
-            spineColor = 0xFF8B4513.toInt()
+            spineColor = 0xFF8B4513.toInt(),
+            readingStatus = ReadingStatus.WANT_TO_READ,
+            personalRating = null,
+            personalNotes = null,
+            dateAdded = null,
+            purchaseDate = null,
+            isbn = null,
+            publisher = null,
+            publishDate = null,
+            internetArchiveId = null
         )
 
         val shelf = Bookshelf(
@@ -170,7 +182,16 @@ class SerializationIntegrationTest {
             numPages = 456,
             numEditions = 12,
             purchased = true,
-            spineColor = 0xFF123456.toInt()
+            spineColor = 0xFF123456.toInt(),
+            readingStatus = ReadingStatus.WANT_TO_READ,
+            personalRating = null,
+            personalNotes = null,
+            dateAdded = null,
+            purchaseDate = null,
+            isbn = null,
+            publisher = null,
+            publishDate = null,
+            internetArchiveId = null
         )
 
         val shelf = Bookshelf(
@@ -215,7 +236,16 @@ class SerializationIntegrationTest {
             numPages = null,
             numEditions = 0,
             purchased = false,
-            spineColor = 0
+            spineColor = 0,
+            readingStatus = ReadingStatus.WANT_TO_READ,
+            personalRating = null,
+            personalNotes = null,
+            dateAdded = null,
+            purchaseDate = null,
+            isbn = null,
+            publisher = null,
+            publishDate = null,
+            internetArchiveId = null
         )
 
         val shelf = Bookshelf(
@@ -237,6 +267,132 @@ class SerializationIntegrationTest {
         assertTrue(exportData.bookshelf.books[0].description!!.contains("日本語"))
     }
 
+    @Test
+    fun personalMetadataNotInExportedJson() = runTest {
+        // Given - Book with personal metadata populated
+        val book = Book(
+            id = "book-1",
+            title = "Privacy Test Book",
+            authors = listOf("Test Author"),
+            imageUrl = "https://example.com/cover.jpg",
+            description = "Test description",
+            languages = listOf("en"),
+            firstPublishYear = "2024",
+            averageRating = 4.5,
+            ratingCount = 100,
+            numPages = 300,
+            numEditions = 5,
+            purchased = false,
+            spineColor = 0xFF8B4513.toInt(),
+            // Personal metadata (should NOT be exported)
+            readingStatus = ReadingStatus.CURRENTLY_READING,
+            personalRating = 4.5f,
+            personalNotes = "Private notes that should never be shared",
+            dateAdded = 1234567890L,
+            purchaseDate = 9876543210L,
+            // Enhanced metadata (should be exported)
+            isbn = "978-1234567890",
+            publisher = "Test Publisher",
+            publishDate = "2024-01-15",
+            internetArchiveId = "test-archive-id"
+        )
+
+        val shelf = Bookshelf(
+            id = "shelf-1",
+            name = "Privacy Test Shelf",
+            books = listOf(book),
+            shelfStyle = ShelfStyle.DarkWood,
+            position = 0
+        )
+
+        // When - Serialize to JSON
+        val result = serializer.serialize(shelf)
+        assertTrue("Serialize should succeed", result is Result.Success)
+        val jsonString = (result as Result.Success).data
+
+        // Then - JSON should NOT contain personal metadata field names
+        assertFalse("JSON should not contain readingStatus", jsonString.contains("readingStatus"))
+        assertFalse("JSON should not contain CURRENTLY_READING", jsonString.contains("CURRENTLY_READING"))
+        assertFalse("JSON should not contain personalRating", jsonString.contains("personalRating"))
+        assertFalse("JSON should not contain personalNotes", jsonString.contains("personalNotes"))
+        assertFalse("JSON should not contain private notes text", jsonString.contains("Private notes that should never be shared"))
+        assertFalse("JSON should not contain dateAdded", jsonString.contains("dateAdded"))
+        assertFalse("JSON should not contain purchaseDate", jsonString.contains("purchaseDate"))
+
+        // But SHOULD contain enhanced metadata
+        assertTrue("JSON should contain isbn", jsonString.contains("isbn"))
+        assertTrue("JSON should contain 978-1234567890", jsonString.contains("978-1234567890"))
+        assertTrue("JSON should contain publisher", jsonString.contains("publisher"))
+        assertTrue("JSON should contain Test Publisher", jsonString.contains("Test Publisher"))
+        assertTrue("JSON should contain internetArchiveId", jsonString.contains("internetArchiveId"))
+    }
+
+    @Test
+    fun deserializedBookExcludesPersonalMetadata() = runTest {
+        // Given - Book with both personal metadata and enhanced metadata
+        val book = Book(
+            id = "book-1",
+            title = "Full Metadata Book",
+            authors = listOf("Test Author"),
+            imageUrl = "https://example.com/cover.jpg",
+            description = "Test description",
+            languages = listOf("en"),
+            firstPublishYear = "2024",
+            averageRating = 4.5,
+            ratingCount = 100,
+            numPages = 300,
+            numEditions = 5,
+            purchased = true,
+            spineColor = 0xFF8B4513.toInt(),
+            // Personal metadata (should NOT survive round-trip)
+            readingStatus = ReadingStatus.READ,
+            personalRating = 5.0f,
+            personalNotes = "Excellent book, highly recommend!",
+            dateAdded = 1111111111L,
+            purchaseDate = 2222222222L,
+            // Enhanced metadata (SHOULD survive round-trip)
+            isbn = "978-9876543210",
+            publisher = "Privacy Publisher",
+            publishDate = "2024-02-20",
+            internetArchiveId = "privacy-archive-id"
+        )
+
+        val shelf = Bookshelf(
+            id = "shelf-1",
+            name = "Full Metadata Shelf",
+            books = listOf(book),
+            shelfStyle = ShelfStyle.WhiteMetal,
+            position = 0
+        )
+
+        // When - Serialize and deserialize
+        val jsonString = (serializer.serialize(shelf) as Result.Success).data
+        val exportData = (serializer.deserialize(jsonString) as Result.Success).data
+
+        // Then - Deserialized ExportedBook should not have personal metadata fields
+        // When we convert ExportedBook -> Book via mapper, personal metadata gets defaults
+        val exportedBookshelf = exportData.bookshelf
+        val reconvertedBook = uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookMapper.fromExportedBook(exportedBookshelf.books[0])
+
+        // Personal metadata should be reset to defaults (privacy protection)
+        assertNull("Personal rating should be null", reconvertedBook.personalRating)
+        assertNull("Personal notes should be null", reconvertedBook.personalNotes)
+        assertNull("Date added should be null", reconvertedBook.dateAdded)
+        assertNull("Purchase date should be null", reconvertedBook.purchaseDate)
+        assertEquals("Reading status should be default", ReadingStatus.WANT_TO_READ, reconvertedBook.readingStatus)
+
+        // Enhanced metadata SHOULD be preserved
+        assertEquals("ISBN should be preserved", "978-9876543210", reconvertedBook.isbn)
+        assertEquals("Publisher should be preserved", "Privacy Publisher", reconvertedBook.publisher)
+        assertEquals("Publish date should be preserved", "2024-02-20", reconvertedBook.publishDate)
+        assertEquals("Internet Archive ID should be preserved", "privacy-archive-id", reconvertedBook.internetArchiveId)
+
+        // Regular book metadata SHOULD be preserved
+        assertEquals("Title should be preserved", "Full Metadata Book", reconvertedBook.title)
+        assertEquals("Authors should be preserved", "Test Author", reconvertedBook.authors[0])
+        assertEquals("Purchased flag should be preserved", true, reconvertedBook.purchased)
+    }
+
     private fun createTestBook(
         id: String,
         title: String,
@@ -255,7 +411,17 @@ class SerializationIntegrationTest {
             numPages = 300,
             numEditions = 5,
             purchased = false,
-            spineColor = 0xFF8B4513.toInt()
+            spineColor = 0xFF8B4513.toInt(),
+            // New fields with default values
+            readingStatus = ReadingStatus.WANT_TO_READ,
+            personalRating = null,
+            personalNotes = null,
+            dateAdded = null,
+            purchaseDate = null,
+            isbn = null,
+            publisher = null,
+            publishDate = null,
+            internetArchiveId = null
         )
     }
 }
