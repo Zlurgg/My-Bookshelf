@@ -31,6 +31,66 @@
     <!-- Book detail -->
     <string name="bookdetail_loading">Loading book details…</string>
 
+    <!-- Personal notes card -->
+    <string name="personal_notes_title">My Notes</string>
+    <string name="personal_notes_label">Personal notes (private)</string>
+    <string name="personal_notes_placeholder">Add your thoughts about this book…</string>
+    <string name="personal_notes_character_count">%1$d / 5000 characters</string>
+
+    <!-- Reading status and rating card -->
+    <string name="reading_status_title">My Reading Status</string>
+    <string name="reading_status_label">Reading Status</string>
+    <string name="reading_status_want_to_read">Want to Read</string>
+    <string name="reading_status_currently_reading">Currently Reading</string>
+    <string name="reading_status_read">Read</string>
+    <string name="personal_rating_label">My Rating</string>
+    <string name="cd_rate_stars">Rate %1$d stars</string>
+    <string name="rating_display">%1$d/5</string>
+
+    <!-- Purchase toggle card -->
+    <string name="book_purchased_label">I own this book</string>
+
+    <!-- Book overview card -->
+    <string name="book_overview_by_author">by %1$s</string>
+    <string name="book_overview_editions">%1$d editions</string>
+
+    <!-- Community ratings card -->
+    <string name="community_ratings_title">Community Ratings</string>
+    <string name="community_ratings_average">Average Rating</string>
+    <string name="community_ratings_count">%1$d ratings</string>
+    <string name="community_ratings_not_available">Not yet rated</string>
+
+    <!-- Description card -->
+    <string name="description_title">Description</string>
+    <string name="description_loading">Loading description…</string>
+    <string name="description_not_available">No description available</string>
+    <string name="description_show_more">Show more</string>
+    <string name="description_show_less">Show less</string>
+
+    <!-- Publication details card -->
+    <string name="publication_details_title">Publication Details</string>
+    <string name="publication_first_published_label">First published: %1$s</string>
+    <string name="publication_publisher_label">Publisher: %1$s</string>
+    <string name="publication_publish_date_label">Published: %1$s</string>
+    <string name="publication_isbn_label">ISBN: %1$s</string>
+    <string name="publication_pages_label">%1$d pages</string>
+    <string name="publication_view_internet_archive">View on Internet Archive</string>
+    <string name="publication_not_available">Not available</string>
+
+    <!-- Languages card -->
+    <string name="languages_title">Languages</string>
+    <string name="languages_single">Language</string>
+    <string name="languages_multiple">Languages</string>
+
+    <!-- Shelf actions card -->
+    <string name="shelf_actions_add_to_shelf">Add to Shelf</string>
+    <string name="shelf_actions_remove_from_shelf">Remove from Shelf</string>
+    <string name="cd_add_to_shelf">Add to shelf</string>
+    <string name="cd_remove_from_shelf">Remove from shelf</string>
+
+    <!-- Community ratings card -->
+    <string name="cd_community_rating">Rating</string>
+
     <!-- Bookcase -->
     <plurals name="bookcount_books">
         <item quantity="one">%d book</item>

@@ -14,7 +14,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Card displaying languages the book is available in.
@@ -36,7 +38,7 @@ fun LanguagesCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Languages",
+                text = stringResource(R.string.languages_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )

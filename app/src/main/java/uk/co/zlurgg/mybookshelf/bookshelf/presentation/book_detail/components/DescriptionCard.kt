@@ -17,8 +17,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Card displaying book description with expand/collapse functionality.
@@ -43,7 +45,7 @@ fun DescriptionCard(
                 .animateContentSize()
         ) {
             Text(
-                text = "Description",
+                text = stringResource(R.string.description_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -62,7 +64,11 @@ fun DescriptionCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = if (isExpanded) "Show less" else "Show more",
+                    text = if (isExpanded) {
+                        stringResource(R.string.description_show_less)
+                    } else {
+                        stringResource(R.string.description_show_more)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.clickable { isExpanded = !isExpanded }

@@ -28,7 +28,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 
 /**
@@ -40,9 +42,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 @Composable
 fun RecommendationStatusCard(
     readingStatus: ReadingStatus,
-    personalRating: Float?,
+    personalRating: Float,                      // 0 = unrated, 1-5 = rated
     onReadingStatusChange: (ReadingStatus) -> Unit,
-    onPersonalRatingChange: (Float?) -> Unit,
+    onPersonalRatingChange: (Float) -> Unit,    // Pass 0f to clear rating
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -53,7 +55,7 @@ fun RecommendationStatusCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "My Reading Status",
+                text = stringResource(R.string.reading_status_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -71,7 +73,7 @@ fun RecommendationStatusCard(
                     value = readingStatus.toDisplayString(),
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Reading Status") },
+                    label = { Text(stringResource(R.string.reading_status_label)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                     modifier = Modifier
                         .menuAnchor()
@@ -98,7 +100,7 @@ fun RecommendationStatusCard(
 
             // Personal Rating
             Text(
-                text = "My Rating",
+                text = stringResource(R.string.personal_rating_label),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -111,18 +113,18 @@ fun RecommendationStatusCard(
                 for (i in 1..5) {
                     IconButton(
                         onClick = {
-                            val newRating = if (personalRating == i.toFloat()) null else i.toFloat()
+                            val newRating = if (personalRating == i.toFloat()) 0f else i.toFloat()
                             onPersonalRatingChange(newRating)
                         }
                     ) {
                         Icon(
-                            imageVector = if (personalRating != null && i <= personalRating) {
+                            imageVector = if (personalRating > 0f && i <= personalRating) {
                                 Icons.Filled.Star
                             } else {
                                 Icons.Filled.StarBorder
                             },
-                            contentDescription = "Rate $i stars",
-                            tint = if (personalRating != null && i <= personalRating) {
+                            contentDescription = stringResource(R.string.cd_rate_stars, i),
+                            tint = if (personalRating > 0f && i <= personalRating) {
                                 MaterialTheme.colorScheme.primary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -131,10 +133,10 @@ fun RecommendationStatusCard(
                     }
                 }
 
-                if (personalRating != null) {
+                if (personalRating > 0f) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "${personalRating.toInt()}/5",
+                        text = stringResource(R.string.rating_display, personalRating.toInt()),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -147,8 +149,9 @@ fun RecommendationStatusCard(
 /**
  * Converts ReadingStatus enum to user-friendly display string.
  */
+@Composable
 private fun ReadingStatus.toDisplayString(): String = when (this) {
-    ReadingStatus.WANT_TO_READ -> "Want to Read"
-    ReadingStatus.CURRENTLY_READING -> "Currently Reading"
-    ReadingStatus.READ -> "Read"
+    ReadingStatus.WANT_TO_READ -> stringResource(R.string.reading_status_want_to_read)
+    ReadingStatus.CURRENTLY_READING -> stringResource(R.string.reading_status_currently_reading)
+    ReadingStatus.READ -> stringResource(R.string.reading_status_read)
 }

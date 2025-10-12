@@ -13,6 +13,6 @@ data class BookDetailState(
 
     // Personal metadata (NOT exported for privacy)
     val readingStatus: ReadingStatus = ReadingStatus.WANT_TO_READ,
-    val personalRating: Float? = null,
-    val personalNotes: String? = null
+    val personalRating: Float = 0f,        // 0 = unrated, 1-5 = rated
+    val personalNotes: String = ""         // "" = no notes
 )

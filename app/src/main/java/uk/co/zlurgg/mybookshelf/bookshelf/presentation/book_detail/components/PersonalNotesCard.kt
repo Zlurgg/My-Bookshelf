@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -13,7 +15,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Card for personal notes about the book.
@@ -22,8 +27,8 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun PersonalNotesCard(
-    notes: String?,
-    onNotesChange: (String?) -> Unit,
+    notes: String,                        // "" = no notes
+    onNotesChange: (String) -> Unit,      // Pass "" to clear notes
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -34,7 +39,7 @@ fun PersonalNotesCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "My Notes",
+                text = stringResource(R.string.personal_notes_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -42,19 +47,23 @@ fun PersonalNotesCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedTextField(
-                value = notes ?: "",
+                value = notes,
                 onValueChange = { newNotes ->
                     if (newNotes.length <= 5000) {
                         // Call action immediately - ViewModel handles debouncing
-                        onNotesChange(newNotes.ifEmpty { null })
+                        onNotesChange(newNotes)
                     }
                 },
-                label = { Text("Personal notes (private)") },
-                placeholder = { Text("Add your thoughts about this book...") },
+                label = { Text(stringResource(R.string.personal_notes_label)) },
+                placeholder = { Text(stringResource(R.string.personal_notes_placeholder)) },
                 supportingText = {
-                    val currentLength = notes?.length ?: 0
-                    Text("$currentLength / 5000 characters")
+                    val currentLength = notes.length
+                    Text(stringResource(R.string.personal_notes_character_count, currentLength))
                 },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = { /* Keyboard dismisses automatically */ }
+                ),
                 minLines = 4,
                 maxLines = 10,
                 modifier = Modifier

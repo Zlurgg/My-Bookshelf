@@ -192,7 +192,7 @@ class BookDetailViewModelTest {
     @Test
     fun `update personal rating handles error correctly`() = runTest(testDispatcher) {
         // Given
-        val testBook = TestBookBuilder().withId("book-1").withPersonalRating(null).build()
+        val testBook = TestBookBuilder().withId("book-1").withPersonalRating(0f).build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
         mockUpdateBookMetadata.shouldSucceed = false
 
@@ -208,7 +208,7 @@ class BookDetailViewModelTest {
         }
 
         // Then - Error case: state should not change since save failed
-        assertEquals("Should keep original rating as null", null, stateAfterUpdate?.personalRating)
+        assertEquals("Should keep original rating as 0f", 0f, stateAfterUpdate?.personalRating)
         assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)
         assertTrue("Should contain operation context",
             stateAfterUpdate?.errorMessage?.contains("Failed to update personal rating") == true)

@@ -17,7 +17,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Card displaying community ratings from OpenLibrary.
@@ -37,7 +39,7 @@ fun CommunityRatingsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Community Ratings",
+                text = stringResource(R.string.community_ratings_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -50,7 +52,7 @@ fun CommunityRatingsCard(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Star,
-                        contentDescription = "Rating",
+                        contentDescription = stringResource(R.string.cd_community_rating),
                         tint = MaterialTheme.colorScheme.primary
                     )
 
@@ -65,14 +67,14 @@ fun CommunityRatingsCard(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "(${ratingCount ?: 0} ratings)",
+                        text = "(" + stringResource(R.string.community_ratings_count, ratingCount ?: 0) + ")",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
                 Text(
-                    text = "No community ratings available",
+                    text = stringResource(R.string.community_ratings_not_available),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

@@ -17,7 +17,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
  * Tests for UpdateBookMetadataUseCase demonstrating personal metadata management.
  * Tests business logic:
  * - Reading status updates (Want to Read, Currently Reading, Read)
- * - Personal rating updates (1.0-5.0 validation)
+ * - Personal rating updates (0.0-5.0 validation, where 0.0 = unrated)
  * - Personal notes updates (≤5000 character validation)
  * - Purchase date updates
  * - Auto-setting dateAdded on first metadata update
@@ -62,7 +62,7 @@ class UpdateBookMetadataUseCaseTest {
         // Given
         val existingBook = TestBookBuilder()
             .withId("book-2")
-            .withPersonalRating(null)
+            .withPersonalRating(0f)
             .build()
         mockRepository.addBook(existingBook)
 
@@ -83,7 +83,7 @@ class UpdateBookMetadataUseCaseTest {
         // Given
         val existingBook = TestBookBuilder()
             .withId("book-3")
-            .withPersonalNotes(null)
+            .withPersonalNotes("")
             .build()
         mockRepository.addBook(existingBook)
 
@@ -125,7 +125,7 @@ class UpdateBookMetadataUseCaseTest {
     }
 
     @Test
-    fun `returns validation error for invalid rating below 1_0`() = runTest {
+    fun `returns validation error for invalid rating below 0_0`() = runTest {
         // Given
         val existingBook = TestBookBuilder()
             .withId("book-5")
@@ -135,7 +135,7 @@ class UpdateBookMetadataUseCaseTest {
         // When
         val result = useCase.execute(
             bookId = "book-5",
-            personalRating = 0.5f
+            personalRating = -0.5f
         )
 
         // Then
@@ -275,8 +275,8 @@ class UpdateBookMetadataUseCaseTest {
         val existingBook = TestBookBuilder()
             .withId("book-11")
             .withReadingStatus(ReadingStatus.WANT_TO_READ)
-            .withPersonalRating(null)
-            .withPersonalNotes(null)
+            .withPersonalRating(0f)
+            .withPersonalNotes("")
             .withDateAdded(null)
             .withPurchaseDate(null)
             .build()
@@ -365,6 +365,27 @@ class UpdateBookMetadataUseCaseTest {
         assertTrue("Should return success for rating 5.0", result is Result.Success)
         val updatedBook = mockRepository.getBookById("book-14")
         assertEquals("Should accept rating of 5.0", 5.0f, updatedBook?.personalRating ?: 0f, 0.01f)
+    }
+
+    @Test
+    fun `allows rating of exactly 0_0 to clear rating`() = runTest {
+        // Given - Book with existing rating
+        val existingBook = TestBookBuilder()
+            .withId("book-16")
+            .withPersonalRating(3.5f)
+            .build()
+        mockRepository.addBook(existingBook)
+
+        // When - Clear rating by setting to 0.0f
+        val result = useCase.execute(
+            bookId = "book-16",
+            personalRating = 0.0f
+        )
+
+        // Then
+        assertTrue("Should return success for rating 0.0", result is Result.Success)
+        val updatedBook = mockRepository.getBookById("book-16")
+        assertEquals("Should accept rating of 0.0 (unrated)", 0.0f, updatedBook?.personalRating ?: 0f, 0.01f)
     }
 
     @Test
