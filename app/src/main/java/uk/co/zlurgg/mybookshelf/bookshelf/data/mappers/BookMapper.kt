@@ -23,7 +23,14 @@ object BookMapper {
             numPages = book.numPages,
             numEditions = book.numEditions,
             purchased = book.purchased,
-            spineColor = book.spineColor
+            spineColor = book.spineColor,
+            // Enhanced metadata (shareable)
+            isbn = book.isbn,
+            publisher = book.publisher,
+            publishDate = book.publishDate,
+            internetArchiveId = book.internetArchiveId
+            // NOTE: Personal metadata (readingStatus, personalRating, personalNotes, etc.)
+            // is intentionally NOT exported for privacy
         )
     }
 
@@ -41,7 +48,13 @@ object BookMapper {
             numPages = exportedBook.numPages,
             numEditions = exportedBook.numEditions,
             purchased = exportedBook.purchased,
-            spineColor = exportedBook.spineColor
+            spineColor = exportedBook.spineColor,
+            // Enhanced metadata
+            isbn = exportedBook.isbn,
+            publisher = exportedBook.publisher,
+            publishDate = exportedBook.publishDate,
+            internetArchiveId = exportedBook.internetArchiveId
+            // NOTE: Personal metadata defaults to null/WANT_TO_READ on import (fresh start)
         )
     }
 }

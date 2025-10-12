@@ -18,6 +18,10 @@ class TestSearchedBookDtoBuilder {
     private var ratingsCount: Int? = 10
     private var numPagesMedian: Int? = 200
     private var numEditions: Int? = 1
+    private var isbns: List<String>? = null
+    private var publishers: List<String>? = null
+    private var publishDates: List<String>? = null
+    private var internetArchiveIds: List<String>? = null
 
     fun withId(id: String) = apply { this.id = id }
     fun withTitle(title: String) = apply { this.title = title }
@@ -30,6 +34,10 @@ class TestSearchedBookDtoBuilder {
     fun withRatingsCount(count: Int?) = apply { this.ratingsCount = count }
     fun withNumPagesMedian(pages: Int?) = apply { this.numPagesMedian = pages }
     fun withNumEditions(editions: Int?) = apply { this.numEditions = editions }
+    fun withIsbns(isbns: List<String>?) = apply { this.isbns = isbns }
+    fun withPublishers(publishers: List<String>?) = apply { this.publishers = publishers }
+    fun withPublishDates(dates: List<String>?) = apply { this.publishDates = dates }
+    fun withInternetArchiveIds(ids: List<String>?) = apply { this.internetArchiveIds = ids }
 
     fun build() = SearchedBookDto(
         id = id,
@@ -42,7 +50,11 @@ class TestSearchedBookDtoBuilder {
         ratingsAverage = ratingsAverage,
         ratingsCount = ratingsCount,
         numPagesMedian = numPagesMedian,
-        numEditions = numEditions
+        numEditions = numEditions,
+        isbns = isbns,
+        publishers = publishers,
+        publishDates = publishDates,
+        internetArchiveIds = internetArchiveIds
     )
 
     companion object {
@@ -61,6 +73,10 @@ class TestSearchedBookDtoBuilder {
             .withRatingsCount(42)
             .withNumPagesMedian(321)
             .withNumEditions(2)
+            .withIsbns(listOf("978-0123456789", "978-9876543210"))
+            .withPublishers(listOf("Test Publisher", "Another Publisher"))
+            .withPublishDates(listOf("1999-01-01", "2000-06-15"))
+            .withInternetArchiveIds(listOf("test-book-1999"))
             .build()
 
         /**
@@ -75,6 +91,10 @@ class TestSearchedBookDtoBuilder {
             .withRatingsAverage(null)
             .withRatingsCount(0)
             .withNumEditions(null)
+            .withIsbns(null)
+            .withPublishers(null)
+            .withPublishDates(null)
+            .withInternetArchiveIds(null)
             .build()
 
         /**

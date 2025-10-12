@@ -12,7 +12,7 @@ fun SearchedBookDto.toBook(): Book {
         coverAlternativeKey != null -> "https://covers.openlibrary.org/b/id/${coverAlternativeKey}-L.jpg"
         else -> "" // Empty string fallback when no cover data is available
     }
-    
+
     return Book(
         id = id.substringAfterLast("/"),
         title = title,
@@ -26,7 +26,12 @@ fun SearchedBookDto.toBook(): Book {
         numPages = numPagesMedian,
         numEditions = numEditions ?: 0,
         purchased = false,
-        spineColor = BookColorGenerator.generateSpineColor()
+        spineColor = BookColorGenerator.generateSpineColor(),
+        // Enhanced metadata - take first item from arrays
+        isbn = isbns?.firstOrNull(),
+        publisher = publishers?.firstOrNull(),
+        publishDate = publishDates?.firstOrNull(),
+        internetArchiveId = internetArchiveIds?.firstOrNull()
     )
 }
 
@@ -44,7 +49,11 @@ fun Book.toBookEntity(): BookEntity {
         numPagesMedian = numPages,
         numEditions = numEditions,
         purchased = purchased,
-        spineColor = spineColor
+        spineColor = spineColor,
+        isbn = isbn,
+        publisher = publisher,
+        publishDate = publishDate,
+        internetArchiveId = internetArchiveId
     )
 }
 
@@ -62,6 +71,10 @@ fun BookEntity.toBook(): Book {
         numPages = numPagesMedian,
         numEditions = numEditions,
         purchased = purchased,
-        spineColor = spineColor
+        spineColor = spineColor,
+        isbn = isbn,
+        publisher = publisher,
+        publishDate = publishDate,
+        internetArchiveId = internetArchiveId
     )
 }

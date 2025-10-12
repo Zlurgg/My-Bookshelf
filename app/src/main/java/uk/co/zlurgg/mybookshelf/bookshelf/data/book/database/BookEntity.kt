@@ -17,5 +17,11 @@ data class BookEntity(
     val numPagesMedian: Int?,
     val numEditions: Int,
     val purchased: Boolean,
-    val spineColor: Int
+    val spineColor: Int,
+
+    // Enhanced metadata from API
+    val isbn: String? = null,
+    val publisher: String? = null,
+    val publishDate: String? = null,
+    val internetArchiveId: String? = null
 )

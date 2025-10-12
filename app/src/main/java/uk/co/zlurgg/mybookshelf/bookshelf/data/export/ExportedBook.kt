@@ -16,5 +16,11 @@ data class ExportedBook(
     val numPages: Int?,
     val numEditions: Int,
     val purchased: Boolean,
-    val spineColor: Int
+    val spineColor: Int,
+
+    // Enhanced metadata (shareable)
+    val isbn: String? = null,
+    val publisher: String? = null,
+    val publishDate: String? = null,
+    val internetArchiveId: String? = null
 )

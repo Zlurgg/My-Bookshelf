@@ -14,7 +14,7 @@ object ApiConfig {
         fun workDetailsEndpoint(workId: String): String = "$baseUrl/works/$workId.json"
 
         object DefaultParams {
-            const val SEARCH_FIELDS = "key,title,author_name,author_key,cover_edition_key,cover_i,ratings_average,ratings_count,first_publish_year,language,number_of_pages_median,edition_count"
+            const val SEARCH_FIELDS = "key,title,author_name,author_key,cover_edition_key,cover_i,ratings_average,ratings_count,first_publish_year,language,number_of_pages_median,edition_count,isbn,publisher,publish_date,ia"
         }
     }
 
