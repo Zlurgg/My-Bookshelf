@@ -159,8 +159,8 @@ class BookRepositoryIntegrationTest {
             spineColor = 0xFF8B4513.toInt(),
             // New fields with default values
             readingStatus = "WANT_TO_READ",
-            personalRating = null,
-            personalNotes = null,
+            personalRating = 0f,
+            personalNotes = "",
             dateAdded = null,
             purchaseDate = null,
             isbn = null,
