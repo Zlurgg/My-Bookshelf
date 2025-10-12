@@ -13,7 +13,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Card displaying publication details.
@@ -42,7 +44,7 @@ fun PublicationDetailsCard(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                text = "Publication Details",
+                text = stringResource(R.string.publication_details_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -51,7 +53,7 @@ fun PublicationDetailsCard(
 
             isbn?.let {
                 Text(
-                    text = "ISBN: $it",
+                    text = stringResource(R.string.publication_isbn_label, it),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -60,7 +62,7 @@ fun PublicationDetailsCard(
 
             publisher?.let {
                 Text(
-                    text = "Publisher: $it",
+                    text = stringResource(R.string.publication_publisher_label, it),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -69,7 +71,7 @@ fun PublicationDetailsCard(
 
             publishDate?.let {
                 Text(
-                    text = "Published: $it",
+                    text = stringResource(R.string.publication_publish_date_label, it),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -83,7 +85,7 @@ fun PublicationDetailsCard(
                         uriHandler.openUri("https://archive.org/details/$iaId")
                     }
                 ) {
-                    Text("View on Internet Archive")
+                    Text(stringResource(R.string.publication_view_internet_archive))
                 }
             }
         }

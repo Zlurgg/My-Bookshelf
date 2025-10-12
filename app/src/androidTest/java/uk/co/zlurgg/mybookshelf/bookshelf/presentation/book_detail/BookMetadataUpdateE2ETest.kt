@@ -107,8 +107,8 @@ class BookMetadataUpdateE2ETest {
             spineColor = 0xFF8B4513.toInt(),
             // Personal metadata - defaults
             readingStatus = ReadingStatus.WANT_TO_READ,
-            personalRating = null,
-            personalNotes = null,
+            personalRating = 0f,
+            personalNotes = "",
             dateAdded = null,
             purchaseDate = null,
             // Enhanced metadata
@@ -153,8 +153,8 @@ class BookMetadataUpdateE2ETest {
         // Wait for initial book load
         val initialState = bookDetailViewModel.state.first { !it.isLoading }
         assertEquals(ReadingStatus.WANT_TO_READ, initialState.readingStatus)
-        assertNull(initialState.personalRating)
-        assertNull(initialState.personalNotes)
+        assertEquals(0f, initialState.personalRating)
+        assertEquals("", initialState.personalNotes)
 
         // When - User updates metadata: Step 1: Change status to CURRENTLY_READING
         bookDetailViewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.CURRENTLY_READING))
@@ -181,8 +181,8 @@ class BookMetadataUpdateE2ETest {
         // When - Step 3: Add personal notes
         bookDetailViewModel.onAction(BookDetailAction.OnPersonalNotesChange("Great book! Highly recommend."))
 
-        // Then - Verify state updated (note: empty string normalizes to null, so we check for the actual value)
-        val stateAfterNotes = bookDetailViewModel.state.first { it.personalNotes != null }
+        // Then - Verify state updated
+        val stateAfterNotes = bookDetailViewModel.state.first { it.personalNotes == "Great book! Highly recommend." }
         assertEquals("Great book! Highly recommend.", stateAfterNotes.personalNotes)
 
         // AND - Verify database persistence
@@ -195,7 +195,7 @@ class BookMetadataUpdateE2ETest {
     }
 
     @Test
-    fun clearPersonalRating_setsRatingToNull() = runTest(testDispatcher) {
+    fun clearPersonalRating_setsRatingTo0f() = runTest(testDispatcher) {
         // Given - Book with rating already set
         val bookWithRating = bookRepository.getBookById(testBookId)?.copy(
             personalRating = 4.5f,
@@ -208,16 +208,16 @@ class BookMetadataUpdateE2ETest {
         val initialState = bookDetailViewModel.state.first { it.personalRating == 4.5f }
         assertEquals(4.5f, initialState.personalRating)
 
-        // When - User clears rating (sets to null)
-        bookDetailViewModel.onAction(BookDetailAction.OnPersonalRatingChange(null))
+        // When - User clears rating (sets to 0f)
+        bookDetailViewModel.onAction(BookDetailAction.OnPersonalRatingChange(0f))
 
         // Then - Verify state updated
-        val stateAfterClear = bookDetailViewModel.state.first { it.personalRating == null }
-        assertNull("State personal rating should be null", stateAfterClear.personalRating)
+        val stateAfterClear = bookDetailViewModel.state.first { it.personalRating == 0f }
+        assertEquals("State personal rating should be 0f", 0f, stateAfterClear.personalRating)
 
         // AND - Verify database persistence
         val bookAfterClear = bookRepository.getBookById(testBookId)
         assertNotNull("Book should still exist", bookAfterClear)
-        assertNull("Database personal rating should be null", bookAfterClear?.personalRating)
+        assertEquals("Database personal rating should be 0f", 0f, bookAfterClear?.personalRating)
     }
 }

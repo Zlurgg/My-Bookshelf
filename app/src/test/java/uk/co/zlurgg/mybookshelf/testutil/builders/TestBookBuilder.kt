@@ -24,8 +24,8 @@ class TestBookBuilder {
 
     // Personal metadata (NOT exported for privacy)
     private var readingStatus = ReadingStatus.WANT_TO_READ
-    private var personalRating: Float? = null
-    private var personalNotes: String? = null
+    private var personalRating: Float = 0f
+    private var personalNotes: String = ""
     private var dateAdded: Long? = null
     private var purchaseDate: Long? = null
 
@@ -51,8 +51,8 @@ class TestBookBuilder {
 
     // Personal metadata
     fun withReadingStatus(status: ReadingStatus) = apply { this.readingStatus = status }
-    fun withPersonalRating(rating: Float?) = apply { this.personalRating = rating }
-    fun withPersonalNotes(notes: String?) = apply { this.personalNotes = notes }
+    fun withPersonalRating(rating: Float) = apply { this.personalRating = rating }
+    fun withPersonalNotes(notes: String) = apply { this.personalNotes = notes }
     fun withDateAdded(date: Long?) = apply { this.dateAdded = date }
     fun withPurchaseDate(date: Long?) = apply { this.purchaseDate = date }
 

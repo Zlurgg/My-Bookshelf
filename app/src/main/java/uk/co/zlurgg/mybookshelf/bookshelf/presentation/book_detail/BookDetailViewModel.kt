@@ -45,8 +45,8 @@ class BookDetailViewModel(
                     isLoading = false,
                     // Initialize personal metadata from loaded book
                     readingStatus = bookDetails.book?.readingStatus ?: currentState.readingStatus,
-                    personalRating = bookDetails.book?.personalRating,
-                    personalNotes = bookDetails.book?.personalNotes,
+                    personalRating = bookDetails.book?.personalRating ?: 0f,
+                    personalNotes = bookDetails.book?.personalNotes ?: "",
                     isPurchased = bookDetails.book?.purchased ?: currentState.isPurchased
                 )
             }
@@ -208,11 +208,8 @@ class BookDetailViewModel(
                 // Cancel previous auto-save job if user is still typing
                 saveNotesJob?.cancel()
 
-                // Normalize empty string to null to match database value
-                val normalizedNotes = action.notes?.ifBlank { null }
-
                 // Update state immediately (optimistic UI)
-                _state.update { it.copy(personalNotes = normalizedNotes) }
+                _state.update { it.copy(personalNotes = action.notes) }
 
                 // Start debounced auto-save (2 seconds after user stops typing)
                 saveNotesJob = viewModelScope.launch {
@@ -221,7 +218,7 @@ class BookDetailViewModel(
                     // Execute actual save to database
                     when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
                         bookId = bookId,
-                        personalNotes = normalizedNotes
+                        personalNotes = action.notes
                     )) {
                         is Result.Success -> {
                             // Save successful - state already updated above

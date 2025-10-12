@@ -18,7 +18,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 
 /**
@@ -50,10 +52,10 @@ fun ShelfActionsCard(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Remove from shelf"
+                        contentDescription = stringResource(R.string.cd_remove_from_shelf)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Remove from Shelf")
+                    Text(stringResource(R.string.shelf_actions_remove_from_shelf))
                 }
             } else {
                 Button(
@@ -62,10 +64,10 @@ fun ShelfActionsCard(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "Add to shelf"
+                        contentDescription = stringResource(R.string.cd_add_to_shelf)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Add to Shelf")
+                    Text(stringResource(R.string.shelf_actions_add_to_shelf))
                 }
             }
         }

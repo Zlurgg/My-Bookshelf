@@ -27,8 +27,8 @@ class UpdateBookMetadataUseCaseImpl(
         purchaseDate: Long?
     ): Result<Unit, DataError> {
         return try {
-            // Validate personal rating (1.0-5.0)
-            if (personalRating != null && (personalRating < 1.0f || personalRating > 5.0f)) {
+            // Validate personal rating (0.0-5.0, where 0 = unrated)
+            if (personalRating != null && (personalRating < 0f || personalRating > 5.0f)) {
                 return Result.Error(DataError.Validation.INVALID_FORMAT)
             }
 
@@ -41,16 +41,13 @@ class UpdateBookMetadataUseCaseImpl(
             val existingBook = bookRepository.getBookById(bookId)
                 ?: return Result.Error(DataError.Local.NOT_FOUND)
 
-            // Normalize empty strings to null for consistency
-            val normalizedNotes = personalNotes?.ifBlank { null }
-
             // Update book with new metadata
-            // For personalNotes: if parameter is provided (even as empty string), use it
-            // This allows clearing notes by passing empty string
+            // null parameter = "don't change this field"
+            // explicit value (including 0f/"") = "update to this value"
             val updatedBook = existingBook.copy(
                 readingStatus = readingStatus ?: existingBook.readingStatus,
                 personalRating = personalRating ?: existingBook.personalRating,
-                personalNotes = if (personalNotes != null) normalizedNotes else existingBook.personalNotes,
+                personalNotes = personalNotes ?: existingBook.personalNotes,
                 purchaseDate = purchaseDate ?: existingBook.purchaseDate,
                 // Auto-set dateAdded if not already set
                 dateAdded = existingBook.dateAdded ?: timeProvider.currentTimeMillis()

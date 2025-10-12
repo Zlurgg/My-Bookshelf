@@ -16,6 +16,6 @@ class DatabaseFactory(
                 BookshelfDatabase::class.java,
                 dbFile.absolutePath,
             ).fallbackToDestructiveMigration(false)
-            .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
     }
 }

@@ -13,7 +13,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Card for toggling purchased status.
@@ -43,7 +45,7 @@ fun PurchasedToggleCard(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "I own this book",
+                text = stringResource(R.string.book_purchased_label),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
