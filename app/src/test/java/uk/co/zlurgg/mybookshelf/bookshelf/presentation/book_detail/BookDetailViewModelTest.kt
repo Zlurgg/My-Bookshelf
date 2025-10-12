@@ -160,9 +160,9 @@ class BookDetailViewModelTest {
     }
 
     @Test
-    fun `rate book updates rating in state`() = runTest(testDispatcher) {
+    fun `update reading status updates state correctly`() = runTest(testDispatcher) {
         // Given
-        val testBook = TestBookBuilder().withId("book-1").build()
+        val testBook = TestBookBuilder().withId("book-1").withReadingStatus(ReadingStatus.WANT_TO_READ).build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
 
         val viewModel = createViewModel()
@@ -172,14 +172,109 @@ class BookDetailViewModelTest {
         stateHelper.awaitState()
 
         // When
-        val newRating = 4
-        val stateAfterRating = stateHelper.executeAndGetState {
-            viewModel.onAction(BookDetailAction.OnRateBookDetailClick(newRating))
+        val stateAfterUpdate = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.CURRENTLY_READING))
         }
 
         // Then
-        assertEquals("Should update rating", newRating, stateAfterRating?.rating)
-        assertEquals("Should update book rating count", newRating, stateAfterRating?.book?.ratingCount)
+        assertEquals("Should update reading status", ReadingStatus.CURRENTLY_READING, stateAfterUpdate?.readingStatus)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `update personal rating updates state correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withPersonalRating(null).build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterUpdate = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnPersonalRatingChange(4.5f))
+        }
+
+        // Then
+        assertEquals("Should update personal rating", 4.5f, stateAfterUpdate?.personalRating ?: 0f, 0.01f)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `update personal notes updates state correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withPersonalNotes(null).build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val notes = "Really enjoyed this book!"
+        val stateAfterUpdate = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnPersonalNotesChange(notes))
+        }
+
+        // Then
+        assertEquals("Should update personal notes", notes, stateAfterUpdate?.personalNotes)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `update reading status handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+        mockUpdateBookMetadata.shouldSucceed = false
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterUpdate = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.READ))
+        }
+
+        // Then
+        assertEquals("Should keep original reading status", ReadingStatus.WANT_TO_READ, stateAfterUpdate?.readingStatus)
+        assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)
+        assertTrue("Should contain operation context",
+            stateAfterUpdate?.errorMessage?.contains("Failed to update reading status") == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `update personal rating handles error correctly`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withPersonalRating(null).build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+        mockUpdateBookMetadata.shouldSucceed = false
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Wait for initial load
+        stateHelper.awaitState()
+
+        // When
+        val stateAfterUpdate = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnPersonalRatingChange(3.5f))
+        }
+
+        // Then
+        assertEquals("Should keep original rating as null", null, stateAfterUpdate?.personalRating)
+        assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)
+        assertTrue("Should contain operation context",
+            stateAfterUpdate?.errorMessage?.contains("Failed to update personal rating") == true)
         stateHelper.cleanup()
     }
 
