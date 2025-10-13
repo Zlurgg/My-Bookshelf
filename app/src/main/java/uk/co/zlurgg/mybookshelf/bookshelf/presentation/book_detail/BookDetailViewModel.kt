@@ -129,14 +129,6 @@ class BookDetailViewModel(
                     }
                 }
             }
-            is BookDetailAction.OnRateBookDetailClick -> {
-                _state.update { current ->
-                    current.copy(
-                        rating = action.rating,
-                        book = current.book?.copy(ratingCount = action.rating)
-                    )
-                }
-            }
             BookDetailAction.OnBackClick -> {
                 viewModelScope.launch {
                     // Cancel any pending debounced save
