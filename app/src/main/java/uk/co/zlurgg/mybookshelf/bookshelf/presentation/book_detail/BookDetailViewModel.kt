@@ -42,12 +42,7 @@ class BookDetailViewModel(
                 currentState.copy(
                     book = bookDetails.book,
                     onShelf = bookDetails.isOnShelf,
-                    isLoading = false,
-                    // Initialize personal metadata from loaded book
-                    readingStatus = bookDetails.book?.readingStatus ?: currentState.readingStatus,
-                    personalRating = bookDetails.book?.personalRating ?: 0f,
-                    personalNotes = bookDetails.book?.personalNotes ?: "",
-                    isPurchased = bookDetails.book?.purchased ?: currentState.isPurchased
+                    isLoading = false
                 )
             }
         }
@@ -115,10 +110,7 @@ class BookDetailViewModel(
                         when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(currentBook, !currentBook.purchased)) {
                             is Result.Success -> {
                                 // Update state immediately following renameShelf pattern
-                                _state.update { it.copy(
-                                    book = purchaseResult.data,
-                                    isPurchased = purchaseResult.data.purchased
-                                ) }
+                                _state.update { it.copy(book = purchaseResult.data) }
                             }
                             is Result.Error -> {
                                 _state.update {
@@ -137,7 +129,7 @@ class BookDetailViewModel(
                     // Always save current notes state before navigating (idempotent operation)
                     bookDetailUseCases.updateBookMetadata.execute(
                         bookId = bookId,
-                        personalNotes = state.value.personalNotes
+                        personalNotes = state.value.book?.personalNotes
                     )
                     // Note: Ignoring result - this is best-effort save before navigation
 
@@ -168,7 +160,11 @@ class BookDetailViewModel(
                     )) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
-                            _state.update { it.copy(readingStatus = action.status) }
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    book = currentState.book?.copy(readingStatus = action.status)
+                                )
+                            }
                         }
                         is Result.Error -> {
                             _state.update {
@@ -186,7 +182,11 @@ class BookDetailViewModel(
                     )) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
-                            _state.update { it.copy(personalRating = action.rating) }
+                            _state.update { currentState ->
+                                currentState.copy(
+                                    book = currentState.book?.copy(personalRating = action.rating)
+                                )
+                            }
                         }
                         is Result.Error -> {
                             _state.update {
@@ -201,7 +201,11 @@ class BookDetailViewModel(
                 saveNotesJob?.cancel()
 
                 // Update state immediately (optimistic UI)
-                _state.update { it.copy(personalNotes = action.notes) }
+                _state.update { currentState ->
+                    currentState.copy(
+                        book = currentState.book?.copy(personalNotes = action.notes)
+                    )
+                }
 
                 // Start debounced auto-save (2 seconds after user stops typing)
                 saveNotesJob = viewModelScope.launch {

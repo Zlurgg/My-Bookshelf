@@ -182,7 +182,7 @@ class BookDetailViewModelTest {
         }
 
         // Then - Error case: state should not change since save failed
-        assertEquals("Should keep original reading status", ReadingStatus.WANT_TO_READ, stateAfterUpdate?.readingStatus)
+        assertEquals("Should keep original reading status", ReadingStatus.WANT_TO_READ, stateAfterUpdate?.book?.readingStatus)
         assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)
         assertTrue("Should contain operation context",
             stateAfterUpdate?.errorMessage?.contains("Failed to update reading status") == true)
@@ -208,7 +208,7 @@ class BookDetailViewModelTest {
         }
 
         // Then - Error case: state should not change since save failed
-        assertEquals("Should keep original rating as 0f", 0f, stateAfterUpdate?.personalRating)
+        assertEquals("Should keep original rating as 0f", 0f, stateAfterUpdate?.book?.personalRating)
         assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)
         assertTrue("Should contain operation context",
             stateAfterUpdate?.errorMessage?.contains("Failed to update personal rating") == true)
