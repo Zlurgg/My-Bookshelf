@@ -18,8 +18,26 @@ class AddBookToShelfUseCaseImpl(
 
     override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> {
         return try {
-            // First persist the book (upsert handles both create and update)
-            bookRepository.upsertBook(book)
+            // Check if book already exists to preserve personal metadata
+            val existingBook = bookRepository.getBookById(book.id)
+
+            val bookToUpsert = if (existingBook != null) {
+                // Book exists - preserve personal metadata, update everything else from API data
+                book.copy(
+                    readingStatus = existingBook.readingStatus,
+                    personalRating = existingBook.personalRating,
+                    personalNotes = existingBook.personalNotes,
+                    dateAdded = existingBook.dateAdded,
+                    purchaseDate = existingBook.purchaseDate,
+                    purchased = existingBook.purchased
+                )
+            } else {
+                // New book - use as-is from API
+                book
+            }
+
+            // Persist the book (with preserved metadata if it existed)
+            bookRepository.upsertBook(bookToUpsert)
 
             // Then create the shelf association
             bookshelfRepository.addBookToShelf(shelfId, book.id)

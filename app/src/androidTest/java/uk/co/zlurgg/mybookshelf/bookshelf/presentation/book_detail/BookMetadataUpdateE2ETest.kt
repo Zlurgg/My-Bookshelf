@@ -220,4 +220,46 @@ class BookMetadataUpdateE2ETest {
         assertNotNull("Book should still exist", bookAfterClear)
         assertEquals("Database personal rating should be 0f", 0f, bookAfterClear?.personalRating)
     }
+
+    @Test
+    fun personalMetadata_persistsWhenAddingBookToMultipleShelves() = runTest(testDispatcher) {
+        // Given - User updates personal metadata
+        bookDetailViewModel.onAction(BookDetailAction.OnPersonalRatingChange(4.5f))
+        bookDetailViewModel.onAction(BookDetailAction.OnPersonalNotesChange("Loved it!"))
+        bookDetailViewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.READ))
+
+        // Wait for state updates
+        val stateAfterUpdates = bookDetailViewModel.state.first {
+            it.personalRating == 4.5f && it.personalNotes == "Loved it!" && it.readingStatus == ReadingStatus.READ
+        }
+        assertEquals(4.5f, stateAfterUpdates.personalRating)
+        assertEquals("Loved it!", stateAfterUpdates.personalNotes)
+        assertEquals(ReadingStatus.READ, stateAfterUpdates.readingStatus)
+
+        // When - User adds book to another shelf (this triggered the bug)
+        // Create second shelf
+        val secondShelf = Bookshelf(
+            id = "second-shelf-e2e",
+            name = "Second Shelf",
+            books = emptyList(),
+            shelfStyle = ShelfStyle.DarkWood,
+            position = 1
+        )
+        bookcaseRepository.addShelf(secondShelf)
+
+        // Add book to second shelf via AddBookToShelfUseCase (simulates the bug scenario)
+        val currentBook = bookRepository.getBookById(testBookId)
+        assertNotNull("Book should exist", currentBook)
+
+        val addResult = AddBookToShelfUseCaseImpl(bookRepository, bookshelfRepository)
+            .execute(currentBook!!, "second-shelf-e2e")
+        assertTrue("Add should succeed", addResult is Result.Success)
+
+        // Then - Verify personal metadata persists in database
+        val finalBook = bookRepository.getBookById(testBookId)
+        assertNotNull("Book should still exist", finalBook)
+        assertEquals("Rating should persist", 4.5f, finalBook?.personalRating)
+        assertEquals("Notes should persist", "Loved it!", finalBook?.personalNotes)
+        assertEquals("Status should persist", ReadingStatus.READ, finalBook?.readingStatus)
+    }
 }

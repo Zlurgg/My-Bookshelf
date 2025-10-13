@@ -64,7 +64,7 @@ class AddBookToShelfUseCaseTest {
     }
 
     @Test
-    fun `execute with existing book updates book data`() = runTest {
+    fun `execute with existing book updates book data but preserves personal metadata`() = runTest {
         // Given - Book already exists in repository
         val existingBook = TestBookBuilder()
             .withId("existing-book")
@@ -85,10 +85,10 @@ class AddBookToShelfUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals("Should upsert updated book", updatedBook, mockBookRepository.lastUpsertedBook)
         val storedBook = mockBookRepository.getBookById("existing-book")
         assertEquals("Should update book title", "Updated Title", storedBook?.title)
-        assertTrue("Should update purchase status", storedBook?.purchased == true)
+        // Personal metadata (purchased) should be preserved from existing book
+        assertEquals("Should preserve purchased status", false, storedBook?.purchased)
     }
 
     @Test
@@ -131,7 +131,8 @@ class AddBookToShelfUseCaseTest {
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
         assertEquals(DataError.Local.UNKNOWN, error)
-        assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
+        // getBookById throws exception first, so upsertBook is never called
+        assertEquals("Should not call upsertBook", 0, mockBookRepository.upsertBookCallCount)
         assertEquals("Should not call addBookToShelf", 0, mockBookshelfRepository.addBookToShelfCallCount)
     }
 
@@ -205,5 +206,81 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should preserve rating", book.averageRating, upsertedBook.averageRating)
         assertEquals("Should preserve purchase status", book.purchased, upsertedBook.purchased)
         assertEquals("Should preserve spine color", book.spineColor, upsertedBook.spineColor)
+    }
+
+    @Test
+    fun `execute preserves personal metadata when book already exists`() = runTest {
+        // Given - Book already exists with personal metadata
+        val existingBook = TestBookBuilder()
+            .withId("book-with-metadata")
+            .withTitle("Old Title")
+            .withPersonalRating(4.5f)
+            .withPersonalNotes("Great book!")
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ)
+            .withDateAdded(1609459200000L) // 2021-01-01
+            .withPurchaseDate(1609545600000L) // 2021-01-02
+            .withPurchased(true)
+            .build()
+        mockBookRepository.addBook(existingBook)
+
+        // Fresh book from API (same ID, updated metadata, NO personal data)
+        val freshBookFromApi = TestBookBuilder()
+            .withId("book-with-metadata") // Same ID
+            .withTitle("Updated Title from API")
+            .withPersonalRating(0f) // API doesn't have this
+            .withPersonalNotes("") // API doesn't have this
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ) // Default
+            .withDateAdded(null) // API doesn't track this
+            .withPurchaseDate(null) // API doesn't track this
+            .withPurchased(false) // Default
+            .build()
+        val shelfId = "test-shelf"
+
+        // When - Add fresh API book to shelf
+        val result = useCase.execute(freshBookFromApi, shelfId)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val upsertedBook = mockBookRepository.lastUpsertedBook!!
+
+        // API data should be updated
+        assertEquals("Should update title from API", "Updated Title from API", upsertedBook.title)
+
+        // Personal metadata should be preserved from existing book
+        assertEquals("Should preserve personal rating", 4.5f, upsertedBook.personalRating ?: 0f, 0.01f)
+        assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
+        assertEquals("Should preserve reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ, upsertedBook.readingStatus)
+        assertEquals("Should preserve dateAdded", 1609459200000L, upsertedBook.dateAdded)
+        assertEquals("Should preserve purchaseDate", 1609545600000L, upsertedBook.purchaseDate)
+        assertTrue("Should preserve purchased flag", upsertedBook.purchased)
+    }
+
+    @Test
+    fun `execute uses API data as-is for new books`() = runTest {
+        // Given - Book does NOT exist
+        val newBookFromApi = TestBookBuilder()
+            .withId("new-book")
+            .withTitle("Brand New Book")
+            .withPersonalRating(0f)
+            .withPersonalNotes("")
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ)
+            .withDateAdded(null)
+            .withPurchaseDate(null)
+            .withPurchased(false)
+            .build()
+        val shelfId = "test-shelf"
+
+        // When
+        val result = useCase.execute(newBookFromApi, shelfId)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val upsertedBook = mockBookRepository.lastUpsertedBook!!
+
+        // Should use API data exactly as-is
+        assertEquals("Should use API title", "Brand New Book", upsertedBook.title)
+        assertEquals("Should use default rating", 0f, upsertedBook.personalRating ?: 0f, 0.01f)
+        assertEquals("Should use default notes", "", upsertedBook.personalNotes)
+        assertEquals("Should use default reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ, upsertedBook.readingStatus)
     }
 }
