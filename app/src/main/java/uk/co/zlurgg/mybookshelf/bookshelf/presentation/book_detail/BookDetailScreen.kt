@@ -124,8 +124,8 @@ fun BookDetailsScreen(
                 if (state.onShelf) {
                     item {
                         RecommendationStatusCard(
-                            readingStatus = state.readingStatus,
-                            personalRating = state.personalRating,
+                            readingStatus = state.book.readingStatus,
+                            personalRating = state.book.personalRating,
                             onReadingStatusChange = { status ->
                                 onAction(BookDetailAction.OnReadingStatusChange(status))
                             },
@@ -140,7 +140,7 @@ fun BookDetailsScreen(
                 if (state.onShelf) {
                     item {
                         PersonalNotesCard(
-                            notes = state.personalNotes,
+                            notes = state.book.personalNotes,
                             onNotesChange = { notes ->
                                 onAction(BookDetailAction.OnPersonalNotesChange(notes))
                             }
@@ -183,7 +183,7 @@ fun BookDetailsScreen(
                 // 8. Purchased Toggle Card
                 item {
                     PurchasedToggleCard(
-                        purchased = state.isPurchased,
+                        purchased = state.book.purchased,
                         onPurchaseToggle = {
                             onAction(BookDetailAction.OnPurchaseClick)
                         }
