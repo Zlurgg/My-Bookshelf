@@ -181,7 +181,8 @@ class ToggleBookPurchaseUseCaseTest {
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
         assertEquals(DataError.Local.UNKNOWN, error)
-        assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
+        // getBookById throws exception first, so upsertBook is never called
+        assertEquals("Should not call upsertBook", 0, mockBookRepository.upsertBookCallCount)
     }
 
     @Test
@@ -261,5 +262,80 @@ class ToggleBookPurchaseUseCaseTest {
         assertEquals("Should preserve original data through multiple toggles", originalBook.title, finalBook.title)
         assertEquals("Should preserve original ID", originalBook.id, finalBook.id)
         assertEquals("Should call upsertBook three times", 3, mockBookRepository.upsertBookCallCount)
+    }
+
+    @Test
+    fun `execute preserves personal metadata when toggling existing book`() = runTest {
+        // Given - Book already exists with personal metadata
+        val existingBook = TestBookBuilder()
+            .withId("book-with-metadata")
+            .withTitle("Old Title")
+            .withPersonalRating(4.5f)
+            .withPersonalNotes("Amazing read!")
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ)
+            .withDateAdded(1609459200000L)
+            .withPurchaseDate(1609545600000L)
+            .withPurchased(false)
+            .build()
+        mockBookRepository.addBook(existingBook)
+
+        // Fresh book from API (same ID, updated title, NO personal data)
+        val freshBookFromApi = TestBookBuilder()
+            .withId("book-with-metadata") // Same ID
+            .withTitle("Updated Title from API")
+            .withPersonalRating(0f) // API doesn't have this
+            .withPersonalNotes("") // API doesn't have this
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ) // Default
+            .withDateAdded(null) // API doesn't track this
+            .withPurchaseDate(null) // API doesn't track this
+            .withPurchased(false)
+            .build()
+
+        // When - Toggle purchased on fresh API book
+        val result = useCase.execute(freshBookFromApi, true)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val updatedBook = (result as Result.Success).data
+
+        // API data should be updated
+        assertEquals("Should update title from API", "Updated Title from API", updatedBook.title)
+        assertTrue("Should toggle purchased status", updatedBook.purchased)
+
+        // Personal metadata should be preserved from existing book
+        assertEquals("Should preserve personal rating", 4.5f, updatedBook.personalRating, 0.01f)
+        assertEquals("Should preserve personal notes", "Amazing read!", updatedBook.personalNotes)
+        assertEquals("Should preserve reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ, updatedBook.readingStatus)
+        assertEquals("Should preserve dateAdded", 1609459200000L, updatedBook.dateAdded)
+        assertEquals("Should preserve purchaseDate", 1609545600000L, updatedBook.purchaseDate)
+    }
+
+    @Test
+    fun `execute works normally for new books without existing metadata`() = runTest {
+        // Given - Book does NOT exist in repository
+        val newBookFromApi = TestBookBuilder()
+            .withId("new-book")
+            .withTitle("Brand New Book")
+            .withPersonalRating(0f)
+            .withPersonalNotes("")
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ)
+            .withDateAdded(null)
+            .withPurchaseDate(null)
+            .withPurchased(false)
+            .build()
+
+        // When - Toggle purchased on new book
+        val result = useCase.execute(newBookFromApi, true)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val updatedBook = (result as Result.Success).data
+
+        // Should use API data as-is
+        assertEquals("Should use API title", "Brand New Book", updatedBook.title)
+        assertTrue("Should set purchased to true", updatedBook.purchased)
+        assertEquals("Should use default rating", 0f, updatedBook.personalRating, 0.01f)
+        assertEquals("Should use default notes", "", updatedBook.personalNotes)
+        assertEquals("Should use default reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ, updatedBook.readingStatus)
     }
 }
