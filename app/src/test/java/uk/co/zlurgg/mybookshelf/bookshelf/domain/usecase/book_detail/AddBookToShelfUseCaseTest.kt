@@ -247,7 +247,7 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should update title from API", "Updated Title from API", upsertedBook.title)
 
         // Personal metadata should be preserved from existing book
-        assertEquals("Should preserve personal rating", 4.5f, upsertedBook.personalRating ?: 0f, 0.01f)
+        assertEquals("Should preserve personal rating", 4.5f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
         assertEquals("Should preserve reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ, upsertedBook.readingStatus)
         assertEquals("Should preserve dateAdded", 1609459200000L, upsertedBook.dateAdded)
@@ -279,7 +279,7 @@ class AddBookToShelfUseCaseTest {
 
         // Should use API data exactly as-is
         assertEquals("Should use API title", "Brand New Book", upsertedBook.title)
-        assertEquals("Should use default rating", 0f, upsertedBook.personalRating ?: 0f, 0.01f)
+        assertEquals("Should use default rating", 0f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should use default notes", "", upsertedBook.personalNotes)
         assertEquals("Should use default reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ, upsertedBook.readingStatus)
     }
