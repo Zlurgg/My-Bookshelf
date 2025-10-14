@@ -36,6 +36,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -86,7 +87,8 @@ class BookshelfViewModelTest {
             deleteShelf = MockDeleteShelfUseCase(),
             reorderShelves = MockReorderShelvesUseCase(),
             getShelfById = mockGetShelfById,
-            renameShelf = MockRenameShelfUseCase()
+            renameShelf = MockRenameShelfUseCase(),
+            updateShelfStyle = MockUpdateShelfStyleUseCase()
         )
         return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, shelfId)
     }

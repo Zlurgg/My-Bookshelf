@@ -111,7 +111,7 @@ class BookcaseViewModel(
             }
 
             is BookcaseAction.OnBookshelfClick -> {
-                // no-op: handled by the screen root for navigation
+                // Navigation is handled by the screen root
             }
 
             is BookcaseAction.ShowRenameDialog -> {
@@ -135,6 +135,28 @@ class BookcaseViewModel(
 
             is BookcaseAction.OnRenameShelf -> {
                 renameShelf(action.shelfId, action.newName)
+            }
+
+            is BookcaseAction.ShowChangeStyleDialog -> {
+                _state.update {
+                    it.copy(
+                        showChangeStyleDialog = true,
+                        shelfToChangeStyle = action.bookshelf
+                    )
+                }
+            }
+
+            is BookcaseAction.DismissChangeStyleDialog -> {
+                _state.update {
+                    it.copy(
+                        showChangeStyleDialog = false,
+                        shelfToChangeStyle = null
+                    )
+                }
+            }
+
+            is BookcaseAction.OnChangeStyle -> {
+                changeShelfStyle(action.shelfId, action.newStyle)
             }
         }
     }
@@ -245,6 +267,40 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             renameError = ErrorFormatter.formatDataErrorMessage(renameResult.error, "rename shelf")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun changeShelfStyle(shelfId: String, newStyle: ShelfStyle) {
+        viewModelScope.launch {
+            when (val styleResult = bookcaseUseCases.updateShelfStyle.execute(shelfId, newStyle)) {
+                is Result.Success -> {
+                    // Update the shelf style in the current state
+                    _state.update { current ->
+                        val updatedShelves = current.bookshelves.map { shelf ->
+                            if (shelf.id == shelfId) {
+                                shelf.copy(shelfStyle = newStyle)
+                            } else {
+                                shelf
+                            }
+                        }
+                        current.copy(
+                            bookshelves = updatedShelves,
+                            showChangeStyleDialog = false,
+                            shelfToChangeStyle = null,
+                            operationSuccess = true,
+                            errorMessage = null
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    // Show error message
+                    _state.update {
+                        it.copy(
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(styleResult.error, "change shelf style")
                         )
                     }
                 }

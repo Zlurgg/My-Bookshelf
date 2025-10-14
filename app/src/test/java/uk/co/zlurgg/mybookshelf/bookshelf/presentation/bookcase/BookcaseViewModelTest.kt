@@ -24,6 +24,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -45,6 +46,7 @@ class BookcaseViewModelTest {
     private val mockDeleteShelf = MockDeleteShelfUseCase()
     private val mockReorderShelves = MockReorderShelvesUseCase()
     private val mockRenameShelf = MockRenameShelfUseCase()
+    private val mockUpdateShelfStyle = MockUpdateShelfStyleUseCase()
 
     @After
     fun tearDown() {
@@ -52,6 +54,7 @@ class BookcaseViewModelTest {
         mockDeleteShelf.reset()
         mockReorderShelves.reset()
         mockRenameShelf.reset()
+        mockUpdateShelfStyle.reset()
     }
 
     private fun createViewModel(): BookcaseViewModel {
@@ -61,7 +64,8 @@ class BookcaseViewModelTest {
             deleteShelf = mockDeleteShelf,
             reorderShelves = mockReorderShelves,
             getShelfById = MockGetShelfByIdUseCase(),
-            renameShelf = mockRenameShelf
+            renameShelf = mockRenameShelf,
+            updateShelfStyle = mockUpdateShelfStyle
         )
         return BookcaseViewModel(useCases)
     }

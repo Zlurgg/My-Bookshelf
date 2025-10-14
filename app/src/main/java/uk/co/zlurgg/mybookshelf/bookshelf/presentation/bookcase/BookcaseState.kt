@@ -14,4 +14,6 @@ data class BookcaseState(
     val showRenameDialog: Boolean = false,
     val shelfToRename: Bookshelf? = null,
     val renameError: String? = null,
+    val showChangeStyleDialog: Boolean = false,
+    val shelfToChangeStyle: Bookshelf? = null,
 )
