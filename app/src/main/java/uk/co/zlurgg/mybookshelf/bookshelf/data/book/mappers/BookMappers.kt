@@ -4,7 +4,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 
 
 /**
