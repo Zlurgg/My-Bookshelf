@@ -24,6 +24,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 
@@ -62,7 +63,8 @@ class ShelfCreationE2ETest {
             deleteShelf = DeleteShelfUseCaseImpl(repository),
             reorderShelves = ReorderShelvesUseCaseImpl(repository),
             getShelfById = GetShelfByIdUseCaseImpl(repository),
-            renameShelf = RenameShelfUseCaseImpl(repository)
+            renameShelf = RenameShelfUseCaseImpl(repository),
+            updateShelfStyle = UpdateShelfStyleUseCaseImpl(repository)
         )
 
         // Setup ViewModel with full dependency chain

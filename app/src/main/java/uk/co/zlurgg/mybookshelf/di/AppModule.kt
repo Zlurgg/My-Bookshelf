@@ -19,7 +19,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryBookA
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
@@ -119,7 +118,6 @@ val appModule = module {
     singleOf(::ImportBookshelfUseCase)
     singleOf(::CheckImportConflictUseCase)
 
-    singleOf(::BookSorter)
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
     singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()

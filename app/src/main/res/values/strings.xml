@@ -22,6 +22,8 @@
     <string name="hide_sort_options">Hide Sort</string>
     <string name="show_advanced_search">Advanced</string>
     <string name="hide_advanced_search">Hide Advanced</string>
+    <string name="search_by_title">by title</string>
+    <string name="search_by_author">by author</string>
     <string name="filter_by_author">Filter by Author</string>
     <string name="filter_by_title">Filter by Title</string>
     <string name="author_hint">e.g. Tolkien</string>

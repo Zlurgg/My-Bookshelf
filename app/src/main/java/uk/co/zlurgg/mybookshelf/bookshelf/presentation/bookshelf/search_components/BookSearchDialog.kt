@@ -24,11 +24,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import uk.co.zlurgg.mybookshelf.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withSmallImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.LoadImage
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
@@ -54,17 +56,13 @@ fun BookSearchDialog(
                     onImeSearch = { /* handled by onQueryChange as user types */ }
                 )
 
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
-                AdvancedSearchFilters(
-                    showAdvanced = state.showAdvanced,
-                    authorFilter = state.authorFilter,
-                    titleFilter = state.titleFilter,
-                    selectedSort = state.selectedSort,
-                    onToggleAdvanced = callbacks.onToggleAdvanced,
-                    onAuthorFilterChange = callbacks.onAuthorFilterChange,
-                    onTitleFilterChange = callbacks.onTitleFilterChange,
-                    onSortChange = callbacks.onSortChange
+                SearchFilters(
+                    searchByTitle = state.searchByTitle,
+                    searchByAuthor = state.searchByAuthor,
+                    onToggleTitle = callbacks.onToggleSearchByTitle,
+                    onToggleAuthor = callbacks.onToggleSearchByAuthor
                 )
             }
         },
@@ -99,13 +97,33 @@ fun BookSearchDialog(
                             ListItem(
                                 leadingContent = {
                                     LoadImage(
-                                        imageUrl = book.imageUrl,
+                                        imageUrl = book.withSmallImage(),
                                         title = book.title,
                                         modifier = Modifier.size(48.dp)
                                     )
                                 },
-                                headlineContent = { Text(book.title) },
-                                supportingContent = { Text(book.authors.joinToString()) },
+                                headlineContent = {
+                                    Text(
+                                        text = book.title,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
+                                supportingContent = {
+                                    Column {
+                                        Text(
+                                            text = book.authors.joinToString(", "),
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        book.firstPublishYear?.let { year ->
+                                            Text(
+                                                text = year,
+                                                maxLines = 1
+                                            )
+                                        }
+                                    }
+                                },
                                 trailingContent = {
                                     if (isInShelf) {
                                         IconButton(onClick = { callbacks.onRemoveBook(book) }) {
@@ -140,16 +158,14 @@ private fun BookSearchScreenPreview() {
             isLoading = false,
             inShelfIds = emptySet(),
             selectedSort = BookSearchSort.BEST_MATCH,
-            showAdvanced = false,
-            authorFilter = "",
-            titleFilter = ""
+            searchByTitle = true,
+            searchByAuthor = true
         ),
         callbacks = object : BookSearchCallbacks {
             override val onQueryChange: (String) -> Unit = {}
             override val onSortChange: (BookSearchSort) -> Unit = {}
-            override val onToggleAdvanced: () -> Unit = {}
-            override val onAuthorFilterChange: (String) -> Unit = {}
-            override val onTitleFilterChange: (String) -> Unit = {}
+            override val onToggleSearchByTitle: () -> Unit = {}
+            override val onToggleSearchByAuthor: () -> Unit = {}
             override val onAddBook: (Book) -> Unit = {}
             override val onRemoveBook: (Book) -> Unit = {}
             override val onBookClick: (Book) -> Unit = {}

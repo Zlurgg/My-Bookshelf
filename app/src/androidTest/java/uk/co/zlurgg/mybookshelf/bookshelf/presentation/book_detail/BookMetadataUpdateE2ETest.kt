@@ -152,16 +152,16 @@ class BookMetadataUpdateE2ETest {
     fun completeMetadataWorkflow_updatesBookCorrectly() = runTest(testDispatcher) {
         // Wait for initial book load
         val initialState = bookDetailViewModel.state.first { !it.isLoading }
-        assertEquals(ReadingStatus.WANT_TO_READ, initialState.readingStatus)
-        assertEquals(0f, initialState.personalRating)
-        assertEquals("", initialState.personalNotes)
+        assertEquals(ReadingStatus.WANT_TO_READ, initialState.book!!.readingStatus)
+        assertEquals(0f, initialState.book!!.personalRating)
+        assertEquals("", initialState.book!!.personalNotes)
 
         // When - User updates metadata: Step 1: Change status to CURRENTLY_READING
         bookDetailViewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.CURRENTLY_READING))
 
         // Then - Verify state updated
-        val stateAfterStatus = bookDetailViewModel.state.first { it.readingStatus == ReadingStatus.CURRENTLY_READING }
-        assertEquals(ReadingStatus.CURRENTLY_READING, stateAfterStatus.readingStatus)
+        val stateAfterStatus = bookDetailViewModel.state.first { it.book?.readingStatus == ReadingStatus.CURRENTLY_READING }
+        assertEquals(ReadingStatus.CURRENTLY_READING, stateAfterStatus.book!!.readingStatus)
 
         // AND - Verify database persistence
         val bookAfterStatus = bookRepository.getBookById(testBookId)
@@ -171,8 +171,8 @@ class BookMetadataUpdateE2ETest {
         bookDetailViewModel.onAction(BookDetailAction.OnPersonalRatingChange(4.5f))
 
         // Then - Verify state updated
-        val stateAfterRating = bookDetailViewModel.state.first { it.personalRating == 4.5f }
-        assertEquals(4.5f, stateAfterRating.personalRating)
+        val stateAfterRating = bookDetailViewModel.state.first { it.book?.personalRating == 4.5f }
+        assertEquals(4.5f, stateAfterRating.book!!.personalRating)
 
         // AND - Verify database persistence
         val bookAfterRating = bookRepository.getBookById(testBookId)
@@ -182,8 +182,8 @@ class BookMetadataUpdateE2ETest {
         bookDetailViewModel.onAction(BookDetailAction.OnPersonalNotesChange("Great book! Highly recommend."))
 
         // Then - Verify state updated
-        val stateAfterNotes = bookDetailViewModel.state.first { it.personalNotes == "Great book! Highly recommend." }
-        assertEquals("Great book! Highly recommend.", stateAfterNotes.personalNotes)
+        val stateAfterNotes = bookDetailViewModel.state.first { it.book?.personalNotes == "Great book! Highly recommend." }
+        assertEquals("Great book! Highly recommend.", stateAfterNotes.book!!.personalNotes)
 
         // AND - Verify database persistence
         val finalBook = bookRepository.getBookById(testBookId)
@@ -205,15 +205,15 @@ class BookMetadataUpdateE2ETest {
         bookRepository.upsertBook(bookWithRating!!)
 
         // Wait for ViewModel to load updated book
-        val initialState = bookDetailViewModel.state.first { it.personalRating == 4.5f }
-        assertEquals(4.5f, initialState.personalRating)
+        val initialState = bookDetailViewModel.state.first { it.book?.personalRating == 4.5f }
+        assertEquals(4.5f, initialState.book!!.personalRating)
 
         // When - User clears rating (sets to 0f)
         bookDetailViewModel.onAction(BookDetailAction.OnPersonalRatingChange(0f))
 
         // Then - Verify state updated
-        val stateAfterClear = bookDetailViewModel.state.first { it.personalRating == 0f }
-        assertEquals("State personal rating should be 0f", 0f, stateAfterClear.personalRating)
+        val stateAfterClear = bookDetailViewModel.state.first { it.book?.personalRating == 0f }
+        assertEquals("State personal rating should be 0f", 0f, stateAfterClear.book!!.personalRating)
 
         // AND - Verify database persistence
         val bookAfterClear = bookRepository.getBookById(testBookId)
@@ -230,11 +230,11 @@ class BookMetadataUpdateE2ETest {
 
         // Wait for state updates
         val stateAfterUpdates = bookDetailViewModel.state.first {
-            it.personalRating == 4.5f && it.personalNotes == "Loved it!" && it.readingStatus == ReadingStatus.READ
+            it.book?.personalRating == 4.5f && it.book?.personalNotes == "Loved it!" && it.book?.readingStatus == ReadingStatus.READ
         }
-        assertEquals(4.5f, stateAfterUpdates.personalRating)
-        assertEquals("Loved it!", stateAfterUpdates.personalNotes)
-        assertEquals(ReadingStatus.READ, stateAfterUpdates.readingStatus)
+        assertEquals(4.5f, stateAfterUpdates.book!!.personalRating)
+        assertEquals("Loved it!", stateAfterUpdates.book!!.personalNotes)
+        assertEquals(ReadingStatus.READ, stateAfterUpdates.book!!.readingStatus)
 
         // When - User adds book to another shelf (this triggered the bug)
         // Create second shelf

@@ -38,6 +38,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.Pu
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.LanguagesCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PurchasedToggleCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withLargeImage
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBook
 
 @Composable
@@ -109,7 +110,7 @@ fun BookDetailsScreen(
                 if (showImageWithSpacing) {
                     item {
                         BookDetailImage(
-                            imageUrl = state.book.imageUrl,
+                            imageUrl = state.book.withLargeImage(),
                             title = state.book.title,
                             onImageLoadResult = { success ->
                                 if (!success) {
