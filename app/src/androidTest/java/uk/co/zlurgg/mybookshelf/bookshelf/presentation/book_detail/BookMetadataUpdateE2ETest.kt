@@ -153,8 +153,8 @@ class BookMetadataUpdateE2ETest {
         // Wait for initial book load
         val initialState = bookDetailViewModel.state.first { !it.isLoading }
         assertEquals(ReadingStatus.WANT_TO_READ, initialState.book!!.readingStatus)
-        assertEquals(0f, initialState.book!!.personalRating)
-        assertEquals("", initialState.book!!.personalNotes)
+        assertEquals(0f, initialState.book.personalRating)
+        assertEquals("", initialState.book.personalNotes)
 
         // When - User updates metadata: Step 1: Change status to CURRENTLY_READING
         bookDetailViewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.CURRENTLY_READING))
@@ -230,11 +230,11 @@ class BookMetadataUpdateE2ETest {
 
         // Wait for state updates
         val stateAfterUpdates = bookDetailViewModel.state.first {
-            it.book?.personalRating == 4.5f && it.book?.personalNotes == "Loved it!" && it.book?.readingStatus == ReadingStatus.READ
+            it.book?.personalRating == 4.5f && it.book.personalNotes == "Loved it!" && it.book.readingStatus == ReadingStatus.READ
         }
         assertEquals(4.5f, stateAfterUpdates.book!!.personalRating)
-        assertEquals("Loved it!", stateAfterUpdates.book!!.personalNotes)
-        assertEquals(ReadingStatus.READ, stateAfterUpdates.book!!.readingStatus)
+        assertEquals("Loved it!", stateAfterUpdates.book.personalNotes)
+        assertEquals(ReadingStatus.READ, stateAfterUpdates.book.readingStatus)
 
         // When - User adds book to another shelf (this triggered the bug)
         // Create second shelf

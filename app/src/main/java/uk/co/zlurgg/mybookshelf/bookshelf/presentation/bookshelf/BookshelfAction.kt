@@ -1,13 +1,11 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 
 sealed interface BookshelfAction {
     data class OnBookClick(val book: Book) : BookshelfAction
     data object OnSearchClick : BookshelfAction
     data class OnSearchQueryChange(val query: String) : BookshelfAction
-    data class OnSortChange(val sort: BookSearchSort) : BookshelfAction
     data object OnToggleSearchByTitle : BookshelfAction
     data object OnToggleSearchByAuthor : BookshelfAction
     data object OnDismissSearchDialog : BookshelfAction

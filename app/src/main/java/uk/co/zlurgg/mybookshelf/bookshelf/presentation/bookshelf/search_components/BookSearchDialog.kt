@@ -29,7 +29,6 @@ import uk.co.zlurgg.mybookshelf.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withSmallImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.LoadImage
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
@@ -157,13 +156,11 @@ private fun BookSearchScreenPreview() {
             results = sampleBooks,
             isLoading = false,
             inShelfIds = emptySet(),
-            selectedSort = BookSearchSort.BEST_MATCH,
             searchByTitle = true,
             searchByAuthor = true
         ),
         callbacks = object : BookSearchCallbacks {
             override val onQueryChange: (String) -> Unit = {}
-            override val onSortChange: (BookSearchSort) -> Unit = {}
             override val onToggleSearchByTitle: () -> Unit = {}
             override val onToggleSearchByAuthor: () -> Unit = {}
             override val onAddBook: (Book) -> Unit = {}

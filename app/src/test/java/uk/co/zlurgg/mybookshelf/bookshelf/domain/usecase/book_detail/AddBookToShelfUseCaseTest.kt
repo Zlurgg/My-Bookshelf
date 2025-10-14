@@ -39,7 +39,10 @@ class AddBookToShelfUseCaseTest {
         assertTrue("Should return success", result is Result.Success)
         assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
         assertEquals("Should call addBookToShelf once", 1, mockBookshelfRepository.addBookToShelfCallCount)
-        assertEquals("Should upsert correct book", book, mockBookRepository.lastUpsertedBook)
+        val upsertedBook = mockBookRepository.lastUpsertedBook!!
+        assertEquals("Should upsert correct book ID", book.id, upsertedBook.id)
+        assertEquals("Should upsert correct book title", book.title, upsertedBook.title)
+        assertTrue("Should generate spine color for new book", upsertedBook.spineColor != 0)
         assertEquals("Should add to correct shelf", shelfId, mockBookshelfRepository.lastAddedShelfId)
         assertEquals("Should add correct book", book.id, mockBookshelfRepository.lastAddedBookId)
     }
@@ -205,7 +208,7 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should preserve authors", book.authors, upsertedBook.authors)
         assertEquals("Should preserve rating", book.averageRating, upsertedBook.averageRating)
         assertEquals("Should preserve purchase status", book.purchased, upsertedBook.purchased)
-        assertEquals("Should preserve spine color", book.spineColor, upsertedBook.spineColor)
+        assertTrue("Should generate spine color for new book", upsertedBook.spineColor != 0)
     }
 
     @Test
@@ -214,6 +217,7 @@ class AddBookToShelfUseCaseTest {
         val existingBook = TestBookBuilder()
             .withId("book-with-metadata")
             .withTitle("Old Title")
+            .withSpineColor(12345) // Existing spine color
             .withPersonalRating(4.5f)
             .withPersonalNotes("Great book!")
             .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ)
@@ -227,6 +231,7 @@ class AddBookToShelfUseCaseTest {
         val freshBookFromApi = TestBookBuilder()
             .withId("book-with-metadata") // Same ID
             .withTitle("Updated Title from API")
+            .withSpineColor(0) // Placeholder from search
             .withPersonalRating(0f) // API doesn't have this
             .withPersonalNotes("") // API doesn't have this
             .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ) // Default
@@ -247,6 +252,7 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should update title from API", "Updated Title from API", upsertedBook.title)
 
         // Personal metadata should be preserved from existing book
+        assertEquals("Should preserve spine color", 12345, upsertedBook.spineColor)
         assertEquals("Should preserve personal rating", 4.5f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
         assertEquals("Should preserve reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ, upsertedBook.readingStatus)

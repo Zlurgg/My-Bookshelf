@@ -3,14 +3,13 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 /**
  * Implementation of SearchBooksUseCase that retrieves book data from OpenLibrary API.
- * Relies on the API's native relevance sorting and optional server-side sort parameters.
+ * Results are sorted by the API's default relevance algorithm.
  * Follows Clean Architecture by coordinating between data and domain layers.
  */
 class SearchBooksUseCaseImpl(
@@ -25,7 +24,6 @@ class SearchBooksUseCaseImpl(
 
     override suspend fun execute(
         query: String,
-        sortBy: BookSearchSort,
         resultLimit: Int?,
         language: String?,
         authorFilter: String?,
@@ -44,18 +42,14 @@ class SearchBooksUseCaseImpl(
             return Result.Error(DataError.Remote.MALFORMED_REQUEST)
         }
 
-        // Use server-side sort parameter if available, otherwise rely on API's default relevance sorting
-        val serverSort = if (sortBy.useServerSide) sortBy.serverSortParam else null
-
         return remoteBookDataSource.searchBooks(
             query = query,
             resultLimit = resultLimit,
             language = language,
             authorFilter = authorFilter,
             titleFilter = titleFilter,
-            sort = serverSort
+            sort = null  // Always use API's default relevance sorting
         ).map { dto ->
-            // Return results as provided by the API (sorted by relevance or server-side param)
             dto.results.map { it.toBook() }
         }
     }

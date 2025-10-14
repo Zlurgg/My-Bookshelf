@@ -7,6 +7,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 
 
+/**
+ * Converts search result DTO to Book domain model.
+ * Note: Uses placeholder color (0) for search results - actual spine color
+ * is generated when book is added to shelf for better performance.
+ */
 fun SearchedBookDto.toBook(): Book {
     val generatedImageUrl = when {
         coverKey != null -> "https://covers.openlibrary.org/b/olid/${coverKey}-L.jpg"
@@ -27,7 +32,7 @@ fun SearchedBookDto.toBook(): Book {
         numPages = numPagesMedian,
         numEditions = numEditions ?: 0,
         purchased = false,
-        spineColor = BookColorGenerator.generateSpineColor(),
+        spineColor = 0, // Placeholder - generated when added to shelf
         // Enhanced metadata - take first item from arrays
         isbn = isbns?.firstOrNull(),
         publisher = publishers?.firstOrNull(),

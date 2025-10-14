@@ -6,7 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
@@ -33,7 +32,6 @@ class SearchBooksUseCaseTest {
         // When
         val result = useCase.execute(
             query = query,
-            sortBy = BookSearchSort.BEST_MATCH,
             language = language,
             authorFilter = authorFilter,
             titleFilter = titleFilter
@@ -48,41 +46,7 @@ class SearchBooksUseCaseTest {
         assertEquals("Should pass correct language", language, params.language)
         assertEquals("Should pass correct author filter", authorFilter, params.authorFilter)
         assertEquals("Should pass correct title filter", titleFilter, params.titleFilter)
-        assertEquals("Should not pass server sort for BEST_MATCH", null, params.sort)
-    }
-
-    @Test
-    fun `execute with server-side sort passes correct sort parameter`() = runTest {
-        // Given
-        val query = "science fiction"
-
-        // When
-        val result = useCase.execute(
-            query = query,
-            sortBy = BookSearchSort.NEWEST
-        )
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val params = mockRemoteDataSource.lastSearchParams!!
-        assertEquals("Should pass server sort parameter", "new", params.sort)
-    }
-
-    @Test
-    fun `execute with OLDEST sort passes correct server parameter`() = runTest {
-        // Given
-        val query = "historical fiction"
-
-        // When
-        val result = useCase.execute(
-            query = query,
-            sortBy = BookSearchSort.OLDEST
-        )
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val params = mockRemoteDataSource.lastSearchParams!!
-        assertEquals("Should pass old sort parameter", "old", params.sort)
+        assertEquals("Should always use API's default relevance sorting", null, params.sort)
     }
 
     @Test
@@ -157,34 +121,6 @@ class SearchBooksUseCaseTest {
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
         assertEquals("Should return timeout error", DataError.Remote.REQUEST_TIMEOUT, error)
-    }
-
-    @Test
-    fun `execute with server-side sorting does not apply client sorting`() = runTest {
-        // Given - Server will return pre-sorted results for NEWEST
-        val testBooks = listOf(
-            TestSearchedBookDtoBuilder()
-                .withId("/works/OL1W")
-                .withTitle("Book from 2023")
-                .withFirstPublishYear(2023)
-                .build(),
-            TestSearchedBookDtoBuilder()
-                .withId("/works/OL2W")
-                .withTitle("Book from 2020")
-                .withFirstPublishYear(2020)
-                .build()
-        )
-        mockRemoteDataSource.configureSearchResponse(SearchResponseDto(testBooks))
-
-        // When
-        val result = useCase.execute("books", sortBy = BookSearchSort.NEWEST)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val books = (result as Result.Success).data
-        // Should preserve server order (no client-side re-sorting)
-        assertEquals("Should maintain server order", "OL1W", books[0].id)
-        assertEquals("Should maintain server order", "OL2W", books[1].id)
     }
 
     @Test

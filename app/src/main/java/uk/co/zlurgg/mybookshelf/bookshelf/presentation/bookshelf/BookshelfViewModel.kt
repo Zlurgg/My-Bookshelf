@@ -27,7 +27,7 @@ class BookshelfViewModel(
 ) : ViewModel() {
 
     companion object {
-        private const val SEARCH_DEBOUNCE_MS = 450L
+        private const val SEARCH_DEBOUNCE_MS = 250L  // Reduced from 450ms for faster perceived response
         private const val MIN_SEARCH_QUERY_LENGTH = 2
     }
 
@@ -115,15 +115,6 @@ class BookshelfViewModel(
             }
             BookshelfAction.OnShareShelf -> {
                 shareShelf()
-            }
-            is BookshelfAction.OnSortChange -> {
-                _state.update { it.copy(selectedSort = action.sort) }
-
-                // Re-trigger search if there's an active query
-                val currentQuery = _state.value.searchQuery.trim()
-                if (currentQuery.length >= MIN_SEARCH_QUERY_LENGTH) {
-                    performSearch(currentQuery)
-                }
             }
             BookshelfAction.OnToggleSearchByTitle -> {
                 _state.update { it.copy(searchByTitle = !it.searchByTitle) }
@@ -239,8 +230,7 @@ class BookshelfViewModel(
             bookshelfUseCases.searchBooks
                 .execute(
                     query = generalQuery ?: "",
-                    sortBy = currentState.selectedSort,
-                    resultLimit = 15,  // First 20 results as per OpenLibrary best practices
+                    resultLimit = 15,  // First 15 results for performance
                     language = null,
                     authorFilter = authorQuery,
                     titleFilter = titleQuery
