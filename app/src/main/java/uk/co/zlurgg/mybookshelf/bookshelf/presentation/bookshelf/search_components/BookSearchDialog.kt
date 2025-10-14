@@ -29,7 +29,6 @@ import uk.co.zlurgg.mybookshelf.R
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withSmallImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.LoadImage
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
 
@@ -96,7 +95,7 @@ fun BookSearchDialog(
                             ListItem(
                                 leadingContent = {
                                     LoadImage(
-                                        imageUrl = book.withSmallImage(),
+                                        imageUrl = book.imageUrl,
                                         title = book.title,
                                         modifier = Modifier.size(48.dp)
                                     )

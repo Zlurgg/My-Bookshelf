@@ -4,19 +4,22 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 
 /**
  * Converts search result DTO to Book domain model.
- * Note: Uses placeholder color (0) for search results - actual spine color
+ * Note: Uses small image URLs (-S.jpg) for fast loading in search results.
+ * Uses placeholder color (0) for search results - actual spine color
  * is generated when book is added to shelf for better performance.
  */
 fun SearchedBookDto.toBook(): Book {
-    val generatedImageUrl = when {
-        coverKey != null -> "https://covers.openlibrary.org/b/olid/${coverKey}-L.jpg"
-        coverAlternativeKey != null -> "https://covers.openlibrary.org/b/id/${coverAlternativeKey}-L.jpg"
-        else -> "" // Empty string fallback when no cover data is available
-    }
+    // Determine which cover identifier to use (prioritize coverKey over coverAlternativeKey)
+    val coverIdentifier = coverKey ?: coverAlternativeKey?.toString()
+    val generatedImageUrl = ApiConfig.OpenLibrary.CoverUrls.buildCoverUrl(
+        coverKey = coverIdentifier,
+        size = ApiConfig.OpenLibrary.CoverUrls.CoverSize.SMALL
+    )
 
     return Book(
         id = id.substringAfterLast("/"),
