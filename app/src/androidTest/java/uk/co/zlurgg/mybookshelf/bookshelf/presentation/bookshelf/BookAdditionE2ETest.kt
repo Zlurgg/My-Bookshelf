@@ -19,7 +19,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositor
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCaseImpl
@@ -31,6 +30,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetAllShelvesU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCaseImpl
@@ -129,7 +129,7 @@ class BookAdditionE2ETest {
 
         // Setup bookshelf use cases
         val bookshelfUseCases = BookshelfUseCases(
-            searchBooks = SearchBooksUseCaseImpl(stubRemoteDataSource, BookSorter()),
+            searchBooks = SearchBooksUseCaseImpl(stubRemoteDataSource),
             getShelfBooks = GetShelfBooksUseCaseImpl(bookshelfRepository),
             addBookToShelf = AddBookToShelfUseCaseImpl(bookRepository, bookshelfRepository),
             removeBookFromShelf = RemoveBookFromShelfUseCaseImpl(bookshelfRepository),
@@ -144,7 +144,8 @@ class BookAdditionE2ETest {
             deleteShelf = DeleteShelfUseCaseImpl(bookcaseRepositoryImpl),
             reorderShelves = ReorderShelvesUseCaseImpl(bookcaseRepositoryImpl),
             getShelfById = GetShelfByIdUseCaseImpl(bookcaseRepositoryImpl),
-            renameShelf = RenameShelfUseCaseImpl(bookcaseRepositoryImpl)
+            renameShelf = RenameShelfUseCaseImpl(bookcaseRepositoryImpl),
+            updateShelfStyle = UpdateShelfStyleUseCaseImpl(bookcaseRepositoryImpl)
         )
 
         // Setup ViewModel with full dependency chain

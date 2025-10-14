@@ -6,7 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookSorter
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -16,8 +15,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRemoteBookDataSource
 class SearchBooksUseCaseTest {
 
     private val mockRemoteDataSource = MockRemoteBookDataSource()
-    private val bookSorter = BookSorter()
-    private val useCase = SearchBooksUseCaseImpl(mockRemoteDataSource, bookSorter)
+    private val useCase = SearchBooksUseCaseImpl(mockRemoteDataSource)
 
     @After
     fun tearDown() {
@@ -159,67 +157,6 @@ class SearchBooksUseCaseTest {
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
         assertEquals("Should return timeout error", DataError.Remote.REQUEST_TIMEOUT, error)
-    }
-
-    @Test
-    fun `execute with client-side sorting applies BookSorter for BEST_MATCH`() = runTest {
-        // Given - Books that should be reordered by best match algorithm
-        val testBooks = listOf(
-            TestSearchedBookDtoBuilder()
-                .withId("/works/OL1W")
-                .withTitle("Unrelated Title")
-                .withAuthorNames(listOf("Random Author"))
-                .withRatingsAverage(3.0)
-                .build(),
-            TestSearchedBookDtoBuilder()
-                .withId("/works/OL2W")
-                .withTitle("Kotlin Programming Guide") // Should match better
-                .withAuthorNames(listOf("Expert Author"))
-                .withRatingsAverage(4.5)
-                .build()
-        )
-        mockRemoteDataSource.configureSearchResponse(SearchResponseDto(testBooks))
-
-        // When
-        val result = useCase.execute("kotlin", sortBy = BookSearchSort.BEST_MATCH)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val books = (result as Result.Success).data
-        assertEquals("Should return same number of books", 2, books.size)
-        // The BookSorter should have reordered these, with better title match first
-        assertEquals("Should have Kotlin book first after sorting", "OL2W", books[0].id)
-    }
-
-    @Test
-    fun `execute with client-side sorting applies BookSorter for HIGHEST_RATED`() = runTest {
-        // Given - Books with different ratings
-        val testBooks = listOf(
-            TestSearchedBookDtoBuilder()
-                .withId("/works/OL1W")
-                .withTitle("Lower Rated Book")
-                .withRatingsAverage(3.0)
-                .withRatingsCount(100)
-                .build(),
-            TestSearchedBookDtoBuilder()
-                .withId("/works/OL2W")
-                .withTitle("Higher Rated Book")
-                .withRatingsAverage(4.8)
-                .withRatingsCount(200)
-                .build()
-        )
-        mockRemoteDataSource.configureSearchResponse(SearchResponseDto(testBooks))
-
-        // When
-        val result = useCase.execute("books", sortBy = BookSearchSort.HIGHEST_RATED)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val books = (result as Result.Success).data
-        assertEquals("Should return same number of books", 2, books.size)
-        // BookSorter should put higher rated book first
-        assertEquals("Should have higher rated book first", "OL2W", books[0].id)
-        assertEquals("Higher rated book should have correct rating", 4.8, books[0].averageRating!!, 0.0)
     }
 
     @Test

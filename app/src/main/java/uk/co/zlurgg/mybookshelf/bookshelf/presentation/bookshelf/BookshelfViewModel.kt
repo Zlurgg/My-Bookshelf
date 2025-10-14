@@ -55,9 +55,8 @@ class BookshelfViewModel(
                     searchQuery = "",
                     searchResults = emptyList(),
                     isSearchLoading = false,
-                    showAdvanced = false,
-                    authorFilter = "",
-                    titleFilter = ""
+                    searchByTitle = true,
+                    searchByAuthor = true
                 ) }
                 // Reset query to cancel any pending search
                 queryFlow.value = ""
@@ -126,11 +125,8 @@ class BookshelfViewModel(
                     performSearch(currentQuery)
                 }
             }
-            BookshelfAction.OnToggleAdvancedSearch -> {
-                _state.update { it.copy(showAdvanced = !it.showAdvanced) }
-            }
-            is BookshelfAction.OnAuthorFilterChange -> {
-                _state.update { it.copy(authorFilter = action.authorFilter) }
+            BookshelfAction.OnToggleSearchByTitle -> {
+                _state.update { it.copy(searchByTitle = !it.searchByTitle) }
 
                 // Re-trigger search if there's an active query
                 val currentQuery = _state.value.searchQuery.trim()
@@ -138,8 +134,8 @@ class BookshelfViewModel(
                     performSearch(currentQuery)
                 }
             }
-            is BookshelfAction.OnTitleFilterChange -> {
-                _state.update { it.copy(titleFilter = action.titleFilter) }
+            BookshelfAction.OnToggleSearchByAuthor -> {
+                _state.update { it.copy(searchByAuthor = !it.searchByAuthor) }
 
                 // Re-trigger search if there's an active query
                 val currentQuery = _state.value.searchQuery.trim()
@@ -227,14 +223,27 @@ class BookshelfViewModel(
             _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
 
             val currentState = _state.value
+
+            // Map checkbox states to OpenLibrary API parameters:
+            // - Both checked OR both unchecked → use general q= parameter (smart search)
+            // - Only title checked → use title= parameter
+            // - Only author checked → use author= parameter
+            val (generalQuery, titleQuery, authorQuery) = when {
+                currentState.searchByTitle && currentState.searchByAuthor -> Triple(query, null, null)
+                !currentState.searchByTitle && !currentState.searchByAuthor -> Triple(query, null, null)
+                currentState.searchByTitle && !currentState.searchByAuthor -> Triple(null, query, null)
+                // Fallback (should never happen)
+                else -> Triple(null, null, query)
+            }
+
             bookshelfUseCases.searchBooks
                 .execute(
-                    query = query,
+                    query = generalQuery ?: "",
                     sortBy = currentState.selectedSort,
-                    resultLimit = 50,  // Limit results for faster searches and less data transfer
+                    resultLimit = 15,  // First 20 results as per OpenLibrary best practices
                     language = null,
-                    authorFilter = currentState.authorFilter.takeIf { it.isNotBlank() },
-                    titleFilter = currentState.titleFilter.takeIf { it.isNotBlank() }
+                    authorFilter = authorQuery,
+                    titleFilter = titleQuery
                 )
                 .onSuccess { searchResults ->
                     _state.update {
