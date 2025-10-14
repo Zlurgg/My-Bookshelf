@@ -38,7 +38,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.Pu
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.LanguagesCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PurchasedToggleCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withLargeImage
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 import uk.co.zlurgg.mybookshelf.core.presentation.sampleBook
 
 @Composable
@@ -81,6 +81,19 @@ fun BookDetailsScreen(
                     }
                 )
             },
+            bottomBar = {
+                // Sticky bottom action - always visible, no scrolling required
+                ShelfActionsCard(
+                    book = state.book,
+                    onShelf = state.onShelf,
+                    onAddToShelf = { book ->
+                        onAction(BookDetailAction.OnAddBookClick(book))
+                    },
+                    onRemoveFromShelf = { book ->
+                        onAction(BookDetailAction.OnRemoveBookClick(book))
+                    }
+                )
+            },
             modifier = modifier
         ) { innerPadding ->
             // Image visibility state
@@ -110,7 +123,7 @@ fun BookDetailsScreen(
                 if (showImageWithSpacing) {
                     item {
                         BookDetailImage(
-                            imageUrl = state.book.withLargeImage(),
+                            imageUrl = state.book.withMediumImage(),
                             title = state.book.title,
                             onImageLoadResult = { success ->
                                 if (!success) {
@@ -191,19 +204,7 @@ fun BookDetailsScreen(
                     )
                 }
 
-                // 9. Shelf Actions Card
-                item {
-                    ShelfActionsCard(
-                        book = state.book,
-                        onShelf = state.onShelf,
-                        onAddToShelf = { book ->
-                            onAction(BookDetailAction.OnAddBookClick(book))
-                        },
-                        onRemoveFromShelf = { book ->
-                            onAction(BookDetailAction.OnRemoveBookClick(book))
-                        }
-                    )
-                }
+                // Note: ShelfActionsCard moved to Scaffold bottomBar (sticky at bottom, always visible)
             }
         }
     } else {
