@@ -35,16 +35,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.bookshelf
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
@@ -187,17 +184,6 @@ fun BookshelfCard(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun getShelfStyleColor(shelfStyle: ShelfStyle): Color {
-    return when (shelfStyle) {
-        ShelfStyle.DarkWood -> Color(0xFF8B4513)
-        ShelfStyle.SilverMetal -> Color(0xFFC0C0C0)
-        ShelfStyle.WhiteMetal -> Color(0xFFF5F5F5)
-        ShelfStyle.GreyMetal -> Color(0xFF808080)
-        ShelfStyle.DarkGreyMetal -> Color(0xFF555555)
     }
 }
 
