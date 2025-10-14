@@ -10,5 +10,6 @@ class BookcaseUseCases(
     val deleteShelf: DeleteShelfUseCase,
     val reorderShelves: ReorderShelvesUseCase,
     val getShelfById: GetShelfByIdUseCase,
-    val renameShelf: RenameShelfUseCase
+    val renameShelf: RenameShelfUseCase,
+    val updateShelfStyle: UpdateShelfStyleUseCase
 )

@@ -35,6 +35,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBookshelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ChangeStyleDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
@@ -78,6 +79,13 @@ fun BookcaseScreen(
     onAction: (BookcaseAction) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Reset reorder mode when screen appears if it's currently unlocked
+    LaunchedEffect(Unit) {
+        if (state.isReorderMode) {
+            onAction(BookcaseAction.ToggleReorderMode)
+        }
+    }
 
     // Show error snackbar if needed
     if (state.errorMessage != null) {
@@ -161,6 +169,9 @@ fun BookcaseScreen(
                         onLongClick = { shelfToRename ->
                             onAction(BookcaseAction.ShowRenameDialog(shelfToRename))
                         },
+                        onChangeStyle = { shelfToChangeStyle ->
+                            onAction(BookcaseAction.ShowChangeStyleDialog(shelfToChangeStyle))
+                        },
                         onDelete = { shelfToDelete ->
                             onAction(BookcaseAction.OnRemoveBookShelf(shelfToDelete))
                         },
@@ -197,6 +208,18 @@ fun BookcaseScreen(
             },
             onRename = { newName ->
                 onAction(BookcaseAction.OnRenameShelf(state.shelfToRename.id, newName))
+            }
+        )
+    }
+
+    if (state.showChangeStyleDialog && state.shelfToChangeStyle != null) {
+        ChangeStyleDialog(
+            currentStyle = state.shelfToChangeStyle.shelfStyle,
+            onDismiss = {
+                onAction(BookcaseAction.DismissChangeStyleDialog)
+            },
+            onChangeStyle = { newStyle ->
+                onAction(BookcaseAction.OnChangeStyle(state.shelfToChangeStyle.id, newStyle))
             }
         )
     }

@@ -16,4 +16,7 @@ sealed interface BookcaseAction {
     data class ShowRenameDialog(val bookshelf: Bookshelf) : BookcaseAction
     data object DismissRenameDialog : BookcaseAction
     data class OnRenameShelf(val shelfId: String, val newName: String) : BookcaseAction
+    data class ShowChangeStyleDialog(val bookshelf: Bookshelf) : BookcaseAction
+    data object DismissChangeStyleDialog : BookcaseAction
+    data class OnChangeStyle(val shelfId: String, val newStyle: ShelfStyle) : BookcaseAction
 }
