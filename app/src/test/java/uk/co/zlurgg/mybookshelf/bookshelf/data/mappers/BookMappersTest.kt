@@ -41,8 +41,8 @@ class BookMappersTest {
         assertEquals(10, book.ratingCount)
         assertEquals(321, book.numPages)
         assertEquals(2, book.numEditions)
-        // spineColor is random; just ensure it's a valid color int by checking it's non-zero
-        assertTrue(book.spineColor != 0)
+        // spineColor is placeholder (0) for search results - actual color generated when added to shelf
+        assertEquals(0, book.spineColor)
     }
 
     @Test

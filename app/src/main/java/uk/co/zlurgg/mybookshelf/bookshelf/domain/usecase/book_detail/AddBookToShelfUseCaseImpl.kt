@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -10,6 +11,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 /**
  * Implementation of AddBookToShelfUseCase that orchestrates book persistence and shelf association.
  * Follows Clean Architecture by coordinating between domain repositories.
+ * Generates spine color when book is first added to any shelf for optimal performance.
  */
 class AddBookToShelfUseCaseImpl(
     private val bookRepository: BookRepository,
@@ -22,8 +24,9 @@ class AddBookToShelfUseCaseImpl(
             val existingBook = bookRepository.getBookById(book.id)
 
             val bookToUpsert = if (existingBook != null) {
-                // Book exists - preserve personal metadata, update everything else from API data
+                // Book exists - preserve ALL existing data including spine color
                 book.copy(
+                    spineColor = existingBook.spineColor,
                     readingStatus = existingBook.readingStatus,
                     personalRating = existingBook.personalRating,
                     personalNotes = existingBook.personalNotes,
@@ -32,8 +35,8 @@ class AddBookToShelfUseCaseImpl(
                     purchased = existingBook.purchased
                 )
             } else {
-                // New book - use as-is from API
-                book
+                // New book - generate spine color now (not during search)
+                book.copy(spineColor = BookColorGenerator.generateSpineColor())
             }
 
             // Persist the book (with preserved metadata if it existed)

@@ -33,7 +33,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
@@ -264,16 +263,12 @@ fun BookshelfScreen(
                 results = state.searchResults,
                 isLoading = state.isSearchLoading,
                 inShelfIds = state.books.map { it.id }.toSet(),
-                selectedSort = state.selectedSort,
                 searchByTitle = state.searchByTitle,
                 searchByAuthor = state.searchByAuthor
             ),
             callbacks = object : BookSearchCallbacks {
                 override val onQueryChange: (String) -> Unit = { query ->
                     onAction(BookshelfAction.OnSearchQueryChange(query))
-                }
-                override val onSortChange: (BookSearchSort) -> Unit = { sort ->
-                    onAction(BookshelfAction.OnSortChange(sort))
                 }
                 override val onToggleSearchByTitle: () -> Unit = {
                     onAction(BookshelfAction.OnToggleSearchByTitle)

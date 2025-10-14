@@ -1,18 +1,16 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookSearchSort
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
- * UseCase interface for searching books with proper business logic separation.
- * Abstracts the complexity of combining network data retrieval with domain-specific sorting algorithms.
+ * UseCase interface for searching books via OpenLibrary API.
+ * Results are sorted by the API's default relevance algorithm.
  */
 interface SearchBooksUseCase {
     suspend fun execute(
         query: String,
-        sortBy: BookSearchSort = BookSearchSort.BEST_MATCH,
         resultLimit: Int? = null,
         language: String? = null,
         authorFilter: String? = null,
