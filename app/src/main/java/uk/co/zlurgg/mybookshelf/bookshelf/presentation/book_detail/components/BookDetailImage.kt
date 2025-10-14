@@ -29,8 +29,8 @@ import coil3.compose.SubcomposeAsyncImage
 fun BookDetailImage(
     imageUrl: String?,
     title: String,
+    modifier: Modifier = Modifier,
     onImageLoadResult: (Boolean) -> Unit = {},
-    modifier: Modifier = Modifier
 ) {
     @Composable
     fun BookPlaceholder() {
