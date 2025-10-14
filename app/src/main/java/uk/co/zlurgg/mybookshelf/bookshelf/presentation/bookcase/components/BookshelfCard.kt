@@ -63,7 +63,7 @@ fun BookshelfCard(
     Box(modifier = modifier.fillMaxWidth()) {
         // Background layer with shelf texture
         Image(
-            painter = ShelfMaterial.fromShelfStyle(shelf.shelfStyle).painter(),
+            painter = ShelfMaterial.fromShelfStyle(shelf.shelfStyle).painterMedium(),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxWidth()
@@ -136,8 +136,8 @@ fun BookshelfCard(
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.menu_rename_shelf)) },
                                 onClick = {
-                                    onLongClick(shelf)
                                     menuExpanded = false
+                                    onLongClick(shelf)
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Edit, contentDescription = null)
@@ -146,8 +146,8 @@ fun BookshelfCard(
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.menu_change_style)) },
                                 onClick = {
-                                    onChangeStyle(shelf)
                                     menuExpanded = false
+                                    onChangeStyle(shelf)
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Palette, contentDescription = null)
@@ -156,8 +156,8 @@ fun BookshelfCard(
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.menu_delete_shelf)) },
                                 onClick = {
-                                    onDelete(shelf)
                                     menuExpanded = false
+                                    onDelete(shelf)
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Delete, contentDescription = null)
