@@ -57,7 +57,7 @@ fun ChangeStyleDialog(
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
                             Image(
-                                painter = ShelfMaterial.fromShelfStyle(style).painter(),
+                                painter = ShelfMaterial.fromShelfStyle(style).painterSmall(),
                                 contentDescription = style.name,
                                 modifier = Modifier
                                     .height(48.dp)

@@ -37,7 +37,7 @@ fun BookshelfRowDynamic(
             .clip(RoundedCornerShape(12.dp))
     ) {
         Image(
-            painter = bookshelfMaterial.painter(),
+            painter = bookshelfMaterial.painterLarge(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize()
