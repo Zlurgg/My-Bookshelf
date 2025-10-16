@@ -188,4 +188,7 @@
 
     <!-- Error message template -->
     <string name="error_operation_failed">Failed to %1$s: %2$s</string>
+
+    <!-- Book cover placeholders -->
+    <string name="book_cover_placeholder">Book cover placeholder</string>
 </resources>
