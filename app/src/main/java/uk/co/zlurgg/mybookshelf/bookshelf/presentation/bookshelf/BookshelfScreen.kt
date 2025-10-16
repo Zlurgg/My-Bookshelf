@@ -262,6 +262,7 @@ fun BookshelfScreen(
                 query = state.searchQuery,
                 results = state.searchResults,
                 isLoading = state.isSearchLoading,
+                isTyping = state.isTyping,
                 inShelfIds = state.books.map { it.id }.toSet(),
                 searchByTitle = state.searchByTitle,
                 searchByAuthor = state.searchByAuthor

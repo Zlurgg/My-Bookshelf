@@ -55,6 +55,7 @@ class BookshelfViewModel(
                     searchQuery = "",
                     searchResults = emptyList(),
                     isSearchLoading = false,
+                    isTyping = false,
                     searchByTitle = true,
                     searchByAuthor = true
                 ) }
@@ -106,8 +107,11 @@ class BookshelfViewModel(
                 }
             }
             is BookshelfAction.OnSearchQueryChange -> {
-                // Update UI immediately; defer actual search via debounce
-                _state.update { it.copy(searchQuery = action.query) }
+                // Update UI immediately with typing indicator; defer actual search via debounce
+                _state.update { it.copy(
+                    searchQuery = action.query,
+                    isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
+                ) }
                 queryFlow.value = action.query
             }
             BookshelfAction.OnToggleTidyMode -> {
@@ -119,19 +123,19 @@ class BookshelfViewModel(
             BookshelfAction.OnToggleSearchByTitle -> {
                 _state.update { it.copy(searchByTitle = !it.searchByTitle) }
 
-                // Re-trigger search if there's an active query
-                val currentQuery = _state.value.searchQuery.trim()
-                if (currentQuery.length >= MIN_SEARCH_QUERY_LENGTH) {
-                    performSearch(currentQuery)
+                // Re-trigger search via debounced flow for consistency
+                val currentQuery = _state.value.searchQuery
+                if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
+                    queryFlow.value = currentQuery  // Triggers debounced search
                 }
             }
             BookshelfAction.OnToggleSearchByAuthor -> {
                 _state.update { it.copy(searchByAuthor = !it.searchByAuthor) }
 
-                // Re-trigger search if there's an active query
-                val currentQuery = _state.value.searchQuery.trim()
-                if (currentQuery.length >= MIN_SEARCH_QUERY_LENGTH) {
-                    performSearch(currentQuery)
+                // Re-trigger search via debounced flow for consistency
+                val currentQuery = _state.value.searchQuery
+                if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
+                    queryFlow.value = currentQuery  // Triggers debounced search
                 }
             }
             else -> Unit
@@ -179,6 +183,7 @@ class BookshelfViewModel(
                         _state.update {
                             it.copy(
                                 isSearchLoading = false,
+                                isTyping = false,
                                 errorMessage = null,
                                 searchResults = if (query.isEmpty()) emptyList() else it.searchResults
                             )
@@ -186,6 +191,7 @@ class BookshelfViewModel(
                         return@collectLatest
                     }
 
+                    // Perform search directly in collectLatest so it can be cancelled
                     performSearch(query)
                 }
         }
@@ -209,51 +215,55 @@ class BookshelfViewModel(
         }
     }
 
-    private fun performSearch(query: String) {
-        viewModelScope.launch {
-            _state.update { it.copy(isSearchLoading = true, errorMessage = null) }
+    private suspend fun performSearch(query: String) {
+        // Execute search directly (not in a new coroutine)
+        // This allows collectLatest to cancel in-flight searches
+        _state.update { it.copy(
+            isSearchLoading = true,
+            isTyping = false,  // Debounce period complete, now actively searching
+            errorMessage = null
+        ) }
 
-            val currentState = _state.value
+        val currentState = _state.value
 
-            // Map checkbox states to OpenLibrary API parameters:
-            // - Both checked OR both unchecked → use general q= parameter (smart search)
-            // - Only title checked → use title= parameter
-            // - Only author checked → use author= parameter
-            val (generalQuery, titleQuery, authorQuery) = when {
-                currentState.searchByTitle && currentState.searchByAuthor -> Triple(query, null, null)
-                !currentState.searchByTitle && !currentState.searchByAuthor -> Triple(query, null, null)
-                currentState.searchByTitle && !currentState.searchByAuthor -> Triple(null, query, null)
-                // Fallback (should never happen)
-                else -> Triple(null, null, query)
-            }
-
-            bookshelfUseCases.searchBooks
-                .execute(
-                    query = generalQuery ?: "",
-                    resultLimit = 15,  // First 15 results for performance
-                    language = null,
-                    authorFilter = authorQuery,
-                    titleFilter = titleQuery
-                )
-                .onSuccess { searchResults ->
-                    _state.update {
-                        it.copy(
-                            isSearchLoading = false,
-                            errorMessage = null,
-                            searchResults = searchResults
-                        )
-                    }
-                }
-                .onError { error ->
-                    _state.update {
-                        it.copy(
-                            searchResults = emptyList(),
-                            isSearchLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
-                        )
-                    }
-                }
+        // Map checkbox states to OpenLibrary API parameters:
+        // - Both checked OR both unchecked → use general q= parameter (smart search)
+        // - Only title checked → use title= parameter
+        // - Only author checked → use author= parameter
+        val (generalQuery, titleQuery, authorQuery) = when {
+            currentState.searchByTitle && currentState.searchByAuthor -> Triple(query, null, null)
+            !currentState.searchByTitle && !currentState.searchByAuthor -> Triple(query, null, null)
+            currentState.searchByTitle && !currentState.searchByAuthor -> Triple(null, query, null)
+            // Fallback (should never happen)
+            else -> Triple(null, null, query)
         }
+
+        bookshelfUseCases.searchBooks
+            .execute(
+                query = generalQuery ?: "",
+                resultLimit = 15,  // First 15 results for performance
+                language = null,
+                authorFilter = authorQuery,
+                titleFilter = titleQuery
+            )
+            .onSuccess { searchResults ->
+                _state.update {
+                    it.copy(
+                        isSearchLoading = false,
+                        errorMessage = null,
+                        searchResults = searchResults
+                    )
+                }
+            }
+            .onError { error ->
+                _state.update {
+                    it.copy(
+                        searchResults = emptyList(),
+                        isSearchLoading = false,
+                        errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
+                    )
+                }
+            }
     }
 
     private fun shareShelf() {
