@@ -74,6 +74,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUse
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCaseImpl
@@ -108,6 +110,16 @@ val appModule = module {
     }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
 
+    // Onboarding
+    single { uk.co.zlurgg.mybookshelf.bookshelf.data.service.OnboardingService(get()) }
+    single<uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.InitializeOnboardingUseCase> {
+        uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.InitializeOnboardingUseCaseImpl(
+            bookcaseRepository = get(),
+            onboardingService = get(),
+            idGenerator = get()
+        )
+    }
+
     // Export/Import Services and Use Cases
     singleOf(::AndroidShareService)
     singleOf(::JsonBookshelfSerializer).bind<BookshelfSerializer>()
@@ -131,6 +143,7 @@ val appModule = module {
     singleOf(::GetShelfByIdUseCaseImpl).bind<GetShelfByIdUseCase>()
     singleOf(::RenameShelfUseCaseImpl).bind<RenameShelfUseCase>()
     singleOf(::UpdateShelfStyleUseCaseImpl).bind<UpdateShelfStyleUseCase>()
+    singleOf(::GetOrCreateTutorialShelfUseCaseImpl).bind<GetOrCreateTutorialShelfUseCase>()
     singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
     singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
     singleOf(::UpdateBookMetadataUseCaseImpl).bind<UpdateBookMetadataUseCase>()
@@ -139,7 +152,7 @@ val appModule = module {
     // UseCase Facades
     single { BookDetailUseCases(get(), get(), get(), get(), get(), get()) }
     single { BookshelfUseCases(get(), get(), get(), get(), get(), get()) }
-    single { BookcaseUseCases(get(), get(), get(), get(), get(), get(), get()) }
+    single { BookcaseUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 

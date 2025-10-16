@@ -33,9 +33,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 fun AddBookshelfDialog(
     onDismiss: () -> Unit,
     onAddShelf: (String, ShelfStyle) -> Unit,
-    isLoading: Boolean
+    isLoading: Boolean,
+    defaultName: String
 ) {
-    var name by remember { mutableStateOf("") }
+    var name by remember(defaultName) { mutableStateOf(defaultName) }
     val selected = remember { mutableStateOf(ShelfStyle.DarkWood) }
 
     AlertDialog(
@@ -85,8 +86,10 @@ fun AddBookshelfDialog(
                 CircularProgressIndicator()
             } else {
                 Button(
-                    enabled = name.isNotBlank(),
-                    onClick = { onAddShelf(name.trim(), selected.value) }
+                    onClick = {
+                        val finalName = name.trim().ifBlank { defaultName }
+                        onAddShelf(finalName, selected.value)
+                    }
                 ) {
                     Text(stringResource(id = R.string.action_add))
                 }
