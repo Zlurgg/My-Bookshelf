@@ -87,7 +87,7 @@ fun BookSearchDialog(
                 }
 
                 when {
-                    state.results.isEmpty() && state.query.isNotBlank() && !state.isTyping -> {
+                    state.results.isEmpty() && state.query.isNotBlank() && !state.isTyping && !state.isLoading -> {
                         // Enhanced empty state with icon and helpful messaging
                         Column(
                             modifier = Modifier
