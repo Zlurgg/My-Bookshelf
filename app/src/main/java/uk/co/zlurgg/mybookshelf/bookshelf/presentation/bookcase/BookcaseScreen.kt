@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Lock
@@ -132,7 +133,7 @@ fun BookcaseScreen(
                     // Help icon - always visible to access/restore tutorial shelf
                     IconButton(onClick = { onAction(BookcaseAction.OnTutorialShelfClick) }) {
                         Icon(
-                            imageVector = Icons.Default.Help,
+                            imageVector = Icons.AutoMirrored.Filled.Help,
                             contentDescription = "Open tutorial shelf"
                         )
                     }
