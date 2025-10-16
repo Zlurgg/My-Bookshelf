@@ -20,7 +20,7 @@ class InitializeOnboardingUseCaseImpl(
         return ErrorMapper.safeCall {
             // Check if this is first launch
             if (!onboardingService.isFirstLaunch()) {
-                return@safeCall Unit
+                return@safeCall
             }
 
             // Business logic: Create tutorial shelf with random style
@@ -38,8 +38,6 @@ class InitializeOnboardingUseCaseImpl(
 
             // Mark onboarding complete
             onboardingService.markFirstLaunchComplete()
-
-            Unit
         }
     }
 }
