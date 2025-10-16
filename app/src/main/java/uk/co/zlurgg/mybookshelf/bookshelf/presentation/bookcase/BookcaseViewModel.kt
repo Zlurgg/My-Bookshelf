@@ -43,7 +43,8 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         operationSuccess = false,
-                        errorMessage = null
+                        errorMessage = null,
+                        tutorialShelfIdForNavigation = null
                     )
                 }
             }
@@ -114,6 +115,10 @@ class BookcaseViewModel(
                 // Navigation is handled by the screen root
             }
 
+            is BookcaseAction.OnTutorialShelfClick -> {
+                openTutorialShelf()
+            }
+
             is BookcaseAction.ShowRenameDialog -> {
                 _state.update {
                     it.copy(
@@ -166,11 +171,13 @@ class BookcaseViewModel(
             when (val result = bookcaseUseCases.createShelf.execute(name, style, state.value.bookshelves)) {
                 is Result.Success -> {
                     _state.update {
+                        val newShelves = it.bookshelves + result.data
                         it.copy(
-                            bookshelves = it.bookshelves + result.data,
+                            bookshelves = newShelves,
                             isLoading = false,
                             operationSuccess = true,
-                            showAddDialog = false
+                            showAddDialog = false,
+                            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(newShelves)}"
                         )
                     }
                 }
@@ -210,7 +217,8 @@ class BookcaseViewModel(
                             bookshelves = bookcase.bookshelves,
                             bookCounts = bookcase.bookCounts,
                             isLoading = false,
-                            errorMessage = null
+                            errorMessage = null,
+                            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(bookcase.bookshelves)}"
                         )
                     }
                 }
@@ -306,6 +314,33 @@ class BookcaseViewModel(
                 }
             }
         }
+    }
+
+    private fun openTutorialShelf() {
+        viewModelScope.launch {
+            when (val result = bookcaseUseCases.getOrCreateTutorialShelf.execute()) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(tutorialShelfIdForNavigation = result.data)
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "open tutorial shelf")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun calculateNextShelfNumber(shelves: List<Bookshelf>): Int {
+        val newBookshelfPattern = Regex("^New Bookshelf (\\d+)$")
+        val existingNumbers = shelves.mapNotNull { shelf ->
+            newBookshelfPattern.matchEntire(shelf.name)?.groupValues?.get(1)?.toIntOrNull()
+        }
+        return (existingNumbers.maxOrNull() ?: 0) + 1
     }
 
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +49,17 @@ fun BookcaseScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
+
+    // Handle navigation to tutorial shelf when ID is set
+    LaunchedEffect(state.tutorialShelfIdForNavigation) {
+        state.tutorialShelfIdForNavigation?.let { shelfId ->
+            // Find the shelf by ID and navigate
+            val shelf = state.bookshelves.find { it.id == shelfId }
+            shelf?.let { onBookshelfClick(it) }
+            // Clear the navigation flag
+            viewModel.onAction(BookcaseAction.ResetOperationState)
+        }
+    }
 
     BookcaseScreen(
         state = state,
@@ -117,6 +129,15 @@ fun BookcaseScreen(
                     ) 
                 },
                 actions = {
+                    // Help icon - always visible to access/restore tutorial shelf
+                    IconButton(onClick = { onAction(BookcaseAction.OnTutorialShelfClick) }) {
+                        Icon(
+                            imageVector = Icons.Default.Help,
+                            contentDescription = "Open tutorial shelf"
+                        )
+                    }
+
+                    // Reorder icon - only visible when shelves exist
                     if (state.bookshelves.isNotEmpty()) {
                         IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                             if (state.isReorderMode) {
@@ -195,7 +216,8 @@ fun BookcaseScreen(
             onAddShelf = { shelfName, style ->
                 onAction(BookcaseAction.OnAddBookshelfClick(shelfName, style))
             },
-            isLoading = state.isLoading
+            isLoading = state.isLoading,
+            defaultName = state.defaultShelfName
         )
     }
 

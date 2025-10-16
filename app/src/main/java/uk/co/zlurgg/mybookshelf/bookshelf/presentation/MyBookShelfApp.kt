@@ -41,6 +41,12 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
         val deepLinkState = deepLinkViewModel.state.collectAsStateWithLifecycle().value
         val welcomePreferences = koinInject<WelcomePreferences>()
         val hasShownWelcome = welcomePreferences.hasShownWelcome().collectAsStateWithLifecycle(initialValue = true).value
+        val initializeOnboarding = koinInject<uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.InitializeOnboardingUseCase>()
+
+        // Initialize onboarding on first app launch
+        LaunchedEffect(Unit) {
+            initializeOnboarding.execute()
+        }
 
         // Handle deep links at the app composition level
         LaunchedEffect(deepLinkIntent) {

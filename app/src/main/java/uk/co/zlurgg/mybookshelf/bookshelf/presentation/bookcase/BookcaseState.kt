@@ -16,4 +16,6 @@ data class BookcaseState(
     val renameError: String? = null,
     val showChangeStyleDialog: Boolean = false,
     val shelfToChangeStyle: Bookshelf? = null,
+    val defaultShelfName: String = "New Bookshelf 1",
+    val tutorialShelfIdForNavigation: String? = null,
 )

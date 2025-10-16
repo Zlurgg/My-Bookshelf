@@ -18,6 +18,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCase
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
@@ -65,7 +67,12 @@ class BookcaseViewModelTest {
             reorderShelves = mockReorderShelves,
             getShelfById = MockGetShelfByIdUseCase(),
             renameShelf = mockRenameShelf,
-            updateShelfStyle = mockUpdateShelfStyle
+            updateShelfStyle = mockUpdateShelfStyle,
+            getOrCreateTutorialShelf = object : GetOrCreateTutorialShelfUseCase {
+                override suspend fun execute(): Result<String, DataError.Local> {
+                    return Result.Success("tutorial-shelf-id")
+                }
+            }
         )
         return BookcaseViewModel(useCases)
     }
