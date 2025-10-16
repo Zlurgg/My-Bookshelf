@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import android.content.Context
+import androidx.core.content.edit
 
 /**
  * Service for managing onboarding state persistence.
@@ -9,7 +10,7 @@ import android.content.Context
  * This is a pure persistence layer - contains NO business logic.
  */
 class OnboardingService(
-    private val context: Context
+    context: Context
 ) {
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -27,7 +28,7 @@ class OnboardingService(
      * Subsequent calls to [isFirstLaunch] will return false.
      */
     fun markFirstLaunchComplete() {
-        prefs.edit().putBoolean(KEY_FIRST_LAUNCH, false).apply()
+        prefs.edit { putBoolean(KEY_FIRST_LAUNCH, false) }
     }
 
     companion object {
