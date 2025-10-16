@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBookshelfDialog
@@ -180,6 +181,8 @@ fun BookcaseScreen(
                     items = state.bookshelves,
                     key = { it.id }
                 ) { shelf ->
+                    val isTutorialShelf = shelf.name == BookshelfConstants.TUTORIAL_SHELF_NAME
+
                     BookcaseShelf(
                         shelf = shelf,
                         onRemoveBookshelf = { shelfToRemove ->
@@ -189,7 +192,10 @@ fun BookcaseScreen(
                             onAction(BookcaseAction.OnBookshelfClick(shelf))
                         },
                         onLongClick = { shelfToRename ->
-                            onAction(BookcaseAction.ShowRenameDialog(shelfToRename))
+                            // Prevent renaming Tutorial Bookshelf
+                            if (!isTutorialShelf) {
+                                onAction(BookcaseAction.ShowRenameDialog(shelfToRename))
+                            }
                         },
                         onChangeStyle = { shelfToChangeStyle ->
                             onAction(BookcaseAction.ShowChangeStyleDialog(shelfToChangeStyle))
