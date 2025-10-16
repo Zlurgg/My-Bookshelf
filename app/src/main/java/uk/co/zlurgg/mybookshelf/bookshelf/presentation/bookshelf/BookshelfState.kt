@@ -13,6 +13,7 @@ data class BookshelfState(
     val searchResults: List<Book> = emptyList(),
     val isSearchLoading: Boolean = false,
     val isTyping: Boolean = false,  // Shows immediate feedback during debounce period
+    val hasSearched: Boolean = false,  // Tracks if any search has completed
     val searchByTitle: Boolean = true,
     val searchByAuthor: Boolean = true,
     val recentlyDeleted: Book? = null,
