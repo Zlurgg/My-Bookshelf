@@ -6,6 +6,7 @@ data class BookSearchState(
     val query: String,
     val results: List<Book>,
     val isLoading: Boolean,
+    val isTyping: Boolean = false,  // Shows user is typing during debounce period
     val inShelfIds: Set<String>,
     val searchByTitle: Boolean = true,
     val searchByAuthor: Boolean = true

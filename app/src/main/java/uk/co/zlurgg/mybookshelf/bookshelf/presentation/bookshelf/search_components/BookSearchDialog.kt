@@ -1,9 +1,11 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -13,11 +15,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -65,32 +69,59 @@ fun BookSearchDialog(
             }
         },
         text = {
-            when {
-                state.isLoading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                }
-                state.results.isEmpty() && state.query.isNotBlank() -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(stringResource(id = R.string.search_no_results))
-                    }
-                }
-                else -> {
-                    LazyColumn(
+            Column(modifier = Modifier.fillMaxWidth()) {
+                // Progress indicator (shows during typing AND searching)
+                if (state.isTyping || state.isLoading) {
+                    LinearProgressIndicator(
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(state.results) { book ->
+                    )
+                }
+
+                // Result count (show when we have results and not loading)
+                if (state.results.isNotEmpty() && !state.isLoading && !state.isTyping) {
+                    Text(
+                        text = "${state.results.size} results found",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                    )
+                }
+
+                when {
+                    state.results.isEmpty() && state.query.isNotBlank() && !state.isTyping -> {
+                        // Enhanced empty state with icon and helpful messaging
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SearchOff,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.outline
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "No books found for \"${state.query}\"",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Try different keywords or check your spelling",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(state.results) { book ->
                             val isInShelf = state.inShelfIds.contains(book.id)
                             ListItem(
                                 leadingContent = {
@@ -139,6 +170,7 @@ fun BookSearchDialog(
                     }
                 }
             }
+        }
         },
         confirmButton = {
             TextButton(onClick = { callbacks.onDismiss() }) { Text(stringResource(id = R.string.action_close)) }
@@ -154,6 +186,7 @@ private fun BookSearchScreenPreview() {
             query = "",
             results = sampleBooks,
             isLoading = false,
+            isTyping = false,
             inShelfIds = emptySet(),
             searchByTitle = true,
             searchByAuthor = true
