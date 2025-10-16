@@ -41,23 +41,30 @@ class KtorRemoteBookDataSource(
     ): String {
         val queryParts = mutableListOf<String>()
 
-        // Add base query if provided
+        // Add base query with smart quoting for exact phrase matching
         if (baseQuery.isNotBlank()) {
-            queryParts.add(baseQuery.trim())
+            val trimmed = baseQuery.trim()
+            // Multi-word queries get quotes for exact phrase matching
+            val formatted = if (trimmed.contains(" ")) "\"$trimmed\"" else trimmed
+            queryParts.add(formatted)
         }
 
-        // Add author filter using Open Library field syntax
+        // Add author filter using Open Library field syntax with smart quoting
         authorFilter?.takeIf { it.isNotBlank() }?.let {
-            queryParts.add("author:${it.trim()}")
+            val trimmed = it.trim()
+            val formatted = if (trimmed.contains(" ")) "\"$trimmed\"" else trimmed
+            queryParts.add("author:$formatted")
         }
 
-        // Add title filter using Open Library field syntax
+        // Add title filter using Open Library field syntax with smart quoting
         titleFilter?.takeIf { it.isNotBlank() }?.let {
-            queryParts.add("title:${it.trim()}")
+            val trimmed = it.trim()
+            val formatted = if (trimmed.contains(" ")) "\"$trimmed\"" else trimmed
+            queryParts.add("title:$formatted")
         }
 
         // Join with spaces (Open Library treats multiple terms as AND)
-        return queryParts.joinToString(" ").ifBlank { "*" }
+        return queryParts.joinToString(" ")
     }
 
     override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
