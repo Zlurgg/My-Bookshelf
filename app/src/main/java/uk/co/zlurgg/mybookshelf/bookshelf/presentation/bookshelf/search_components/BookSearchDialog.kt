@@ -87,7 +87,9 @@ fun BookSearchDialog(
                 }
 
                 when {
-                    state.results.isEmpty() && state.query.isNotBlank() && !state.isTyping && !state.isLoading -> {
+                    state.results.isEmpty() && state.query.isNotBlank()
+                            && !state.isTyping && !state.isLoading
+                            && state.hasSearched -> {
                         // Enhanced empty state with icon and helpful messaging
                         Column(
                             modifier = Modifier
@@ -116,60 +118,67 @@ fun BookSearchDialog(
                             )
                         }
                     }
+
                     else -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(state.results) { book ->
-                            val isInShelf = state.inShelfIds.contains(book.id)
-                            ListItem(
-                                leadingContent = {
-                                    LoadImage(
-                                        imageUrl = book.imageUrl,
-                                        title = book.title,
-                                        modifier = Modifier.size(48.dp)
-                                    )
-                                },
-                                headlineContent = {
-                                    Text(
-                                        text = book.title,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                },
-                                supportingContent = {
-                                    Column {
+                                val isInShelf = state.inShelfIds.contains(book.id)
+                                ListItem(
+                                    leadingContent = {
+                                        LoadImage(
+                                            imageUrl = book.imageUrl,
+                                            title = book.title,
+                                            modifier = Modifier.size(48.dp)
+                                        )
+                                    },
+                                    headlineContent = {
                                         Text(
-                                            text = book.authors.joinToString(", "),
-                                            maxLines = 1,
+                                            text = book.title,
+                                            maxLines = 2,
                                             overflow = TextOverflow.Ellipsis
                                         )
-                                        book.firstPublishYear?.let { year ->
+                                    },
+                                    supportingContent = {
+                                        Column {
                                             Text(
-                                                text = year,
-                                                maxLines = 1
+                                                text = book.authors.joinToString(", "),
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
+                                            book.firstPublishYear?.let { year ->
+                                                Text(
+                                                    text = year,
+                                                    maxLines = 1
+                                                )
+                                            }
                                         }
-                                    }
-                                },
-                                trailingContent = {
-                                    if (isInShelf) {
-                                        IconButton(onClick = { callbacks.onRemoveBook(book) }) {
-                                            Icon(Icons.Default.Delete, contentDescription = stringResource(id = R.string.action_remove_short))
+                                    },
+                                    trailingContent = {
+                                        if (isInShelf) {
+                                            IconButton(onClick = { callbacks.onRemoveBook(book) }) {
+                                                Icon(
+                                                    Icons.Default.Delete,
+                                                    contentDescription = stringResource(id = R.string.action_remove_short)
+                                                )
+                                            }
+                                        } else {
+                                            IconButton(onClick = { callbacks.onAddBook(book) }) {
+                                                Icon(
+                                                    Icons.Default.Add,
+                                                    contentDescription = stringResource(id = R.string.action_add_short)
+                                                )
+                                            }
                                         }
-                                    } else {
-                                        IconButton(onClick = { callbacks.onAddBook(book) }) {
-                                            Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.action_add_short))
-                                        }
-                                    }
-                                },
-                                modifier = Modifier.clickable { callbacks.onBookClick(book) }
-                            )
+                                    },
+                                    modifier = Modifier.clickable { callbacks.onBookClick(book) }
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
         },
         confirmButton = {
             TextButton(onClick = { callbacks.onDismiss() }) { Text(stringResource(id = R.string.action_close)) }

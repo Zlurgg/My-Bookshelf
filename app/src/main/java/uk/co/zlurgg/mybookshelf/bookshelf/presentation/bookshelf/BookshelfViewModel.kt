@@ -56,6 +56,7 @@ class BookshelfViewModel(
                     searchResults = emptyList(),
                     isSearchLoading = false,
                     isTyping = false,
+                    hasSearched = false,
                     searchByTitle = true,
                     searchByAuthor = true
                 ) }
@@ -250,6 +251,7 @@ class BookshelfViewModel(
                 _state.update {
                     it.copy(
                         isSearchLoading = false,
+                        hasSearched = true,
                         errorMessage = null,
                         searchResults = searchResults
                     )
@@ -260,6 +262,7 @@ class BookshelfViewModel(
                     it.copy(
                         searchResults = emptyList(),
                         isSearchLoading = false,
+                        hasSearched = true,
                         errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
                     )
                 }
