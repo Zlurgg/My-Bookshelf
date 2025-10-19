@@ -77,8 +77,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUse
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetOrCreateTutorialBookUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetOrCreateTutorialBookUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCaseImpl
@@ -113,23 +117,10 @@ val appModule = module {
     }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
 
-    // Onboarding
-    single { uk.co.zlurgg.mybookshelf.bookshelf.data.service.OnboardingService(get()) }
-    single<uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialBookUseCase> {
-        uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialBookUseCaseImpl(
-            bookRepository = get(),
-            bookshelfRepository = get(),
-            timeProvider = get()
-        )
-    }
-    single<uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.InitializeOnboardingUseCase> {
-        uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.InitializeOnboardingUseCaseImpl(
-            bookcaseRepository = get(),
-            onboardingService = get(),
-            idGenerator = get(),
-            getOrCreateTutorialBook = get()
-        )
-    }
+    // Welcome
+    single { uk.co.zlurgg.mybookshelf.bookshelf.data.service.WelcomeService(get()) }
+    singleOf(::GetOrCreateTutorialBookUseCaseImpl).bind<GetOrCreateTutorialBookUseCase>()
+    singleOf(::InitializeWelcomeUseCaseImpl).bind<InitializeWelcomeUseCase>()
 
     // Export/Import Services and Use Cases
     singleOf(::AndroidShareService)
