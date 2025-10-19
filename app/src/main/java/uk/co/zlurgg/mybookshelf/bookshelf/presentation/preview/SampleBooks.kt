@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.presentation
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator

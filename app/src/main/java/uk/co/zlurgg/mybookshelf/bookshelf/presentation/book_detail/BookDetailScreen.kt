@@ -39,7 +39,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.La
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PurchasedToggleCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
-import uk.co.zlurgg.mybookshelf.core.presentation.sampleBook
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBook
 
 @Composable
 fun BookDetailsScreenRoot(

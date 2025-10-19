@@ -41,7 +41,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
-import uk.co.zlurgg.mybookshelf.core.presentation.sampleBooks
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
 
 @Composable
 fun BookshelfScreenRoot(
