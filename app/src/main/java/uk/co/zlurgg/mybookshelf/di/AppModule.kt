@@ -32,8 +32,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfDataOrchestrat
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfImportValidator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfSerializer
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ExportBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ExportBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.core.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.UuidIdGenerator
@@ -134,9 +137,9 @@ val appModule = module {
     singleOf(::BookshelfImportValidatorImpl).bind<BookshelfImportValidator>()
     singleOf(::DatabaseBookshelfDataOrchestrator).bind<BookshelfDataOrchestrator>()
     singleOf(::BookshelfExportMapper)
-    singleOf(::ExportBookshelfUseCase)
-    singleOf(::ImportBookshelfUseCase)
-    singleOf(::CheckImportConflictUseCase)
+    singleOf(::ExportBookshelfUseCaseImpl).bind<ExportBookshelfUseCase>()
+    singleOf(::ImportBookshelfUseCaseImpl).bind<ImportBookshelfUseCase>()
+    singleOf(::CheckImportConflictUseCaseImpl).bind<CheckImportConflictUseCase>()
 
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
