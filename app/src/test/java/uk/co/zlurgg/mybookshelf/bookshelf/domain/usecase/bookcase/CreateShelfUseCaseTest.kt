@@ -12,6 +12,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestIdGenerator
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
 
 /**
  * Clean UseCase test demonstrating focused testing principles:
@@ -24,7 +25,12 @@ class CreateShelfUseCaseTest {
 
     private val mockRepository = MockBookcaseRepository()
     private val testIdGenerator = TestIdGenerator()
-    private val useCase = CreateShelfUseCaseImpl(mockRepository, testIdGenerator)
+    private val mockGetOrCreateTutorialBook = object : GetOrCreateTutorialBookUseCase {
+        override suspend fun execute(tutorialShelfId: String): Result<String, DataError.Local> {
+            return Result.Success("tutorial-book-id")
+        }
+    }
+    private val useCase = CreateShelfUseCaseImpl(mockRepository, testIdGenerator, mockGetOrCreateTutorialBook)
 
     @Test
     fun `creates shelf with correct data when no existing shelves`() = runTest {

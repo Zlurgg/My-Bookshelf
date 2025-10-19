@@ -51,6 +51,7 @@ fun BookshelfCard(
     shelf: Bookshelf,
     bookCount: Int,
     isReorderMode: Boolean,
+    isTutorialShelf: Boolean,
     onBookshelfClick: (Bookshelf) -> Unit,
     onLongClick: (Bookshelf) -> Unit,
     onChangeStyle: (Bookshelf) -> Unit,
@@ -133,16 +134,19 @@ fun BookshelfCard(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false }
                         ) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_rename_shelf)) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onLongClick(shelf)
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Edit, contentDescription = null)
-                                }
-                            )
+                            // Only show rename for non-tutorial shelves
+                            if (!isTutorialShelf) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = R.string.menu_rename_shelf)) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onLongClick(shelf)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Edit, contentDescription = null)
+                                    }
+                                )
+                            }
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.menu_change_style)) },
                                 onClick = {
@@ -196,6 +200,7 @@ fun BookshelfCardPreview() {
                 shelf = bookshelf,
                 bookCount = 5,
                 isReorderMode = false,
+                isTutorialShelf = false,
                 onBookshelfClick = {},
                 onLongClick = {},
                 onChangeStyle = {},
@@ -205,6 +210,7 @@ fun BookshelfCardPreview() {
                 shelf = bookshelf.copy(name = "My Reading List"),
                 bookCount = 12,
                 isReorderMode = true,
+                isTutorialShelf = false,
                 onBookshelfClick = {},
                 onLongClick = {},
                 onChangeStyle = {},

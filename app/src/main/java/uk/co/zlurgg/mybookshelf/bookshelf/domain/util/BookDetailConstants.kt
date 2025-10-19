@@ -23,7 +23,7 @@ object BookDetailConstants {
      * Tutorial book description with app usage tips
      */
     val TUTORIAL_BOOK_DESCRIPTION = """
-        Welcome to My Bookshelf - your personal book collection organizer!
+Welcome to My Bookshelf - your personal book collection organizer!
 
 📚 GETTING STARTED
 Your books live on shelves, and shelves live in your bookcase. Think of it like a digital version of your home library!

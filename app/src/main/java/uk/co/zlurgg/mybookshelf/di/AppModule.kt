@@ -77,10 +77,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUse
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetOrCreateTutorialBookUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetOrCreateTutorialBookUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
@@ -117,9 +119,11 @@ val appModule = module {
     }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
 
-    // Welcome
+    // Welcome & Tutorial
     single { uk.co.zlurgg.mybookshelf.bookshelf.data.service.WelcomeService(get()) }
     singleOf(::GetOrCreateTutorialBookUseCaseImpl).bind<GetOrCreateTutorialBookUseCase>()
+    singleOf(::GetOrCreateTutorialShelfUseCaseImpl).bind<GetOrCreateTutorialShelfUseCase>()
+    singleOf(::HandleTutorialAccessUseCaseImpl).bind<HandleTutorialAccessUseCase>()
     singleOf(::InitializeWelcomeUseCaseImpl).bind<InitializeWelcomeUseCase>()
 
     // Export/Import Services and Use Cases
@@ -145,7 +149,6 @@ val appModule = module {
     singleOf(::GetShelfByIdUseCaseImpl).bind<GetShelfByIdUseCase>()
     singleOf(::RenameShelfUseCaseImpl).bind<RenameShelfUseCase>()
     singleOf(::UpdateShelfStyleUseCaseImpl).bind<UpdateShelfStyleUseCase>()
-    singleOf(::GetOrCreateTutorialShelfUseCaseImpl).bind<GetOrCreateTutorialShelfUseCase>()
     singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
     singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
     singleOf(::UpdateBookMetadataUseCaseImpl).bind<UpdateBookMetadataUseCase>()
@@ -154,7 +157,7 @@ val appModule = module {
     // UseCase Facades
     single { BookDetailUseCases(get(), get(), get(), get(), get(), get()) }
     single { BookshelfUseCases(get(), get(), get(), get(), get(), get()) }
-    single { BookcaseUseCases(get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { BookcaseUseCases(get(), get(), get(), get(), get(), get(), get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
@@ -174,7 +177,7 @@ val appModule = module {
             shelfId = shelfId
         )
     }
-    viewModel { BookcaseViewModel(get()) }
+    viewModel { BookcaseViewModel(get(), get()) }
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookDetailUseCases = get(),

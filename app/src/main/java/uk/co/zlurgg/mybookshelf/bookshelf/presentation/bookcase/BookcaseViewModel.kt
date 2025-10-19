@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -20,7 +22,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
-    private val bookcaseUseCases: BookcaseUseCases
+    private val bookcaseUseCases: BookcaseUseCases,
+    private val handleTutorialAccess: HandleTutorialAccessUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -45,7 +48,8 @@ class BookcaseViewModel(
                     it.copy(
                         operationSuccess = false,
                         errorMessage = null,
-                        tutorialShelfIdForNavigation = null
+                        tutorialShelfIdForNavigation = null,
+                        tutorialBookForNavigation = null
                     )
                 }
             }
@@ -351,16 +355,28 @@ class BookcaseViewModel(
 
     private fun openTutorialShelf() {
         viewModelScope.launch {
-            when (val result = bookcaseUseCases.getOrCreateTutorialShelf.execute()) {
+            when (val result = handleTutorialAccess.execute()) {
                 is Result.Success -> {
-                    _state.update {
-                        it.copy(tutorialShelfIdForNavigation = result.data)
+                    when (val accessResult = result.data) {
+                        is TutorialAccessResult.NavigateToBook -> {
+                            _state.update {
+                                it.copy(
+                                    tutorialBookForNavigation = Pair(
+                                        accessResult.shelfId,
+                                        accessResult.bookId
+                                    )
+                                )
+                            }
+                        }
+                        is TutorialAccessResult.DoNotNavigate -> {
+                            // Tutorial created silently, no navigation needed
+                        }
                     }
                 }
                 is Result.Error -> {
                     _state.update {
                         it.copy(
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "open tutorial shelf")
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "open tutorial")
                         )
                     }
                 }

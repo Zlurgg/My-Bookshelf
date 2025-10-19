@@ -3,14 +3,17 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
 
 class CreateShelfUseCaseImpl(
     private val repository: BookcaseRepository,
-    private val idGenerator: IdGenerator
+    private val idGenerator: IdGenerator,
+    private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
 ) : CreateShelfUseCase {
 
     override suspend fun execute(
@@ -29,6 +32,12 @@ class CreateShelfUseCaseImpl(
             )
 
             repository.addShelf(newShelf)
+
+            // If this is the tutorial shelf, ensure the tutorial book is added
+            if (name == BookshelfConstants.TUTORIAL_SHELF_NAME) {
+                getOrCreateTutorialBook.execute(newShelf.id)
+            }
+
             newShelf
         }
     }
