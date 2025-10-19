@@ -13,7 +13,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class InitializeOnboardingUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
     private val onboardingService: OnboardingService,
-    private val idGenerator: IdGenerator
+    private val idGenerator: IdGenerator,
+    private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
 ) : InitializeOnboardingUseCase {
 
     override suspend fun execute(): Result<Unit, DataError> {
@@ -35,6 +36,9 @@ class InitializeOnboardingUseCaseImpl(
 
             // Add shelf to repository
             bookcaseRepository.addShelf(tutorialShelf)
+
+            // Create and add tutorial book to the shelf
+            getOrCreateTutorialBook.execute(tutorialShelf.id)
 
             // Mark onboarding complete
             onboardingService.markFirstLaunchComplete()

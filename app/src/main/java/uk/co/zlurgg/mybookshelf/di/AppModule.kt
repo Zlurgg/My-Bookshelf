@@ -74,8 +74,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUse
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCaseImpl
@@ -112,11 +112,19 @@ val appModule = module {
 
     // Onboarding
     single { uk.co.zlurgg.mybookshelf.bookshelf.data.service.OnboardingService(get()) }
+    single<uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialBookUseCase> {
+        uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialBookUseCaseImpl(
+            bookRepository = get(),
+            bookshelfRepository = get(),
+            timeProvider = get()
+        )
+    }
     single<uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.InitializeOnboardingUseCase> {
         uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.InitializeOnboardingUseCaseImpl(
             bookcaseRepository = get(),
             onboardingService = get(),
-            idGenerator = get()
+            idGenerator = get(),
+            getOrCreateTutorialBook = get()
         )
     }
 

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
@@ -168,6 +169,22 @@ class BookcaseViewModel(
 
     private fun addBookshelf(name: String, style: ShelfStyle) {
         viewModelScope.launch {
+            // Validate shelf name first
+            when (val validationResult = BookshelfConstants.validateShelfName(name)) {
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(validationResult.error, "add shelf")
+                        )
+                    }
+                    return@launch
+                }
+                is Result.Success -> {
+                    // Validation passed, proceed with creation
+                }
+            }
+
             when (val result = bookcaseUseCases.createShelf.execute(name, style, state.value.bookshelves)) {
                 is Result.Success -> {
                     _state.update {
@@ -249,6 +266,22 @@ class BookcaseViewModel(
 
     private fun renameShelf(shelfId: String, newName: String) {
         viewModelScope.launch {
+            // Validate shelf name first
+            when (val validationResult = BookshelfConstants.validateShelfName(newName)) {
+                is Result.Error -> {
+                    // Set inline error and keep dialog open so user can see it
+                    _state.update {
+                        it.copy(
+                            renameError = ErrorFormatter.formatDataErrorMessage(validationResult.error, "rename shelf")
+                        )
+                    }
+                    return@launch
+                }
+                is Result.Success -> {
+                    // Validation passed, proceed with rename
+                }
+            }
+
             when (val renameResult = bookcaseUseCases.renameShelf.execute(shelfId, newName)) {
                 is Result.Success -> {
                     // Update the shelf name in the current state
