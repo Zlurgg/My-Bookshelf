@@ -1,7 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding.GetOrCreateTutorialShelfUseCase
-
 /**
  * Facade aggregating all bookcase related UseCases.
  * Simplifies ViewModel constructor dependencies and provides clean separation of concerns.
