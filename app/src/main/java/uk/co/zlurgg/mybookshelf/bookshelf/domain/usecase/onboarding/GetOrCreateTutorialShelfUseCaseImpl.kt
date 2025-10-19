@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.onboarding
 
 import kotlinx.coroutines.flow.first
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
