@@ -12,7 +12,7 @@ object BookDetailConstants {
     /**
      * Tutorial book title
      */
-    const val TUTORIAL_BOOK_TITLE = "Welcome to My Bookshelf!"
+    const val TUTORIAL_BOOK_TITLE = "My Bookshelf Guide"
 
     /**
      * Tutorial book author

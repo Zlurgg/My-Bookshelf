@@ -31,16 +31,11 @@ class HandleTutorialAccessUseCaseImpl(
                 // Tutorial shelf exists - navigate to tutorial book
                 val tutorialBook = tutorialShelf.books.firstOrNull()
 
-                val bookId = if (tutorialBook != null) {
-                    // Book exists, use its ID
-                    tutorialBook.id
-                } else {
-                    // Book doesn't exist, create it
+                val bookId = tutorialBook?.id ?: // Book exists, use ID if it doesn't exist, create it
                     when (val result = getOrCreateTutorialBook.execute(tutorialShelf.id)) {
                         is Result.Success -> result.data
                         is Result.Error -> throw Exception("Failed to create tutorial book: ${result.error}")
                     }
-                }
 
                 TutorialAccessResult.NavigateToBook(
                     shelfId = tutorialShelf.id,
