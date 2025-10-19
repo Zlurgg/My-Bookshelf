@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.core.presentation
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview
 
 import androidx.compose.runtime.mutableStateListOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
