@@ -18,7 +18,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetOrCreateTutorialShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
@@ -67,14 +68,14 @@ class BookcaseViewModelTest {
             reorderShelves = mockReorderShelves,
             getShelfById = MockGetShelfByIdUseCase(),
             renameShelf = mockRenameShelf,
-            updateShelfStyle = mockUpdateShelfStyle,
-            getOrCreateTutorialShelf = object : GetOrCreateTutorialShelfUseCase {
-                override suspend fun execute(): Result<String, DataError.Local> {
-                    return Result.Success("tutorial-shelf-id")
-                }
-            }
+            updateShelfStyle = mockUpdateShelfStyle
         )
-        return BookcaseViewModel(useCases)
+        val mockHandleTutorialAccess = object : HandleTutorialAccessUseCase {
+            override suspend fun execute(): Result<TutorialAccessResult, DataError.Local> {
+                return Result.Success(TutorialAccessResult.DoNotNavigate)
+            }
+        }
+        return BookcaseViewModel(useCases, mockHandleTutorialAccess)
     }
 
     @Test

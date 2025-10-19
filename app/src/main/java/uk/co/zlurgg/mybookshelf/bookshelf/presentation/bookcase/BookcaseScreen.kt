@@ -46,6 +46,7 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 fun BookcaseScreenRoot(
     viewModel: BookcaseViewModel = koinViewModel(),
     onBookshelfClick: (Bookshelf) -> Unit,
+    onBookDetailClick: (String, String) -> Unit,
     onAddBookshelfClick: (String, ShelfStyle) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -57,6 +58,15 @@ fun BookcaseScreenRoot(
             // Find the shelf by ID and navigate
             val shelf = state.bookshelves.find { it.id == shelfId }
             shelf?.let { onBookshelfClick(it) }
+            // Clear the navigation flag
+            viewModel.onAction(BookcaseAction.ResetOperationState)
+        }
+    }
+
+    // Handle navigation to tutorial book detail when IDs are set
+    LaunchedEffect(state.tutorialBookForNavigation) {
+        state.tutorialBookForNavigation?.let { (shelfId, bookId) ->
+            onBookDetailClick(bookId, shelfId)
             // Clear the navigation flag
             viewModel.onAction(BookcaseAction.ResetOperationState)
         }
@@ -205,6 +215,7 @@ fun BookcaseScreen(
                         modifier = Modifier.animateItem(),
                         bookCountOverride = state.bookCounts[shelf.id] ?: 0,
                         isReorderMode = state.isReorderMode,
+                        isTutorialShelf = isTutorialShelf,
                         onReorderShelf = { shelfToReorder, newPosition ->
                             onAction(BookcaseAction.OnReorderShelf(shelfToReorder, newPosition))
                         }

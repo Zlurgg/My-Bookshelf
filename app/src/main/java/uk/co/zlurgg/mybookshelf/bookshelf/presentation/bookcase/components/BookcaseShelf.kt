@@ -50,6 +50,7 @@ fun BookcaseShelf(
     modifier: Modifier = Modifier,
     bookCountOverride: Int? = null,
     isReorderMode: Boolean = false,
+    isTutorialShelf: Boolean = false,
     onReorderShelf: ((Bookshelf, Int) -> Unit)? = null,
 ) {
     // Fixed height for consistent drag calculations (card height + vertical padding)
@@ -88,6 +89,7 @@ fun BookcaseShelf(
                 shelf = shelf,
                 bookCount = bookCount,
                 isReorderMode = true,
+                isTutorialShelf = isTutorialShelf,
                 onBookshelfClick = onBookshelfClick,
                 onLongClick = onLongClick,
                 onChangeStyle = onChangeStyle,
@@ -161,6 +163,7 @@ fun BookcaseShelf(
                 shelf = shelf,
                 bookCount = bookCount,
                 isReorderMode = false,
+                isTutorialShelf = isTutorialShelf,
                 onBookshelfClick = onBookshelfClick,
                 onLongClick = onLongClick,
                 onChangeStyle = onChangeStyle,

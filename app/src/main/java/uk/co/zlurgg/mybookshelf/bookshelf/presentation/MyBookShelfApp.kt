@@ -99,6 +99,11 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                         onBookshelfClick = { shelf ->
                             navController.navigate(NavigationRoute.Bookshelf.createRoute(shelf.id))
                         },
+                        onBookDetailClick = { bookId, shelfId ->
+                            navController.navigate(NavigationRoute.BookDetail.createRoute(bookId, shelfId)) {
+                                launchSingleTop = true
+                            }
+                        },
                         onAddBookshelfClick = { name, style ->
                             viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
                         }

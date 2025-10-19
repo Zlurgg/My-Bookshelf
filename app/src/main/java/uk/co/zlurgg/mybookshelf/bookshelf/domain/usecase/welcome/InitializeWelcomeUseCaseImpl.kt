@@ -9,7 +9,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.GetOrCreateTutorialBookUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
 
 class InitializeWelcomeUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,

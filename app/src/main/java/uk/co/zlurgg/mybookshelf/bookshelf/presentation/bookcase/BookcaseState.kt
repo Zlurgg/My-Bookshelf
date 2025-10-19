@@ -18,4 +18,5 @@ data class BookcaseState(
     val shelfToChangeStyle: Bookshelf? = null,
     val defaultShelfName: String = "New Bookshelf 1",
     val tutorialShelfIdForNavigation: String? = null,
+    val tutorialBookForNavigation: Pair<String, String>? = null, // (shelfId, bookId)
 )

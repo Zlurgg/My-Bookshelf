@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
@@ -37,6 +38,7 @@ fun AddBookshelfDialog(
     defaultName: String
 ) {
     var name by remember(defaultName) { mutableStateOf(defaultName) }
+    var hasBeenFocused by remember { mutableStateOf(false) }
     val selected = remember { mutableStateOf(ShelfStyle.DarkWood) }
 
     AlertDialog(
@@ -50,7 +52,13 @@ fun AddBookshelfDialog(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text(stringResource(id = R.string.field_shelf_name_label)) },
-                    enabled = !isLoading
+                    enabled = !isLoading,
+                    modifier = Modifier.onFocusChanged { focusState ->
+                        if (focusState.isFocused && !hasBeenFocused && name == defaultName) {
+                            name = ""
+                            hasBeenFocused = true
+                        }
+                    }
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(stringResource(id = R.string.field_shelf_style_label))

@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
+package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial
 
 import kotlinx.coroutines.flow.first
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
@@ -12,7 +12,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class GetOrCreateTutorialShelfUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val idGenerator: IdGenerator
+    private val idGenerator: IdGenerator,
+    private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
 ) : GetOrCreateTutorialShelfUseCase {
 
     override suspend fun execute(): Result<String, DataError.Local> {
@@ -21,8 +22,8 @@ class GetOrCreateTutorialShelfUseCaseImpl(
             val existingShelves = bookcaseRepository.getAllShelves().first()
             val tutorialShelf = existingShelves.find { it.name == BookshelfConstants.TUTORIAL_SHELF_NAME }
 
-            if (tutorialShelf != null) {
-                // Tutorial shelf exists, return its ID
+            val shelfId = if (tutorialShelf != null) {
+                // Tutorial shelf exists, use its ID
                 tutorialShelf.id
             } else {
                 // Create new tutorial shelf at position 0 with random style
@@ -38,6 +39,11 @@ class GetOrCreateTutorialShelfUseCaseImpl(
                 bookcaseRepository.addShelf(newTutorialShelf)
                 newTutorialShelf.id
             }
+
+            // Ensure tutorial book exists in the shelf
+            getOrCreateTutorialBook.execute(shelfId)
+
+            shelfId
         }
     }
 }
