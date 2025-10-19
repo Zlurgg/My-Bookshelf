@@ -25,15 +25,18 @@ import uk.co.zlurgg.mybookshelf.R
 /**
  * Card displaying book description with expand/collapse functionality.
  * Collapses long descriptions to 3 lines with "Show more" option.
+ *
+ * @param initiallyExpanded If true, description starts expanded (useful for tutorial book)
  */
 @Composable
 fun DescriptionCard(
     description: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    initiallyExpanded: Boolean = false
 ) {
     if (description.isNullOrBlank()) return
 
-    var isExpanded by remember { mutableStateOf(false) }
+    var isExpanded by remember { mutableStateOf(initiallyExpanded) }
 
     Card(
         modifier = modifier.fillMaxWidth(),

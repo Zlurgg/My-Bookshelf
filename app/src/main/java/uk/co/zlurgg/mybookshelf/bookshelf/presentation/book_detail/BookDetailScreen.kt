@@ -40,6 +40,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.Pu
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBook
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
 
 @Composable
 fun BookDetailsScreenRoot(
@@ -67,6 +68,8 @@ fun BookDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     if (state.book != null) {
+        val isTutorialBook = state.book.id == BookDetailConstants.TUTORIAL_BOOK_ID
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -82,17 +85,19 @@ fun BookDetailsScreen(
                 )
             },
             bottomBar = {
-                // Sticky bottom action - always visible, no scrolling required
-                ShelfActionsCard(
-                    book = state.book,
-                    onShelf = state.onShelf,
-                    onAddToShelf = { book ->
-                        onAction(BookDetailAction.OnAddBookClick(book))
-                    },
-                    onRemoveFromShelf = { book ->
-                        onAction(BookDetailAction.OnRemoveBookClick(book))
-                    }
-                )
+                // Hide actions for tutorial book - it shouldn't be removed from shelf
+                if (!isTutorialBook) {
+                    ShelfActionsCard(
+                        book = state.book,
+                        onShelf = state.onShelf,
+                        onAddToShelf = { book ->
+                            onAction(BookDetailAction.OnAddBookClick(book))
+                        },
+                        onRemoveFromShelf = { book ->
+                            onAction(BookDetailAction.OnRemoveBookClick(book))
+                        }
+                    )
+                }
             },
             modifier = modifier
         ) { innerPadding ->
@@ -108,103 +113,141 @@ fun BookDetailsScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // 1. Book Overview Card
-                item {
-                    BookOverviewCard(
-                        title = state.book.title,
-                        authors = state.book.authors,
-                        firstPublishYear = state.book.firstPublishYear,
-                        numPages = state.book.numPages,
-                        numEditions = state.book.numEditions
-                    )
-                }
-
-                // Book Image (if available)
-                if (showImageWithSpacing) {
+                if (isTutorialBook) {
+                    // Simplified read-only view for tutorial book
+                    // 1. Book Overview Card
                     item {
-                        BookDetailImage(
-                            imageUrl = state.book.withMediumImage(),
+                        BookOverviewCard(
                             title = state.book.title,
-                            onImageLoadResult = { success ->
-                                if (!success) {
-                                    showImageWithSpacing = false
+                            authors = state.book.authors,
+                            firstPublishYear = state.book.firstPublishYear,
+                            numPages = state.book.numPages,
+                            numEditions = state.book.numEditions
+                        )
+                    }
+
+                    // Book Image (if available)
+                    if (showImageWithSpacing) {
+                        item {
+                            BookDetailImage(
+                                imageUrl = state.book.withMediumImage(),
+                                title = state.book.title,
+                                onImageLoadResult = { success ->
+                                    if (!success) {
+                                        showImageWithSpacing = false
+                                    }
                                 }
-                            }
-                        )
-                    }
-                }
-
-                // 2. Recommendation Status Card (only if on shelf)
-                if (state.onShelf) {
-                    item {
-                        RecommendationStatusCard(
-                            readingStatus = state.book.readingStatus,
-                            personalRating = state.book.personalRating,
-                            onReadingStatusChange = { status ->
-                                onAction(BookDetailAction.OnReadingStatusChange(status))
-                            },
-                            onPersonalRatingChange = { rating ->
-                                onAction(BookDetailAction.OnPersonalRatingChange(rating))
-                            }
-                        )
-                    }
-                }
-
-                // 3. Personal Notes Card (only if on shelf)
-                if (state.onShelf) {
-                    item {
-                        PersonalNotesCard(
-                            notes = state.book.personalNotes,
-                            onNotesChange = { notes ->
-                                onAction(BookDetailAction.OnPersonalNotesChange(notes))
-                            }
-                        )
-                    }
-                }
-
-                // 4. Community Ratings Card
-                item {
-                    CommunityRatingsCard(
-                        averageRating = state.book.averageRating,
-                        ratingCount = state.book.ratingCount
-                    )
-                }
-
-                // 5. Description Card
-                item {
-                    DescriptionCard(
-                        description = state.book.description
-                    )
-                }
-
-                // 6. Publication Details Card
-                item {
-                    PublicationDetailsCard(
-                        isbn = state.book.isbn,
-                        publisher = state.book.publisher,
-                        publishDate = state.book.publishDate,
-                        internetArchiveId = state.book.internetArchiveId
-                    )
-                }
-
-                // 7. Languages Card
-                item {
-                    LanguagesCard(
-                        languages = state.book.languages
-                    )
-                }
-
-                // 8. Purchased Toggle Card
-                item {
-                    PurchasedToggleCard(
-                        purchased = state.book.purchased,
-                        onPurchaseToggle = {
-                            onAction(BookDetailAction.OnPurchaseClick)
+                            )
                         }
-                    )
-                }
+                    }
 
-                // Note: ShelfActionsCard moved to Scaffold bottomBar (sticky at bottom, always visible)
+                    // 2. Description Card (contains tutorial content)
+                    item {
+                        DescriptionCard(
+                            description = state.book.description,
+                            initiallyExpanded = true  // Show full tutorial content by default
+                        )
+                    }
+                } else {
+                    // Full view for regular books
+                    // 1. Book Overview Card
+                    item {
+                        BookOverviewCard(
+                            title = state.book.title,
+                            authors = state.book.authors,
+                            firstPublishYear = state.book.firstPublishYear,
+                            numPages = state.book.numPages,
+                            numEditions = state.book.numEditions
+                        )
+                    }
+
+                    // Book Image (if available)
+                    if (showImageWithSpacing) {
+                        item {
+                            BookDetailImage(
+                                imageUrl = state.book.withMediumImage(),
+                                title = state.book.title,
+                                onImageLoadResult = { success ->
+                                    if (!success) {
+                                        showImageWithSpacing = false
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    // 2. Recommendation Status Card (only if on shelf)
+                    if (state.onShelf) {
+                        item {
+                            RecommendationStatusCard(
+                                readingStatus = state.book.readingStatus,
+                                personalRating = state.book.personalRating,
+                                onReadingStatusChange = { status ->
+                                    onAction(BookDetailAction.OnReadingStatusChange(status))
+                                },
+                                onPersonalRatingChange = { rating ->
+                                    onAction(BookDetailAction.OnPersonalRatingChange(rating))
+                                }
+                            )
+                        }
+                    }
+
+                    // 3. Personal Notes Card (only if on shelf)
+                    if (state.onShelf) {
+                        item {
+                            PersonalNotesCard(
+                                notes = state.book.personalNotes,
+                                onNotesChange = { notes ->
+                                    onAction(BookDetailAction.OnPersonalNotesChange(notes))
+                                }
+                            )
+                        }
+                    }
+
+                    // 4. Community Ratings Card
+                    item {
+                        CommunityRatingsCard(
+                            averageRating = state.book.averageRating,
+                            ratingCount = state.book.ratingCount
+                        )
+                    }
+
+                    // 5. Description Card
+                    item {
+                        DescriptionCard(
+                            description = state.book.description
+                        )
+                    }
+
+                    // 6. Publication Details Card
+                    item {
+                        PublicationDetailsCard(
+                            isbn = state.book.isbn,
+                            publisher = state.book.publisher,
+                            publishDate = state.book.publishDate,
+                            internetArchiveId = state.book.internetArchiveId
+                        )
+                    }
+
+                    // 7. Languages Card
+                    item {
+                        LanguagesCard(
+                            languages = state.book.languages
+                        )
+                    }
+
+                    // 8. Purchased Toggle Card
+                    item {
+                        PurchasedToggleCard(
+                            purchased = state.book.purchased,
+                            onPurchaseToggle = {
+                                onAction(BookDetailAction.OnPurchaseClick)
+                            }
+                        )
+                    }
+
+                    // Note: ShelfActionsCard moved to Scaffold bottomBar (sticky at bottom, always visible)
+                }
             }
         }
     } else {
