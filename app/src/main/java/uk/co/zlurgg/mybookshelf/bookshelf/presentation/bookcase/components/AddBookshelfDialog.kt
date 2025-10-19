@@ -37,7 +37,7 @@ fun AddBookshelfDialog(
     isLoading: Boolean,
     defaultName: String
 ) {
-    var name by remember(defaultName) { mutableStateOf(defaultName) }
+    var name by remember { mutableStateOf(defaultName) }
     var hasBeenFocused by remember { mutableStateOf(false) }
     val selected = remember { mutableStateOf(ShelfStyle.DarkWood) }
 
