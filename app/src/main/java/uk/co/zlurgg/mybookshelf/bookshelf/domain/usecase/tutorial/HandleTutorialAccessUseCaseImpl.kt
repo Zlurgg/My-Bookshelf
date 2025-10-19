@@ -38,7 +38,7 @@ class HandleTutorialAccessUseCaseImpl(
                     // Book doesn't exist, create it
                     when (val result = getOrCreateTutorialBook.execute(tutorialShelf.id)) {
                         is Result.Success -> result.data
-                        is Result.Error -> throw Exception("Failed to create tutorial book")
+                        is Result.Error -> throw Exception("Failed to create tutorial book: ${result.error}")
                     }
                 }
 
@@ -50,7 +50,7 @@ class HandleTutorialAccessUseCaseImpl(
                 // Tutorial doesn't exist, create silently without navigating
                 when (val result = getOrCreateTutorialShelf.execute()) {
                     is Result.Success -> TutorialAccessResult.DoNotNavigate
-                    is Result.Error -> throw Exception("Failed to create tutorial shelf")
+                    is Result.Error -> throw Exception("Failed to create tutorial shelf: ${result.error}")
                 }
             }
         }
