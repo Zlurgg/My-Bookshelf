@@ -37,6 +37,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseC
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -138,6 +140,13 @@ class BookRemovalE2ETest {
             bookshelfRepository.addBookToShelf(testShelfId, book2.id)
         }
 
+        // Setup tutorial use case
+        val getOrCreateTutorialBook = GetOrCreateTutorialBookUseCaseImpl(
+            bookRepository,
+            bookshelfRepository,
+            testTimeProvider
+        )
+
         // Setup bookshelf use cases
         val bookshelfUseCases = BookshelfUseCases(
             searchBooks = SearchBooksUseCaseImpl(stubRemoteDataSource),
@@ -145,13 +154,14 @@ class BookRemovalE2ETest {
             addBookToShelf = AddBookToShelfUseCaseImpl(bookRepository, bookshelfRepository),
             removeBookFromShelf = RemoveBookFromShelfUseCaseImpl(bookshelfRepository),
             upsertBook = UpsertBookUseCaseImpl(bookRepository),
-            shareBookshelf = ShareBookshelfUseCaseImpl(stubExportService)
+            shareBookshelf = ShareBookshelfUseCaseImpl(stubExportService),
+            updateShelfTidyMode = UpdateShelfTidyModeUseCaseImpl(bookcaseRepositoryImpl)
         )
 
         // Setup bookcase use cases
         val bookcaseUseCases = BookcaseUseCases(
             getAllShelves = GetAllShelvesUseCaseImpl(bookcaseRepositoryImpl),
-            createShelf = CreateShelfUseCaseImpl(bookcaseRepositoryImpl, testIdGenerator),
+            createShelf = CreateShelfUseCaseImpl(bookcaseRepositoryImpl, testIdGenerator, getOrCreateTutorialBook),
             deleteShelf = DeleteShelfUseCaseImpl(bookcaseRepositoryImpl),
             reorderShelves = ReorderShelvesUseCaseImpl(bookcaseRepositoryImpl),
             getShelfById = GetShelfByIdUseCaseImpl(bookcaseRepositoryImpl),
