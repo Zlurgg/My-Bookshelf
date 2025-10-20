@@ -26,8 +26,20 @@ class ImportBookshelfUseCaseImpl(
                 validator.validateFormat(exportData).map { exportData }
             }
             .flatMap { exportData ->
-                val shelf = exportMapper.fromExportData(exportData, customName)
-                dataOrchestrator.importShelfToDatabase(shelf)
+                when (val shelfResult = exportMapper.fromExportData(exportData, customName)) {
+                    is Result.Success -> {
+                        dataOrchestrator.importShelfToDatabase(shelfResult.data)
+                    }
+                    is Result.Error -> {
+                        // Convert remote errors to local errors for consistency
+                        val localError = when (shelfResult.error) {
+                            is DataError.Remote -> DataError.Local.UNKNOWN
+                            is DataError.Local -> shelfResult.error
+                            else -> DataError.Local.UNKNOWN
+                        }
+                        Result.Error(localError)
+                    }
+                }
             }
     }
 }
