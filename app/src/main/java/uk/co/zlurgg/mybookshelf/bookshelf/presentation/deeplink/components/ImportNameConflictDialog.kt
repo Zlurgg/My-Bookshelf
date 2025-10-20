@@ -18,7 +18,7 @@ fun ImportNameConflictDialog(
     onResolveConflict: (String) -> Unit
 ) {
     ShelfNameInputDialog(
-        currentName = "$existingName (Copy)",
+        currentName = existingName,
         errorMessage = errorMessage,
         isLoading = isLoading,
         titleRes = R.string.import_name_conflict_title,

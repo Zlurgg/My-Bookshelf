@@ -33,10 +33,7 @@ class BookshelfImportValidatorImplTest {
     @Test
     fun `validateFormat accepts valid export data`() {
         // Given
-        val validExportData = createExportData(
-            formatVersion = 1,
-            shelfName = "Fiction"
-        )
+        val validExportData = createExportData(shelfName = "Fiction")
 
         // When
         val result = validator.validateFormat(validExportData)
@@ -45,31 +42,11 @@ class BookshelfImportValidatorImplTest {
         assertTrue("Should succeed", result is Result.Success)
     }
 
-    @Test
-    fun `validateFormat rejects unsupported format version`() {
-        // Given
-        val futureVersion = createExportData(
-            formatVersion = 2,
-            shelfName = "Fiction"
-        )
-
-        // When
-        val result = validator.validateFormat(futureVersion)
-
-        // Then
-        assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return unsupported format error",
-            DataError.Local.UNSUPPORTED_FORMAT_VERSION,
-            (result as Result.Error).error)
-    }
 
     @Test
     fun `validateFormat rejects blank shelf name`() {
         // Given
-        val blankName = createExportData(
-            formatVersion = 1,
-            shelfName = ""
-        )
+        val blankName = createExportData(shelfName = "")
 
         // When
         val result = validator.validateFormat(blankName)
@@ -84,10 +61,7 @@ class BookshelfImportValidatorImplTest {
     @Test
     fun `validateFormat rejects whitespace-only shelf name`() {
         // Given
-        val whitespaceOnly = createExportData(
-            formatVersion = 1,
-            shelfName = "   "
-        )
+        val whitespaceOnly = createExportData(shelfName = "   ")
 
         // When
         val result = validator.validateFormat(whitespaceOnly)
@@ -178,29 +152,12 @@ class BookshelfImportValidatorImplTest {
         // Error will always be DataError.Local due to ErrorMapper implementation
     }
 
-    @Test
-    fun `validateFormat accepts format version 1`() {
-        // Given
-        val version1 = createExportData(
-            formatVersion = 1,
-            shelfName = "Valid Shelf"
-        )
-
-        // When
-        val result = validator.validateFormat(version1)
-
-        // Then
-        assertTrue("Should succeed for version 1", result is Result.Success)
-    }
-
-    private fun createExportData(formatVersion: Int, shelfName: String): BookshelfExportData {
+    private fun createExportData(shelfName: String): BookshelfExportData {
         return BookshelfExportData(
-            formatVersion = formatVersion,
-            exportedAt = "2024-01-01T00:00:00",
             bookshelf = ExportedBookshelf(
                 name = shelfName,
                 shelfStyle = ShelfStyle.DarkWood,
-                books = emptyList()
+                bookIds = emptyList()
             )
         )
     }

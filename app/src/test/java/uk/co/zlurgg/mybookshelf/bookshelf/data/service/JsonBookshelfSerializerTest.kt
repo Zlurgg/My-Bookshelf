@@ -4,30 +4,27 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
-import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 
 /**
  * Test for JsonBookshelfSerializer - Focused on JSON serialization logic.
  * Tests business logic: JSON encoding/decoding with proper error handling.
- * Mocks: TimeProvider, IdGenerator
+ * Mocks: IdGenerator, RemoteBookDataSource
  */
 class JsonBookshelfSerializerTest {
 
-    private val mockTimeProvider = SimpleMockTimeProvider()
     private val mockIdGenerator = SimpleMockIdGenerator()
-    private val exportMapper = BookshelfExportMapper(mockTimeProvider, mockIdGenerator)
+    private val mockRemoteDataSource = SimpleMockRemoteBookDataSource()
+    private val exportMapper = BookshelfExportMapper(mockIdGenerator, mockRemoteDataSource)
     private val serializer = JsonBookshelfSerializer(exportMapper)
-
-    @Before
-    fun setup() {
-        mockTimeProvider.currentTime = 1704067200000L // 2024-01-01 00:00:00 UTC
-    }
 
     @Test
     fun `serialize converts shelf to valid JSON string`() {
@@ -52,13 +49,10 @@ class JsonBookshelfSerializerTest {
         // Given
         val validJson = """
             {
-                "formatVersion": 1,
-                "exportedAt": "2024-01-01T00:00:00",
-                "appName": "My Bookshelf",
                 "bookshelf": {
                     "name": "Fiction",
                     "shelfStyle": "DarkWood",
-                    "books": []
+                    "bookIds": []
                 }
             }
         """.trimIndent()
@@ -144,19 +138,32 @@ class JsonBookshelfSerializerTest {
         // Then
         assertTrue("Should succeed", result is Result.Success)
         val jsonString = (result as Result.Success).data
-        assertTrue("Should contain book titles", jsonString.contains("The Hobbit"))
-        assertTrue("Should contain book titles", jsonString.contains("Lord of the Rings"))
+        assertTrue("Should contain book IDs", jsonString.contains("book-1"))
+        assertTrue("Should contain book IDs", jsonString.contains("book-2"))
+        assertTrue("Should contain bookIds field", jsonString.contains("\"bookIds\""))
     }
 
     // Simplified mocks
-    private class SimpleMockTimeProvider : TimeProvider {
-        var currentTime = 0L
-        override fun currentTimeMillis(): Long = currentTime
-    }
-
     private class SimpleMockIdGenerator : IdGenerator {
         var nextId = "test-id"
         override fun generateId(): String = nextId
+    }
+
+    private class SimpleMockRemoteBookDataSource : RemoteBookDataSource {
+        override suspend fun searchBooks(
+            query: String,
+            resultLimit: Int?,
+            language: String?,
+            authorFilter: String?,
+            titleFilter: String?,
+            sort: String?
+        ): Result<SearchResponseDto, DataError.Remote> {
+            return Result.Success(SearchResponseDto(results = emptyList()))
+        }
+
+        override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
+            return Result.Success(BookWorkDto(description = null))
+        }
     }
 
     private fun createExportedBook(id: String, title: String) =

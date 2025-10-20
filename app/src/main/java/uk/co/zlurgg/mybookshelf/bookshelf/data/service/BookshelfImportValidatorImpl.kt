@@ -18,11 +18,6 @@ class BookshelfImportValidatorImpl(
 
     override fun validateFormat(exportData: BookshelfExportData): Result<Unit, DataError.Local> {
         return try {
-            // Validate format version
-            if (exportData.formatVersion > 1) {
-                return Result.Error(DataError.Local.UNSUPPORTED_FORMAT_VERSION)
-            }
-
             // Basic structure validation
             if (exportData.bookshelf.name.isBlank()) {
                 return Result.Error(DataError.Local.VALIDATION_ERROR)
