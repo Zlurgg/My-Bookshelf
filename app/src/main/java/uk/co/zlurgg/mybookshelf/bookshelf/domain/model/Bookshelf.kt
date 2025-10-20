@@ -7,5 +7,6 @@ data class Bookshelf(
     val name: String,
     val books: List<Book>,
     val shelfStyle: ShelfStyle,
-    val position: Int = 0
+    val position: Int = 0,
+    val isTidyMode: Boolean = false
 )

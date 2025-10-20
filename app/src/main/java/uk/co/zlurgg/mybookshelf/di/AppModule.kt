@@ -94,6 +94,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpdateBookM
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpdateBookMetadataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeViewModel
 import uk.co.zlurgg.mybookshelf.core.data.network.HttpClientFactory
@@ -153,10 +155,11 @@ val appModule = module {
     singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
     singleOf(::UpdateBookMetadataUseCaseImpl).bind<UpdateBookMetadataUseCase>()
     singleOf(::ShareBookshelfUseCaseImpl).bind<ShareBookshelfUseCase>()
+    singleOf(::UpdateShelfTidyModeUseCaseImpl).bind<UpdateShelfTidyModeUseCase>()
 
     // UseCase Facades
     single { BookDetailUseCases(get(), get(), get(), get(), get(), get()) }
-    single { BookshelfUseCases(get(), get(), get(), get(), get(), get()) }
+    single { BookshelfUseCases(get(), get(), get(), get(), get(), get(), get()) }
     single { BookcaseUseCases(get(), get(), get(), get(), get(), get(), get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
