@@ -16,7 +16,12 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.CreateShelfUseCaseImpl
@@ -26,8 +31,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.GetShelfByIdUs
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ReorderShelvesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.RenameShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 /**
  * E2E test for shelf deletion workflow.
@@ -47,6 +58,28 @@ class ShelfDeletionE2ETest {
         override fun generateId(): String = "test-shelf-${counter++}"
     }
 
+    private val testTimeProvider = object : TimeProvider {
+        override fun currentTimeMillis(): Long = 1000L
+    }
+
+    // Stub external dependencies only
+    private val stubRemoteDataSource = object : RemoteBookDataSource {
+        override suspend fun searchBooks(
+            query: String,
+            resultLimit: Int?,
+            language: String?,
+            authorFilter: String?,
+            titleFilter: String?,
+            sort: String?
+        ): Result<SearchResponseDto, DataError.Remote> {
+            throw NotImplementedError("Not used in E2E tests")
+        }
+
+        override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
+            throw NotImplementedError("Not used in E2E tests")
+        }
+    }
+
     @Before
     fun setup() = runBlocking {
         // Setup real database
@@ -55,13 +88,34 @@ class ShelfDeletionE2ETest {
             BookshelfDatabase::class.java
         ).build()
 
-        // Setup repository
+        // Setup repositories
         repository = BookcaseRepositoryImpl(database.bookshelfDao)
+        val bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
+        val bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
+
+        // Setup tutorial use cases
+        val getOrCreateTutorialBook = GetOrCreateTutorialBookUseCaseImpl(
+            bookRepository,
+            bookshelfRepository,
+            testTimeProvider
+        )
+
+        val getOrCreateTutorialShelf = GetOrCreateTutorialShelfUseCaseImpl(
+            repository,
+            testIdGenerator,
+            getOrCreateTutorialBook
+        )
+
+        val handleTutorialAccess = HandleTutorialAccessUseCaseImpl(
+            repository,
+            getOrCreateTutorialShelf,
+            getOrCreateTutorialBook
+        )
 
         // Setup use cases
-        val useCases = BookcaseUseCases(
+        val bookcaseUseCases = BookcaseUseCases(
             getAllShelves = GetAllShelvesUseCaseImpl(repository),
-            createShelf = CreateShelfUseCaseImpl(repository, testIdGenerator),
+            createShelf = CreateShelfUseCaseImpl(repository, testIdGenerator, getOrCreateTutorialBook),
             deleteShelf = DeleteShelfUseCaseImpl(repository),
             reorderShelves = ReorderShelvesUseCaseImpl(repository),
             getShelfById = GetShelfByIdUseCaseImpl(repository),
@@ -81,7 +135,7 @@ class ShelfDeletionE2ETest {
 
         // Setup ViewModel with full dependency chain
         delay(500) // Allow ViewModel state to initialize
-        viewModel = BookcaseViewModel(useCases)
+        viewModel = BookcaseViewModel(bookcaseUseCases, handleTutorialAccess)
     }
 
     @After
