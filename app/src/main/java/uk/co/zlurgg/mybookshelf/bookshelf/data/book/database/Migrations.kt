@@ -100,3 +100,10 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         db.execSQL("ALTER TABLE BookEntity_new RENAME TO BookEntity")
     }
 }
+
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add isTidyMode column to BookshelfEntity table
+        db.execSQL("ALTER TABLE BookshelfEntity ADD COLUMN isTidyMode INTEGER NOT NULL DEFAULT 0")
+    }
+}

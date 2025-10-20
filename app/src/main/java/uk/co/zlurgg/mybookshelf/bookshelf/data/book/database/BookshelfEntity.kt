@@ -8,5 +8,6 @@ data class BookshelfEntity(
     @PrimaryKey val id: String,
     val name: String,
     val shelfMaterial: String,
-    val position: Int = 0
+    val position: Int = 0,
+    val isTidyMode: Boolean = false
 )

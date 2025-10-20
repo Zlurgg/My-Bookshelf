@@ -116,7 +116,9 @@ class BookshelfViewModel(
                 queryFlow.value = action.query
             }
             BookshelfAction.OnToggleTidyMode -> {
-                _state.update { it.copy(isTidyMode = !it.isTidyMode) }
+                val newTidyMode = !_state.value.isTidyMode
+                _state.update { it.copy(isTidyMode = newTidyMode) }
+                persistTidyMode(newTidyMode)
             }
             BookshelfAction.OnShareShelf -> {
                 shareShelf()
@@ -159,7 +161,8 @@ class BookshelfViewModel(
                         _state.update {
                             it.copy(
                                 shelfName = shelf.name,
-                                shelfMaterial = ShelfMaterial.fromShelfStyle(shelf.shelfStyle)
+                                shelfMaterial = ShelfMaterial.fromShelfStyle(shelf.shelfStyle),
+                                isTidyMode = shelf.isTidyMode
                             )
                         }
                     }
@@ -168,6 +171,12 @@ class BookshelfViewModel(
                     _state.update { it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "load shelf details")) }
                 }
             }
+        }
+    }
+
+    private fun persistTidyMode(isTidyMode: Boolean) {
+        viewModelScope.launch {
+            bookshelfUseCases.updateShelfTidyMode.execute(shelfId, isTidyMode)
         }
     }
 

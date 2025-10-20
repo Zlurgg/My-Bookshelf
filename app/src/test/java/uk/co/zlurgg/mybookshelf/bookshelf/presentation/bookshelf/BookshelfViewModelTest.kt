@@ -24,6 +24,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseC
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
@@ -58,6 +59,7 @@ class BookshelfViewModelTest {
     private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
     private val mockUpsertBook = SimpleUpsertBookUseCase()
     private val mockShareBookshelf = SimpleShareBookshelfUseCase()
+    private val mockUpdateShelfTidyMode = SimpleUpdateShelfTidyModeUseCase()
     private val mockGetShelfById = MockGetShelfByIdUseCase()
 
     @After
@@ -78,7 +80,8 @@ class BookshelfViewModelTest {
             addBookToShelf = mockAddBookToShelf,
             removeBookFromShelf = mockRemoveBookFromShelf,
             upsertBook = mockUpsertBook,
-            shareBookshelf = mockShareBookshelf
+            shareBookshelf = mockShareBookshelf,
+            updateShelfTidyMode = mockUpdateShelfTidyMode
         )
         val bookcaseUseCases = BookcaseUseCases(
             getAllShelves = MockGetAllShelvesUseCase(),
@@ -359,5 +362,10 @@ class BookshelfViewModelTest {
         fun reset() {
             shouldSucceed = true
         }
+    }
+
+    private class SimpleUpdateShelfTidyModeUseCase : UpdateShelfTidyModeUseCase {
+        override suspend fun execute(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError> =
+            Result.Success(Unit)
     }
 }

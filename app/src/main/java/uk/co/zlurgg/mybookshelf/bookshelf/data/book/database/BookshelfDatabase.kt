@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [BookEntity::class, BookshelfEntity::class, BookshelfBookCrossRef::class],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(
