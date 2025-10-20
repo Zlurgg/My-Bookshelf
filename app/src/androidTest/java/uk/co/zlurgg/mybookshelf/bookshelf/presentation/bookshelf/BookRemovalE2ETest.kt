@@ -121,24 +121,22 @@ class BookRemovalE2ETest {
         bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
 
         // Create test shelf in database
-        runBlocking {
-            val testShelf = Bookshelf(
-                id = testShelfId,
-                name = "Test Shelf",
-                books = emptyList(),
-                shelfStyle = ShelfStyle.DarkWood,
-                position = 0
-            )
-            bookcaseRepositoryImpl.addShelf(testShelf)
+        val testShelf = Bookshelf(
+            id = testShelfId,
+            name = "Test Shelf",
+            books = emptyList(),
+            shelfStyle = ShelfStyle.DarkWood,
+            position = 0
+        )
+        bookcaseRepositoryImpl.addShelf(testShelf)
 
-            // Add some test books to shelf
-            val book1 = createTestBook("book-1", "Book One")
-            val book2 = createTestBook("book-2", "Book Two")
-            bookRepository.upsertBook(book1)
-            bookRepository.upsertBook(book2)
-            bookshelfRepository.addBookToShelf(testShelfId, book1.id)
-            bookshelfRepository.addBookToShelf(testShelfId, book2.id)
-        }
+        // Add some test books to shelf
+        val book1 = createTestBook("book-1", "Book One")
+        val book2 = createTestBook("book-2", "Book Two")
+        bookRepository.upsertBook(book1)
+        bookRepository.upsertBook(book2)
+        bookshelfRepository.addBookToShelf(testShelfId, book1.id)
+        bookshelfRepository.addBookToShelf(testShelfId, book2.id)
 
         // Setup tutorial use case
         val getOrCreateTutorialBook = GetOrCreateTutorialBookUseCaseImpl(
@@ -170,7 +168,6 @@ class BookRemovalE2ETest {
         )
 
         // Setup ViewModel with full dependency chain
-        delay(500) // Allow ViewModel state to initialize
         bookshelfViewModel = BookshelfViewModel(
             bookshelfUseCases = bookshelfUseCases,
             bookcaseUseCases = bookcaseUseCases,
@@ -187,6 +184,7 @@ class BookRemovalE2ETest {
     fun removeBookUpdatesStateAndPersistsToDatabase() = runBlocking {
         // Setup state collection
         val job = launch { bookshelfViewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Shelf with books
         val initialState = bookshelfViewModel.state.first()
@@ -216,6 +214,7 @@ class BookRemovalE2ETest {
     fun removeAllBooksLeavesEmptyShelf() = runBlocking {
         // Setup state collection
         val job = launch { bookshelfViewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Shelf with books
         val initialState = bookshelfViewModel.state.first()
@@ -242,6 +241,7 @@ class BookRemovalE2ETest {
     fun undoRemoveRestoresBookToShelf() = runBlocking {
         // Setup state collection
         val job = launch { bookshelfViewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Shelf with books
         val initialState = bookshelfViewModel.state.first()
@@ -272,6 +272,7 @@ class BookRemovalE2ETest {
     fun removeBookOnlyRemovesFromCurrentShelf() = runBlocking {
         // Setup state collection
         val job = launch { bookshelfViewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Book exists on two shelves
         val anotherShelfId = "another-shelf"

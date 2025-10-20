@@ -105,7 +105,7 @@ class BookAdditionE2ETest {
     }
 
     @Before
-    fun setup() {
+    fun setup() = runBlocking {
         // Setup real database
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
@@ -118,16 +118,14 @@ class BookAdditionE2ETest {
         val bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
 
         // Create test shelf in database
-        runBlocking {
-            val testShelf = Bookshelf(
-                id = testShelfId,
-                name = "Test Shelf",
-                books = emptyList(),
-                shelfStyle = ShelfStyle.DarkWood,
-                position = 0
-            )
-            bookcaseRepositoryImpl.addShelf(testShelf)
-        }
+        val testShelf = Bookshelf(
+            id = testShelfId,
+            name = "Test Shelf",
+            books = emptyList(),
+            shelfStyle = ShelfStyle.DarkWood,
+            position = 0
+        )
+        bookcaseRepositoryImpl.addShelf(testShelf)
 
         // Setup tutorial use case
         val getOrCreateTutorialBook = GetOrCreateTutorialBookUseCaseImpl(

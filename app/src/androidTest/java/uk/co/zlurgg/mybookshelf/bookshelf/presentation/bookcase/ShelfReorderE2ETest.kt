@@ -123,19 +123,16 @@ class ShelfReorderE2ETest {
         )
 
         // Create test shelves in database with specific order
-        runBlocking {
-            val shelf1 = Bookshelf("shelf-1", "First", emptyList(), ShelfStyle.DarkWood, 0)
-            val shelf2 = Bookshelf("shelf-2", "Second", emptyList(), ShelfStyle.SilverMetal, 1)
-            val shelf3 = Bookshelf("shelf-3", "Third", emptyList(), ShelfStyle.WhiteMetal, 2)
-            val shelf4 = Bookshelf("shelf-4", "Fourth", emptyList(), ShelfStyle.GreyMetal, 3)
-            repository.addShelf(shelf1)
-            repository.addShelf(shelf2)
-            repository.addShelf(shelf3)
-            repository.addShelf(shelf4)
-        }
+        val shelf1 = Bookshelf("shelf-1", "First", emptyList(), ShelfStyle.DarkWood, 0)
+        val shelf2 = Bookshelf("shelf-2", "Second", emptyList(), ShelfStyle.SilverMetal, 1)
+        val shelf3 = Bookshelf("shelf-3", "Third", emptyList(), ShelfStyle.WhiteMetal, 2)
+        val shelf4 = Bookshelf("shelf-4", "Fourth", emptyList(), ShelfStyle.GreyMetal, 3)
+        repository.addShelf(shelf1)
+        repository.addShelf(shelf2)
+        repository.addShelf(shelf3)
+        repository.addShelf(shelf4)
 
         // Setup ViewModel with full dependency chain
-        delay(500) // Allow ViewModel state to initialize
         viewModel = BookcaseViewModel(bookcaseUseCases, handleTutorialAccess)
     }
 
@@ -148,6 +145,7 @@ class ShelfReorderE2ETest {
     fun reorderShelvesMoveFromTopToBottom() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
@@ -184,6 +182,7 @@ class ShelfReorderE2ETest {
     fun reorderShelvesMoveFromBottomToTop() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
@@ -217,6 +216,7 @@ class ShelfReorderE2ETest {
     fun reorderShelvesMoveUpByOnePosition() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
@@ -248,6 +248,7 @@ class ShelfReorderE2ETest {
     fun reorderShelvesMultipleReorders() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
@@ -285,6 +286,7 @@ class ShelfReorderE2ETest {
     fun reorderShelvesNoOpWhenSamePosition() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Four shelves in order
         val initialState = viewModel.state.first()
@@ -314,6 +316,7 @@ class ShelfReorderE2ETest {
     fun reorderShelvesAfterToggleMode() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Reorder mode is off
         val initialState = viewModel.state.first()
@@ -345,6 +348,7 @@ class ShelfReorderE2ETest {
     fun reorderOperationCanBeReset() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Successful reorder
         val initialState = viewModel.state.first()

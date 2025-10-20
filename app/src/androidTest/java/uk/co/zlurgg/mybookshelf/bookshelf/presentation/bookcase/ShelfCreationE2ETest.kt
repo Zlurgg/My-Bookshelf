@@ -172,7 +172,7 @@ class ShelfCreationE2ETest {
         // When - User creates three shelves
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Fiction", ShelfStyle.DarkWood))
         delay(500) // Allow async operation to complete
-        viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Non-Fiction", ShelfStyle.SilverMetal))
+        viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Nonfiction", ShelfStyle.SilverMetal))
         delay(500) // Allow async operation to complete
         viewModel.onAction(BookcaseAction.OnAddBookshelfClick("Science", ShelfStyle.WhiteMetal))
         delay(500) // Allow async operation to complete
@@ -190,7 +190,7 @@ class ShelfCreationE2ETest {
         val allShelves = database.bookshelfDao.getAllShelves().first()
         assertEquals(3, allShelves.size)
         assertEquals("Fiction", allShelves[0].name)
-        assertEquals("Non-Fiction", allShelves[1].name)
+        assertEquals("Nonfiction", allShelves[1].name)
         assertEquals("Science", allShelves[2].name)
 
         job.cancel()
