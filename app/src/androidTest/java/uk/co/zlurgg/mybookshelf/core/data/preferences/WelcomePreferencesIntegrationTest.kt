@@ -34,16 +34,19 @@ class WelcomePreferencesIntegrationTest {
     private lateinit var welcomePreferences: WelcomePreferences
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher + Job())
+    private var testFileName = ""
 
     @Before
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
 
-        // Create a unique DataStore for each test
+        // Create a unique DataStore file name for each test to avoid singleton conflicts
+        testFileName = "test_welcome_preferences_${System.currentTimeMillis()}"
+
         testDataStore = PreferenceDataStoreFactory.create(
             scope = testScope,
             produceFile = {
-                context.preferencesDataStoreFile("test_welcome_preferences")
+                context.preferencesDataStoreFile(testFileName)
             }
         )
 
@@ -53,7 +56,7 @@ class WelcomePreferencesIntegrationTest {
     @After
     fun tearDown() {
         // Clean up test DataStore file
-        context.preferencesDataStoreFile("test_welcome_preferences").delete()
+        context.preferencesDataStoreFile(testFileName).delete()
     }
 
     @Test
