@@ -124,17 +124,14 @@ class ShelfDeletionE2ETest {
         )
 
         // Create test shelves in database
-        runBlocking {
-            val shelf1 = Bookshelf("shelf-1", "Fiction", emptyList(), ShelfStyle.DarkWood, 0)
-            val shelf2 = Bookshelf("shelf-2", "Non-Fiction", emptyList(), ShelfStyle.SilverMetal, 1)
-            val shelf3 = Bookshelf("shelf-3", "Science", emptyList(), ShelfStyle.WhiteMetal, 2)
-            repository.addShelf(shelf1)
-            repository.addShelf(shelf2)
-            repository.addShelf(shelf3)
-        }
+        val shelf1 = Bookshelf("shelf-1", "Fiction", emptyList(), ShelfStyle.DarkWood, 0)
+        val shelf2 = Bookshelf("shelf-2", "Nonfiction", emptyList(), ShelfStyle.SilverMetal, 1)
+        val shelf3 = Bookshelf("shelf-3", "Science", emptyList(), ShelfStyle.WhiteMetal, 2)
+        repository.addShelf(shelf1)
+        repository.addShelf(shelf2)
+        repository.addShelf(shelf3)
 
         // Setup ViewModel with full dependency chain
-        delay(500) // Allow ViewModel state to initialize
         viewModel = BookcaseViewModel(bookcaseUseCases, handleTutorialAccess)
     }
 
@@ -147,11 +144,12 @@ class ShelfDeletionE2ETest {
     fun deleteShelfUpdatesStateAndPersistsToDatabase() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Three shelves exist
         val initialState = viewModel.state.first()
         assertEquals(3, initialState.bookshelves.size)
-        val shelfToDelete = initialState.bookshelves[1] // Non-Fiction
+        val shelfToDelete = initialState.bookshelves[1] // Nonfiction
 
         // When - User deletes a shelf
         viewModel.onAction(BookcaseAction.OnRemoveBookShelf(shelfToDelete))
@@ -180,6 +178,7 @@ class ShelfDeletionE2ETest {
     fun deleteAllShelvesLeavesEmptyDatabase() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Three shelves exist
         val initialState = viewModel.state.first()
@@ -208,6 +207,7 @@ class ShelfDeletionE2ETest {
     fun deleteShelfCascadesAndRemovesCrossRefs() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Shelf with books
         val shelfId = "shelf-with-books"
@@ -271,6 +271,7 @@ class ShelfDeletionE2ETest {
     fun deleteNonExistentShelfShowsError() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - A shelf that doesn't exist in database
         val nonExistentShelf = Bookshelf(
@@ -297,6 +298,7 @@ class ShelfDeletionE2ETest {
     fun deleteShelfOperationCanBeReset() = runBlocking {
         // Setup state collection
         val job = launch { viewModel.state.collect {} }
+        delay(100) // Allow initial state to load from database
 
         // Given - Successful deletion
         val initialState = viewModel.state.first()
