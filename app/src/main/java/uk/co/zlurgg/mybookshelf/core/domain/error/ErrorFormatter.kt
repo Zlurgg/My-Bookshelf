@@ -35,7 +35,6 @@ object ErrorFormatter {
             DataError.Local.SERIALIZATION_ERROR -> "Data processing error."
             DataError.Local.VALIDATION_ERROR -> "Data validation failed."
             DataError.Local.NAME_CONFLICT -> "Name already exists."
-            DataError.Local.UNSUPPORTED_FORMAT_VERSION -> "Unsupported file format version."
             DataError.Local.SHARE_FAILED -> "Sharing failed."
             DataError.Local.SHARE_LINK_TOO_LARGE -> "This bookshelf is too large to share. Try sharing a smaller shelf or splitting it into multiple shelves."
             DataError.Local.UNKNOWN -> "Unknown local error occurred."

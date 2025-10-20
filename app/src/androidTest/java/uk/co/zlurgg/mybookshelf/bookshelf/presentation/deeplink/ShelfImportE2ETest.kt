@@ -30,8 +30,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UrlEncodedShareTokenServi
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.result.getOrThrow
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
@@ -61,6 +61,21 @@ class ShelfImportE2ETest {
         override fun currentTimeMillis(): Long = 1234567890L
     }
 
+    private val stubRemoteDataSource = object : RemoteBookDataSource {
+        override suspend fun searchBooks(
+            query: String,
+            resultLimit: Int?,
+            language: String?,
+            authorFilter: String?,
+            titleFilter: String?,
+            sort: String?
+        ): uk.co.zlurgg.mybookshelf.core.domain.result.Result<SearchResponseDto, uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote> =
+            uk.co.zlurgg.mybookshelf.core.domain.result.Result.Error(uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote.NO_INTERNET)
+
+        override suspend fun getBookDetails(bookWorkId: String): uk.co.zlurgg.mybookshelf.core.domain.result.Result<BookWorkDto, uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote> =
+            uk.co.zlurgg.mybookshelf.core.domain.result.Result.Error(uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote.NO_INTERNET)
+    }
+
     @Before
     fun setup() {
         // Setup real Room database (in-memory)
@@ -72,26 +87,10 @@ class ShelfImportE2ETest {
         // Setup repositories with real database
         bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao)
         bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
-
-        // Create a stub for RemoteBookDataSource (not needed for import tests)
-        val stubRemoteDataSource = object : RemoteBookDataSource {
-            override suspend fun searchBooks(
-                query: String,
-                resultLimit: Int?,
-                language: String?,
-                authorFilter: String?,
-                titleFilter: String?,
-                sort: String?
-            ): uk.co.zlurgg.mybookshelf.core.domain.result.Result<SearchResponseDto, uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote> =
-                uk.co.zlurgg.mybookshelf.core.domain.result.Result.Error(uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote.NO_INTERNET)
-
-            override suspend fun getBookDetails(bookWorkId: String): uk.co.zlurgg.mybookshelf.core.domain.result.Result<BookWorkDto, uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote> =
-                uk.co.zlurgg.mybookshelf.core.domain.result.Result.Error(uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote.NO_INTERNET)
-        }
         val bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
 
         // Setup services with real implementations
-        val exportMapper = BookshelfExportMapper(testTimeProvider, testIdGenerator)
+        val exportMapper = BookshelfExportMapper(testIdGenerator, stubRemoteDataSource)
         val serializer = JsonBookshelfSerializer(exportMapper)
         val validator = BookshelfImportValidatorImpl(bookcaseRepository)
         val dataOrchestrator = DatabaseBookshelfDataOrchestrator(
@@ -102,8 +101,8 @@ class ShelfImportE2ETest {
         shareTokenService = UrlEncodedShareTokenService()
 
         // Setup use cases with real dependencies
-        val checkImportConflictUseCase = CheckImportConflictUseCase(serializer, validator)
-        val importBookshelfUseCase = ImportBookshelfUseCase(
+        val checkImportConflictUseCase = CheckImportConflictUseCaseImpl(serializer, validator)
+        val importBookshelfUseCase = ImportBookshelfUseCaseImpl(
             serializer,
             validator,
             dataOrchestrator,
@@ -128,7 +127,7 @@ class ShelfImportE2ETest {
     fun importShelfSuccessfully() = runBlocking {
         // Given - A valid share token for a shelf
         val shelf = createTestShelf("Fiction", listOf(createTestBook("book-1", "1984")))
-        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testTimeProvider, testIdGenerator))
+        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testIdGenerator, stubRemoteDataSource))
         val jsonData = serializer.serialize(shelf).getOrThrow()
         val shareToken = shareTokenService.generateToken(jsonData).getOrThrow()
 
@@ -161,7 +160,7 @@ class ShelfImportE2ETest {
         bookcaseRepository.addShelf(existingShelf)
 
         val shelfToImport = createTestShelf("Fiction", listOf(createTestBook("book-1", "1984")))
-        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testTimeProvider, testIdGenerator))
+        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testIdGenerator, stubRemoteDataSource))
         val jsonData = serializer.serialize(shelfToImport).getOrThrow()
         val shareToken = shareTokenService.generateToken(jsonData).getOrThrow()
 
@@ -193,7 +192,7 @@ class ShelfImportE2ETest {
         bookcaseRepository.addShelf(existingShelf)
 
         val shelfToImport = createTestShelf("Fiction", listOf(createTestBook("book-1", "1984")))
-        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testTimeProvider, testIdGenerator))
+        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testIdGenerator, stubRemoteDataSource))
         val jsonDataForImport = serializer.serialize(shelfToImport).getOrThrow()
         val shareToken = shareTokenService.generateToken(jsonDataForImport).getOrThrow()
 
@@ -262,7 +261,7 @@ class ShelfImportE2ETest {
             createTestBook("book-3", "Brave New World")
         )
         val shelf = createTestShelf("Dystopian", testBooks)
-        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testTimeProvider, testIdGenerator))
+        val serializer = JsonBookshelfSerializer(BookshelfExportMapper(testIdGenerator, stubRemoteDataSource))
         val jsonData = serializer.serialize(shelf).getOrThrow()
         val shareToken = shareTokenService.generateToken(jsonData).getOrThrow()
 

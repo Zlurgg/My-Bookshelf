@@ -13,8 +13,8 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookIdentifier
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
-import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
@@ -54,14 +54,11 @@ class ValidatorIntegrationTest {
     fun validateFormatAcceptsValidData() = runTest {
         // Given - Valid export data
         val exportData = BookshelfExportData(
-            formatVersion = 1,
-            exportedAt = "2024-01-01T00:00:00",
-            appName = "My Bookshelf",
             bookshelf = ExportedBookshelf(
                 name = "Fiction",
                 shelfStyle = ShelfStyle.DarkWood,
-                books = listOf(
-                    createTestExportedBook("book-1", "Test Book")
+                bookIds = listOf(
+                    BookIdentifier(workId = "OL123W")
                 )
             )
         )
@@ -74,42 +71,13 @@ class ValidatorIntegrationTest {
     }
 
     @Test
-    fun validateFormatRejectsUnsupportedVersion() = runTest {
-        // Given - Export data with unsupported version
-        val exportData = BookshelfExportData(
-            formatVersion = 999,
-            exportedAt = "2024-01-01T00:00:00",
-            appName = "My Bookshelf",
-            bookshelf = ExportedBookshelf(
-                name = "Fiction",
-                shelfStyle = ShelfStyle.DarkWood,
-                books = emptyList()
-            )
-        )
-
-        // When - Validate format
-        val result = validator.validateFormat(exportData)
-
-        // Then - Should fail with unsupported version error
-        assertTrue("Validation should fail", result is Result.Error)
-        assertEquals(
-            "Should return unsupported format error",
-            DataError.Local.UNSUPPORTED_FORMAT_VERSION,
-            (result as Result.Error).error
-        )
-    }
-
-    @Test
     fun validateFormatRejectsBlankShelfName() = runTest {
         // Given - Export data with blank shelf name
         val exportData = BookshelfExportData(
-            formatVersion = 1,
-            exportedAt = "2024-01-01T00:00:00",
-            appName = "My Bookshelf",
             bookshelf = ExportedBookshelf(
                 name = "   ",
                 shelfStyle = ShelfStyle.DarkWood,
-                books = emptyList()
+                bookIds = emptyList()
             )
         )
 
@@ -183,23 +151,5 @@ class ValidatorIntegrationTest {
         // Then - Should return no conflict (case sensitive)
         assertTrue("Check should succeed", result is Result.Success)
         assertNull("Should have no conflict", (result as Result.Success).data)
-    }
-
-    private fun createTestExportedBook(id: String, title: String): ExportedBook {
-        return ExportedBook(
-            id = id,
-            title = title,
-            authors = listOf("Test Author"),
-            imageUrl = "https://example.com/cover.jpg",
-            description = "Test description",
-            languages = listOf("en"),
-            firstPublishYear = "2024",
-            averageRating = 4.5,
-            ratingCount = 100,
-            numPages = 300,
-            numEditions = 5,
-            purchased = false,
-            spineColor = 0xFF8B4513.toInt()
-        )
     }
 }
