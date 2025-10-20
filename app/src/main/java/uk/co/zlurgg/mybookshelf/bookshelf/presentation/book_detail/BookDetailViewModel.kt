@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
@@ -78,25 +79,21 @@ class BookDetailViewModel(
                     if (onShelf) {
                         when (val removeResult = bookDetailUseCases.removeBookFromShelf.execute(book.id, shelfId)) {
                             is Result.Success -> {
-                                _state.update { it.copy(onShelf = false) }
+                                _state.update { it.toggleShelfStatus(false) }
                                 onNavigateBack?.invoke()
                             }
                             is Result.Error -> {
-                                _state.update {
-                                    it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(removeResult.error, "remove book from shelf"))
-                                }
+                                _state.update { it.withError(removeResult.error, "remove book from shelf") }
                             }
                         }
                     } else {
                         when (val addResult = bookDetailUseCases.addBookToShelf.execute(book, shelfId)) {
                             is Result.Success -> {
-                                _state.update { it.copy(onShelf = true) }
+                                _state.update { it.toggleShelfStatus(true) }
                                 onNavigateBack?.invoke()
                             }
                             is Result.Error -> {
-                                _state.update {
-                                    it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(addResult.error, "add book to shelf"))
-                                }
+                                _state.update { it.withError(addResult.error, "add book to shelf") }
                             }
                         }
                     }
@@ -113,9 +110,7 @@ class BookDetailViewModel(
                                 _state.update { it.copy(book = purchaseResult.data) }
                             }
                             is Result.Error -> {
-                                _state.update {
-                                    it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(purchaseResult.error, "toggle book purchase"))
-                                }
+                                _state.update { it.withError(purchaseResult.error, "toggle book purchase") }
                             }
                         }
                     }
@@ -141,13 +136,11 @@ class BookDetailViewModel(
                 viewModelScope.launch {
                     when (val removeResult = bookDetailUseCases.removeBookFromShelf.execute(bookId, shelfId)) {
                         is Result.Success -> {
-                            _state.update { it.copy(onShelf = false) }
+                            _state.update { it.toggleShelfStatus(false) }
                             onNavigateBack?.invoke()
                         }
                         is Result.Error -> {
-                            _state.update {
-                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(removeResult.error, "remove book from shelf"))
-                            }
+                            _state.update { it.withError(removeResult.error, "remove book from shelf") }
                         }
                     }
                 }
@@ -160,16 +153,10 @@ class BookDetailViewModel(
                     )) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
-                            _state.update { currentState ->
-                                currentState.copy(
-                                    book = currentState.book?.copy(readingStatus = action.status)
-                                )
-                            }
+                            _state.update { it.updateBook { book -> book?.copy(readingStatus = action.status) } }
                         }
                         is Result.Error -> {
-                            _state.update {
-                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(metadataResult.error, "update reading status"))
-                            }
+                            _state.update { it.withError(metadataResult.error, "update reading status") }
                         }
                     }
                 }
@@ -182,16 +169,10 @@ class BookDetailViewModel(
                     )) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
-                            _state.update { currentState ->
-                                currentState.copy(
-                                    book = currentState.book?.copy(personalRating = action.rating)
-                                )
-                            }
+                            _state.update { it.updateBook { book -> book?.copy(personalRating = action.rating) } }
                         }
                         is Result.Error -> {
-                            _state.update {
-                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(metadataResult.error, "update personal rating"))
-                            }
+                            _state.update { it.withError(metadataResult.error, "update personal rating") }
                         }
                     }
                 }
@@ -201,11 +182,7 @@ class BookDetailViewModel(
                 saveNotesJob?.cancel()
 
                 // Update state immediately (optimistic UI)
-                _state.update { currentState ->
-                    currentState.copy(
-                        book = currentState.book?.copy(personalNotes = action.notes)
-                    )
-                }
+                _state.update { it.updateBook { book -> book?.copy(personalNotes = action.notes) } }
 
                 // Start debounced auto-save (2 seconds after user stops typing)
                 saveNotesJob = viewModelScope.launch {
@@ -220,14 +197,28 @@ class BookDetailViewModel(
                             // Save successful - state already updated above
                         }
                         is Result.Error -> {
-                            _state.update {
-                                it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(metadataResult.error, "update personal notes"))
-                            }
+                            _state.update { it.withError(metadataResult.error, "update personal notes") }
                         }
                     }
                 }
             }
         }
+    }
+
+    // ============================================================================
+    // State Update Helpers (Private Extensions)
+    // ============================================================================
+
+    private fun BookDetailState.withError(error: DataError, operation: String): BookDetailState {
+        return copy(errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation))
+    }
+
+    private fun BookDetailState.updateBook(transform: (Book?) -> Book?): BookDetailState {
+        return copy(book = transform(book))
+    }
+
+    private fun BookDetailState.toggleShelfStatus(onShelf: Boolean): BookDetailState {
+        return copy(onShelf = onShelf)
     }
 }
 

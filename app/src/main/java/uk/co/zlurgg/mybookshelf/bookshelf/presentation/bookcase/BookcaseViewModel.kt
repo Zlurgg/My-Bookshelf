@@ -64,12 +64,8 @@ class BookcaseViewModel(
 
             is BookcaseAction.OnRemoveBookShelf -> {
                 // Optimistic UI update
-                _state.update {
-                    it.copy(
-                        bookshelves = it.bookshelves - action.bookshelf,
-                        recentlyDeleted = action.bookshelf,
-                    )
-                }
+                _state.update { it.withShelfDeleted(action.bookshelf) }
+
                 // Persist deletion
                 viewModelScope.launch {
                     when (val deleteResult = bookcaseUseCases.deleteShelf.execute(action.bookshelf.id)) {
@@ -78,13 +74,7 @@ class BookcaseViewModel(
                         }
                         is Result.Error -> {
                             // Revert UI on failure
-                            _state.update { current ->
-                                current.copy(
-                                    bookshelves = current.bookshelves + action.bookshelf,
-                                    recentlyDeleted = null,
-                                    errorMessage = ErrorFormatter.formatDataErrorMessage(deleteResult.error, "remove shelf")
-                                )
-                            }
+                            _state.update { it.withShelfDeleteError(action.bookshelf, deleteResult.error) }
                         }
                     }
                 }
@@ -96,20 +86,10 @@ class BookcaseViewModel(
                     viewModelScope.launch {
                         when (val restoreResult = bookcaseUseCases.deleteShelf.restore(toRestore)) {
                             is Result.Success -> {
-                                _state.update { current ->
-                                    current.copy(
-                                        bookshelves = current.bookshelves + toRestore,
-                                        recentlyDeleted = null,
-                                        operationSuccess = true
-                                    )
-                                }
+                                _state.update { it.withShelfRestored(toRestore) }
                             }
                             is Result.Error -> {
-                                _state.update { current ->
-                                    current.copy(
-                                        errorMessage = ErrorFormatter.formatDataErrorMessage(restoreResult.error, "restore shelf")
-                                    )
-                                }
+                                _state.update { it.withError(restoreResult.error, "restore shelf") }
                             }
                         }
                     }
@@ -176,12 +156,7 @@ class BookcaseViewModel(
             // Validate shelf name first
             when (val validationResult = BookshelfConstants.validateShelfName(name)) {
                 is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(validationResult.error, "add shelf")
-                        )
-                    }
+                    _state.update { it.withError(validationResult.error, "add shelf") }
                     return@launch
                 }
                 is Result.Success -> {
@@ -191,24 +166,10 @@ class BookcaseViewModel(
 
             when (val result = bookcaseUseCases.createShelf.execute(name, style, state.value.bookshelves)) {
                 is Result.Success -> {
-                    _state.update {
-                        val newShelves = it.bookshelves + result.data
-                        it.copy(
-                            bookshelves = newShelves,
-                            isLoading = false,
-                            operationSuccess = true,
-                            showAddDialog = false,
-                            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(newShelves)}"
-                        )
-                    }
+                    _state.update { it.withShelfAdded(result.data) }
                 }
                 is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "add shelf")
-                        )
-                    }
+                    _state.update { it.withError(result.error, "add shelf") }
                 }
             }
         }
@@ -217,7 +178,7 @@ class BookcaseViewModel(
     private fun loadBookshelves() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            
+
             bookcaseUseCases.getAllShelves.execute()
                 .catch { e ->
                     val error = if (e is Exception) {
@@ -225,12 +186,7 @@ class BookcaseViewModel(
                     } else {
                         DataError.Local.UNKNOWN
                     }
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "load shelves")
-                        )
-                    }
+                    _state.update { it.withError(error, "load shelves") }
                 }
                 .collect { bookcase ->
                     _state.update {
@@ -257,11 +213,7 @@ class BookcaseViewModel(
                 }
                 is Result.Error -> {
                     // Revert on error by reloading from database
-                    _state.update {
-                        it.copy(
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "reorder shelves")
-                        )
-                    }
+                    _state.update { it.withError(result.error, "reorder shelves") }
                     loadBookshelves()
                 }
             }
@@ -274,11 +226,7 @@ class BookcaseViewModel(
             when (val validationResult = BookshelfConstants.validateShelfName(newName)) {
                 is Result.Error -> {
                     // Set inline error and keep dialog open so user can see it
-                    _state.update {
-                        it.copy(
-                            renameError = ErrorFormatter.formatDataErrorMessage(validationResult.error, "rename shelf")
-                        )
-                    }
+                    _state.update { it.withRenameError(validationResult.error) }
                     return@launch
                 }
                 is Result.Success -> {
@@ -289,31 +237,14 @@ class BookcaseViewModel(
             when (val renameResult = bookcaseUseCases.renameShelf.execute(shelfId, newName)) {
                 is Result.Success -> {
                     // Update the shelf name in the current state
-                    _state.update { current ->
-                        val updatedShelves = current.bookshelves.map { shelf ->
-                            if (shelf.id == shelfId) {
-                                shelf.copy(name = newName)
-                            } else {
-                                shelf
-                            }
-                        }
-                        current.copy(
-                            bookshelves = updatedShelves,
-                            showRenameDialog = false,
-                            shelfToRename = null,
-                            operationSuccess = true,
-                            errorMessage = null,
-                            renameError = null
-                        )
+                    _state.update {
+                        it.updateShelfInList(shelfId) { shelf -> shelf.copy(name = newName) }
+                          .closeRenameDialog()
                     }
                 }
                 is Result.Error -> {
                     // Set inline error and keep dialog open so user can see it
-                    _state.update {
-                        it.copy(
-                            renameError = ErrorFormatter.formatDataErrorMessage(renameResult.error, "rename shelf")
-                        )
-                    }
+                    _state.update { it.withRenameError(renameResult.error) }
                 }
             }
         }
@@ -324,30 +255,14 @@ class BookcaseViewModel(
             when (val styleResult = bookcaseUseCases.updateShelfStyle.execute(shelfId, newStyle)) {
                 is Result.Success -> {
                     // Update the shelf style in the current state
-                    _state.update { current ->
-                        val updatedShelves = current.bookshelves.map { shelf ->
-                            if (shelf.id == shelfId) {
-                                shelf.copy(shelfStyle = newStyle)
-                            } else {
-                                shelf
-                            }
-                        }
-                        current.copy(
-                            bookshelves = updatedShelves,
-                            showChangeStyleDialog = false,
-                            shelfToChangeStyle = null,
-                            operationSuccess = true,
-                            errorMessage = null
-                        )
+                    _state.update {
+                        it.updateShelfInList(shelfId) { shelf -> shelf.copy(shelfStyle = newStyle) }
+                          .closeStyleDialog()
                     }
                 }
                 is Result.Error -> {
                     // Show error message
-                    _state.update {
-                        it.copy(
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(styleResult.error, "change shelf style")
-                        )
-                    }
+                    _state.update { it.withError(styleResult.error, "change shelf style") }
                 }
             }
         }
@@ -390,6 +305,84 @@ class BookcaseViewModel(
             newBookshelfPattern.matchEntire(shelf.name)?.groupValues?.get(1)?.toIntOrNull()
         }
         return (existingNumbers.maxOrNull() ?: 0) + 1
+    }
+
+    // ============================================================================
+    // State Update Helpers (Private Extensions)
+    // ============================================================================
+
+    private fun BookcaseState.withError(error: DataError, operation: String): BookcaseState {
+        return copy(
+            isLoading = false,
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation)
+        )
+    }
+
+    private fun BookcaseState.withShelfAdded(newShelf: Bookshelf): BookcaseState {
+        val newShelves = bookshelves + newShelf
+        return copy(
+            bookshelves = newShelves,
+            isLoading = false,
+            operationSuccess = true,
+            showAddDialog = false,
+            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(newShelves)}"
+        )
+    }
+
+    private fun BookcaseState.withShelfDeleted(shelf: Bookshelf): BookcaseState {
+        return copy(
+            bookshelves = bookshelves - shelf,
+            recentlyDeleted = shelf
+        )
+    }
+
+    private fun BookcaseState.withShelfDeleteError(shelf: Bookshelf, error: DataError): BookcaseState {
+        return copy(
+            bookshelves = bookshelves + shelf,
+            recentlyDeleted = null,
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "remove shelf")
+        )
+    }
+
+    private fun BookcaseState.withShelfRestored(shelf: Bookshelf): BookcaseState {
+        return copy(
+            bookshelves = bookshelves + shelf,
+            recentlyDeleted = null,
+            operationSuccess = true
+        )
+    }
+
+    private fun BookcaseState.updateShelfInList(
+        shelfId: String,
+        transform: (Bookshelf) -> Bookshelf
+    ): BookcaseState {
+        val updatedShelves = bookshelves.map { shelf ->
+            if (shelf.id == shelfId) transform(shelf) else shelf
+        }
+        return copy(bookshelves = updatedShelves)
+    }
+
+    private fun BookcaseState.closeRenameDialog(): BookcaseState {
+        return copy(
+            showRenameDialog = false,
+            shelfToRename = null,
+            renameError = null,
+            operationSuccess = true,
+            errorMessage = null
+        )
+    }
+
+    private fun BookcaseState.closeStyleDialog(): BookcaseState {
+        return copy(
+            showChangeStyleDialog = false,
+            shelfToChangeStyle = null,
+            operationSuccess = true,
+            errorMessage = null
+        )
+    }
+
+    private fun BookcaseState.withRenameError(error: DataError): BookcaseState {
+        return copy(renameError = ErrorFormatter.formatDataErrorMessage(error, "rename shelf"))
     }
 
 }

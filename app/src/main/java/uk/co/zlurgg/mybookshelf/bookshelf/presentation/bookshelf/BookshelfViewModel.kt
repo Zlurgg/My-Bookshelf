@@ -15,6 +15,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
@@ -50,16 +51,7 @@ class BookshelfViewModel(
                 _state.update { it.copy(isSearchDialogVisible = true) }
             }
             is BookshelfAction.OnDismissSearchDialog -> {
-                _state.update { it.copy(
-                    isSearchDialogVisible = false,
-                    searchQuery = "",
-                    searchResults = emptyList(),
-                    isSearchLoading = false,
-                    isTyping = false,
-                    hasSearched = false,
-                    searchByTitle = true,
-                    searchByAuthor = true
-                ) }
+                _state.update { it.closeSearchDialog() }
                 // Reset query to cancel any pending search
                 queryFlow.value = ""
             }
@@ -71,7 +63,7 @@ class BookshelfViewModel(
                             // Success - book cached successfully
                         }
                         is Result.Error -> {
-                            _state.update { it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(cacheResult.error, "cache book")) }
+                            _state.update { it.withError(cacheResult.error, "cache book") }
                         }
                     }
                 }
@@ -80,32 +72,22 @@ class BookshelfViewModel(
                 addBookToShelf(action.book)
             }
             is BookshelfAction.OnRemoveBook -> {
+                // Optimistic UI update
+                _state.update { it.withBookRemoved(action.book) }
+
                 viewModelScope.launch {
                     when (val removeResult = bookshelfUseCases.removeBookFromShelf.execute(action.book.id, shelfId)) {
                         is Result.Success -> {
-                            // Success handled by UI update below
+                            // Success - optimistic update already applied
                         }
                         is Result.Error -> {
-                            _state.update { it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(removeResult.error, "remove book from shelf")) }
+                            _state.update { it.withError(removeResult.error, "remove book from shelf") }
                         }
                     }
                 }
-                _state.update { current ->
-                    current.copy(
-                        books = current.books.filterNot { it.id == action.book.id },
-                        recentlyDeleted = action.book
-                    )
-                }
             }
             BookshelfAction.OnUndoRemove -> {
-                _state.update { current ->
-                    current.recentlyDeleted?.let {
-                        current.copy(
-                            books = current.books + it,
-                            recentlyDeleted = null
-                        )
-                    } ?: current
-                }
+                _state.update { it.withBookRestored() }
             }
             is BookshelfAction.OnSearchQueryChange -> {
                 // Update UI immediately with typing indicator; defer actual search via debounce
@@ -168,7 +150,7 @@ class BookshelfViewModel(
                     }
                 }
                 is Result.Error -> {
-                    _state.update { it.copy(errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "load shelf details")) }
+                    _state.update { it.withError(result.error, "load shelf details") }
                 }
             }
         }
@@ -214,12 +196,7 @@ class BookshelfViewModel(
                     // Success - book added successfully
                 }
                 is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(addResult.error, "add book to shelf"),
-                            isLoading = false
-                        )
-                    }
+                    _state.update { it.withError(addResult.error, "add book to shelf") }
                 }
             }
         }
@@ -257,24 +234,10 @@ class BookshelfViewModel(
                 titleFilter = titleQuery
             )
             .onSuccess { searchResults ->
-                _state.update {
-                    it.copy(
-                        isSearchLoading = false,
-                        hasSearched = true,
-                        errorMessage = null,
-                        searchResults = searchResults
-                    )
-                }
+                _state.update { it.withSearchResults(searchResults) }
             }
             .onError { error ->
-                _state.update {
-                    it.copy(
-                        searchResults = emptyList(),
-                        isSearchLoading = false,
-                        hasSearched = true,
-                        errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
-                    )
-                }
+                _state.update { it.withSearchError(error) }
             }
     }
 
@@ -297,5 +260,61 @@ class BookshelfViewModel(
                 }
             }
         }
+    }
+
+    // ============================================================================
+    // State Update Helpers (Private Extensions)
+    // ============================================================================
+
+    private fun BookshelfState.withError(error: DataError, operation: String): BookshelfState {
+        return copy(
+            isLoading = false,
+            isSearchLoading = false,
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation)
+        )
+    }
+
+    private fun BookshelfState.withSearchResults(results: List<Book>): BookshelfState {
+        return copy(
+            isSearchLoading = false,
+            hasSearched = true,
+            errorMessage = null,
+            searchResults = results
+        )
+    }
+
+    private fun BookshelfState.withSearchError(error: DataError): BookshelfState {
+        return copy(
+            searchResults = emptyList(),
+            isSearchLoading = false,
+            hasSearched = true,
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
+        )
+    }
+
+    private fun BookshelfState.withBookRemoved(book: Book): BookshelfState {
+        return copy(
+            books = books.filterNot { it.id == book.id },
+            recentlyDeleted = book
+        )
+    }
+
+    private fun BookshelfState.withBookRestored(): BookshelfState {
+        return recentlyDeleted?.let {
+            copy(books = books + it, recentlyDeleted = null)
+        } ?: this
+    }
+
+    private fun BookshelfState.closeSearchDialog(): BookshelfState {
+        return copy(
+            isSearchDialogVisible = false,
+            searchQuery = "",
+            searchResults = emptyList(),
+            isSearchLoading = false,
+            isTyping = false,
+            hasSearched = false,
+            searchByTitle = true,
+            searchByAuthor = true
+        )
     }
 }
