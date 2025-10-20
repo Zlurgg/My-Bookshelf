@@ -25,7 +25,6 @@ sealed interface DataError: Error {
         SERIALIZATION_ERROR,
         VALIDATION_ERROR,
         NAME_CONFLICT,
-        UNSUPPORTED_FORMAT_VERSION,
         SHARE_FAILED,
         SHARE_LINK_TOO_LARGE,
         UNKNOWN

@@ -58,8 +58,6 @@ class ErrorFormatterTest {
             ErrorFormatter.formatDataErrorMessage(DataError.Local.VALIDATION_ERROR))
         assertEquals("Name already exists.",
             ErrorFormatter.formatDataErrorMessage(DataError.Local.NAME_CONFLICT))
-        assertEquals("Unsupported file format version.",
-            ErrorFormatter.formatDataErrorMessage(DataError.Local.UNSUPPORTED_FORMAT_VERSION))
         assertEquals("Sharing failed.",
             ErrorFormatter.formatDataErrorMessage(DataError.Local.SHARE_FAILED))
         assertEquals("This bookshelf is too large to share. Try sharing a smaller shelf or splitting it into multiple shelves.",
