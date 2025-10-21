@@ -23,15 +23,13 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 @Composable
 fun BookshelfRowDynamic(
     books: List<Book>,
-    bookStyles: List<BookDisplayStyle>? = null,
     onBookClick: (Book) -> Unit,
     bookshelfMaterial: ShelfMaterial,
-    showAddSlot: Boolean = false,
-    onAddClick: (() -> Unit)? = null,
-    isTidyMode: Boolean = false
+    modifier: Modifier = Modifier,
+    config: BookshelfRowConfig = BookshelfRowConfig()
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp)
             .clip(RoundedCornerShape(12.dp))
@@ -61,8 +59,8 @@ fun BookshelfRowDynamic(
             ) {
                 // Render each book with appropriate style based on mode
                 books.forEachIndexed { index, book ->
-                    val bookStyle = bookStyles?.getOrNull(index) 
-                        ?: if (isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
+                    val bookStyle = config.bookStyles?.getOrNull(index)
+                        ?: if (config.isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
                     when (bookStyle) {
                         BookDisplayStyle.VERTICAL -> {
                             BookVertical(
@@ -96,8 +94,8 @@ fun BookshelfRowDynamic(
                     }
                 }
                 
-                if (showAddSlot && onAddClick != null) {
-                    AddBookSpine(onClick = onAddClick)
+                if (config.showAddSlot && config.onAddClick != null) {
+                    AddBookSpine(onClick = config.onAddClick)
                 }
             }
         }

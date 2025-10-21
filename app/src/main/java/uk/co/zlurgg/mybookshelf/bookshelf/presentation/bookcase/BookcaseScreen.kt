@@ -39,6 +39,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBo
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ChangeStyleDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfCallbacks
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfDisplayState
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
@@ -192,39 +194,53 @@ fun BookcaseScreen(
                 ) { shelf ->
                     val isTutorialShelf = shelf.name == BookshelfConstants.TUTORIAL_SHELF_NAME
 
+                    val shelfCallbacks = remember {
+                        object : ShelfCallbacks {
+                            override fun onRemoveBookshelf(shelf: Bookshelf) {
+                                onAction(BookcaseAction.OnRemoveBookShelf(shelf))
+                            }
+
+                            override fun onBookshelfClick(shelf: Bookshelf) {
+                                onAction(BookcaseAction.OnBookshelfClick(shelf))
+                            }
+
+                            override fun onLongClick(shelf: Bookshelf) {
+                                if (!isTutorialShelf) {
+                                    onAction(BookcaseAction.ShowRenameDialog(shelf))
+                                }
+                            }
+
+                            override fun onChangeStyle(shelf: Bookshelf) {
+                                onAction(BookcaseAction.ShowChangeStyleDialog(shelf))
+                            }
+
+                            override fun onDelete(shelf: Bookshelf) {
+                                onAction(BookcaseAction.OnRemoveBookShelf(shelf))
+                            }
+
+                            override fun onShareShelf(shelf: Bookshelf) {
+                                onAction(BookcaseAction.OnShareShelfClick(shelf))
+                            }
+
+                            override fun onDuplicateShelf(shelf: Bookshelf) {
+                                onAction(BookcaseAction.OnDuplicateShelfClick(shelf))
+                            }
+
+                            override fun onReorderShelf(shelf: Bookshelf, position: Int) {
+                                onAction(BookcaseAction.OnReorderShelf(shelf, position))
+                            }
+                        }
+                    }
+
                     BookcaseShelf(
                         shelf = shelf,
-                        onRemoveBookshelf = { shelfToRemove ->
-                            onAction(BookcaseAction.OnRemoveBookShelf(shelfToRemove))
-                        },
-                        onBookshelfClick = {
-                            onAction(BookcaseAction.OnBookshelfClick(shelf))
-                        },
-                        onLongClick = { shelfToRename ->
-                            // Prevent renaming Tutorial Bookshelf
-                            if (!isTutorialShelf) {
-                                onAction(BookcaseAction.ShowRenameDialog(shelfToRename))
-                            }
-                        },
-                        onChangeStyle = { shelfToChangeStyle ->
-                            onAction(BookcaseAction.ShowChangeStyleDialog(shelfToChangeStyle))
-                        },
-                        onDelete = { shelfToDelete ->
-                            onAction(BookcaseAction.OnRemoveBookShelf(shelfToDelete))
-                        },
-                        onShareShelf = { shelfToShare ->
-                            onAction(BookcaseAction.OnShareShelfClick(shelfToShare))
-                        },
-                        onDuplicateShelf = { shelfToDuplicate ->
-                            onAction(BookcaseAction.OnDuplicateShelfClick(shelfToDuplicate))
-                        },
-                        modifier = Modifier.animateItem(),
-                        bookCountOverride = state.bookCounts[shelf.id] ?: 0,
-                        isReorderMode = state.isReorderMode,
-                        isTutorialShelf = isTutorialShelf,
-                        onReorderShelf = { shelfToReorder, newPosition ->
-                            onAction(BookcaseAction.OnReorderShelf(shelfToReorder, newPosition))
-                        }
+                        callbacks = shelfCallbacks,
+                        displayState = ShelfDisplayState(
+                            isReorderMode = state.isReorderMode,
+                            isTutorialShelf = isTutorialShelf,
+                            bookCountOverride = state.bookCounts[shelf.id] ?: 0
+                        ),
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
