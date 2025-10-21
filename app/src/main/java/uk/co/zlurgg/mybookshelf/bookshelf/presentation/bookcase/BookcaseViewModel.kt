@@ -148,6 +148,14 @@ class BookcaseViewModel(
             is BookcaseAction.OnChangeStyle -> {
                 changeShelfStyle(action.shelfId, action.newStyle)
             }
+
+            is BookcaseAction.OnShareShelfClick -> {
+                shareShelf(action.shelf)
+            }
+
+            is BookcaseAction.OnDuplicateShelfClick -> {
+                duplicateShelf(action.shelf)
+            }
         }
     }
 
@@ -294,6 +302,47 @@ class BookcaseViewModel(
                             errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "open tutorial")
                         )
                     }
+                }
+            }
+        }
+    }
+
+    private fun shareShelf(shelf: Bookshelf) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            when (val shareResult = bookcaseUseCases.shareShelf.execute(shelf.id)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            operationSuccess = true
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update { it.withError(shareResult.error, "share shelf") }
+                }
+            }
+        }
+    }
+
+    private fun duplicateShelf(shelf: Bookshelf) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+
+            when (val duplicateResult = bookcaseUseCases.duplicateShelf.execute(shelf.id)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            operationSuccess = true
+                        )
+                    }
+                    // Shelf list will update automatically via reactive flow
+                }
+                is Result.Error -> {
+                    _state.update { it.withError(duplicateResult.error, "duplicate shelf") }
                 }
             }
         }

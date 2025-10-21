@@ -212,6 +212,12 @@ fun BookcaseScreen(
                         onDelete = { shelfToDelete ->
                             onAction(BookcaseAction.OnRemoveBookShelf(shelfToDelete))
                         },
+                        onShareShelf = { shelfToShare ->
+                            onAction(BookcaseAction.OnShareShelfClick(shelfToShare))
+                        },
+                        onDuplicateShelf = { shelfToDuplicate ->
+                            onAction(BookcaseAction.OnDuplicateShelfClick(shelfToDuplicate))
+                        },
                         modifier = Modifier.animateItem(),
                         bookCountOverride = state.bookCounts[shelf.id] ?: 0,
                         isReorderMode = state.isReorderMode,

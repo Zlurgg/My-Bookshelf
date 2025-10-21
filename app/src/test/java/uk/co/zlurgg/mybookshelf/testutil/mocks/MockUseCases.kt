@@ -218,3 +218,57 @@ class MockUpdateShelfStyleUseCase : UpdateShelfStyleUseCase {
         errorToReturn = DataError.Local.UNKNOWN
     }
 }
+
+class MockDuplicateShelfUseCase : DuplicateShelfUseCase {
+    var callCount = 0
+    var lastShelfId: String? = null
+    var shouldReturnError = false
+    var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
+    var shelfToReturn: Bookshelf? = null
+
+    override suspend fun execute(shelfId: String): Result<Bookshelf, DataError.Local> {
+        callCount++
+        lastShelfId = shelfId
+        return if (shouldReturnError) {
+            Result.Error(errorToReturn)
+        } else {
+            Result.Success(
+                shelfToReturn ?: TestShelfBuilder()
+                    .withName("Copy of Test Shelf")
+                    .build()
+            )
+        }
+    }
+
+    fun reset() {
+        callCount = 0
+        lastShelfId = null
+        shouldReturnError = false
+        errorToReturn = DataError.Local.UNKNOWN
+        shelfToReturn = null
+    }
+}
+
+class MockShareBookshelfUseCase : uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase {
+    var callCount = 0
+    var lastShelfId: String? = null
+    var shouldReturnError = false
+    var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
+
+    override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> {
+        callCount++
+        lastShelfId = shelfId
+        return if (shouldReturnError) {
+            Result.Error(errorToReturn)
+        } else {
+            Result.Success(Unit)
+        }
+    }
+
+    fun reset() {
+        callCount = 0
+        lastShelfId = null
+        shouldReturnError = false
+        errorToReturn = DataError.Local.UNKNOWN
+    }
+}

@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
@@ -56,6 +57,8 @@ fun BookshelfCard(
     onLongClick: (Bookshelf) -> Unit,
     onChangeStyle: (Bookshelf) -> Unit,
     onDelete: (Bookshelf) -> Unit,
+    onShareShelf: (Bookshelf) -> Unit,
+    onDuplicateShelf: (Bookshelf) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
@@ -102,7 +105,9 @@ fun BookshelfCard(
                 ) {
                     Text(
                         text = shelf.name,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = pluralStringResource(
@@ -169,19 +174,23 @@ fun BookshelfCard(
                             )
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.menu_share_shelf)) },
-                                onClick = { },
+                                onClick = {
+                                    menuExpanded = false
+                                    onShareShelf(shelf)
+                                },
                                 leadingIcon = {
                                     Icon(Icons.Default.Share, contentDescription = null)
-                                },
-                                enabled = false
+                                }
                             )
                             DropdownMenuItem(
                                 text = { Text(stringResource(id = R.string.menu_duplicate_shelf)) },
-                                onClick = { },
+                                onClick = {
+                                    menuExpanded = false
+                                    onDuplicateShelf(shelf)
+                                },
                                 leadingIcon = {
                                     Icon(Icons.Default.ContentCopy, contentDescription = null)
-                                },
-                                enabled = false
+                                }
                             )
                         }
                     }
@@ -204,7 +213,9 @@ fun BookshelfCardPreview() {
                 onBookshelfClick = {},
                 onLongClick = {},
                 onChangeStyle = {},
-                onDelete = {}
+                onDelete = {},
+                onShareShelf = {},
+                onDuplicateShelf = {}
             )
             BookshelfCard(
                 shelf = bookshelf.copy(name = "My Reading List"),
@@ -214,7 +225,9 @@ fun BookshelfCardPreview() {
                 onBookshelfClick = {},
                 onLongClick = {},
                 onChangeStyle = {},
-                onDelete = {}
+                onDelete = {},
+                onShareShelf = {},
+                onDuplicateShelf = {}
             )
         }
     }

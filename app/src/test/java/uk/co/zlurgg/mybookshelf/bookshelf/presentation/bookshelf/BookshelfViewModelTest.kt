@@ -32,10 +32,12 @@ import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDuplicateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
 
 /**
@@ -90,7 +92,9 @@ class BookshelfViewModelTest {
             reorderShelves = MockReorderShelvesUseCase(),
             getShelfById = mockGetShelfById,
             renameShelf = MockRenameShelfUseCase(),
-            updateShelfStyle = MockUpdateShelfStyleUseCase()
+            updateShelfStyle = MockUpdateShelfStyleUseCase(),
+            duplicateShelf = MockDuplicateShelfUseCase(),
+            shareShelf = MockShareBookshelfUseCase()
         )
         return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, shelfId)
     }
