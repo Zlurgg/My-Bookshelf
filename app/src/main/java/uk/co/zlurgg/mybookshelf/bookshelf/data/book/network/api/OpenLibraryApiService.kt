@@ -43,7 +43,7 @@ class OpenLibraryApiService(
 
         Timber.tag(TAG).d("=== HTTP REQUEST ===")
         Timber.tag(TAG).d("Endpoint: %s", endpoint)
-        Timber.tag(TAG).d("Full URL (preview): %s", endpoint + params)
+        Timber.tag(TAG).d("Full URL (preview): %s%s", endpoint, params)
 
         val response = httpClient.get(endpoint) {
             parameter("q", query)
