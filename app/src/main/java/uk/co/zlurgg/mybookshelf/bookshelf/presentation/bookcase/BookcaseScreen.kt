@@ -39,7 +39,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBo
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ChangeStyleDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfDisplayState
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.createShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
