@@ -4,6 +4,36 @@
 
 ---
 
+## v1.0.0 - Initial Release (January 2025)
+
+🎉 **First stable release of MyBookshelf!**
+
+### What's New
+- **Production Ready** - No longer in alpha, fully tested and stable
+- **Complete Feature Set** - All core features implemented and polished
+- **Offline-First** - All your data stays on your device, no cloud required
+- **Open Source** - MIT licensed, available on GitHub
+
+### Key Features
+- 📚 **Personal Library** - Create and organize custom bookshelves
+- 🔍 **Book Search** - Find books from Open Library's 20M+ collection
+- 🎨 **Beautiful UI** - Material 3 design with realistic shelf effects
+- 📤 **Share Collections** - Export/import shelves between devices
+- 🎯 **Drag & Drop** - Intuitive shelf and book organization
+- 🔒 **Privacy First** - No tracking, no ads, no data collection
+
+### Requirements
+- Android 9.0+ (API 28+)
+- ~15MB storage space
+- Internet connection for book search only
+
+### Installation
+Download the APK from the release assets below and install on your Android device.
+
+---
+
+## Previous Alpha Releases
+
 ## v1.0.4-alpha - Testing Infrastructure & Documentation (October 2025)
 
 ### 🧪 **Testing Overhaul**
