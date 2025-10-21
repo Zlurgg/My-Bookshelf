@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -22,8 +22,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
-    private val bookcaseUseCases: BookcaseUseCases,
-    private val handleTutorialAccess: HandleTutorialAccessUseCase
+    private val shelfOperations: ShelfOperationsHandler,
+    private val shelfManagement: ShelfManagementHandler,
+    private val bookcaseUseCases: BookcaseUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -68,7 +69,7 @@ class BookcaseViewModel(
 
                 // Persist deletion
                 viewModelScope.launch {
-                    when (val deleteResult = bookcaseUseCases.deleteShelf.execute(action.bookshelf.id)) {
+                    when (val deleteResult = shelfOperations.deleteShelf(action.bookshelf.id)) {
                         is Result.Success -> {
                             // Success - optimistic update already applied
                         }
@@ -84,7 +85,7 @@ class BookcaseViewModel(
                 val toRestore = state.value.recentlyDeleted
                 if (toRestore != null) {
                     viewModelScope.launch {
-                        when (val restoreResult = bookcaseUseCases.deleteShelf.restore(toRestore)) {
+                        when (val restoreResult = shelfOperations.restoreShelf(toRestore)) {
                             is Result.Success -> {
                                 _state.update { it.withShelfRestored(toRestore) }
                             }
@@ -161,18 +162,7 @@ class BookcaseViewModel(
 
     private fun addBookshelf(name: String, style: ShelfStyle) {
         viewModelScope.launch {
-            // Validate shelf name first
-            when (val validationResult = BookshelfConstants.validateShelfName(name)) {
-                is Result.Error -> {
-                    _state.update { it.withError(validationResult.error, "add shelf") }
-                    return@launch
-                }
-                is Result.Success -> {
-                    // Validation passed, proceed with creation
-                }
-            }
-
-            when (val result = bookcaseUseCases.createShelf.execute(name, style, state.value.bookshelves)) {
+            when (val result = shelfOperations.createShelf(name, style, state.value.bookshelves)) {
                 is Result.Success -> {
                     _state.update { it.withShelfAdded(result.data) }
                 }
@@ -214,7 +204,7 @@ class BookcaseViewModel(
         viewModelScope.launch {
             val currentShelves = state.value.bookshelves
 
-            when (val result = bookcaseUseCases.reorderShelves.execute(shelf, newPosition, currentShelves)) {
+            when (val result = shelfManagement.reorderShelf(shelf, newPosition, currentShelves)) {
                 is Result.Success -> {
                     // Optimistic UI update with the reordered shelves
                     _state.update { it.copy(bookshelves = result.data) }
@@ -230,19 +220,7 @@ class BookcaseViewModel(
 
     private fun renameShelf(shelfId: String, newName: String) {
         viewModelScope.launch {
-            // Validate shelf name first
-            when (val validationResult = BookshelfConstants.validateShelfName(newName)) {
-                is Result.Error -> {
-                    // Set inline error and keep dialog open so user can see it
-                    _state.update { it.withRenameError(validationResult.error) }
-                    return@launch
-                }
-                is Result.Success -> {
-                    // Validation passed, proceed with rename
-                }
-            }
-
-            when (val renameResult = bookcaseUseCases.renameShelf.execute(shelfId, newName)) {
+            when (val renameResult = shelfManagement.renameShelf(shelfId, newName)) {
                 is Result.Success -> {
                     // Update the shelf name in the current state
                     _state.update {
@@ -260,7 +238,7 @@ class BookcaseViewModel(
 
     private fun changeShelfStyle(shelfId: String, newStyle: ShelfStyle) {
         viewModelScope.launch {
-            when (val styleResult = bookcaseUseCases.updateShelfStyle.execute(shelfId, newStyle)) {
+            when (val styleResult = shelfManagement.updateShelfStyle(shelfId, newStyle)) {
                 is Result.Success -> {
                     // Update the shelf style in the current state
                     _state.update {
@@ -278,7 +256,7 @@ class BookcaseViewModel(
 
     private fun openTutorialShelf() {
         viewModelScope.launch {
-            when (val result = handleTutorialAccess.execute()) {
+            when (val result = shelfManagement.accessTutorialShelf()) {
                 is Result.Success -> {
                     when (val accessResult = result.data) {
                         is TutorialAccessResult.NavigateToBook -> {
@@ -311,7 +289,7 @@ class BookcaseViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            when (val shareResult = bookcaseUseCases.shareShelf.execute(shelf.id)) {
+            when (val shareResult = shelfOperations.shareShelf(shelf.id)) {
                 is Result.Success -> {
                     _state.update {
                         it.copy(
@@ -331,7 +309,7 @@ class BookcaseViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            when (val duplicateResult = bookcaseUseCases.duplicateShelf.execute(shelf.id)) {
+            when (val duplicateResult = shelfOperations.duplicateShelf(shelf.id)) {
                 is Result.Success -> {
                     _state.update {
                         it.copy(

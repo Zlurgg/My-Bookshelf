@@ -50,6 +50,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCaseImpl
@@ -165,6 +167,10 @@ val appModule = module {
     single { BookshelfUseCases(get(), get(), get(), get(), get(), get(), get()) }
     single { BookcaseUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
+    // Presentation Handlers
+    single { ShelfOperationsHandler(get()) }
+    single { ShelfManagementHandler(get(), get()) }
+
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
     single {
@@ -183,7 +189,7 @@ val appModule = module {
             shelfId = shelfId
         )
     }
-    viewModel { BookcaseViewModel(get(), get()) }
+    viewModel { BookcaseViewModel(get(), get(), get()) }
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookDetailUseCases = get(),

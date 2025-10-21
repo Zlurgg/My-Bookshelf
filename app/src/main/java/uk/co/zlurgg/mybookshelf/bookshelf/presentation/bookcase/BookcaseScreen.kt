@@ -41,6 +41,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.Chang
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfDisplayState
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.createShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
@@ -194,42 +195,8 @@ fun BookcaseScreen(
                 ) { shelf ->
                     val isTutorialShelf = shelf.name == BookshelfConstants.TUTORIAL_SHELF_NAME
 
-                    val shelfCallbacks = remember {
-                        object : ShelfCallbacks {
-                            override fun onRemoveBookshelf(shelf: Bookshelf) {
-                                onAction(BookcaseAction.OnRemoveBookShelf(shelf))
-                            }
-
-                            override fun onBookshelfClick(shelf: Bookshelf) {
-                                onAction(BookcaseAction.OnBookshelfClick(shelf))
-                            }
-
-                            override fun onLongClick(shelf: Bookshelf) {
-                                if (!isTutorialShelf) {
-                                    onAction(BookcaseAction.ShowRenameDialog(shelf))
-                                }
-                            }
-
-                            override fun onChangeStyle(shelf: Bookshelf) {
-                                onAction(BookcaseAction.ShowChangeStyleDialog(shelf))
-                            }
-
-                            override fun onDelete(shelf: Bookshelf) {
-                                onAction(BookcaseAction.OnRemoveBookShelf(shelf))
-                            }
-
-                            override fun onShareShelf(shelf: Bookshelf) {
-                                onAction(BookcaseAction.OnShareShelfClick(shelf))
-                            }
-
-                            override fun onDuplicateShelf(shelf: Bookshelf) {
-                                onAction(BookcaseAction.OnDuplicateShelfClick(shelf))
-                            }
-
-                            override fun onReorderShelf(shelf: Bookshelf, position: Int) {
-                                onAction(BookcaseAction.OnReorderShelf(shelf, position))
-                            }
-                        }
+                    val shelfCallbacks = remember(onAction, isTutorialShelf) {
+                        createShelfCallbacks(onAction, isTutorialShelf)
                     }
 
                     BookcaseShelf(
