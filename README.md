@@ -70,47 +70,47 @@ Instructions for setting up the project locally will be added here.
 
 ### Welcome & Tutorial
 <div style="text-align: center;">
-  <img src="docs/screenshots/welcome_screen.jpg" width="250" alt="Welcome Screen">
-  <img src="docs/screenshots/tutorial-book.jpg" width="250" alt="Tutorial Book">
+  <img src="docs/screenshots/welcome_screen.jpg" width="400" alt="Welcome Screen">
+  <img src="docs/screenshots/tutorial-book.jpg" width="400" alt="Tutorial Book">
 </div>
 
 ### Bookcase Management
 <div style="text-align: center;">
-  <img src="docs/screenshots/bookcase-default.jpg" width="250" alt="Bookcase View">
-  <img src="docs/screenshots/dropdown-menu.jpg" width="250" alt="Shelf Menu">
-  <img src="docs/screenshots/bookcase-reorder.jpg" width="250" alt="Reorder Shelves">
+  <img src="docs/screenshots/bookcase-default.jpg" width="400" alt="Bookcase View">
+  <img src="docs/screenshots/dropdown-menu.jpg" width="400" alt="Shelf Menu">
+  <img src="docs/screenshots/bookcase-reorder.jpg" width="400" alt="Reorder Shelves">
 </div>
 
 ### Shelf Customization
 <div style="text-align: center;">
-  <img src="docs/screenshots/create-new-shelf.jpg" width="250" alt="Create New Shelf">
-  <img src="docs/screenshots/rename-shelf.jpg" width="250" alt="Rename Shelf">
-  <img src="docs/screenshots/style-change.jpg" width="250" alt="Change Shelf Style">
+  <img src="docs/screenshots/create-new-shelf.jpg" width="400" alt="Create New Shelf">
+  <img src="docs/screenshots/rename-shelf.jpg" width="400" alt="Rename Shelf">
+  <img src="docs/screenshots/style-change.jpg" width="400" alt="Change Shelf Style">
 </div>
 
 ### Book Organization
 <div style="text-align: center;">
-  <img src="docs/screenshots/empty-bookshelf.jpg" width="250" alt="Empty Bookshelf">
-  <img src="docs/screenshots/messy-bookshelf.jpg" width="250" alt="Messy Bookshelf">
-  <img src="docs/screenshots/tidy-bookshelf.jpg" width="250" alt="Tidy Bookshelf">
+  <img src="docs/screenshots/empty-bookshelf.jpg" width="400" alt="Empty Bookshelf">
+  <img src="docs/screenshots/messy-bookshelf.jpg" width="400" alt="Messy Bookshelf">
+  <img src="docs/screenshots/tidy-bookshelf.jpg" width="400" alt="Tidy Bookshelf">
 </div>
 <div style="text-align: center;">
-  <img src="docs/screenshots/slide-to-delete.jpg" width="250" alt="Slide to Delete">
+  <img src="docs/screenshots/slide-to-delete.jpg" width="400" alt="Slide to Delete">
 </div>
 
 ### Book Search & Details
 <div style="text-align: center;">
-  <img src="docs/screenshots/book-search.jpg" width="250" alt="Book Search">
-  <img src="docs/screenshots/book-search-2.jpg" width="250" alt="Search Results">
+  <img src="docs/screenshots/book-search.jpg" width="400" alt="Book Search">
+  <img src="docs/screenshots/book-search-2.jpg" width="400" alt="Search Results">
 </div>
 <div style="text-align: center;">
-  <img src="docs/screenshots/bookdetails-top.jpg" width="250" alt="Book Details - Top">
-  <img src="docs/screenshots/bookdetails-bottom.jpg" width="250" alt="Book Details - Bottom">
+  <img src="docs/screenshots/bookdetails-top.jpg" width="400" alt="Book Details - Top">
+  <img src="docs/screenshots/bookdetails-bottom.jpg" width="400" alt="Book Details - Bottom">
 </div>
 
 ### Sharing
 <div style="text-align: center;">
-  <img src="docs/screenshots/share-shelf.jpg" width="250" alt="Share Shelf">
+  <img src="docs/screenshots/share-shelf.jpg" width="400" alt="Share Shelf">
 </div>
 
 ---
