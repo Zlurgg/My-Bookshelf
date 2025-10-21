@@ -20,4 +20,6 @@ sealed interface BookcaseAction {
     data object DismissChangeStyleDialog : BookcaseAction
     data class OnChangeStyle(val shelfId: String, val newStyle: ShelfStyle) : BookcaseAction
     data object OnTutorialShelfClick : BookcaseAction
+    data class OnShareShelfClick(val shelf: Bookshelf) : BookcaseAction
+    data class OnDuplicateShelfClick(val shelf: Bookshelf) : BookcaseAction
 }
