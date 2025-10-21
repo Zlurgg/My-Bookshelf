@@ -15,6 +15,8 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
@@ -79,7 +81,11 @@ class BookcaseViewModelTest {
                 return Result.Success(TutorialAccessResult.DoNotNavigate)
             }
         }
-        return BookcaseViewModel(useCases, mockHandleTutorialAccess)
+
+        val shelfOperations = ShelfOperationsHandler(useCases)
+        val shelfManagement = ShelfManagementHandler(useCases, mockHandleTutorialAccess)
+
+        return BookcaseViewModel(shelfOperations, shelfManagement, useCases)
     }
 
     @Test
