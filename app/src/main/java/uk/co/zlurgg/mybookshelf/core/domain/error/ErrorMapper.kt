@@ -6,6 +6,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.SerializationException
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -69,7 +70,12 @@ object ErrorMapper {
             execute()
         } catch (e: Exception) {
             coroutineContext.ensureActive()
-            return Result.Error(mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN)
+
+            // Log the actual exception for debugging
+            val mappedError = mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN
+            Timber.tag("ErrorMapper").e(e, "HTTP call failed - Mapped to: %s", mappedError)
+
+            return Result.Error(mappedError)
         }
 
         return responseToResult(response)
@@ -87,10 +93,16 @@ object ErrorMapper {
                 try {
                     Result.Success(response.body<T>())
                 } catch (e: Exception) {
-                    Result.Error(mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.SERIALIZATION)
+                    val mappedError = mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.SERIALIZATION
+                    Timber.tag("ErrorMapper").e(e, "Failed to deserialize HTTP response - Mapped to: %s", mappedError)
+                    Result.Error(mappedError)
                 }
             }
-            else -> Result.Error(mapHttpStatusToDataError(response.status.value))
+            else -> {
+                val error = mapHttpStatusToDataError(response.status.value)
+                Timber.tag("ErrorMapper").w("HTTP error response: %d - Mapped to: %s", response.status.value, error)
+                Result.Error(error)
+            }
         }
     }
 }
