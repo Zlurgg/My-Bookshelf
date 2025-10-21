@@ -33,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowConfig
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
@@ -164,8 +165,10 @@ fun BookshelfScreen(
                         books = emptyList(),
                         onBookClick = { /* no-op */ },
                         bookshelfMaterial = state.shelfMaterial,
-                        showAddSlot = false,
-                        isTidyMode = state.isTidyMode
+                        config = BookshelfRowConfig(
+                            showAddSlot = false,
+                            isTidyMode = state.isTidyMode
+                        )
                     )
                 }
             }
@@ -241,11 +244,13 @@ fun BookshelfScreen(
                     item(key = rowBooks.first().id) {
                         BookshelfRowDynamic(
                             books = rowBooks,
-                            bookStyles = rowBookStyles,
                             onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
                             bookshelfMaterial = state.shelfMaterial,
-                            showAddSlot = false,
-                            isTidyMode = state.isTidyMode
+                            config = BookshelfRowConfig(
+                                showAddSlot = false,
+                                isTidyMode = state.isTidyMode,
+                                bookStyles = rowBookStyles
+                            )
                         )
                     }
                     

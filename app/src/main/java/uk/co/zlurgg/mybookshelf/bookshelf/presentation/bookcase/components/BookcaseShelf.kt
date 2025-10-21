@@ -42,24 +42,15 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 @Composable
 fun BookcaseShelf(
     shelf: Bookshelf,
-    onRemoveBookshelf: (Bookshelf) -> Unit,
-    onBookshelfClick: (Bookshelf) -> Unit,
-    onLongClick: (Bookshelf) -> Unit,
-    onChangeStyle: (Bookshelf) -> Unit,
-    onDelete: (Bookshelf) -> Unit,
-    onShareShelf: (Bookshelf) -> Unit,
-    onDuplicateShelf: (Bookshelf) -> Unit,
+    callbacks: ShelfCallbacks,
     modifier: Modifier = Modifier,
-    bookCountOverride: Int? = null,
-    isReorderMode: Boolean = false,
-    isTutorialShelf: Boolean = false,
-    onReorderShelf: ((Bookshelf, Int) -> Unit)? = null,
+    displayState: ShelfDisplayState = ShelfDisplayState(),
 ) {
     // Fixed height for consistent drag calculations (card height + vertical padding)
     val totalItemHeight = 88.dp // 80dp card + 8dp vertical padding
-    val bookCount = bookCountOverride ?: shelf.books.size
-    
-    if (isReorderMode) {
+    val bookCount = displayState.bookCountOverride ?: shelf.books.size
+
+    if (displayState.isReorderMode) {
         // Drag and drop mode - use fresh position from database for each drag
         var offsetY by remember { mutableFloatStateOf(0f) }
         
@@ -77,7 +68,7 @@ fun BookcaseShelf(
                             
                             if (positionsMoved != 0) {
                                 val newPosition = (shelf.position + positionsMoved).coerceAtLeast(0)
-                                onReorderShelf?.invoke(shelf, newPosition)
+                                callbacks.onReorderShelf(shelf, newPosition)
                             }
                             
                             offsetY = 0f
@@ -91,13 +82,13 @@ fun BookcaseShelf(
                 shelf = shelf,
                 bookCount = bookCount,
                 isReorderMode = true,
-                isTutorialShelf = isTutorialShelf,
-                onBookshelfClick = onBookshelfClick,
-                onLongClick = onLongClick,
-                onChangeStyle = onChangeStyle,
-                onDelete = onDelete,
-                onShareShelf = onShareShelf,
-                onDuplicateShelf = onDuplicateShelf
+                isTutorialShelf = displayState.isTutorialShelf,
+                onBookshelfClick = callbacks::onBookshelfClick,
+                onLongClick = callbacks::onLongClick,
+                onChangeStyle = callbacks::onChangeStyle,
+                onDelete = callbacks::onDelete,
+                onShareShelf = callbacks::onShareShelf,
+                onDuplicateShelf = callbacks::onDuplicateShelf
             )
         }
     } else {
@@ -110,7 +101,7 @@ fun BookcaseShelf(
             confirmValueChange = { _ ->
                 if (shouldRemoveOnRelease) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onRemoveBookshelf(shelf)
+                    callbacks.onRemoveBookshelf(shelf)
                     true
                 } else {
                     false
@@ -167,13 +158,13 @@ fun BookcaseShelf(
                 shelf = shelf,
                 bookCount = bookCount,
                 isReorderMode = false,
-                isTutorialShelf = isTutorialShelf,
-                onBookshelfClick = onBookshelfClick,
-                onLongClick = onLongClick,
-                onChangeStyle = onChangeStyle,
-                onDelete = onDelete,
-                onShareShelf = onShareShelf,
-                onDuplicateShelf = onDuplicateShelf
+                isTutorialShelf = displayState.isTutorialShelf,
+                onBookshelfClick = callbacks::onBookshelfClick,
+                onLongClick = callbacks::onLongClick,
+                onChangeStyle = callbacks::onChangeStyle,
+                onDelete = callbacks::onDelete,
+                onShareShelf = callbacks::onShareShelf,
+                onDuplicateShelf = callbacks::onDuplicateShelf
             )
         }
     }
@@ -183,29 +174,28 @@ fun BookcaseShelf(
 @Preview(showBackground = true)
 @Composable
 fun BookcaseShelfPreview() {
+    val previewCallbacks = object : ShelfCallbacks {
+        override fun onRemoveBookshelf(shelf: Bookshelf) {}
+        override fun onBookshelfClick(shelf: Bookshelf) {}
+        override fun onLongClick(shelf: Bookshelf) {}
+        override fun onChangeStyle(shelf: Bookshelf) {}
+        override fun onDelete(shelf: Bookshelf) {}
+        override fun onShareShelf(shelf: Bookshelf) {}
+        override fun onDuplicateShelf(shelf: Bookshelf) {}
+        override fun onReorderShelf(shelf: Bookshelf, position: Int) {}
+    }
+
     MyBookshelfTheme {
         Column {
             BookcaseShelf(
                 shelf = bookshelf,
-                onRemoveBookshelf = {},
-                onBookshelfClick = {},
-                onLongClick = {},
-                onChangeStyle = {},
-                onDelete = {},
-                onShareShelf = {},
-                onDuplicateShelf = {},
-                isReorderMode = false
+                callbacks = previewCallbacks,
+                displayState = ShelfDisplayState(isReorderMode = false)
             )
             BookcaseShelf(
                 shelf = bookshelf.copy(name = "My Reading List"),
-                onRemoveBookshelf = {},
-                onBookshelfClick = {},
-                onLongClick = {},
-                onChangeStyle = {},
-                onDelete = {},
-                onShareShelf = {},
-                onDuplicateShelf = {},
-                isReorderMode = true
+                callbacks = previewCallbacks,
+                displayState = ShelfDisplayState(isReorderMode = true)
             )
         }
     }
