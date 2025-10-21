@@ -5,5 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class SearchResponseDto(
+    @SerialName("numFound") val numFound: Int,
     @SerialName("docs") val results: List<SearchedBookDto>
 )
