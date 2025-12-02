@@ -107,13 +107,6 @@ fun BookcaseScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     var showAboutDialog by remember { mutableStateOf(false) }
 
-    // Reset reorder mode when screen appears if it's currently unlocked
-    LaunchedEffect(Unit) {
-        if (state.isReorderMode) {
-            onAction(BookcaseAction.ToggleReorderMode)
-        }
-    }
-
     // Show error snackbar if needed
     if (state.errorMessage != null) {
         LaunchedEffect(snackbarHostState) {
