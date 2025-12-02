@@ -4,6 +4,40 @@
 
 ---
 
+## v1.0.1 - Performance & Polish (December 2025)
+
+### What's New
+- **Search Performance** - 37% faster search with reduced debounce (450ms→250ms)
+- **Image Loading** - Instant placeholder pattern eliminates perceived wait time
+- **Book Details** - New reading status, notes, and metadata fields
+- **Improved Logging** - Timber integration for better debugging
+
+### Features
+- Welcome screen and first-time onboarding experience
+- Three-dot overflow menu for shelf and book actions
+- Long-press to rename shelves
+- Reading status tracking for books
+- New book detail fields (personal notes, reading progress)
+
+### Improvements
+- Architecture refactoring with extracted handlers and callbacks
+- Centralized image URL construction in ApiConfig
+- Smaller image sizes for faster loading (10x improvement in search)
+- Sticky shelf actions at bottom of detail screen
+- Tutorial operations isolated from shelf/book operations
+- Export/Import UseCases refactored for consistency
+- Literal search queries instead of split word searches
+
+### Bug Fixes
+- Fixed race condition bug with search
+- Fixed onBack overwriting save in viewmodel
+- Fixed bug where change occurs before dialog closes
+- Fixed Chrome security warnings on share links
+- Prevented renaming of tutorial shelf
+- Prevented sharing empty bookshelves
+
+---
+
 ## v1.0.0 - Initial Release (January 2025)
 
 🎉 **First stable release of MyBookshelf!**
