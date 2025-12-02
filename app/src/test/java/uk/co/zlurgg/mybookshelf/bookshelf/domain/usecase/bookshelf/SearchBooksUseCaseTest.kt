@@ -64,7 +64,7 @@ class SearchBooksUseCaseTest {
                 .withAuthorNames(listOf("Author 2"))
                 .build()
         )
-        mockRemoteDataSource.configureSearchResponse(SearchResponseDto(testBooks))
+        mockRemoteDataSource.configureSearchResponse(SearchResponseDto(numFound = testBooks.size, results = testBooks))
 
         // When
         val result = useCase.execute("test query")

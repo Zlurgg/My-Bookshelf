@@ -38,7 +38,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
                 .withTitle("Test Book $index")
                 .build()
         }
-        configuredSearchResponse = SearchResponseDto(results = results)
+        configuredSearchResponse = SearchResponseDto(numFound = count, results = results)
     }
 
     fun reset() {
@@ -68,7 +68,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
 
         return when {
             shouldThrowException -> Result.Error(networkError)
-            returnEmptyResults -> Result.Success(SearchResponseDto(emptyList()))
+            returnEmptyResults -> Result.Success(SearchResponseDto(numFound = 0, results = emptyList()))
             configuredSearchResponse != null -> Result.Success(configuredSearchResponse!!)
             else -> {
                 // Default response with some test data
@@ -76,7 +76,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
                     TestSearchedBookDtoBuilder.withAllFields(),
                     TestSearchedBookDtoBuilder.withMinimalFields()
                 )
-                Result.Success(SearchResponseDto(defaultResults))
+                Result.Success(SearchResponseDto(numFound = defaultResults.size, results = defaultResults))
             }
         }
     }

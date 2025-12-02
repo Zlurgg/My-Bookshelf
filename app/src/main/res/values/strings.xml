@@ -191,4 +191,35 @@
 
     <!-- Book cover placeholders -->
     <string name="book_cover_placeholder">Book cover placeholder</string>
+
+    <!-- Update dialog -->
+    <string name="update_available_title">Update Available</string>
+    <string name="update_version_label">Version</string>
+    <string name="update_whats_new_label">What\'s New</string>
+    <string name="update_download_button">Download</string>
+    <string name="update_not_now_button">Not Now</string>
+    <string name="update_up_to_date_title">You\'re Up to Date</string>
+    <string name="update_current_version_label">Current Version</string>
+    <string name="update_in_this_version_label">In This Version</string>
+    <string name="update_ok_button">OK</string>
+
+    <!-- Settings menu -->
+    <string name="settings_menu">Settings menu</string>
+    <string name="menu_reorder_shelves">Reorder Shelves</string>
+    <string name="menu_lock_shelves">Lock Shelves</string>
+    <string name="menu_check_for_updates">Check for Updates</string>
+    <string name="menu_help">Help</string>
+    <string name="menu_about">About</string>
+
+    <!-- About dialog -->
+    <string name="about_title">About My Bookshelf</string>
+    <string name="about_version_title">Version</string>
+    <string name="about_description_title">About</string>
+    <string name="about_description_content">My Bookshelf is a personal book collection organizer that lets you create, customize, and organize your books on beautiful virtual shelves.</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy_content">All your data is stored locally on your device. We don\'t collect, store, or transmit any personal information.</string>
+    <string name="about_open_source_title">Open Source</string>
+    <string name="about_open_source_content">Book data is provided by the Open Library API, a project of the Internet Archive.</string>
+    <string name="about_credits_title">Credits</string>
+    <string name="about_credits_content">Built with Kotlin, Jetpack Compose, and Room database.</string>
 </resources>

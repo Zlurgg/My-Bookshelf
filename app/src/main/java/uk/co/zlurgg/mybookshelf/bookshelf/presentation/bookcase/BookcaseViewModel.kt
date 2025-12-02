@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
@@ -19,12 +20,20 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
     private val shelfOperations: ShelfOperationsHandler,
     private val shelfManagement: ShelfManagementHandler,
-    private val bookcaseUseCases: BookcaseUseCases
+    private val bookcaseUseCases: BookcaseUseCases,
+    private val checkForUpdateUseCase: CheckForUpdateUseCase,
+    private val downloadUpdateUseCase: DownloadUpdateUseCase,
+    private val dismissUpdateUseCase: DismissUpdateUseCase,
+    private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -156,6 +165,25 @@ class BookcaseViewModel(
 
             is BookcaseAction.OnDuplicateShelfClick -> {
                 duplicateShelf(action.shelf)
+            }
+
+            // Settings Menu Actions
+            is BookcaseAction.CheckForUpdates -> {
+                checkForUpdates(forceCheck = true)
+            }
+
+            is BookcaseAction.DownloadUpdate -> {
+                downloadUpdate()
+            }
+
+            is BookcaseAction.DismissUpdate -> {
+                dismissUpdate()
+            }
+
+            is BookcaseAction.DismissUpToDate -> {
+                _state.update {
+                    it.copy(showUpToDateDialog = false, currentVersionInfo = null)
+                }
             }
         }
     }
@@ -412,5 +440,74 @@ class BookcaseViewModel(
         return copy(renameError = ErrorFormatter.formatDataErrorMessage(error, "rename shelf"))
     }
 
+    // ============================================================================
+    // Update Checker Methods
+    // ============================================================================
+
+    private fun checkForUpdates(forceCheck: Boolean) {
+        viewModelScope.launch {
+            _state.update { it.copy(isCheckingForUpdates = true) }
+
+            val updateInfo = checkForUpdateUseCase(forceCheck)
+
+            if (updateInfo != null) {
+                Timber.i("Update available: ${updateInfo.versionName}")
+                _state.update {
+                    it.copy(
+                        availableUpdate = updateInfo,
+                        showUpdateDialog = true,
+                        isCheckingForUpdates = false
+                    )
+                }
+            } else {
+                // No update available - show "up to date" dialog
+                Timber.d("No update available, fetching current version info")
+                val currentInfo = getCurrentVersionInfoUseCase()
+                _state.update {
+                    it.copy(
+                        currentVersionInfo = currentInfo,
+                        showUpToDateDialog = true,
+                        isCheckingForUpdates = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun downloadUpdate() {
+        viewModelScope.launch {
+            val updateInfo = _state.value.availableUpdate ?: return@launch
+            Timber.i("Starting download for version ${updateInfo.versionName}")
+
+            val downloadId = downloadUpdateUseCase(updateInfo)
+            if (downloadId != null) {
+                _state.update {
+                    it.copy(
+                        showUpdateDialog = false,
+                        availableUpdate = null
+                    )
+                }
+            } else {
+                _state.update {
+                    it.copy(errorMessage = "Failed to start download")
+                }
+            }
+        }
+    }
+
+    private fun dismissUpdate() {
+        viewModelScope.launch {
+            val updateInfo = _state.value.availableUpdate ?: return@launch
+            Timber.d("User dismissed update ${updateInfo.versionName}")
+
+            dismissUpdateUseCase(updateInfo.versionName)
+            _state.update {
+                it.copy(
+                    showUpdateDialog = false,
+                    availableUpdate = null
+                )
+            }
+        }
+    }
 }
 

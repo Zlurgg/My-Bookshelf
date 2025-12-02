@@ -113,7 +113,7 @@ class BookshelfExportMapperTest {
             sort: String?
         ): Result<SearchResponseDto, DataError.Remote> {
             // Return empty results for tests (no books to import)
-            return Result.Success(SearchResponseDto(results = emptyList()))
+            return Result.Success(SearchResponseDto(numFound = 0, results = emptyList()))
         }
 
         override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
