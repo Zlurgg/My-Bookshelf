@@ -157,7 +157,7 @@ class JsonBookshelfSerializerTest {
             titleFilter: String?,
             sort: String?
         ): Result<SearchResponseDto, DataError.Remote> {
-            return Result.Success(SearchResponseDto(results = emptyList()))
+            return Result.Success(SearchResponseDto(numFound = 0, results = emptyList()))
         }
 
         override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {

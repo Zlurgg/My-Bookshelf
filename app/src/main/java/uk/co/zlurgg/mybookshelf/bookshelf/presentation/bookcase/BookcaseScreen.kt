@@ -5,13 +5,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -25,12 +22,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
@@ -39,10 +36,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBo
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ChangeStyleDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.SettingsMenu
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfDisplayState
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.createShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
+import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
+import uk.co.zlurgg.mybookshelf.update.ui.components.UpdateDialog
+import uk.co.zlurgg.mybookshelf.update.ui.components.UpToDateDialog
 
 @Composable
 fun BookcaseScreenRoot(
@@ -104,6 +105,7 @@ fun BookcaseScreen(
     onAction: (BookcaseAction) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
     // Reset reorder mode when screen appears if it's currently unlocked
     LaunchedEffect(Unit) {
@@ -132,40 +134,24 @@ fun BookcaseScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
-                        text = if (state.isReorderMode) 
-                            stringResource(id = R.string.reorder_shelves_title) 
-                        else 
-                            stringResource(id = R.string.app_name), 
+                        text = if (state.isReorderMode)
+                            stringResource(id = R.string.reorder_shelves_title)
+                        else
+                            stringResource(id = R.string.app_name),
                         style = MaterialTheme.typography.titleLarge
-                    ) 
+                    )
                 },
                 actions = {
-                    // Help icon - always visible to access/restore tutorial shelf
-                    IconButton(onClick = { onAction(BookcaseAction.OnTutorialShelfClick) }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.Help,
-                            contentDescription = "Open tutorial shelf"
-                        )
-                    }
-
-                    // Reorder icon - only visible when shelves exist
-                    if (state.bookshelves.isNotEmpty()) {
-                        IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
-                            if (state.isReorderMode) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_unlocked),
-                                    contentDescription = stringResource(id = R.string.cd_lock_reorder_mode)
-                                )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Default.Lock,
-                                    contentDescription = stringResource(id = R.string.cd_unlock_reorder_mode)
-                                )
-                            }
-                        }
-                    }
+                    SettingsMenu(
+                        isReorderMode = state.isReorderMode,
+                        hasShelvesToReorder = state.bookshelves.isNotEmpty(),
+                        onToggleReorderMode = { onAction(BookcaseAction.ToggleReorderMode) },
+                        onCheckForUpdates = { onAction(BookcaseAction.CheckForUpdates) },
+                        onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
+                        onShowAbout = { showAboutDialog = true }
+                    )
                 }
             )
         },
@@ -248,6 +234,32 @@ fun BookcaseScreen(
             onChangeStyle = { newStyle ->
                 onAction(BookcaseAction.OnChangeStyle(state.shelfToChangeStyle.id, newStyle))
             }
+        )
+    }
+
+    // About Dialog
+    if (showAboutDialog) {
+        AboutDialog(
+            versionName = BuildConfig.VERSION_NAME,
+            onDismiss = { showAboutDialog = false }
+        )
+    }
+
+    // Update Available Dialog
+    if (state.showUpdateDialog && state.availableUpdate != null) {
+        UpdateDialog(
+            updateInfo = state.availableUpdate,
+            onDownload = { onAction(BookcaseAction.DownloadUpdate) },
+            onDismiss = { onAction(BookcaseAction.DismissUpdate) }
+        )
+    }
+
+    // Up to Date Dialog
+    if (state.showUpToDateDialog) {
+        UpToDateDialog(
+            currentVersionInfo = state.currentVersionInfo,
+            currentVersionName = BuildConfig.VERSION_NAME,
+            onDismiss = { onAction(BookcaseAction.DismissUpToDate) }
         )
     }
 }

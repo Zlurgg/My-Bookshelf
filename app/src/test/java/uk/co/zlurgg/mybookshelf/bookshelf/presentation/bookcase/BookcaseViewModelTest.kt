@@ -32,6 +32,11 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -85,7 +90,29 @@ class BookcaseViewModelTest {
         val shelfOperations = ShelfOperationsHandler(useCases)
         val shelfManagement = ShelfManagementHandler(useCases, mockHandleTutorialAccess)
 
-        return BookcaseViewModel(shelfOperations, shelfManagement, useCases)
+        // No-op update use cases for testing
+        val mockCheckForUpdate = object : CheckForUpdateUseCase {
+            override suspend fun invoke(forceCheck: Boolean): UpdateInfo? = null
+        }
+        val mockDownloadUpdate = object : DownloadUpdateUseCase {
+            override fun invoke(updateInfo: UpdateInfo): Long? = null
+        }
+        val mockDismissUpdate = object : DismissUpdateUseCase {
+            override suspend fun invoke(version: String) {}
+        }
+        val mockGetCurrentVersionInfo = object : GetCurrentVersionInfoUseCase {
+            override suspend fun invoke(): UpdateInfo? = null
+        }
+
+        return BookcaseViewModel(
+            shelfOperations,
+            shelfManagement,
+            useCases,
+            mockCheckForUpdate,
+            mockDownloadUpdate,
+            mockDismissUpdate,
+            mockGetCurrentVersionInfo
+        )
     }
 
     @Test

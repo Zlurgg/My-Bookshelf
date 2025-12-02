@@ -106,6 +106,24 @@ import uk.co.zlurgg.mybookshelf.core.data.network.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.image.ImageLoaderFactory
 import uk.co.zlurgg.mybookshelf.core.data.preferences.WelcomePreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
+import uk.co.zlurgg.mybookshelf.update.data.remote.api.GitHubApiService
+import uk.co.zlurgg.mybookshelf.update.data.repository.UpdateRepositoryImpl
+import uk.co.zlurgg.mybookshelf.update.data.service.ApkDownloadService
+import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateConfig
+import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdatePreferencesRepository
+import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdateRepository
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCaseImpl
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCaseImpl
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCaseImpl
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCaseImpl
+
+private const val GITHUB_OWNER = "Zlurgg"
+private const val GITHUB_REPO = "My-Bookshelf"
+private const val APP_NAME = "my-bookshelf"
 
 val appModule = module {
     single<HttpClientEngine> {
@@ -119,7 +137,9 @@ val appModule = module {
     singleOf(::UuidIdGenerator).bind<IdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
     singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
-    single<WelcomePreferences> { WelcomePreferencesImpl(get()) }
+    single { WelcomePreferencesImpl(get()) }
+    single<WelcomePreferences> { get<WelcomePreferencesImpl>() }
+    single<UpdatePreferencesRepository> { get<WelcomePreferencesImpl>() }
     single<ShareTokenService> {
         UrlEncodedShareTokenService()
     }
@@ -141,6 +161,22 @@ val appModule = module {
     singleOf(::ExportBookshelfUseCaseImpl).bind<ExportBookshelfUseCase>()
     singleOf(::ImportBookshelfUseCaseImpl).bind<ImportBookshelfUseCase>()
     singleOf(::CheckImportConflictUseCaseImpl).bind<CheckImportConflictUseCase>()
+
+    // In-App Update Feature
+    single {
+        UpdateConfig(
+            gitHubOwner = GITHUB_OWNER,
+            gitHubRepo = GITHUB_REPO,
+            appName = APP_NAME
+        )
+    }
+    single { GitHubApiService(httpClient = get()) }
+    single { ApkDownloadService(context = get<Context>(), downloadTitle = get<UpdateConfig>().downloadTitle) }
+    singleOf(::UpdateRepositoryImpl).bind<UpdateRepository>()
+    single<CheckForUpdateUseCase> { CheckForUpdateUseCaseImpl(get(), get(), BuildConfig.VERSION_NAME) }
+    single<DismissUpdateUseCase> { DismissUpdateUseCaseImpl(get()) }
+    single<DownloadUpdateUseCase> { DownloadUpdateUseCaseImpl(get(), get()) }
+    single<GetCurrentVersionInfoUseCase> { GetCurrentVersionInfoUseCaseImpl(get(), BuildConfig.VERSION_NAME) }
 
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
@@ -189,7 +225,17 @@ val appModule = module {
             shelfId = shelfId
         )
     }
-    viewModel { BookcaseViewModel(get(), get(), get()) }
+    viewModel {
+        BookcaseViewModel(
+            shelfOperations = get(),
+            shelfManagement = get(),
+            bookcaseUseCases = get(),
+            checkForUpdateUseCase = get(),
+            downloadUpdateUseCase = get(),
+            dismissUpdateUseCase = get(),
+            getCurrentVersionInfoUseCase = get()
+        )
+    }
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookDetailUseCases = get(),
