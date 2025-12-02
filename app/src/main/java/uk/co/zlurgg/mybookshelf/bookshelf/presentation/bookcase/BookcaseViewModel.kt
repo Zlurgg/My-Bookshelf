@@ -169,7 +169,7 @@ class BookcaseViewModel(
 
             // Settings Menu Actions
             is BookcaseAction.CheckForUpdates -> {
-                checkForUpdates(forceCheck = true)
+                checkForUpdates()
             }
 
             is BookcaseAction.DownloadUpdate -> {
@@ -444,11 +444,12 @@ class BookcaseViewModel(
     // Update Checker Methods
     // ============================================================================
 
-    private fun checkForUpdates(forceCheck: Boolean) {
+    private fun checkForUpdates() {
         viewModelScope.launch {
             _state.update { it.copy(isCheckingForUpdates = true) }
 
-            val updateInfo = checkForUpdateUseCase(forceCheck)
+            // Always force check for manual updates (ignores dismissed versions)
+            val updateInfo = checkForUpdateUseCase(forceCheck = true)
 
             if (updateInfo != null) {
                 Timber.i("Update available: ${updateInfo.versionName}")
