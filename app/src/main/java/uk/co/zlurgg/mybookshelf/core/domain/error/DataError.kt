@@ -27,6 +27,10 @@ sealed interface DataError: Error {
         NAME_CONFLICT,
         SHARE_FAILED,
         SHARE_LINK_TOO_LARGE,
+        AUTH_CANCELLED,
+        AUTH_NO_CREDENTIAL,
+        AUTH_FAILED,
+        AUTH_NETWORK_ERROR,
         UNKNOWN
     }
 

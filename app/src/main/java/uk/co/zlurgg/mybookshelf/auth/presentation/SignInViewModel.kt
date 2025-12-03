@@ -1,21 +1,22 @@
 package uk.co.zlurgg.mybookshelf.auth.presentation
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class SignInViewModel(
     private val signInUseCases: SignInUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(SignInState())
-    val state = _state.asStateFlow()
+    val state: StateFlow<SignInState> = _state.asStateFlow()
 
     init {
         checkSignInStatus()
@@ -23,42 +24,52 @@ class SignInViewModel(
 
     fun onAction(action: SignInAction) {
         when (action) {
-            is SignInAction.SignIn -> signIn(action.context)
+            is SignInAction.SignIn -> signIn()
             is SignInAction.ResetState -> resetState()
         }
     }
 
     private fun checkSignInStatus() {
         viewModelScope.launch {
-            val isSignedIn = signInUseCases.checkSignInStatus()
+            val isSignedIn = signInUseCases.checkSignInStatus.execute()
             if (isSignedIn) {
-                Timber.tag(TAG).d("User already signed in, updating state")
                 _state.update { it.copy(isSignInSuccessful = true) }
             }
         }
     }
 
-    private fun signIn(context: Context) {
+    private fun signIn() {
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, signInError = null) }
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-            val result = signInUseCases.signIn(context)
-
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    isSignInSuccessful = result.data != null,
-                    signInError = result.errorMessage
-                )
+            when (val result = signInUseCases.signIn.execute()) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isSignInSuccessful = true
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "sign in")
+                        )
+                    }
+                }
             }
         }
     }
 
     private fun resetState() {
-        _state.update { SignInState() }
-    }
-
-    companion object {
-        private const val TAG = "SignInVM"
+        _state.update {
+            it.copy(
+                isLoading = false,
+                isSignInSuccessful = false,
+                errorMessage = null
+            )
+        }
     }
 }

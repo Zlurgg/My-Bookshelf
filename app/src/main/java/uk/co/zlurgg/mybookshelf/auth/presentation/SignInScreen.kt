@@ -15,7 +15,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
@@ -29,7 +28,6 @@ fun SignInScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
-    val context = LocalContext.current
 
     // Handle navigation on successful sign-in
     LaunchedEffect(state.isSignInSuccessful) {
@@ -40,8 +38,8 @@ fun SignInScreenRoot(
     }
 
     // Show error snackbar
-    LaunchedEffect(state.signInError) {
-        state.signInError?.let { error ->
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let { error ->
             snackbarHostState.showSnackbar(error)
         }
     }
@@ -49,7 +47,7 @@ fun SignInScreenRoot(
     SignInScreen(
         state = state,
         snackbarHostState = snackbarHostState,
-        onSignInClick = { viewModel.onAction(SignInAction.SignIn(context)) }
+        onSignInClick = { viewModel.onAction(SignInAction.SignIn) }
     )
 }
 

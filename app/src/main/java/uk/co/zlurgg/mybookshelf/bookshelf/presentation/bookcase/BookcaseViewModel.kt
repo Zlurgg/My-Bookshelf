@@ -533,12 +533,27 @@ class BookcaseViewModel(
     private fun signOut() {
         viewModelScope.launch {
             Timber.tag(TAG).d("User confirmed sign out")
-            signOutUseCase()
-            _state.update {
-                it.copy(
-                    showSignOutDialog = false,
-                    signedOutSuccessfully = true
-                )
+            _state.update { it.copy(isLoading = true) }
+
+            when (val result = signOutUseCase.execute()) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            showSignOutDialog = false,
+                            signedOutSuccessfully = true
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            showSignOutDialog = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "sign out")
+                        )
+                    }
+                }
             }
         }
     }
