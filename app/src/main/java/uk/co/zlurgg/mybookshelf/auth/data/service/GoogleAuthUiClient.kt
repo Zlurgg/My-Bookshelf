@@ -67,10 +67,10 @@ class GoogleAuthUiClient(
                 },
                 errorMessage = null
             )
-        } catch (e: GetCredentialCancellationException) {
+        } catch (_: GetCredentialCancellationException) {
             Timber.tag(TAG).d("Sign-in cancelled by user")
             SignInResult(data = null, errorMessage = "Sign-in cancelled")
-        } catch (e: NoCredentialException) {
+        } catch (_: NoCredentialException) {
             Timber.tag(TAG).w("No credentials available")
             SignInResult(
                 data = null,
