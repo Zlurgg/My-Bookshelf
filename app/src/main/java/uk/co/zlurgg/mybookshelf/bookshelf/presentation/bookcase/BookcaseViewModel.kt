@@ -24,6 +24,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
@@ -33,7 +34,8 @@ class BookcaseViewModel(
     private val checkForUpdateUseCase: CheckForUpdateUseCase,
     private val downloadUpdateUseCase: DownloadUpdateUseCase,
     private val dismissUpdateUseCase: DismissUpdateUseCase,
-    private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase
+    private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase,
+    private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -184,6 +186,19 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(showUpToDateDialog = false, currentVersionInfo = null)
                 }
+            }
+
+            // Sign Out Actions
+            is BookcaseAction.ShowSignOutDialog -> {
+                _state.update { it.copy(showSignOutDialog = true) }
+            }
+
+            is BookcaseAction.DismissSignOutDialog -> {
+                _state.update { it.copy(showSignOutDialog = false) }
+            }
+
+            is BookcaseAction.ConfirmSignOut -> {
+                signOut()
             }
         }
     }
@@ -509,6 +524,27 @@ class BookcaseViewModel(
                 )
             }
         }
+    }
+
+    // ============================================================================
+    // Sign Out Methods
+    // ============================================================================
+
+    private fun signOut() {
+        viewModelScope.launch {
+            Timber.tag(TAG).d("User confirmed sign out")
+            signOutUseCase()
+            _state.update {
+                it.copy(
+                    showSignOutDialog = false,
+                    signedOutSuccessfully = true
+                )
+            }
+        }
+    }
+
+    companion object {
+        private const val TAG = "BookcaseVM"
     }
 }
 

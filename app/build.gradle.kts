@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.google.services)
 }
 
 // Load keystore properties
@@ -108,6 +109,13 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.timber)
+
+    // Firebase & Google Auth
+    implementation(libs.firebase.auth)
+    implementation(libs.play.services.auth)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
 
     testImplementation(libs.junit)
     testImplementation(libs.robolectric)
