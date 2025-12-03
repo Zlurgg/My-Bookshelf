@@ -105,10 +105,10 @@ class BookcaseViewModelTest {
             override suspend fun invoke(): UpdateInfo? = null
         }
         val mockAuthService = object : uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService {
-            override suspend fun signIn() = uk.co.zlurgg.mybookshelf.core.domain.result.Result.Success(
+            override suspend fun signIn() = Result.Success(
                 uk.co.zlurgg.mybookshelf.auth.domain.model.UserData("test", null, null)
             )
-            override suspend fun signOut() = uk.co.zlurgg.mybookshelf.core.domain.result.Result.Success(Unit)
+            override suspend fun signOut() = Result.Success(Unit)
             override fun getSignedInUser() = null
         }
         val mockAuthStateRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository {
