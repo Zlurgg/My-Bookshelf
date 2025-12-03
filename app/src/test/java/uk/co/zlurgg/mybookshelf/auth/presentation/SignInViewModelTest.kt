@@ -5,7 +5,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -143,7 +142,7 @@ class SignInViewModelTest {
         advanceUntilIdle()
 
         // Capture loading state during sign in
-        var wasLoading = false
+        val wasLoading = false
         mockSignInResult = Result.Success(UserData("test", null, null))
 
         viewModel.onAction(SignInAction.SignIn)
