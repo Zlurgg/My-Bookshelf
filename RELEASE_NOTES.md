@@ -4,6 +4,25 @@
 
 ---
 
+## v1.0.2 - Google Sign-In (December 2025)
+
+### What's New
+- **Google Sign-In** - Sign in with your Google account for a personalized experience
+- **Clean Architecture Auth** - Enterprise-grade authentication using modern Credential Manager API
+
+### Features
+- One-tap Google sign-in with automatic account selection
+- Secure authentication via Firebase Auth
+- Sign out option in settings menu
+- Persistent sign-in state across app restarts
+
+### Technical
+- 26 new auth tests (337 unit tests total)
+- Pure domain layer with zero Android dependencies
+- Consistent Result pattern error handling
+
+---
+
 ## v1.0.1 - Performance & Polish (December 2025)
 
 ### What's New
