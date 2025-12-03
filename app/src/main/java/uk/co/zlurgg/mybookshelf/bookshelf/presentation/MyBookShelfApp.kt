@@ -32,6 +32,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeScreenRoot
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 import org.koin.compose.koinInject
+import uk.co.zlurgg.mybookshelf.auth.presentation.SignInScreenRoot
 
 @Composable
 fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
@@ -55,20 +56,33 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
             }
         }
 
-        val startDestination = if (hasShownWelcome) {
-            NavigationRoute.Bookcase.createRoute()
-        } else {
-            NavigationRoute.Welcome.createRoute()
-        }
-
+        // Always start at SignIn - it will auto-navigate if already signed in
         NavHost(
             navController = navController,
             startDestination = NavigationRoute.MyBookshelfGraph.ROUTE
         ) {
             navigation(
                 route = NavigationRoute.MyBookshelfGraph.ROUTE,
-                startDestination = startDestination
+                startDestination = NavigationRoute.SignIn.ROUTE
             ) {
+                composable(
+                    route = NavigationRoute.SignIn.ROUTE
+                ) {
+                    SignInScreenRoot(
+                        onSignInSuccess = {
+                            // After sign-in, go to Welcome if first time, else Bookcase
+                            val destination = if (hasShownWelcome) {
+                                NavigationRoute.Bookcase.createRoute()
+                            } else {
+                                NavigationRoute.Welcome.createRoute()
+                            }
+                            navController.navigate(destination) {
+                                popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
+                            }
+                        }
+                    )
+                }
+
                 composable(
                     route = NavigationRoute.Welcome.ROUTE
                 ) {
@@ -106,6 +120,11 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                         },
                         onAddBookshelfClick = { name, style ->
                             viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
+                        },
+                        onSignOut = {
+                            navController.navigate(NavigationRoute.SignIn.createRoute()) {
+                                popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
+                            }
                         }
                     )
 

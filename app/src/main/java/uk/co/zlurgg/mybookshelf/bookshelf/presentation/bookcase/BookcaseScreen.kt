@@ -45,15 +45,17 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.creat
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
-import uk.co.zlurgg.mybookshelf.update.ui.components.UpdateDialog
-import uk.co.zlurgg.mybookshelf.update.ui.components.UpToDateDialog
+import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
+import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 
 @Composable
 fun BookcaseScreenRoot(
     viewModel: BookcaseViewModel = koinViewModel(),
     onBookshelfClick: (Bookshelf) -> Unit,
     onBookDetailClick: (String, String) -> Unit,
-    onAddBookshelfClick: (String, ShelfStyle) -> Unit
+    onAddBookshelfClick: (String, ShelfStyle) -> Unit,
+    onSignOut: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
@@ -76,6 +78,21 @@ fun BookcaseScreenRoot(
             // Clear the navigation flag
             viewModel.onAction(BookcaseAction.ResetOperationState)
         }
+    }
+
+    // Handle sign out success - navigate to sign in screen
+    LaunchedEffect(state.signedOutSuccessfully) {
+        if (state.signedOutSuccessfully) {
+            onSignOut()
+        }
+    }
+
+    // Show sign out confirmation dialog
+    if (state.showSignOutDialog) {
+        SignOutDialog(
+            onConfirm = { viewModel.onAction(BookcaseAction.ConfirmSignOut) },
+            onDismiss = { viewModel.onAction(BookcaseAction.DismissSignOutDialog) }
+        )
     }
 
     BookcaseScreen(
@@ -156,7 +173,7 @@ fun BookcaseScreen(
                         onCheckForUpdates = { onAction(BookcaseAction.CheckForUpdates) },
                         onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
                         onShowAbout = { showAboutDialog = true },
-                        onSignOut = { /* TODO: Implement sign out */ }
+                        onSignOut = { onAction(BookcaseAction.ShowSignOutDialog) }
                     )
                 }
             )

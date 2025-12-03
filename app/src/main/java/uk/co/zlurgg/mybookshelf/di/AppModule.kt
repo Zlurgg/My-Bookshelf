@@ -120,6 +120,15 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCaseImpl
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthRepositoryImpl
+import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthStateRepositoryImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthRepository
+import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
 
 private const val GITHUB_OWNER = "Zlurgg"
 private const val GITHUB_REPO = "My-Bookshelf"
@@ -178,6 +187,15 @@ val appModule = module {
     single<DownloadUpdateUseCase> { DownloadUpdateUseCaseImpl(get(), get()) }
     single<GetCurrentVersionInfoUseCase> { GetCurrentVersionInfoUseCaseImpl(get(), BuildConfig.VERSION_NAME) }
 
+    // Authentication
+    single<AuthRepository> { AuthRepositoryImpl(get()) }
+    single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
+    single { SignInUseCase(get(), get()) }
+    single { SignOutUseCase(get(), get()) }
+    single { CheckSignInStatusUseCase(get(), get()) }
+    single { SignInUseCases(get(), get(), get()) }
+    viewModelOf(::SignInViewModel)
+
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
     singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
@@ -233,7 +251,8 @@ val appModule = module {
             checkForUpdateUseCase = get(),
             downloadUpdateUseCase = get(),
             dismissUpdateUseCase = get(),
-            getCurrentVersionInfoUseCase = get()
+            getCurrentVersionInfoUseCase = get(),
+            signOutUseCase = get()
         )
     }
     viewModel { (bookId: String, shelfId: String) ->

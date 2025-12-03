@@ -9,6 +9,12 @@ sealed interface NavigationRoute {
     }
 
     @Serializable
+    data object SignIn : NavigationRoute {
+        const val ROUTE = "sign_in"
+        fun createRoute() = ROUTE
+    }
+
+    @Serializable
     data object Welcome : NavigationRoute {
         const val ROUTE = "welcome"
         fun createRoute() = ROUTE

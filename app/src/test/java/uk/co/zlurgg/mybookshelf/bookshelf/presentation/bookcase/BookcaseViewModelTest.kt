@@ -37,6 +37,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -103,6 +104,16 @@ class BookcaseViewModelTest {
         val mockGetCurrentVersionInfo = object : GetCurrentVersionInfoUseCase {
             override suspend fun invoke(): UpdateInfo? = null
         }
+        val mockAuthRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthRepository {
+            override suspend fun signIn(context: android.content.Context) = uk.co.zlurgg.mybookshelf.auth.domain.model.SignInResult(null, null)
+            override suspend fun signOut() {}
+            override fun getSignedInUser() = null
+        }
+        val mockAuthStateRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository {
+            override suspend fun isSignedIn() = false
+            override suspend fun setSignedInState(isSignedIn: Boolean) {}
+        }
+        val mockSignOut = SignOutUseCase(mockAuthRepository, mockAuthStateRepository)
 
         return BookcaseViewModel(
             shelfOperations,
@@ -111,7 +122,8 @@ class BookcaseViewModelTest {
             mockCheckForUpdate,
             mockDownloadUpdate,
             mockDismissUpdate,
-            mockGetCurrentVersionInfo
+            mockGetCurrentVersionInfo,
+            mockSignOut
         )
     }
 

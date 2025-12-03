@@ -28,4 +28,9 @@ sealed interface BookcaseAction {
     data object DownloadUpdate : BookcaseAction
     data object DismissUpdate : BookcaseAction
     data object DismissUpToDate : BookcaseAction
+
+    // Sign Out Actions
+    data object ShowSignOutDialog : BookcaseAction
+    data object DismissSignOutDialog : BookcaseAction
+    data object ConfirmSignOut : BookcaseAction
 }

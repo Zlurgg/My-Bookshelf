@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">My Bookshelf</string>
     <string name="error_image">error image</string>
 
@@ -223,4 +223,14 @@
     <string name="about_open_source_content">Book data is provided by the Open Library API, a project of the Internet Archive.</string>
     <string name="about_credits_title">Credits</string>
     <string name="about_credits_content">Built with Kotlin, Jetpack Compose, and Room database.</string>
+
+    <!-- Authentication -->
+    <string name="web_client_id" tools:ignore="TypographyDashes">1080842261600-1ogkghs6ifb9ed9sjn5isrnq0m903bvp.apps.googleusercontent.com</string>
+    <string name="welcome_to">Welcome to</string>
+    <string name="sign_in_subtitle">Sign in to sync your bookshelf across devices</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="sign_out_title">Sign Out</string>
+    <string name="sign_out_message">Are you sure you want to sign out?</string>
+    <string name="sign_out_confirm">Sign Out</string>
+    <string name="cancel">Cancel</string>
 </resources>

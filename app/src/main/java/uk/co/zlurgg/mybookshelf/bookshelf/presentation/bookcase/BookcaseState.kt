@@ -27,4 +27,8 @@ data class BookcaseState(
     val currentVersionInfo: UpdateInfo? = null,
     val showUpToDateDialog: Boolean = false,
     val isCheckingForUpdates: Boolean = false,
+
+    // Sign out state
+    val showSignOutDialog: Boolean = false,
+    val signedOutSuccessfully: Boolean = false,
 )
