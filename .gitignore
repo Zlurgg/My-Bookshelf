@@ -13,6 +13,9 @@ local.properties
 *.keystore
 keystore.properties
 
+# Firebase config (contains API keys)
+app/google-services.json
+
 # Personal Development Files
 CLAUDE.md
 CODE_REVIEW.md
