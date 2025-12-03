@@ -104,16 +104,18 @@ class BookcaseViewModelTest {
         val mockGetCurrentVersionInfo = object : GetCurrentVersionInfoUseCase {
             override suspend fun invoke(): UpdateInfo? = null
         }
-        val mockAuthRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthRepository {
-            override suspend fun signIn(context: android.content.Context) = uk.co.zlurgg.mybookshelf.auth.domain.model.SignInResult(null, null)
-            override suspend fun signOut() {}
+        val mockAuthService = object : uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService {
+            override suspend fun signIn() = uk.co.zlurgg.mybookshelf.core.domain.result.Result.Success(
+                uk.co.zlurgg.mybookshelf.auth.domain.model.UserData("test", null, null)
+            )
+            override suspend fun signOut() = uk.co.zlurgg.mybookshelf.core.domain.result.Result.Success(Unit)
             override fun getSignedInUser() = null
         }
         val mockAuthStateRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository {
             override suspend fun isSignedIn() = false
             override suspend fun setSignedInState(isSignedIn: Boolean) {}
         }
-        val mockSignOut = SignOutUseCase(mockAuthRepository, mockAuthStateRepository)
+        val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository)
 
         return BookcaseViewModel(
             shelfOperations,

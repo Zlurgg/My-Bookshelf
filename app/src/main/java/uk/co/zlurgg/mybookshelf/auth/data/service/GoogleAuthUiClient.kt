@@ -13,23 +13,31 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.auth.domain.model.SignInResult
+import uk.co.zlurgg.mybookshelf.auth.data.config.AuthConfig
 import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
+import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class GoogleAuthUiClient(
-    private val context: Context
-) {
+    private val context: Context,
+    private val authConfig: AuthConfig
+) : AuthService {
+
+    companion object {
+        private const val TAG = "GoogleAuth"
+    }
+
     private val auth = FirebaseAuth.getInstance()
     private val credentialManager = CredentialManager.create(context)
 
-    suspend fun signIn(activityContext: Context): SignInResult {
+    override suspend fun signIn(): Result<UserData, DataError.Local> {
         Timber.tag(TAG).d("=== GOOGLE SIGN-IN START ===")
 
         return try {
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(context.getString(R.string.web_client_id))
+                .setServerClientId(authConfig.webClientId)
                 .setAutoSelectEnabled(true)
                 .build()
 
@@ -41,7 +49,7 @@ class GoogleAuthUiClient(
 
             val result = credentialManager.getCredential(
                 request = request,
-                context = activityContext
+                context = context
             )
 
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
@@ -53,78 +61,54 @@ class GoogleAuthUiClient(
             val authResult = auth.signInWithCredential(firebaseCredential).await()
             val user = authResult.user
 
-            Timber.tag(TAG).d("=== SIGN-IN SUCCESS ===")
-            Timber.tag(TAG).d("User ID: %s", user?.uid)
-            Timber.tag(TAG).d("Display name: %s", user?.displayName)
-
-            SignInResult(
-                data = user?.let {
+            if (user != null) {
+                Timber.tag(TAG).d("=== SIGN-IN SUCCESS === User ID: %s", user.uid)
+                Result.Success(
                     UserData(
-                        userId = it.uid,
-                        username = it.displayName,
-                        profilePictureUrl = it.photoUrl?.toString()
+                        userId = user.uid,
+                        username = user.displayName,
+                        profilePictureUrl = user.photoUrl?.toString()
                     )
-                },
-                errorMessage = null
-            )
-        } catch (_: GetCredentialCancellationException) {
+                )
+            } else {
+                Timber.tag(TAG).e("Firebase returned null user")
+                Result.Error(DataError.Local.AUTH_FAILED)
+            }
+        } catch (e: GetCredentialCancellationException) {
             Timber.tag(TAG).d("Sign-in cancelled by user")
-            SignInResult(data = null, errorMessage = "Sign-in cancelled")
-        } catch (_: NoCredentialException) {
+            Result.Error(DataError.Local.AUTH_CANCELLED)
+        } catch (e: NoCredentialException) {
             Timber.tag(TAG).w("No credentials available")
-            SignInResult(
-                data = null,
-                errorMessage = "No Google account found. Please add one in Settings → Accounts."
-            )
+            Result.Error(DataError.Local.AUTH_NO_CREDENTIAL)
         } catch (e: GetCredentialException) {
-            Timber.tag(TAG).e(e, "Credential exception")
-            SignInResult(
-                data = null,
-                errorMessage = mapCredentialError(e)
-            )
+            Timber.tag(TAG).e(e, "Credential exception: %s", e.message)
+            Result.Error(DataError.Local.AUTH_FAILED)
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Unexpected sign-in error")
-            SignInResult(
-                data = null,
-                errorMessage = "Sign-in failed. Please try again."
-            )
+            Result.Error(DataError.Local.AUTH_FAILED)
         }
     }
 
-    suspend fun signOut() {
+    override suspend fun signOut(): Result<Unit, DataError.Local> {
         Timber.tag(TAG).d("=== SIGN OUT START ===")
-        try {
+        return try {
             credentialManager.clearCredentialState(ClearCredentialStateRequest())
             auth.signOut()
             Timber.tag(TAG).d("=== SIGN OUT COMPLETE ===")
+            Result.Success(Unit)
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Sign-out error")
+            Result.Error(DataError.Local.AUTH_FAILED)
         }
     }
 
-    fun getSignedInUser(): UserData? {
-        val user = auth.currentUser
-        return user?.let {
+    override fun getSignedInUser(): UserData? {
+        return auth.currentUser?.let { user ->
             UserData(
-                userId = it.uid,
-                username = it.displayName,
-                profilePictureUrl = it.photoUrl?.toString()
+                userId = user.uid,
+                username = user.displayName,
+                profilePictureUrl = user.photoUrl?.toString()
             )
         }
-    }
-
-    private fun mapCredentialError(e: GetCredentialException): String {
-        val message = e.message ?: ""
-        return when {
-            message.contains("16", ignoreCase = true) ->
-                "Configuration error. Please contact support."
-            message.contains("network", ignoreCase = true) ->
-                "Network error. Please check your connection."
-            else -> "Sign-in failed. Please try again."
-        }
-    }
-
-    companion object {
-        private const val TAG = "GoogleAuth"
     }
 }

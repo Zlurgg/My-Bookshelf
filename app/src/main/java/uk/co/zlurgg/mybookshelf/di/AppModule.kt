@@ -120,10 +120,12 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCaseImpl
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCaseImpl
-import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthRepositoryImpl
+import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.auth.data.config.AuthConfig
 import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthStateRepositoryImpl
-import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthRepository
+import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleAuthUiClient
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
+import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
@@ -187,13 +189,31 @@ val appModule = module {
     single<DownloadUpdateUseCase> { DownloadUpdateUseCaseImpl(get(), get()) }
     single<GetCurrentVersionInfoUseCase> { GetCurrentVersionInfoUseCaseImpl(get(), BuildConfig.VERSION_NAME) }
 
-    // Authentication
-    single<AuthRepository> { AuthRepositoryImpl(get()) }
+    // Authentication - Config
+    single {
+        AuthConfig(
+            webClientId = get<Context>().getString(R.string.web_client_id)
+        )
+    }
+
+    // Authentication - Service (implements domain interface)
+    single<AuthService> {
+        GoogleAuthUiClient(
+            context = get(),
+            authConfig = get()
+        )
+    }
+
+    // Authentication - State Repository
     single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
+
+    // Authentication - UseCases
     single { SignInUseCase(get(), get()) }
     single { SignOutUseCase(get(), get()) }
     single { CheckSignInStatusUseCase(get(), get()) }
     single { SignInUseCases(get(), get(), get()) }
+
+    // Authentication - ViewModel
     viewModelOf(::SignInViewModel)
 
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
