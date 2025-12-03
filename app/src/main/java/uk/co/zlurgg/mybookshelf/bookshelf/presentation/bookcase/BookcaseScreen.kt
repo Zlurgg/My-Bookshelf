@@ -6,9 +6,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -137,13 +140,23 @@ fun BookcaseScreen(
                     )
                 },
                 actions = {
+                    // Reorder shelves toggle - only shown when shelves exist
+                    if (state.bookshelves.isNotEmpty()) {
+                        IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
+                            Icon(
+                                imageVector = if (state.isReorderMode) Icons.Default.Lock else Icons.Default.LockOpen,
+                                contentDescription = stringResource(
+                                    if (state.isReorderMode) R.string.menu_lock_shelves
+                                    else R.string.menu_reorder_shelves
+                                )
+                            )
+                        }
+                    }
                     SettingsMenu(
-                        isReorderMode = state.isReorderMode,
-                        hasShelvesToReorder = state.bookshelves.isNotEmpty(),
-                        onToggleReorderMode = { onAction(BookcaseAction.ToggleReorderMode) },
                         onCheckForUpdates = { onAction(BookcaseAction.CheckForUpdates) },
                         onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
-                        onShowAbout = { showAboutDialog = true }
+                        onShowAbout = { showAboutDialog = true },
+                        onSignOut = { /* TODO: Implement sign out */ }
                     )
                 }
             )

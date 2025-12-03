@@ -3,8 +3,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.runtime.Composable
@@ -24,16 +24,14 @@ import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Settings menu (3-dot overflow menu) for the Bookcase screen.
- * Contains app-wide actions like Check for Updates, Help, and About.
+ * Contains app-wide actions like Check for Updates, Help, About, and Sign Out.
  */
 @Composable
 fun SettingsMenu(
-    isReorderMode: Boolean,
-    hasShelvesToReorder: Boolean,
-    onToggleReorderMode: () -> Unit,
     onCheckForUpdates: () -> Unit,
     onShowHelp: () -> Unit,
     onShowAbout: () -> Unit,
+    onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -51,30 +49,6 @@ fun SettingsMenu(
             onDismissRequest = { expanded = false },
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
-            // Reorder Shelves - only shown when shelves exist
-            if (hasShelvesToReorder) {
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            if (isReorderMode)
-                                stringResource(R.string.menu_lock_shelves)
-                            else
-                                stringResource(R.string.menu_reorder_shelves)
-                        )
-                    },
-                    onClick = {
-                        expanded = false
-                        onToggleReorderMode()
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Lock,
-                            contentDescription = null
-                        )
-                    }
-                )
-            }
-
             // Check for Updates
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.menu_check_for_updates)) },
@@ -115,6 +89,21 @@ fun SettingsMenu(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Info,
+                        contentDescription = null
+                    )
+                }
+            )
+
+            // Sign Out
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_sign_out)) },
+                onClick = {
+                    expanded = false
+                    onSignOut()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Logout,
                         contentDescription = null
                     )
                 }
