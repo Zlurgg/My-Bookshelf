@@ -74,10 +74,10 @@ class GoogleAuthUiClient(
                 Timber.tag(TAG).e("Firebase returned null user")
                 Result.Error(DataError.Local.AUTH_FAILED)
             }
-        } catch (e: GetCredentialCancellationException) {
+        } catch (_: GetCredentialCancellationException) {
             Timber.tag(TAG).d("Sign-in cancelled by user")
             Result.Error(DataError.Local.AUTH_CANCELLED)
-        } catch (e: NoCredentialException) {
+        } catch (_: NoCredentialException) {
             Timber.tag(TAG).w("No credentials available")
             Result.Error(DataError.Local.AUTH_NO_CREDENTIAL)
         } catch (e: GetCredentialException) {
