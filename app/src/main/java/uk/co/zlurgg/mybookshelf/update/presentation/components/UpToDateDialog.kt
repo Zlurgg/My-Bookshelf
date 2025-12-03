@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.update.ui.components
+package uk.co.zlurgg.mybookshelf.update.presentation.components
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
