@@ -10,6 +10,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.database.SyncDao
 import uk.co.zlurgg.mybookshelf.sync.data.engine.SyncEngine
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
+import uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncPhase
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncResult
@@ -79,7 +80,7 @@ class SyncRepositoryImpl(
         // The actual resolution logic is handled by ConflictResolver during sync
         return try {
             when (conflict.entityType) {
-                uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType.BOOK -> {
+                EntityType.BOOK -> {
                     val newStatus = when (resolution) {
                         ConflictResolution.KeepLocal -> "PENDING"
                         ConflictResolution.KeepRemote -> "SYNCED"
@@ -91,7 +92,7 @@ class SyncRepositoryImpl(
                         timeProvider.currentTimeMillis()
                     )
                 }
-                uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType.BOOKSHELF -> {
+                EntityType.BOOKSHELF -> {
                     val newStatus = when (resolution) {
                         ConflictResolution.KeepLocal -> "PENDING"
                         ConflictResolution.KeepRemote -> "SYNCED"
@@ -103,7 +104,7 @@ class SyncRepositoryImpl(
                         timeProvider.currentTimeMillis()
                     )
                 }
-                uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType.CROSS_REF -> {
+                EntityType.CROSS_REF -> {
                     // Cross-refs are synced as part of bookshelf, no direct handling needed
                     Timber.tag(TAG).d("Cross-ref conflict for: %s - delegating to bookshelf sync",
                         conflict.entityId)

@@ -11,6 +11,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.database.SyncDao
 import uk.co.zlurgg.mybookshelf.sync.data.database.SyncMetadataEntity
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.mapper.toEntity
 import uk.co.zlurgg.mybookshelf.sync.data.mapper.toFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
@@ -359,7 +361,7 @@ class SyncEngine(
         userId: String,
         conflict: SyncConflict,
         resolution: ConflictResolution,
-        remoteBook: uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
+        remoteBook: BookFirestoreDto
     ) {
         when (resolution) {
             ConflictResolution.KeepLocal -> {
@@ -389,7 +391,7 @@ class SyncEngine(
         userId: String,
         conflict: SyncConflict,
         resolution: ConflictResolution,
-        remoteShelf: uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
+        remoteShelf: BookshelfFirestoreDto
     ) {
         when (resolution) {
             ConflictResolution.KeepLocal -> {

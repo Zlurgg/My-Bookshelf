@@ -8,7 +8,7 @@ import org.koin.core.component.inject
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result as SyncResult
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
 
 /**
@@ -42,7 +42,7 @@ class SyncWorker(
         Timber.tag(TAG).d("Starting sync for user: %s", userId)
 
         return when (val syncResult = syncRepository.performSync(userId)) {
-            is uk.co.zlurgg.mybookshelf.core.domain.result.Result.Success -> {
+            is SyncResult.Success -> {
                 val data = syncResult.data
                 Timber.tag(TAG).d(
                     "=== SYNC WORKER COMPLETE === Pushed: %d, Pulled: %d, Conflicts: %d",
@@ -53,7 +53,7 @@ class SyncWorker(
                 Result.success()
             }
 
-            is uk.co.zlurgg.mybookshelf.core.domain.result.Result.Error -> {
+            is SyncResult.Error -> {
                 handleSyncError(syncResult.error)
             }
         }
