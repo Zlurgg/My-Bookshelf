@@ -327,11 +327,13 @@ class Migration8To9Test {
         helper.runMigrationsAndValidate(testDbName, 9, true, MIGRATION_8_9).use { }
 
         // Open with Room to verify schema compatibility
-        Room.databaseBuilder(
+        val roomDb = Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
             BookshelfDatabase::class.java,
             testDbName
-        ).addMigrations(MIGRATION_8_9).build().use { roomDb ->
+        ).addMigrations(MIGRATION_8_9).build()
+
+        try {
             // Should be able to query without errors
             kotlinx.coroutines.runBlocking {
                 val book = roomDb.bookshelfDao.getBookById("book-1")
@@ -339,6 +341,8 @@ class Migration8To9Test {
                 assertEquals("Test Book", book?.title)
                 assertEquals("PENDING", book?.syncStatus)
             }
+        } finally {
+            roomDb.close()
         }
     }
 }
