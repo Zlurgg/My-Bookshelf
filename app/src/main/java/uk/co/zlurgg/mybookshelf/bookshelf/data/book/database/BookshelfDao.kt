@@ -55,4 +55,54 @@ interface BookshelfDao {
 
     @Query("SELECT shelfId FROM BookshelfBookCrossRef WHERE bookId = :bookId")
     fun getShelvesForBook(bookId: String): Flow<List<String>>
+
+    // ========== Sync-related queries ==========
+
+    // Get entities pending sync (syncStatus != 'SYNCED')
+    @Query("SELECT * FROM BookEntity WHERE syncStatus != 'SYNCED'")
+    suspend fun getPendingSyncBooks(): List<BookEntity>
+
+    @Query("SELECT * FROM BookshelfEntity WHERE syncStatus != 'SYNCED'")
+    suspend fun getPendingSyncShelves(): List<BookshelfEntity>
+
+    @Query("SELECT * FROM BookshelfBookCrossRef WHERE syncStatus != 'SYNCED'")
+    suspend fun getPendingSyncCrossRefs(): List<BookshelfBookCrossRef>
+
+    // Update sync status
+    @Query("UPDATE BookEntity SET syncStatus = :status, lastModifiedAt = :timestamp WHERE id = :id")
+    suspend fun updateBookSyncStatus(id: String, status: String, timestamp: Long)
+
+    @Query("UPDATE BookshelfEntity SET syncStatus = :status, lastModifiedAt = :timestamp WHERE id = :id")
+    suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long)
+
+    @Query("UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId AND bookId = :bookId")
+    suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long)
+
+    // Sharing queries
+    @Query("SELECT * FROM BookshelfEntity WHERE shareCode = :shareCode LIMIT 1")
+    suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity?
+
+    @Query("UPDATE BookshelfEntity SET isShared = :isShared, shareCode = :shareCode WHERE id = :id")
+    suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?)
+
+    // Migration queries - assign owner to orphan entities (used when user signs in)
+    @Query("UPDATE BookEntity SET ownerId = :userId WHERE ownerId IS NULL")
+    suspend fun assignOwnerToOrphanBooks(userId: String)
+
+    @Query("UPDATE BookshelfEntity SET ownerId = :userId WHERE ownerId IS NULL")
+    suspend fun assignOwnerToOrphanShelves(userId: String)
+
+    // Query entities by owner
+    @Query("SELECT * FROM BookEntity WHERE ownerId = :ownerId")
+    suspend fun getBooksByOwner(ownerId: String): List<BookEntity>
+
+    @Query("SELECT * FROM BookshelfEntity WHERE ownerId = :ownerId ORDER BY position ASC")
+    suspend fun getShelvesByOwner(ownerId: String): List<BookshelfEntity>
+
+    // Mark all entities as pending sync for a user (triggers full sync)
+    @Query("UPDATE BookEntity SET syncStatus = 'PENDING' WHERE ownerId = :ownerId")
+    suspend fun markAllBooksPending(ownerId: String)
+
+    @Query("UPDATE BookshelfEntity SET syncStatus = 'PENDING' WHERE ownerId = :ownerId")
+    suspend fun markAllShelvesPending(ownerId: String)
 }

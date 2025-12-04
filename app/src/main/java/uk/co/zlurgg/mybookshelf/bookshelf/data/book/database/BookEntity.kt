@@ -30,5 +30,12 @@ data class BookEntity(
     val isbn: String? = null,
     val publisher: String? = null,
     val publishDate: String? = null,
-    val internetArchiveId: String? = null
+    val internetArchiveId: String? = null,
+
+    // Sync metadata (for Firestore cloud sync)
+    val ownerId: String? = null,           // Firebase UID of owner (null = local-only/anonymous)
+    val lastModifiedAt: Long = 0L,         // Timestamp for conflict resolution
+    val syncStatus: String = "PENDING",    // SYNCED, PENDING, CONFLICT, DELETED
+    val cloudId: String? = null,           // Firestore document ID (may differ from local ID)
+    val version: Long = 1L                 // Optimistic concurrency version
 )
