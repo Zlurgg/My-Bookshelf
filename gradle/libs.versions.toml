@@ -26,7 +26,7 @@ firebaseFirestore = "25.1.4"
 playServicesAuth = "21.4.0"
 
 # WorkManager
-workManager = "2.10.1"
+workManager = "2.11.0"
 androidxCredentials = "1.5.0"
 googleid = "1.1.1"
 googleServices = "4.4.4"

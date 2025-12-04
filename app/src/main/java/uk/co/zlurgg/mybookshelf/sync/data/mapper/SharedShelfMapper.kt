@@ -21,7 +21,7 @@ fun BookshelfEntity.toSharedShelfDto(
     requireNotNull(shareCode) { "Cannot create SharedShelfDto without shareCode" }
 
     return SharedShelfDto(
-        shareCode = shareCode!!,
+        shareCode = shareCode,
         ownerId = ownerId,
         shelfId = id,
         shelfName = name,
