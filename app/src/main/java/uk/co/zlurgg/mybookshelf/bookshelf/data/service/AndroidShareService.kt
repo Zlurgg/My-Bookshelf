@@ -2,10 +2,10 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import android.content.Context
 import android.content.Intent
-import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ShareData
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import java.net.URLEncoder
 
@@ -19,6 +19,7 @@ class AndroidShareService(
 ) {
 
     companion object {
+        private const val TAG = "ShareService"
         // Conservative limit for maximum browser compatibility (IE, older browsers)
         private const val MAX_URL_LENGTH = 2000
         // Absolute maximum - definitely too large
@@ -42,13 +43,11 @@ class AndroidShareService(
                     return Result.Error(DataError.Local.SHARE_LINK_TOO_LARGE)
                 }
                 shareUrl.length > MAX_URL_LENGTH -> {
-                    // Log warning in debug builds but allow (may work on modern browsers)
-                    if (BuildConfig.DEBUG) {
-                        android.util.Log.w(
-                            "AndroidShareService",
-                            "Share URL length (${shareUrl.length}) exceeds 2KB recommendation. May not work on older browsers."
-                        )
-                    }
+                    // Log warning but allow (may work on modern browsers)
+                    Timber.tag(TAG).w(
+                        "Share URL length (%d) exceeds 2KB recommendation. May not work on older browsers.",
+                        shareUrl.length
+                    )
                 }
             }
 
