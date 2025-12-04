@@ -22,7 +22,11 @@ timber = "5.0.1"
 
 # Firebase & Google Auth
 firebaseAuth = "24.0.1"
+firebaseFirestore = "25.1.4"
 playServicesAuth = "21.4.0"
+
+# WorkManager
+workManager = "2.10.1"
 androidxCredentials = "1.5.0"
 googleid = "1.1.1"
 googleServices = "4.4.4"
@@ -84,7 +88,12 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 
 # Firebase & Google Auth
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestore" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
+
+# WorkManager
+work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
+work-testing = { group = "androidx.work", name = "work-testing", version.ref = "workManager" }
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "androidxCredentials" }
 androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "androidxCredentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
