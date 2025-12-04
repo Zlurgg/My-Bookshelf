@@ -42,4 +42,16 @@ sealed interface DataError: Error {
         INVALID_CHARACTERS,
         DUPLICATE_VALUE
     }
+
+    enum class Sync: DataError {
+        NOT_SIGNED_IN,
+        SYNC_IN_PROGRESS,
+        CONFLICT_UNRESOLVED,
+        MIGRATION_FAILED,
+        QUOTA_EXCEEDED,
+        PERMISSION_DENIED,
+        DOCUMENT_NOT_FOUND,
+        NETWORK_ERROR,
+        UNKNOWN
+    }
 }
