@@ -21,6 +21,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -53,9 +54,15 @@ class SignInViewModelTest {
         }
     }
 
+    private val mockSyncScheduler = object : SyncSchedulerService {
+        override fun schedulePeriodicSync() {}
+        override fun triggerImmediateSync() {}
+        override fun cancelAllSync() {}
+    }
+
     private fun createViewModel(): SignInViewModel {
-        val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository)
-        val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository)
+        val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
 
         val useCases = SignInUseCases(

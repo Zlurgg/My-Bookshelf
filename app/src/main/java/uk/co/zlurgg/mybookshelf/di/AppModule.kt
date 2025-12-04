@@ -132,6 +132,18 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
+import uk.co.zlurgg.mybookshelf.sync.data.engine.SyncEngine
+import uk.co.zlurgg.mybookshelf.sync.data.repository.SyncRepositoryImpl
+import uk.co.zlurgg.mybookshelf.sync.data.service.AndroidConnectivityMonitor
+import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
+import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreRemoteDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.worker.SyncScheduler
+import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
+import uk.co.zlurgg.mybookshelf.sync.domain.service.ConflictResolver
+import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
+import uk.co.zlurgg.mybookshelf.sync.domain.service.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import com.google.firebase.firestore.FirebaseFirestore
 
 private const val GITHUB_OWNER = "Zlurgg"
 private const val GITHUB_REPO = "My-Bookshelf"
@@ -209,8 +221,8 @@ val appModule = module {
     single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
 
     // Authentication - UseCases
-    single { SignInUseCase(get(), get()) }
-    single { SignOutUseCase(get(), get()) }
+    single { SignInUseCase(get(), get(), get()) }
+    single { SignOutUseCase(get(), get(), get()) }
     single { CheckSignInStatusUseCase(get(), get()) }
     single { SignInUseCases(get(), get(), get()) }
 
@@ -255,6 +267,34 @@ val appModule = module {
     }
     single { get<BookshelfDatabase>().bookshelfDao }
     single { get<BookshelfDatabase>().syncDao }
+
+    // Sync Feature - Services
+    single<ConnectivityMonitor> { AndroidConnectivityMonitor(get()) }
+    single<ConflictResolver> { DefaultConflictResolver.lastWriteWins() }
+    single { FirebaseFirestore.getInstance() }
+    single<RemoteSyncDataSource> { FirestoreRemoteDataSource(get()) }
+    single<SyncSchedulerService> { SyncScheduler(get()) }
+
+    // Sync Feature - Engine and Repository
+    single {
+        SyncEngine(
+            bookshelfDao = get(),
+            syncDao = get(),
+            remoteDataSource = get(),
+            conflictResolver = get(),
+            connectivityMonitor = get(),
+            timeProvider = get()
+        )
+    }
+    single<SyncRepository> {
+        SyncRepositoryImpl(
+            syncEngine = get(),
+            syncDao = get(),
+            bookshelfDao = get(),
+            connectivityMonitor = get(),
+            timeProvider = get()
+        )
+    }
 
     viewModelOf(::DeepLinkViewModel)
     viewModelOf(::WelcomeViewModel)

@@ -10,12 +10,14 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class SignOutUseCaseTest {
 
     // Test doubles
     private var mockSignOutResult: Result<Unit, DataError.Local> = Result.Success(Unit)
     private var signedInStateSet: Boolean? = null
+    private var syncCancelled = false
 
     private val mockAuthService = object : AuthService {
         override suspend fun signIn(): Result<UserData, DataError.Local> = Result.Success(
@@ -32,13 +34,22 @@ class SignOutUseCaseTest {
         }
     }
 
+    private val mockSyncScheduler = object : SyncSchedulerService {
+        override fun schedulePeriodicSync() {}
+        override fun triggerImmediateSync() {}
+        override fun cancelAllSync() {
+            syncCancelled = true
+        }
+    }
+
     private lateinit var useCase: SignOutUseCase
 
     @Before
     fun setup() {
         signedInStateSet = null
+        syncCancelled = false
         mockSignOutResult = Result.Success(Unit)
-        useCase = SignOutUseCase(mockAuthService, mockAuthStateRepository)
+        useCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
     }
 
     @Test
@@ -83,5 +94,23 @@ class SignOutUseCaseTest {
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_NETWORK_ERROR, (result as Result.Error).error)
+    }
+
+    // ==================== Sync Cancellation Tests ====================
+
+    @Test
+    fun `execute cancels sync before signing out`() = runTest {
+        useCase.execute()
+
+        assertTrue("Sync should be cancelled", syncCancelled)
+    }
+
+    @Test
+    fun `execute cancels sync even when sign out fails`() = runTest {
+        mockSignOutResult = Result.Error(DataError.Local.AUTH_FAILED)
+
+        useCase.execute()
+
+        assertTrue("Sync should be cancelled even on sign-out failure", syncCancelled)
     }
 }

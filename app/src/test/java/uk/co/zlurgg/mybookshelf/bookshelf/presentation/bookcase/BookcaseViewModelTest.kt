@@ -38,6 +38,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -115,7 +116,12 @@ class BookcaseViewModelTest {
             override suspend fun isSignedIn() = false
             override suspend fun setSignedInState(isSignedIn: Boolean) {}
         }
-        val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository)
+        val mockSyncScheduler = object : SyncSchedulerService {
+            override fun schedulePeriodicSync() {}
+            override fun triggerImmediateSync() {}
+            override fun cancelAllSync() {}
+        }
+        val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
 
         return BookcaseViewModel(
             shelfOperations,

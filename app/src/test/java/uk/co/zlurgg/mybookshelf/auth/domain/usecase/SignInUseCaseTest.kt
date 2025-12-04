@@ -10,6 +10,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class SignInUseCaseTest {
 
@@ -18,6 +19,8 @@ class SignInUseCaseTest {
         UserData("test-user-id", "Test User", null)
     )
     private var signedInStateSet: Boolean? = null
+    private var periodicSyncScheduled = false
+    private var immediateSyncTriggered = false
 
     private val mockAuthService = object : AuthService {
         override suspend fun signIn(): Result<UserData, DataError.Local> = mockSignInResult
@@ -32,13 +35,25 @@ class SignInUseCaseTest {
         }
     }
 
+    private val mockSyncScheduler = object : SyncSchedulerService {
+        override fun schedulePeriodicSync() {
+            periodicSyncScheduled = true
+        }
+        override fun triggerImmediateSync() {
+            immediateSyncTriggered = true
+        }
+        override fun cancelAllSync() {}
+    }
+
     private lateinit var useCase: SignInUseCase
 
     @Before
     fun setup() {
         signedInStateSet = null
+        periodicSyncScheduled = false
+        immediateSyncTriggered = false
         mockSignInResult = Result.Success(UserData("test-user-id", "Test User", null))
-        useCase = SignInUseCase(mockAuthService, mockAuthStateRepository)
+        useCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
     }
 
     @Test
@@ -103,5 +118,31 @@ class SignInUseCaseTest {
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_NETWORK_ERROR, (result as Result.Error).error)
+    }
+
+    // ==================== Sync Scheduling Tests ====================
+
+    @Test
+    fun `execute schedules periodic sync on successful sign in`() = runTest {
+        useCase.execute()
+
+        assertTrue("Periodic sync should be scheduled", periodicSyncScheduled)
+    }
+
+    @Test
+    fun `execute triggers immediate sync on successful sign in`() = runTest {
+        useCase.execute()
+
+        assertTrue("Immediate sync should be triggered", immediateSyncTriggered)
+    }
+
+    @Test
+    fun `execute does not schedule sync when sign in fails`() = runTest {
+        mockSignInResult = Result.Error(DataError.Local.AUTH_FAILED)
+
+        useCase.execute()
+
+        assertEquals(false, periodicSyncScheduled)
+        assertEquals(false, immediateSyncTriggered)
     }
 }
