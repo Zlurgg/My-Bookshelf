@@ -132,6 +132,11 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                         onAddBookshelfClick = { name, style ->
                             viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
                         },
+                        onSignIn = {
+                            navController.navigate(NavigationRoute.SignIn.createRoute()) {
+                                popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
+                            }
+                        },
                         onSignOut = {
                             navController.navigate(NavigationRoute.SignIn.createRoute()) {
                                 popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }

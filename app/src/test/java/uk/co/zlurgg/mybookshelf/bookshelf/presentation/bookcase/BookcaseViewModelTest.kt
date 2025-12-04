@@ -37,6 +37,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
@@ -121,6 +122,7 @@ class BookcaseViewModelTest {
             override fun triggerImmediateSync() {}
             override fun cancelAllSync() {}
         }
+        val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
         val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
 
         return BookcaseViewModel(
@@ -131,6 +133,7 @@ class BookcaseViewModelTest {
             mockDownloadUpdate,
             mockDismissUpdate,
             mockGetCurrentVersionInfo,
+            mockCheckSignInStatus,
             mockSignOut
         )
     }

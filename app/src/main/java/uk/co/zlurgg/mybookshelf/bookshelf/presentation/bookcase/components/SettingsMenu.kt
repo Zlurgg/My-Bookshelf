@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
@@ -24,13 +25,15 @@ import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Settings menu (3-dot overflow menu) for the Bookcase screen.
- * Contains app-wide actions like Check for Updates, Help, About, and Sign Out.
+ * Contains app-wide actions like Check for Updates, Help, About, and Sign In/Out.
  */
 @Composable
 fun SettingsMenu(
+    isSignedIn: Boolean,
     onCheckForUpdates: () -> Unit,
     onShowHelp: () -> Unit,
     onShowAbout: () -> Unit,
+    onSignIn: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -94,20 +97,36 @@ fun SettingsMenu(
                 }
             )
 
-            // Sign Out
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.menu_sign_out)) },
-                onClick = {
-                    expanded = false
-                    onSignOut()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Logout,
-                        contentDescription = null
-                    )
-                }
-            )
+            // Sign In or Sign Out based on auth state
+            if (isSignedIn) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.menu_sign_out)) },
+                    onClick = {
+                        expanded = false
+                        onSignOut()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Logout,
+                            contentDescription = null
+                        )
+                    }
+                )
+            } else {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.menu_sign_in)) },
+                    onClick = {
+                        expanded = false
+                        onSignIn()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Login,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
         }
     }
 }

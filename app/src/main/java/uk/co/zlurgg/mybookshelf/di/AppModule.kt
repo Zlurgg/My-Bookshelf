@@ -318,6 +318,7 @@ val appModule = module {
             downloadUpdateUseCase = get(),
             dismissUpdateUseCase = get(),
             getCurrentVersionInfoUseCase = get(),
+            checkSignInStatusUseCase = get(),
             signOutUseCase = get()
         )
     }

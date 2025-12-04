@@ -55,6 +55,7 @@ fun BookcaseScreenRoot(
     onBookshelfClick: (Bookshelf) -> Unit,
     onBookDetailClick: (String, String) -> Unit,
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
+    onSignIn: () -> Unit = {},
     onSignOut: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -77,6 +78,14 @@ fun BookcaseScreenRoot(
             onBookDetailClick(bookId, shelfId)
             // Clear the navigation flag
             viewModel.onAction(BookcaseAction.ResetOperationState)
+        }
+    }
+
+    // Handle sign in navigation for guest users
+    LaunchedEffect(state.navigateToSignIn) {
+        if (state.navigateToSignIn) {
+            onSignIn()
+            viewModel.onAction(BookcaseAction.ResetNavigateToSignIn)
         }
     }
 
@@ -170,9 +179,11 @@ fun BookcaseScreen(
                         }
                     }
                     SettingsMenu(
+                        isSignedIn = state.isSignedIn,
                         onCheckForUpdates = { onAction(BookcaseAction.CheckForUpdates) },
                         onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
                         onShowAbout = { showAboutDialog = true },
+                        onSignIn = { onAction(BookcaseAction.OnSignInClick) },
                         onSignOut = { onAction(BookcaseAction.ShowSignOutDialog) }
                     )
                 }

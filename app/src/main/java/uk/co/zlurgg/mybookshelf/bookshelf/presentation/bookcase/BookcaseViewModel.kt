@@ -24,6 +24,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,6 +36,7 @@ class BookcaseViewModel(
     private val downloadUpdateUseCase: DownloadUpdateUseCase,
     private val dismissUpdateUseCase: DismissUpdateUseCase,
     private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase,
+    private val checkSignInStatusUseCase: CheckSignInStatusUseCase,
     private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
 
@@ -43,6 +45,14 @@ class BookcaseViewModel(
 
     init {
         loadBookshelves()
+        checkSignInStatus()
+    }
+
+    private fun checkSignInStatus() {
+        viewModelScope.launch {
+            val isSignedIn = checkSignInStatusUseCase.execute()
+            _state.update { it.copy(isSignedIn = isSignedIn) }
+        }
     }
 
     fun onAction(action: BookcaseAction) {
@@ -188,7 +198,15 @@ class BookcaseViewModel(
                 }
             }
 
-            // Sign Out Actions
+            // Auth Actions
+            is BookcaseAction.OnSignInClick -> {
+                _state.update { it.copy(navigateToSignIn = true) }
+            }
+
+            is BookcaseAction.ResetNavigateToSignIn -> {
+                _state.update { it.copy(navigateToSignIn = false) }
+            }
+
             is BookcaseAction.ShowSignOutDialog -> {
                 _state.update { it.copy(showSignOutDialog = true) }
             }
