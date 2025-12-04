@@ -18,13 +18,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.ContinueAsGuestButton
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInButton
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.WelcomeHeader
 
 @Composable
 fun SignInScreenRoot(
     viewModel: SignInViewModel = koinViewModel(),
-    onSignInSuccess: () -> Unit
+    onSignInSuccess: () -> Unit,
+    onContinueAsGuest: () -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -33,6 +35,14 @@ fun SignInScreenRoot(
     LaunchedEffect(state.isSignInSuccessful) {
         if (state.isSignInSuccessful) {
             onSignInSuccess()
+            viewModel.onAction(SignInAction.ResetState)
+        }
+    }
+
+    // Handle navigation for guest mode
+    LaunchedEffect(state.isContinuingAsGuest) {
+        if (state.isContinuingAsGuest) {
+            onContinueAsGuest()
             viewModel.onAction(SignInAction.ResetState)
         }
     }
@@ -47,7 +57,8 @@ fun SignInScreenRoot(
     SignInScreen(
         state = state,
         snackbarHostState = snackbarHostState,
-        onSignInClick = { viewModel.onAction(SignInAction.SignIn) }
+        onSignInClick = { viewModel.onAction(SignInAction.SignIn) },
+        onContinueAsGuestClick = { viewModel.onAction(SignInAction.ContinueAsGuest) }
     )
 }
 
@@ -55,7 +66,8 @@ fun SignInScreenRoot(
 private fun SignInScreen(
     state: SignInState,
     snackbarHostState: SnackbarHostState,
-    onSignInClick: () -> Unit
+    onSignInClick: () -> Unit,
+    onContinueAsGuestClick: () -> Unit
 ) {
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -75,6 +87,13 @@ private fun SignInScreen(
             SignInButton(
                 onClick = onSignInClick,
                 isLoading = state.isLoading
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            ContinueAsGuestButton(
+                onClick = onContinueAsGuestClick,
+                enabled = !state.isLoading
             )
         }
     }

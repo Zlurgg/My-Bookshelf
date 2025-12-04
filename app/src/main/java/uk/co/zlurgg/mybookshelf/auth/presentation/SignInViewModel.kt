@@ -25,8 +25,13 @@ class SignInViewModel(
     fun onAction(action: SignInAction) {
         when (action) {
             is SignInAction.SignIn -> signIn()
+            is SignInAction.ContinueAsGuest -> continueAsGuest()
             is SignInAction.ResetState -> resetState()
         }
+    }
+
+    private fun continueAsGuest() {
+        _state.update { it.copy(isContinuingAsGuest = true) }
     }
 
     private fun checkSignInStatus() {
@@ -68,6 +73,7 @@ class SignInViewModel(
             it.copy(
                 isLoading = false,
                 isSignInSuccessful = false,
+                isContinuingAsGuest = false,
                 errorMessage = null
             )
         }

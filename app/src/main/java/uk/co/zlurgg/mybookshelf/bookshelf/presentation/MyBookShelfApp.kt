@@ -79,6 +79,17 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                             navController.navigate(destination) {
                                 popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
                             }
+                        },
+                        onContinueAsGuest = {
+                            // Guest mode: same flow as sign-in but without auth
+                            val destination = if (hasShownWelcome) {
+                                NavigationRoute.Bookcase.createRoute()
+                            } else {
+                                NavigationRoute.Welcome.createRoute()
+                            }
+                            navController.navigate(destination) {
+                                popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
+                            }
                         }
                     )
                 }
