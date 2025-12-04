@@ -143,6 +143,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.ConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
 import uk.co.zlurgg.mybookshelf.sync.domain.service.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
+import uk.co.zlurgg.mybookshelf.sync.data.usecase.MigrateLocalDataUseCaseImpl
 import com.google.firebase.firestore.FirebaseFirestore
 
 private const val GITHUB_OWNER = "Zlurgg"
@@ -221,7 +223,7 @@ val appModule = module {
     single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
 
     // Authentication - UseCases
-    single { SignInUseCase(get(), get(), get()) }
+    single { SignInUseCase(get(), get(), get(), get()) }
     single { SignOutUseCase(get(), get(), get()) }
     single { CheckSignInStatusUseCase(get(), get()) }
     single { SignInUseCases(get(), get(), get()) }
@@ -274,6 +276,7 @@ val appModule = module {
     single { FirebaseFirestore.getInstance() }
     single<RemoteSyncDataSource> { FirestoreRemoteDataSource(get()) }
     single<SyncSchedulerService> { SyncScheduler(get()) }
+    single<MigrateLocalDataUseCase> { MigrateLocalDataUseCaseImpl(get(), get()) }
 
     // Sync Feature - Engine and Repository
     single {

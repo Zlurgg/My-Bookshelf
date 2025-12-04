@@ -86,6 +86,12 @@ interface BookshelfDao {
     suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?)
 
     // Migration queries - assign owner to orphan entities (used when user signs in)
+    @Query("SELECT COUNT(*) FROM BookEntity WHERE ownerId IS NULL")
+    suspend fun countOrphanBooks(): Int
+
+    @Query("SELECT COUNT(*) FROM BookshelfEntity WHERE ownerId IS NULL")
+    suspend fun countOrphanShelves(): Int
+
     @Query("UPDATE BookEntity SET ownerId = :userId WHERE ownerId IS NULL")
     suspend fun assignOwnerToOrphanBooks(userId: String)
 

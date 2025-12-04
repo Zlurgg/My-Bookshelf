@@ -10,7 +10,9 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 
 class SignInUseCaseTest {
 
@@ -21,6 +23,7 @@ class SignInUseCaseTest {
     private var signedInStateSet: Boolean? = null
     private var periodicSyncScheduled = false
     private var immediateSyncTriggered = false
+    private var migratedUserId: String? = null
 
     private val mockAuthService = object : AuthService {
         override suspend fun signIn(): Result<UserData, DataError.Local> = mockSignInResult
@@ -45,6 +48,13 @@ class SignInUseCaseTest {
         override fun cancelAllSync() {}
     }
 
+    private val mockMigrateLocalDataUseCase = object : MigrateLocalDataUseCase {
+        override suspend fun execute(userId: String): Result<MigrationResult, DataError.Sync> {
+            migratedUserId = userId
+            return Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
+        }
+    }
+
     private lateinit var useCase: SignInUseCase
 
     @Before
@@ -52,8 +62,9 @@ class SignInUseCaseTest {
         signedInStateSet = null
         periodicSyncScheduled = false
         immediateSyncTriggered = false
+        migratedUserId = null
         mockSignInResult = Result.Success(UserData("test-user-id", "Test User", null))
-        useCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        useCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockMigrateLocalDataUseCase)
     }
 
     @Test
@@ -144,5 +155,25 @@ class SignInUseCaseTest {
 
         assertEquals(false, periodicSyncScheduled)
         assertEquals(false, immediateSyncTriggered)
+    }
+
+    // ==================== Migration Tests ====================
+
+    @Test
+    fun `execute runs migration with correct user id on successful sign in`() = runTest {
+        mockSignInResult = Result.Success(UserData("migrated-user-123", "Test User", null))
+
+        useCase.execute()
+
+        assertEquals("migrated-user-123", migratedUserId)
+    }
+
+    @Test
+    fun `execute does not run migration when sign in fails`() = runTest {
+        mockSignInResult = Result.Error(DataError.Local.AUTH_FAILED)
+
+        useCase.execute()
+
+        assertEquals(null, migratedUserId)
     }
 }

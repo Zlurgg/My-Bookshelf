@@ -21,7 +21,9 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -60,8 +62,14 @@ class SignInViewModelTest {
         override fun cancelAllSync() {}
     }
 
+    private val mockMigrateLocalDataUseCase = object : MigrateLocalDataUseCase {
+        override suspend fun execute(userId: String): Result<MigrationResult, DataError.Sync> {
+            return Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
+        }
+    }
+
     private fun createViewModel(): SignInViewModel {
-        val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockMigrateLocalDataUseCase)
         val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
 

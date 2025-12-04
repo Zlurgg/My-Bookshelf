@@ -460,6 +460,8 @@ class SyncEngineTest {
 
         override fun getBooksForShelf(shelfId: String): Flow<List<BookEntity>> = flowOf(emptyList())
 
+        override suspend fun countOrphanBooks(): Int = books.values.count { it.ownerId == null }
+        override suspend fun countOrphanShelves(): Int = shelves.values.count { it.ownerId == null }
         override suspend fun assignOwnerToOrphanBooks(userId: String) {}
         override suspend fun assignOwnerToOrphanShelves(userId: String) {}
 
