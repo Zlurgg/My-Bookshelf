@@ -2,14 +2,12 @@ package uk.co.zlurgg.mybookshelf.sync.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.database.SyncDao
-import uk.co.zlurgg.mybookshelf.sync.data.database.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.sync.data.engine.SyncEngine
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
