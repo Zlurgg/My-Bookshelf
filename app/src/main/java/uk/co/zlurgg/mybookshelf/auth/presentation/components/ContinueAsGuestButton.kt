@@ -14,8 +14,8 @@ import uk.co.zlurgg.mybookshelf.R
 @Composable
 fun ContinueAsGuestButton(
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    modifier: Modifier = Modifier
 ) {
     TextButton(
         onClick = onClick,

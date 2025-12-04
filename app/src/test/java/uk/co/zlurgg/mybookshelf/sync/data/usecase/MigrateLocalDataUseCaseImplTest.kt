@@ -227,6 +227,7 @@ class MigrateLocalDataUseCaseImplTest {
         override suspend fun deleteBook(id: String) {}
         override suspend fun upsertShelf(shelf: BookshelfEntity) {}
         override fun getAllShelves(): Flow<List<BookshelfEntity>> = flowOf(emptyList())
+        override fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>> = flowOf(emptyList())
         override suspend fun getShelfById(id: String): BookshelfEntity? = null
         override suspend fun deleteShelf(id: String) {}
         override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) {}
@@ -246,5 +247,8 @@ class MigrateLocalDataUseCaseImplTest {
         override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}
         override suspend fun getBooksByOwner(ownerId: String): List<BookEntity> = emptyList()
         override suspend fun getShelvesByOwner(ownerId: String): List<BookshelfEntity> = emptyList()
+        override suspend fun deleteAllCrossRefsForOwner(ownerId: String) {}
+        override suspend fun deleteAllBooksForOwner(ownerId: String) {}
+        override suspend fun deleteAllShelvesForOwner(ownerId: String) {}
     }
 }

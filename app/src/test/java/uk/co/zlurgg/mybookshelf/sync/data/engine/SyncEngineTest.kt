@@ -466,6 +466,8 @@ class SyncEngineTest {
         override suspend fun assignOwnerToOrphanShelves(userId: String) {}
 
         override fun getAllShelves(): Flow<List<BookshelfEntity>> = flowOf(shelves.values.toList())
+        override fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>> =
+            flowOf(shelves.values.filter { it.ownerId == userId || it.ownerId == null }.toList())
         override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) {}
         override suspend fun deleteCrossRef(shelfId: String, bookId: String) {}
         override suspend fun deleteAllCrossRefsForShelf(shelfId: String) {}
@@ -479,6 +481,13 @@ class SyncEngineTest {
         override suspend fun getShelvesByOwner(ownerId: String): List<BookshelfEntity> = shelves.values.filter { it.ownerId == ownerId }
         override suspend fun markAllBooksPending(ownerId: String) {}
         override suspend fun markAllShelvesPending(ownerId: String) {}
+        override suspend fun deleteAllCrossRefsForOwner(ownerId: String) {}
+        override suspend fun deleteAllBooksForOwner(ownerId: String) {
+            books.entries.removeIf { it.value.ownerId == ownerId }
+        }
+        override suspend fun deleteAllShelvesForOwner(ownerId: String) {
+            shelves.entries.removeIf { it.value.ownerId == ownerId }
+        }
     }
 
     private class FakeRemoteSyncDataSource : RemoteSyncDataSource {

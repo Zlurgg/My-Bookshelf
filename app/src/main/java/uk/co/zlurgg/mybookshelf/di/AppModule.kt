@@ -124,9 +124,11 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseC
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.auth.data.config.AuthConfig
 import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthStateRepositoryImpl
+import uk.co.zlurgg.mybookshelf.auth.data.service.CurrentUserProviderImpl
 import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleAuthUiClient
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
@@ -221,6 +223,9 @@ val appModule = module {
 
     // Authentication - State Repository
     single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
+
+    // Authentication - Current User Provider (for filtering data by owner)
+    single<CurrentUserProvider> { CurrentUserProviderImpl(get()) }
 
     // Authentication - UseCases
     single { SignInUseCase(get(), get(), get(), get()) }

@@ -24,6 +24,15 @@ interface BookshelfDao {
     @Query("SELECT * FROM BookshelfEntity ORDER BY position ASC")
     fun getAllShelves(): Flow<List<BookshelfEntity>>
 
+    /**
+     * Get shelves filtered by owner. Returns:
+     * - User's shelves (ownerId = userId) when signed in
+     * - Orphan shelves (ownerId IS NULL) for migration/backwards compatibility
+     * - Only orphan shelves when userId is null (guest mode)
+     */
+    @Query("SELECT * FROM BookshelfEntity WHERE ownerId IS NULL OR ownerId = :userId ORDER BY position ASC")
+    fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>>
+
     @Query("SELECT * FROM BookshelfEntity WHERE id = :id")
     suspend fun getShelfById(id: String): BookshelfEntity?
 
@@ -111,4 +120,16 @@ interface BookshelfDao {
 
     @Query("UPDATE BookshelfEntity SET syncStatus = 'PENDING' WHERE ownerId = :ownerId")
     suspend fun markAllShelvesPending(ownerId: String)
+
+    // ========== Sign-out cleanup queries ==========
+    // Delete all user's data when signing out to prevent data leakage to other accounts
+
+    @Query("DELETE FROM BookshelfBookCrossRef WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :ownerId)")
+    suspend fun deleteAllCrossRefsForOwner(ownerId: String)
+
+    @Query("DELETE FROM BookEntity WHERE ownerId = :ownerId")
+    suspend fun deleteAllBooksForOwner(ownerId: String)
+
+    @Query("DELETE FROM BookshelfEntity WHERE ownerId = :ownerId")
+    suspend fun deleteAllShelvesForOwner(ownerId: String)
 }

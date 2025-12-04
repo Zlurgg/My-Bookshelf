@@ -12,6 +12,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
@@ -23,6 +24,11 @@ class BookcaseRepositoryImplTest {
     private lateinit var database: BookshelfDatabase
     private lateinit var repository: BookcaseRepositoryImpl
 
+    // Mock that returns null (guest mode) so all orphan data is visible
+    private val mockCurrentUserProvider = object : CurrentUserProvider {
+        override fun getCurrentUserId(): String? = null
+    }
+
     @Before
     fun setup() {
         // Create in-memory database for testing
@@ -31,7 +37,7 @@ class BookcaseRepositoryImplTest {
             BookshelfDatabase::class.java
         ).allowMainThreadQueries().build()
 
-        repository = BookcaseRepositoryImpl(database.bookshelfDao)
+        repository = BookcaseRepositoryImpl(database.bookshelfDao, mockCurrentUserProvider)
     }
 
     @After
