@@ -143,7 +143,7 @@ import uk.co.zlurgg.mybookshelf.sync.data.worker.SyncScheduler
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
-import uk.co.zlurgg.mybookshelf.sync.domain.service.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.service.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.data.usecase.MigrateLocalDataUseCaseImpl

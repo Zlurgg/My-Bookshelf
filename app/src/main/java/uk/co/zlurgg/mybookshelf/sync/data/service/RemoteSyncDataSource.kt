@@ -1,16 +1,16 @@
-package uk.co.zlurgg.mybookshelf.sync.domain.service
+package uk.co.zlurgg.mybookshelf.sync.data.service
 
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SharedShelf
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBook
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBookshelf
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
 
 /**
  * Interface for remote sync data operations.
  *
  * Abstracts the cloud storage backend (Firestore) for testability.
- * Uses domain models to maintain Clean Architecture principles.
+ * Uses DTOs directly since this is a data layer concern.
  */
 interface RemoteSyncDataSource {
 
@@ -19,12 +19,12 @@ interface RemoteSyncDataSource {
     /**
      * Uploads a book to the cloud.
      */
-    suspend fun uploadBook(userId: String, book: SyncBook): Result<Unit, DataError.Sync>
+    suspend fun uploadBook(userId: String, book: BookFirestoreDto): Result<Unit, DataError.Sync>
 
     /**
      * Downloads a book from the cloud.
      */
-    suspend fun downloadBook(userId: String, bookId: String): Result<SyncBook?, DataError.Sync>
+    suspend fun downloadBook(userId: String, bookId: String): Result<BookFirestoreDto?, DataError.Sync>
 
     /**
      * Downloads all books modified since a given timestamp.
@@ -32,7 +32,7 @@ interface RemoteSyncDataSource {
     suspend fun downloadBooksSince(
         userId: String,
         sinceTimestamp: Long
-    ): Result<List<SyncBook>, DataError.Sync>
+    ): Result<List<BookFirestoreDto>, DataError.Sync>
 
     /**
      * Deletes a book from the cloud.
@@ -46,7 +46,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun uploadBookshelf(
         userId: String,
-        shelf: SyncBookshelf
+        shelf: BookshelfFirestoreDto
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -55,7 +55,7 @@ interface RemoteSyncDataSource {
     suspend fun downloadBookshelf(
         userId: String,
         shelfId: String
-    ): Result<SyncBookshelf?, DataError.Sync>
+    ): Result<BookshelfFirestoreDto?, DataError.Sync>
 
     /**
      * Downloads all bookshelves modified since a given timestamp.
@@ -63,7 +63,7 @@ interface RemoteSyncDataSource {
     suspend fun downloadBookshelvesSince(
         userId: String,
         sinceTimestamp: Long
-    ): Result<List<SyncBookshelf>, DataError.Sync>
+    ): Result<List<BookshelfFirestoreDto>, DataError.Sync>
 
     /**
      * Deletes a bookshelf from the cloud.
@@ -75,7 +75,7 @@ interface RemoteSyncDataSource {
     /**
      * Registers a shelf as shared (creates entry in sharedShelves collection).
      */
-    suspend fun shareShelf(sharedShelf: SharedShelf): Result<Unit, DataError.Sync>
+    suspend fun shareShelf(sharedShelf: SharedShelfDto): Result<Unit, DataError.Sync>
 
     /**
      * Unshares a shelf (removes from sharedShelves collection).
@@ -85,7 +85,7 @@ interface RemoteSyncDataSource {
     /**
      * Gets shared shelf metadata by share code.
      */
-    suspend fun getSharedShelf(shareCode: String): Result<SharedShelf?, DataError.Sync>
+    suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync>
 
     /**
      * Adds current user as subscriber to a shared shelf.
@@ -104,7 +104,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun uploadBooks(
         userId: String,
-        books: List<SyncBook>
+        books: List<BookFirestoreDto>
     ): Result<Int, DataError.Sync>
 
     /**
@@ -112,6 +112,6 @@ interface RemoteSyncDataSource {
      */
     suspend fun uploadBookshelves(
         userId: String,
-        shelves: List<SyncBookshelf>
+        shelves: List<BookshelfFirestoreDto>
     ): Result<Int, DataError.Sync>
 }

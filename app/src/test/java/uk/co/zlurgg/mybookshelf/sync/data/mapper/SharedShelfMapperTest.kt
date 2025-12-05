@@ -1,66 +1,16 @@
 package uk.co.zlurgg.mybookshelf.sync.data.mapper
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertThrows
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import java.util.Date
 
 /**
- * Unit tests for SharedShelfMapper extension functions.
+ * Unit tests for SharedShelfDto mapper extension functions.
+ *
+ * Tests the Map<String, Any?>.toSharedShelfDto() function used to parse
+ * Firestore document snapshots into SharedShelfDto objects.
  */
 class SharedShelfMapperTest {
-
-    @Test
-    fun `toSharedShelfDto maps all fields correctly`() {
-        // Given
-        val entity = createTestBookshelfEntity()
-        val ownerId = "user-123"
-        val bookCount = 5
-
-        // When
-        val dto = entity.toSharedShelfDto(ownerId, bookCount)
-
-        // Then
-        assertEquals("ABC123", dto.shareCode)
-        assertEquals("user-123", dto.ownerId)
-        assertEquals("shelf-1", dto.shelfId)
-        assertEquals("Test Shelf", dto.shelfName)
-        assertEquals(emptyList<String>(), dto.subscriberIds)
-        assertNotNull(dto.createdAt)
-        assertEquals(5, dto.bookCount)
-    }
-
-    @Test
-    fun `toSharedShelfDto throws when shareCode is null`() {
-        // Given
-        val entity = BookshelfEntity(
-            id = "shelf-no-share",
-            name = "Not Shared",
-            shelfMaterial = "DARK_WOOD",
-            position = 0,
-            isShared = false,
-            shareCode = null
-        )
-
-        // When/Then
-        assertThrows(IllegalArgumentException::class.java) {
-            entity.toSharedShelfDto("user-123", 0)
-        }
-    }
-
-    @Test
-    fun `toSharedShelfDto with zero bookCount`() {
-        // Given
-        val entity = createTestBookshelfEntity()
-
-        // When
-        val dto = entity.toSharedShelfDto("user-123", 0)
-
-        // Then
-        assertEquals(0, dto.bookCount)
-    }
 
     @Test
     fun `toSharedShelfDto from map parses correctly`() {
@@ -127,20 +77,20 @@ class SharedShelfMapperTest {
         assertEquals(0, dto.bookCount) // default
     }
 
-    // Helper functions
+    @Test
+    fun `toSharedShelfDto from map handles number type variations`() {
+        // Given - Firestore can return Long or Int for numbers
+        val map = mapOf<String, Any?>(
+            "owner_id" to "owner-123",
+            "shelf_id" to "shelf-abc",
+            "shelf_name" to "Test Shelf",
+            "book_count" to 42L // Long instead of Int
+        )
 
-    private fun createTestBookshelfEntity() = BookshelfEntity(
-        id = "shelf-1",
-        name = "Test Shelf",
-        shelfMaterial = "DARK_WOOD",
-        position = 0,
-        isTidyMode = false,
-        ownerId = "owner-1",
-        lastModifiedAt = 0L,
-        syncStatus = "SYNCED",
-        cloudId = null,
-        version = 1L,
-        isShared = true,
-        shareCode = "ABC123"
-    )
+        // When
+        val dto = map.toSharedShelfDto("test-code")
+
+        // Then
+        assertEquals(42, dto.bookCount)
+    }
 }

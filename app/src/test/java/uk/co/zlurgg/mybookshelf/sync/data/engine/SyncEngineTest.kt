@@ -15,12 +15,12 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SharedShelf
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBook
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBookshelf
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
 import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
+import uk.co.zlurgg.mybookshelf.sync.data.service.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
-import uk.co.zlurgg.mybookshelf.sync.domain.service.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 
 /**
@@ -206,29 +206,11 @@ class SyncEngineTest {
     @Test
     fun `pullRemoteChanges downloads new books`() = runBlocking {
         // Given
-        val remoteBook = SyncBook(
+        val remoteBook = BookFirestoreDto(
             id = "remote-book-1",
             title = "Remote Book",
             authors = listOf("Author"),
             imageUrl = "url",
-            description = null,
-            languages = emptyList(),
-            firstPublishYear = null,
-            averageRating = null,
-            ratingCount = null,
-            numPages = null,
-            numEditions = 0,
-            purchased = false,
-            spineColor = 0,
-            readingStatus = "WANT_TO_READ",
-            personalRating = 0f,
-            personalNotes = "",
-            dateAdded = null,
-            purchaseDate = null,
-            isbn = null,
-            publisher = null,
-            publishDate = null,
-            internetArchiveId = null,
             version = 1L,
             lastModifiedAt = 2000L
         )
@@ -253,29 +235,11 @@ class SyncEngineTest {
         )
         fakeBookshelfDao.addBook(localBook)
 
-        val remoteBook = SyncBook(
+        val remoteBook = BookFirestoreDto(
             id = "book-1",
             title = "Updated Title",
             authors = listOf("Author"),
             imageUrl = "url",
-            description = null,
-            languages = emptyList(),
-            firstPublishYear = null,
-            averageRating = null,
-            ratingCount = null,
-            numPages = null,
-            numEditions = 0,
-            purchased = false,
-            spineColor = 0,
-            readingStatus = "WANT_TO_READ",
-            personalRating = 0f,
-            personalNotes = "",
-            dateAdded = null,
-            purchaseDate = null,
-            isbn = null,
-            publisher = null,
-            publishDate = null,
-            internetArchiveId = null,
             version = 2L,
             lastModifiedAt = 2000L
         )
@@ -303,29 +267,11 @@ class SyncEngineTest {
         )
         fakeBookshelfDao.addBook(localBook)
 
-        val remoteBook = SyncBook(
+        val remoteBook = BookFirestoreDto(
             id = "book-1",
             title = "Remote Updated",
             authors = listOf("Author"),
             imageUrl = "url",
-            description = null,
-            languages = emptyList(),
-            firstPublishYear = null,
-            averageRating = null,
-            ratingCount = null,
-            numPages = null,
-            numEditions = 0,
-            purchased = false,
-            spineColor = 0,
-            readingStatus = "WANT_TO_READ",
-            personalRating = 0f,
-            personalNotes = "",
-            dateAdded = null,
-            purchaseDate = null,
-            isbn = null,
-            publisher = null,
-            publishDate = null,
-            internetArchiveId = null,
             version = 2L,
             lastModifiedAt = 2000L
         )
@@ -545,31 +491,31 @@ class SyncEngineTest {
     }
 
     private class FakeRemoteSyncDataSource : RemoteSyncDataSource {
-        val uploadedBooks = mutableMapOf<String, SyncBook>()
-        val uploadedShelves = mutableMapOf<String, SyncBookshelf>()
+        val uploadedBooks = mutableMapOf<String, BookFirestoreDto>()
+        val uploadedShelves = mutableMapOf<String, BookshelfFirestoreDto>()
         val deletedBookIds = mutableListOf<String>()
         val deletedShelfIds = mutableListOf<String>()
-        private val remoteBooks = mutableListOf<SyncBook>()
-        private val remoteShelves = mutableListOf<SyncBookshelf>()
+        private val remoteBooks = mutableListOf<BookFirestoreDto>()
+        private val remoteShelves = mutableListOf<BookshelfFirestoreDto>()
 
-        fun addRemoteBook(book: SyncBook) {
+        fun addRemoteBook(book: BookFirestoreDto) {
             remoteBooks.add(book)
         }
 
-        fun addRemoteShelf(shelf: SyncBookshelf) {
+        fun addRemoteShelf(shelf: BookshelfFirestoreDto) {
             remoteShelves.add(shelf)
         }
 
-        override suspend fun uploadBook(userId: String, book: SyncBook): Result<Unit, DataError.Sync> {
+        override suspend fun uploadBook(userId: String, book: BookFirestoreDto): Result<Unit, DataError.Sync> {
             uploadedBooks[book.id] = book
             return Result.Success(Unit)
         }
 
-        override suspend fun downloadBook(userId: String, bookId: String): Result<SyncBook?, DataError.Sync> {
+        override suspend fun downloadBook(userId: String, bookId: String): Result<BookFirestoreDto?, DataError.Sync> {
             return Result.Success(remoteBooks.find { it.id == bookId })
         }
 
-        override suspend fun downloadBooksSince(userId: String, sinceTimestamp: Long): Result<List<SyncBook>, DataError.Sync> {
+        override suspend fun downloadBooksSince(userId: String, sinceTimestamp: Long): Result<List<BookFirestoreDto>, DataError.Sync> {
             return Result.Success(remoteBooks.filter { it.lastModifiedAt > sinceTimestamp })
         }
 
@@ -578,16 +524,16 @@ class SyncEngineTest {
             return Result.Success(Unit)
         }
 
-        override suspend fun uploadBookshelf(userId: String, shelf: SyncBookshelf): Result<Unit, DataError.Sync> {
+        override suspend fun uploadBookshelf(userId: String, shelf: BookshelfFirestoreDto): Result<Unit, DataError.Sync> {
             uploadedShelves[shelf.id] = shelf
             return Result.Success(Unit)
         }
 
-        override suspend fun downloadBookshelf(userId: String, shelfId: String): Result<SyncBookshelf?, DataError.Sync> {
+        override suspend fun downloadBookshelf(userId: String, shelfId: String): Result<BookshelfFirestoreDto?, DataError.Sync> {
             return Result.Success(remoteShelves.find { it.id == shelfId })
         }
 
-        override suspend fun downloadBookshelvesSince(userId: String, sinceTimestamp: Long): Result<List<SyncBookshelf>, DataError.Sync> {
+        override suspend fun downloadBookshelvesSince(userId: String, sinceTimestamp: Long): Result<List<BookshelfFirestoreDto>, DataError.Sync> {
             return Result.Success(remoteShelves.filter { it.lastModifiedAt > sinceTimestamp })
         }
 
@@ -596,16 +542,16 @@ class SyncEngineTest {
             return Result.Success(Unit)
         }
 
-        override suspend fun shareShelf(sharedShelf: SharedShelf): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun shareShelf(sharedShelf: SharedShelfDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun unshareShelf(shareCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getSharedShelf(shareCode: String): Result<SharedShelf?, DataError.Sync> = Result.Success(null)
+        override suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync> = Result.Success(null)
         override suspend fun subscribeToShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun unsubscribeFromShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun uploadBooks(userId: String, books: List<SyncBook>): Result<Int, DataError.Sync> {
+        override suspend fun uploadBooks(userId: String, books: List<BookFirestoreDto>): Result<Int, DataError.Sync> {
             books.forEach { uploadedBooks[it.id] = it }
             return Result.Success(books.size)
         }
-        override suspend fun uploadBookshelves(userId: String, shelves: List<SyncBookshelf>): Result<Int, DataError.Sync> {
+        override suspend fun uploadBookshelves(userId: String, shelves: List<BookshelfFirestoreDto>): Result<Int, DataError.Sync> {
             shelves.forEach { uploadedShelves[it.id] = it }
             return Result.Success(shelves.size)
         }

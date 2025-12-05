@@ -11,11 +11,11 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.mapper.toEntity
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toSyncBook
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toSyncBookshelf
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBook
-import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBookshelf
+import uk.co.zlurgg.mybookshelf.sync.data.mapper.toFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.service.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
 import uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
@@ -24,7 +24,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncProgress
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncResult
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
-import uk.co.zlurgg.mybookshelf.sync.domain.service.RemoteSyncDataSource
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -171,7 +170,7 @@ class SyncEngine(
                     deletedCount++
                 }
             } else {
-                val uploadResult = remoteDataSource.uploadBook(userId, book.toSyncBook())
+                val uploadResult = remoteDataSource.uploadBook(userId, book.toFirestoreDto())
                 if (uploadResult is Result.Success) {
                     bookshelfDao.updateBookSyncStatus(
                         book.id,
@@ -214,7 +213,7 @@ class SyncEngine(
 
                 val uploadResult = remoteDataSource.uploadBookshelf(
                     userId,
-                    shelf.toSyncBookshelf(bookIds)
+                    shelf.toFirestoreDto(bookIds)
                 )
                 if (uploadResult is Result.Success) {
                     bookshelfDao.updateShelfSyncStatus(
@@ -362,7 +361,7 @@ class SyncEngine(
         userId: String,
         conflict: SyncConflict,
         resolution: ConflictResolution,
-        remoteBook: SyncBook
+        remoteBook: BookFirestoreDto
     ) {
         when (resolution) {
             ConflictResolution.KeepLocal -> {
@@ -392,7 +391,7 @@ class SyncEngine(
         userId: String,
         conflict: SyncConflict,
         resolution: ConflictResolution,
-        remoteShelf: SyncBookshelf
+        remoteShelf: BookshelfFirestoreDto
     ) {
         when (resolution) {
             ConflictResolution.KeepLocal -> {
