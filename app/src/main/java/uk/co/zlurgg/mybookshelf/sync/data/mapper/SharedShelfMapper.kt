@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.sync.data.mapper
 
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
 import java.util.Date
 

@@ -1,14 +1,14 @@
-package uk.co.zlurgg.mybookshelf.data.database
+package uk.co.zlurgg.mybookshelf.core.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import uk.co.zlurgg.mybookshelf.data.database.dao.BookshelfDao
-import uk.co.zlurgg.mybookshelf.data.database.dao.SyncDao
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
-import uk.co.zlurgg.mybookshelf.data.database.entity.SyncMetadataEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 
 @Database(
     entities = [

@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.sync.data.mapper
 
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 
 /**

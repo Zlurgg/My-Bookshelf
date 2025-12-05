@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
 
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus

@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
-import uk.co.zlurgg.mybookshelf.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource

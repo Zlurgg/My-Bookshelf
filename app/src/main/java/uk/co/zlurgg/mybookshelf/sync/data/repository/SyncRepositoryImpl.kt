@@ -3,8 +3,8 @@ package uk.co.zlurgg.mybookshelf.sync.data.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.data.database.dao.BookshelfDao
-import uk.co.zlurgg.mybookshelf.data.database.dao.SyncDao
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider

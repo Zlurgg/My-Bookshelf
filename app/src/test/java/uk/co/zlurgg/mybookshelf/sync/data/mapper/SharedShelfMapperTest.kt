@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import java.util.Date
 
 /**

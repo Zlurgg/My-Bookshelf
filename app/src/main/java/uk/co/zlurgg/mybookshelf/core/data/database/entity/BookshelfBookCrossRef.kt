@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.data.database.entity
+package uk.co.zlurgg.mybookshelf.core.data.database.entity
 
 import androidx.room.Entity
 

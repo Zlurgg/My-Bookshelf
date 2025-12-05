@@ -12,7 +12,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
@@ -377,7 +379,7 @@ class BookshelfRepositoryImplTest {
 
 // Extension functions to convert test builders to entities
 private fun uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book.toEntity() =
-    uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity(
+    BookEntity(
         id = this.id,
         title = this.title,
         imageUrl = this.imageUrl,
@@ -394,7 +396,7 @@ private fun uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book.toEntity() =
     )
 
 private fun uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf.toEntity() =
-    uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity(
+    BookshelfEntity(
         id = this.id,
         name = this.name,
         shelfMaterial = this.shelfStyle.name,

@@ -13,8 +13,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 
@@ -244,14 +246,14 @@ class BookcaseRepositoryImplTest {
 
         // Add books to shelf via cross-references
         database.bookshelfDao.upsertCrossRef(
-            uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfBookCrossRef(
+            BookshelfBookCrossRef(
                 shelfId = "book-count-shelf",
                 bookId = "book-1",
                 addedAt = System.currentTimeMillis()
             )
         )
         database.bookshelfDao.upsertCrossRef(
-            uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfBookCrossRef(
+            BookshelfBookCrossRef(
                 shelfId = "book-count-shelf",
                 bookId = "book-2",
                 addedAt = System.currentTimeMillis()
@@ -286,7 +288,7 @@ class BookcaseRepositoryImplTest {
 
         // Add book to shelf
         database.bookshelfDao.upsertCrossRef(
-            uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfBookCrossRef(
+            BookshelfBookCrossRef(
                 shelfId = "cleanup-shelf",
                 bookId = "cleanup-book",
                 addedAt = System.currentTimeMillis()
@@ -402,7 +404,7 @@ class BookcaseRepositoryImplTest {
 
 // Extension function to convert test builder to entity
 private fun uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book.toEntity() =
-    uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity(
+    BookEntity(
         id = this.id,
         title = this.title,
         imageUrl = this.imageUrl,

@@ -1,10 +1,10 @@
-package uk.co.zlurgg.mybookshelf.data.database.dao
+package uk.co.zlurgg.mybookshelf.core.data.database.dao
 
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
-import uk.co.zlurgg.mybookshelf.data.database.entity.SyncMetadataEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 
 /**
  * Data Access Object for sync metadata operations.

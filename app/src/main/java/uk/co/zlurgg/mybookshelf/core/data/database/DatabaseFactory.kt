@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.data.database
+package uk.co.zlurgg.mybookshelf.core.data.database
 
 import android.content.Context
 import androidx.room.Room

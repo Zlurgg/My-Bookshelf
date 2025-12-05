@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.data.database.migrations
+package uk.co.zlurgg.mybookshelf.core.data.database.migrations
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase

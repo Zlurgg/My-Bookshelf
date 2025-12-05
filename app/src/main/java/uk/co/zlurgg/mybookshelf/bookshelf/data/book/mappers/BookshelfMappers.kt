@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
 
-import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
