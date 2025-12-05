@@ -1,10 +1,14 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.data.book.database
+package uk.co.zlurgg.mybookshelf.data.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import uk.co.zlurgg.mybookshelf.sync.data.database.SyncDao
-import uk.co.zlurgg.mybookshelf.sync.data.database.SyncMetadataEntity
+import uk.co.zlurgg.mybookshelf.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.data.database.dao.SyncDao
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfBookCrossRef
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.data.database.entity.SyncMetadataEntity
 
 @Database(
     entities = [
@@ -19,7 +23,7 @@ import uk.co.zlurgg.mybookshelf.sync.data.database.SyncMetadataEntity
 @TypeConverters(
     StringListTypeConverter::class
 )
-abstract class BookshelfDatabase : RoomDatabase() {
+abstract class MyBookshelfRoomDatabase : RoomDatabase() {
     abstract val bookshelfDao: BookshelfDao
     abstract val syncDao: SyncDao
 

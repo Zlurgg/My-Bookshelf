@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.data.database.entity.SyncMetadataEntity
 
 /**
  * Unit tests for SyncMetadataEntity field validation.

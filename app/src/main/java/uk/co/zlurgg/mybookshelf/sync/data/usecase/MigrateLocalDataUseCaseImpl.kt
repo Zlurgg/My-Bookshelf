@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.sync.data.usecase
 
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
+import uk.co.zlurgg.mybookshelf.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult

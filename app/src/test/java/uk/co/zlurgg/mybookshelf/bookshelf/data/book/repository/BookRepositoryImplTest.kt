@@ -11,7 +11,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
@@ -20,7 +20,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRemoteBookDataSource
 @RunWith(RobolectricTestRunner::class)
 class BookRepositoryImplTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var mockRemoteDataSource: MockRemoteBookDataSource
     private lateinit var repository: BookRepositoryImpl
 
@@ -29,7 +29,7 @@ class BookRepositoryImplTest {
         // Create in-memory database for testing
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).allowMainThreadQueries().build()
 
         mockRemoteDataSource = MockRemoteBookDataSource()

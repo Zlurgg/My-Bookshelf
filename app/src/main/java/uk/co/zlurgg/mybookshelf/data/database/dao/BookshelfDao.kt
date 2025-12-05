@@ -1,9 +1,12 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.data.book.database
+package uk.co.zlurgg.mybookshelf.data.database.dao
 
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfBookCrossRef
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
 
 @Dao
 interface BookshelfDao {

@@ -13,13 +13,13 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
-import uk.co.zlurgg.mybookshelf.sync.data.database.SyncDao
-import uk.co.zlurgg.mybookshelf.sync.data.database.SyncMetadataEntity
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfBookCrossRef
+import uk.co.zlurgg.mybookshelf.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.data.database.dao.SyncDao
+import uk.co.zlurgg.mybookshelf.data.database.entity.SyncMetadataEntity
 
 /**
  * DAO layer tests for sync-related queries.
@@ -30,7 +30,7 @@ import uk.co.zlurgg.mybookshelf.sync.data.database.SyncMetadataEntity
 @RunWith(RobolectricTestRunner::class)
 class BookshelfDaoSyncTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var dao: BookshelfDao
     private lateinit var syncDao: SyncDao
 
@@ -38,7 +38,7 @@ class BookshelfDaoSyncTest {
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).allowMainThreadQueries().build()
 
         dao = database.bookshelfDao

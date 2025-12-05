@@ -1,14 +1,19 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
+package uk.co.zlurgg.mybookshelf.bookshelf.data.usecase
 
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao
+import uk.co.zlurgg.mybookshelf.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 
 /**
  * Implementation that clears all local data for a user during sign-out.
  * This prevents data leakage when switching between accounts.
+ *
+ * Note: This implementation is in the data layer because it directly
+ * accesses the DAO for database operations. The interface remains in
+ * the domain layer to maintain Clean Architecture principles.
  */
 class ClearUserDataUseCaseImpl(
     private val bookshelfDao: BookshelfDao

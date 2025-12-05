@@ -7,16 +7,20 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toBookFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toBookshelfFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toSharedShelfDto
+import uk.co.zlurgg.mybookshelf.sync.data.mapper.toFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.mapper.toSharedShelf
+import uk.co.zlurgg.mybookshelf.sync.data.mapper.toSyncBook
+import uk.co.zlurgg.mybookshelf.sync.data.mapper.toSyncBookshelf
+import uk.co.zlurgg.mybookshelf.sync.domain.model.SharedShelf
+import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBook
+import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncBookshelf
 import uk.co.zlurgg.mybookshelf.sync.domain.service.RemoteSyncDataSource
 
 /**
  * Firestore implementation of RemoteSyncDataSource.
+ *
+ * Converts between domain models (used by the interface) and Firestore DTOs
+ * (with Firestore annotations) internally.
  *
  * Document structure:
  * - /users/{userId}/books/{bookId}
@@ -31,14 +35,15 @@ class FirestoreRemoteDataSource(
 
     override suspend fun uploadBook(
         userId: String,
-        book: BookFirestoreDto
+        book: SyncBook
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("uploadBook") {
+            val dto = book.toFirestoreDto()
             firestore.collection(USERS_COLLECTION)
                 .document(userId)
                 .collection(BOOKS_COLLECTION)
-                .document(book.id)
-                .set(book)
+                .document(dto.id)
+                .set(dto)
                 .await()
         }
     }
@@ -46,7 +51,7 @@ class FirestoreRemoteDataSource(
     override suspend fun downloadBook(
         userId: String,
         bookId: String
-    ): Result<BookFirestoreDto?, DataError.Sync> {
+    ): Result<SyncBook?, DataError.Sync> {
         return executeFirestoreOperation("downloadBook") {
             val snapshot = firestore.collection(USERS_COLLECTION)
                 .document(userId)
@@ -56,7 +61,7 @@ class FirestoreRemoteDataSource(
                 .await()
 
             if (snapshot.exists()) {
-                snapshot.data?.toBookFirestoreDto(snapshot.id)
+                snapshot.data?.toSyncBook(snapshot.id)
             } else {
                 null
             }
@@ -66,7 +71,7 @@ class FirestoreRemoteDataSource(
     override suspend fun downloadBooksSince(
         userId: String,
         sinceTimestamp: Long
-    ): Result<List<BookFirestoreDto>, DataError.Sync> {
+    ): Result<List<SyncBook>, DataError.Sync> {
         return executeFirestoreOperation("downloadBooksSince") {
             val snapshot = firestore.collection(USERS_COLLECTION)
                 .document(userId)
@@ -76,7 +81,7 @@ class FirestoreRemoteDataSource(
                 .await()
 
             snapshot.documents.mapNotNull { doc ->
-                doc.data?.toBookFirestoreDto(doc.id)
+                doc.data?.toSyncBook(doc.id)
             }
         }
     }
@@ -99,14 +104,15 @@ class FirestoreRemoteDataSource(
 
     override suspend fun uploadBookshelf(
         userId: String,
-        shelf: BookshelfFirestoreDto
+        shelf: SyncBookshelf
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("uploadBookshelf") {
+            val dto = shelf.toFirestoreDto()
             firestore.collection(USERS_COLLECTION)
                 .document(userId)
                 .collection(BOOKSHELVES_COLLECTION)
-                .document(shelf.id)
-                .set(shelf)
+                .document(dto.id)
+                .set(dto)
                 .await()
         }
     }
@@ -114,7 +120,7 @@ class FirestoreRemoteDataSource(
     override suspend fun downloadBookshelf(
         userId: String,
         shelfId: String
-    ): Result<BookshelfFirestoreDto?, DataError.Sync> {
+    ): Result<SyncBookshelf?, DataError.Sync> {
         return executeFirestoreOperation("downloadBookshelf") {
             val snapshot = firestore.collection(USERS_COLLECTION)
                 .document(userId)
@@ -124,7 +130,7 @@ class FirestoreRemoteDataSource(
                 .await()
 
             if (snapshot.exists()) {
-                snapshot.data?.toBookshelfFirestoreDto(snapshot.id)
+                snapshot.data?.toSyncBookshelf(snapshot.id)
             } else {
                 null
             }
@@ -134,7 +140,7 @@ class FirestoreRemoteDataSource(
     override suspend fun downloadBookshelvesSince(
         userId: String,
         sinceTimestamp: Long
-    ): Result<List<BookshelfFirestoreDto>, DataError.Sync> {
+    ): Result<List<SyncBookshelf>, DataError.Sync> {
         return executeFirestoreOperation("downloadBookshelvesSince") {
             val snapshot = firestore.collection(USERS_COLLECTION)
                 .document(userId)
@@ -144,7 +150,7 @@ class FirestoreRemoteDataSource(
                 .await()
 
             snapshot.documents.mapNotNull { doc ->
-                doc.data?.toBookshelfFirestoreDto(doc.id)
+                doc.data?.toSyncBookshelf(doc.id)
             }
         }
     }
@@ -165,11 +171,12 @@ class FirestoreRemoteDataSource(
 
     // ==================== Shared Shelves ====================
 
-    override suspend fun shareShelf(sharedShelf: SharedShelfDto): Result<Unit, DataError.Sync> {
+    override suspend fun shareShelf(sharedShelf: SharedShelf): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("shareShelf") {
+            val dto = sharedShelf.toFirestoreDto()
             firestore.collection(SHARED_SHELVES_COLLECTION)
-                .document(sharedShelf.shareCode)
-                .set(sharedShelf)
+                .document(dto.shareCode)
+                .set(dto)
                 .await()
         }
     }
@@ -183,7 +190,7 @@ class FirestoreRemoteDataSource(
         }
     }
 
-    override suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync> {
+    override suspend fun getSharedShelf(shareCode: String): Result<SharedShelf?, DataError.Sync> {
         return executeFirestoreOperation("getSharedShelf") {
             val snapshot = firestore.collection(SHARED_SHELVES_COLLECTION)
                 .document(shareCode)
@@ -191,7 +198,7 @@ class FirestoreRemoteDataSource(
                 .await()
 
             if (snapshot.exists()) {
-                snapshot.data?.toSharedShelfDto(snapshot.id)
+                snapshot.data?.toSharedShelf(snapshot.id)
             } else {
                 null
             }
@@ -226,7 +233,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun uploadBooks(
         userId: String,
-        books: List<BookFirestoreDto>
+        books: List<SyncBook>
     ): Result<Int, DataError.Sync> {
         if (books.isEmpty()) return Result.Success(0)
 
@@ -237,8 +244,9 @@ class FirestoreRemoteDataSource(
                 .collection(BOOKS_COLLECTION)
 
             books.forEach { book ->
-                val docRef = booksCollection.document(book.id)
-                batch.set(docRef, book)
+                val dto = book.toFirestoreDto()
+                val docRef = booksCollection.document(dto.id)
+                batch.set(docRef, dto)
             }
 
             batch.commit().await()
@@ -248,7 +256,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun uploadBookshelves(
         userId: String,
-        shelves: List<BookshelfFirestoreDto>
+        shelves: List<SyncBookshelf>
     ): Result<Int, DataError.Sync> {
         if (shelves.isEmpty()) return Result.Success(0)
 
@@ -259,8 +267,9 @@ class FirestoreRemoteDataSource(
                 .collection(BOOKSHELVES_COLLECTION)
 
             shelves.forEach { shelf ->
-                val docRef = shelvesCollection.document(shelf.id)
-                batch.set(docRef, shelf)
+                val dto = shelf.toFirestoreDto()
+                val docRef = shelvesCollection.document(dto.id)
+                batch.set(docRef, dto)
             }
 
             batch.commit().await()

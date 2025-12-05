@@ -12,7 +12,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
@@ -20,7 +20,7 @@ import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 @RunWith(RobolectricTestRunner::class)
 class BookshelfRepositoryImplTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var testTimeProvider: TestTimeProvider
     private lateinit var repository: BookshelfRepositoryImpl
 
@@ -29,7 +29,7 @@ class BookshelfRepositoryImplTest {
         // Create in-memory database for testing
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).allowMainThreadQueries().build()
 
         testTimeProvider = TestTimeProvider()
@@ -377,7 +377,7 @@ class BookshelfRepositoryImplTest {
 
 // Extension functions to convert test builders to entities
 private fun uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book.toEntity() =
-    uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity(
+    uk.co.zlurgg.mybookshelf.data.database.entity.BookEntity(
         id = this.id,
         title = this.title,
         imageUrl = this.imageUrl,
@@ -394,7 +394,7 @@ private fun uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book.toEntity() =
     )
 
 private fun uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf.toEntity() =
-    uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity(
+    uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity(
         id = this.id,
         name = this.name,
         shelfMaterial = this.shelfStyle.name,

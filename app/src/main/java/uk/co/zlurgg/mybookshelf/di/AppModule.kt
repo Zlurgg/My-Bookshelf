@@ -10,9 +10,9 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.DatabaseFactory
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.migrations.MIGRATION_8_9
+import uk.co.zlurgg.mybookshelf.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.data.database.DatabaseFactory
+import uk.co.zlurgg.mybookshelf.data.database.migrations.MIGRATION_8_9
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.KtorRemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryApiService
@@ -272,8 +272,8 @@ val appModule = module {
             .addMigrations(MIGRATION_8_9)
             .build()
     }
-    single { get<BookshelfDatabase>().bookshelfDao }
-    single { get<BookshelfDatabase>().syncDao }
+    single { get<MyBookshelfRoomDatabase>().bookshelfDao }
+    single { get<MyBookshelfRoomDatabase>().syncDao }
 
     // Sync Feature - Services
     single<ConnectivityMonitor> { AndroidConnectivityMonitor(get()) }

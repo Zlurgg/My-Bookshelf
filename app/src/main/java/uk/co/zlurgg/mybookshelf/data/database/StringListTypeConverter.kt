@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.data.book.database
+package uk.co.zlurgg.mybookshelf.data.database
 
 import androidx.room.TypeConverter
 import kotlinx.serialization.json.Json

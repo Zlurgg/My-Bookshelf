@@ -3,7 +3,7 @@ package uk.co.zlurgg.mybookshelf.sync.data.mapper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.data.database.entity.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 
 /**
