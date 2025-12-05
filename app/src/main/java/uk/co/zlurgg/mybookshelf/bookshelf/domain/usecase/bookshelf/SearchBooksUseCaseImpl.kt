@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf
 
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

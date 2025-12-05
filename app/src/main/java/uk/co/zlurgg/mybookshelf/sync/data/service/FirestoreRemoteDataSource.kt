@@ -10,9 +10,10 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toBookFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toBookshelfFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toSharedShelfDto
+import uk.co.zlurgg.mybookshelf.sync.data.mappers.toBookFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.mappers.toBookshelfFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.mappers.toSharedShelfDto
+import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
 
 /**
  * Firestore implementation of RemoteSyncDataSource.

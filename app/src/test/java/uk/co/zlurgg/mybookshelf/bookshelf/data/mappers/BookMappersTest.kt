@@ -4,8 +4,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
 

@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book

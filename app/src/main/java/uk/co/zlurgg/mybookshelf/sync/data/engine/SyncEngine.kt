@@ -13,9 +13,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toEntity
-import uk.co.zlurgg.mybookshelf.sync.data.mapper.toFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.service.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.mappers.toEntity
+import uk.co.zlurgg.mybookshelf.sync.data.mappers.toFirestoreDto
+import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
 import uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict

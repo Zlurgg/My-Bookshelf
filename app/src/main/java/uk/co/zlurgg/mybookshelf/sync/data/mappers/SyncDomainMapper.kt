@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.sync.data.mapper
+package uk.co.zlurgg.mybookshelf.sync.data.mappers
 
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity

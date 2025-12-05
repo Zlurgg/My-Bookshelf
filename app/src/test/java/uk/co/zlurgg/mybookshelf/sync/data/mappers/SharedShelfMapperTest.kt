@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.sync.data.mapper
+package uk.co.zlurgg.mybookshelf.sync.data.mappers
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

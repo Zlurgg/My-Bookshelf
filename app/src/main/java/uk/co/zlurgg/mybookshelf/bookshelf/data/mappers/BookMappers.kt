@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers
+package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto

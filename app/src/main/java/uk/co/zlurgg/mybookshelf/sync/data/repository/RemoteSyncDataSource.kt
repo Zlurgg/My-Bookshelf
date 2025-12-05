@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.sync.data.service
+package uk.co.zlurgg.mybookshelf.sync.data.repository
 
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

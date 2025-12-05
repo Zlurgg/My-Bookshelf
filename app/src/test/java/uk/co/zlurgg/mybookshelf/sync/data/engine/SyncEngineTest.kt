@@ -19,7 +19,7 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
 import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
-import uk.co.zlurgg.mybookshelf.sync.data.service.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 

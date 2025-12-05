@@ -3,8 +3,6 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toDomain
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
