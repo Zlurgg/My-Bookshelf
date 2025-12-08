@@ -4,4 +4,6 @@ sealed interface SignInAction {
     data object SignIn : SignInAction
     data object ContinueAsGuest : SignInAction
     data object ResetState : SignInAction
+    data object ImportGuestData : SignInAction
+    data object SkipGuestDataImport : SignInAction
 }

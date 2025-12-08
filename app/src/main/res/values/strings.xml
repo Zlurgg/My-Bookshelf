@@ -235,4 +235,18 @@
     <string name="sign_out_message">Are you sure you want to sign out?</string>
     <string name="sign_out_confirm">Sign Out</string>
     <string name="cancel">Cancel</string>
+
+    <!-- Guest data import dialog -->
+    <string name="import_guest_data_title">Import Guest Data?</string>
+    <string name="import_guest_data_message">We found data from your guest session. Would you like to import it to your account?</string>
+    <plurals name="guest_data_books">
+        <item quantity="one">• %d book</item>
+        <item quantity="other">• %d books</item>
+    </plurals>
+    <plurals name="guest_data_shelves">
+        <item quantity="one">• %d shelf</item>
+        <item quantity="other">• %d shelves</item>
+    </plurals>
+    <string name="import_guest_data_warning">If you skip, this data will remain unassigned and won\'t appear in your account.</string>
+    <string name="action_skip">Skip</string>
 </resources>

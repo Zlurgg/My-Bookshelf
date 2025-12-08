@@ -22,8 +22,10 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo
 import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -63,10 +65,9 @@ class SignInViewModelTest {
         override fun cancelAllSync() {}
     }
 
+    private var mockMigrationResult: Result<MigrationResult, DataError.Sync> = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
     private val mockMigrateLocalDataUseCase = object : MigrateLocalDataUseCase {
-        override suspend fun execute(userId: String): Result<MigrationResult, DataError.Sync> {
-            return Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
-        }
+        override suspend fun execute(): Result<MigrationResult, DataError.Sync> = mockMigrationResult
     }
 
     private var mockShouldShowWelcome = false
@@ -74,8 +75,13 @@ class SignInViewModelTest {
         override suspend fun execute(): Boolean = mockShouldShowWelcome
     }
 
+    private var mockGuestDataInfo = GuestDataInfo(bookCount = 0, shelfCount = 0)
+    private val mockHasGuestDataUseCase = object : HasGuestDataUseCase {
+        override suspend fun execute(): GuestDataInfo = mockGuestDataInfo
+    }
+
     private fun createViewModel(): SignInViewModel {
-        val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockMigrateLocalDataUseCase)
+        val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
 
@@ -85,7 +91,12 @@ class SignInViewModelTest {
             checkSignInStatus = checkSignInStatusUseCase
         )
 
-        return SignInViewModel(useCases, mockShouldShowWelcomeUseCase)
+        return SignInViewModel(
+            useCases,
+            mockShouldShowWelcomeUseCase,
+            mockHasGuestDataUseCase,
+            mockMigrateLocalDataUseCase
+        )
     }
 
     private fun resetMocks() {
@@ -95,6 +106,8 @@ class SignInViewModelTest {
         mockCurrentUser = null
         signInStateSet = null
         mockShouldShowWelcome = false
+        mockGuestDataInfo = GuestDataInfo(bookCount = 0, shelfCount = 0)
+        mockMigrationResult = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
     }
 
     // ============================================================================
@@ -164,7 +177,6 @@ class SignInViewModelTest {
         advanceUntilIdle()
 
         // Capture loading state during sign in
-        val wasLoading = false
         mockSignInResult = Result.Success(UserData("test", null, null))
 
         viewModel.onAction(SignInAction.SignIn)

@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.sync.data.usecase
 
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -11,15 +12,19 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 /**
  * Implementation of MigrateLocalDataUseCase.
  *
- * Migrates orphan local data to a user account when they sign in
- * for the first time.
+ * Migrates orphan local data to the current user's account when they
+ * choose to import their guest data after signing in.
  */
 class MigrateLocalDataUseCaseImpl(
     private val bookshelfDao: BookshelfDao,
-    private val syncScheduler: SyncSchedulerService
+    private val syncScheduler: SyncSchedulerService,
+    private val currentUserProvider: CurrentUserProvider
 ) : MigrateLocalDataUseCase {
 
-    override suspend fun execute(userId: String): Result<MigrationResult, DataError.Sync> {
+    override suspend fun execute(): Result<MigrationResult, DataError.Sync> {
+        val userId = currentUserProvider.getCurrentUserId()
+            ?: return Result.Error(DataError.Sync.MIGRATION_FAILED)
+
         Timber.tag(TAG).d("=== MIGRATION START for user: %s ===", userId)
 
         return try {

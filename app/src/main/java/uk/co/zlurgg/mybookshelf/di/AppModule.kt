@@ -149,6 +149,8 @@ import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.data.usecase.MigrateLocalDataUseCaseImpl
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
+import uk.co.zlurgg.mybookshelf.sync.data.usecase.HasGuestDataUseCaseImpl
 import com.google.firebase.firestore.FirebaseFirestore
 
 private const val GITHUB_OWNER = "Zlurgg"
@@ -231,13 +233,13 @@ val appModule = module {
     single<CurrentUserProvider> { CurrentUserProviderImpl(get()) }
 
     // Authentication - UseCases
-    single { SignInUseCase(get(), get(), get(), get()) }
+    single { SignInUseCase(get(), get(), get()) }
     single { SignOutUseCase(get(), get(), get()) }
     single { CheckSignInStatusUseCase(get(), get()) }
     single { SignInUseCases(get(), get(), get()) }
 
     // Authentication - ViewModel
-    viewModelOf(::SignInViewModel)
+    viewModel { SignInViewModel(get(), get(), get(), get()) }
 
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
@@ -284,7 +286,8 @@ val appModule = module {
     single { FirebaseFirestore.getInstance() }
     single<RemoteSyncDataSource> { FirestoreRemoteDataSource(get()) }
     single<SyncSchedulerService> { SyncScheduler(get()) }
-    single<MigrateLocalDataUseCase> { MigrateLocalDataUseCaseImpl(get(), get()) }
+    single<MigrateLocalDataUseCase> { MigrateLocalDataUseCaseImpl(get(), get(), get()) }
+    single<HasGuestDataUseCase> { HasGuestDataUseCaseImpl(get()) }
 
     // Sync Feature - Engine and Repository
     single {

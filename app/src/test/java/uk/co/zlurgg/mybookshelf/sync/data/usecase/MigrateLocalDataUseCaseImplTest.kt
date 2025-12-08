@@ -8,6 +8,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
@@ -19,13 +20,15 @@ class MigrateLocalDataUseCaseImplTest {
 
     private lateinit var fakeDao: FakeBookshelfDao
     private lateinit var fakeSyncScheduler: FakeSyncScheduler
+    private lateinit var fakeCurrentUserProvider: FakeCurrentUserProvider
     private lateinit var useCase: MigrateLocalDataUseCaseImpl
 
     @Before
     fun setup() {
         fakeDao = FakeBookshelfDao()
         fakeSyncScheduler = FakeSyncScheduler()
-        useCase = MigrateLocalDataUseCaseImpl(fakeDao, fakeSyncScheduler)
+        fakeCurrentUserProvider = FakeCurrentUserProvider()
+        useCase = MigrateLocalDataUseCaseImpl(fakeDao, fakeSyncScheduler, fakeCurrentUserProvider)
     }
 
     // ==================== No Migration Needed Tests ====================
@@ -34,7 +37,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `returns NO_MIGRATION_NEEDED when no orphan data exists`() = runTest {
         // No orphan data added to the fake DAO
 
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -46,7 +49,7 @@ class MigrateLocalDataUseCaseImplTest {
 
     @Test
     fun `does not trigger sync when no orphan data exists`() = runTest {
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         assertFalse("Sync should not be triggered", fakeSyncScheduler.syncTriggered)
@@ -60,7 +63,7 @@ class MigrateLocalDataUseCaseImplTest {
         fakeDao.addOrphanBook(createTestBook("book-2"))
         fakeDao.addOrphanBook(createTestBook("book-3"))
 
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -73,7 +76,7 @@ class MigrateLocalDataUseCaseImplTest {
         fakeDao.addOrphanShelf(createTestShelf("shelf-1"))
         fakeDao.addOrphanShelf(createTestShelf("shelf-2"))
 
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -87,7 +90,7 @@ class MigrateLocalDataUseCaseImplTest {
         fakeDao.addOrphanShelf(createTestShelf("shelf-1"))
         fakeDao.addOrphanShelf(createTestShelf("shelf-2"))
 
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -101,7 +104,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `marks entities as pending sync after migration`() = runTest {
         fakeDao.addOrphanBook(createTestBook("book-1"))
 
-        useCase.execute("user-123")
+        useCase.execute()
 
         assertEquals("user-123", fakeDao.pendingMarkedOwnerId)
     }
@@ -110,7 +113,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `triggers immediate sync after successful migration`() = runTest {
         fakeDao.addOrphanBook(createTestBook("book-1"))
 
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -124,7 +127,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `handles only books no shelves`() = runTest {
         fakeDao.addOrphanBook(createTestBook("book-1"))
 
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -137,7 +140,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `handles only shelves no books`() = runTest {
         fakeDao.addOrphanShelf(createTestShelf("shelf-1"))
 
-        val result = useCase.execute("user-123")
+        val result = useCase.execute()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -176,6 +179,12 @@ class MigrateLocalDataUseCaseImplTest {
     )
 
     // ==================== Fakes ====================
+
+    private class FakeCurrentUserProvider : CurrentUserProvider {
+        var userId: String? = "user-123"
+
+        override fun getCurrentUserId(): String? = userId
+    }
 
     private class FakeSyncScheduler : SyncSchedulerService {
         var syncTriggered = false
