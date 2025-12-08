@@ -170,7 +170,7 @@ fun BookcaseScreen(
                     if (state.bookshelves.isNotEmpty()) {
                         IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                             Icon(
-                                imageVector = if (state.isReorderMode) Icons.Default.Lock else Icons.Default.LockOpen,
+                                imageVector = if (state.isReorderMode) Icons.Default.LockOpen else Icons.Default.Lock,
                                 contentDescription = stringResource(
                                     if (state.isReorderMode) R.string.menu_lock_shelves
                                     else R.string.menu_reorder_shelves

@@ -82,6 +82,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfSty
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.UpdateShelfStyleUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.DuplicateShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.DuplicateShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.data.usecase.ClearUserDataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
@@ -234,7 +236,8 @@ val appModule = module {
 
     // Authentication - UseCases
     single { SignInUseCase(get(), get(), get()) }
-    single { SignOutUseCase(get(), get(), get()) }
+    singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
+    single { SignOutUseCase(get(), get(), get(), get(), get()) }
     single { CheckSignInStatusUseCase(get(), get()) }
     single { SignInUseCases(get(), get(), get()) }
 

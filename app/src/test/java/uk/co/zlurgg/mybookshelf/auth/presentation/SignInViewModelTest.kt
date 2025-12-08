@@ -19,6 +19,8 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -80,9 +82,17 @@ class SignInViewModelTest {
         override suspend fun execute(): GuestDataInfo = mockGuestDataInfo
     }
 
+    private val mockClearUserDataUseCase = object : ClearUserDataUseCase {
+        override suspend fun execute(userId: String): Result<Int, DataError.Local> = Result.Success(0)
+    }
+
+    private val mockCurrentUserProvider = object : CurrentUserProvider {
+        override fun getCurrentUserId(): String? = "test-user-id"
+    }
+
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
-        val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserDataUseCase, mockCurrentUserProvider)
         val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
 
         val useCases = SignInUseCases(

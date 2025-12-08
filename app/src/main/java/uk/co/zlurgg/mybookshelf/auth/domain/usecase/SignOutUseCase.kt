@@ -3,6 +3,8 @@ package uk.co.zlurgg.mybookshelf.auth.domain.usecase
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
@@ -10,7 +12,9 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 class SignOutUseCase(
     private val authService: AuthService,
     private val authStateRepository: AuthStateRepository,
-    private val syncScheduler: SyncSchedulerService
+    private val syncScheduler: SyncSchedulerService,
+    private val clearUserData: ClearUserDataUseCase,
+    private val currentUserProvider: CurrentUserProvider
 ) {
     companion object {
         private const val TAG = "SignOut"
@@ -22,6 +26,23 @@ class SignOutUseCase(
         // Cancel all sync work before signing out
         Timber.tag(TAG).d("Cancelling sync work")
         syncScheduler.cancelAllSync()
+
+        // Clear user data before signing out (preserves guest and system data)
+        val userId = currentUserProvider.getCurrentUserId()
+        if (userId != null) {
+            Timber.tag(TAG).d("Clearing user data for: %s", userId)
+            when (val clearResult = clearUserData.execute(userId)) {
+                is Result.Success -> {
+                    Timber.tag(TAG).d("Cleared %d items", clearResult.data)
+                }
+                is Result.Error -> {
+                    // Log but don't fail sign-out if clearing fails
+                    Timber.tag(TAG).w("Failed to clear user data: %s", clearResult.error)
+                }
+            }
+        } else {
+            Timber.tag(TAG).d("No user signed in, skipping data clearing")
+        }
 
         return when (val result = authService.signOut()) {
             is Result.Success -> {
