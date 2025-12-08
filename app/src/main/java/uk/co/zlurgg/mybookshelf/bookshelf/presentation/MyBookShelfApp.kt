@@ -4,16 +4,20 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import uk.co.zlurgg.mybookshelf.app.NavigationRoute
+import uk.co.zlurgg.mybookshelf.auth.presentation.PostSignInDestination
+import uk.co.zlurgg.mybookshelf.auth.presentation.SignInScreenRoot
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailsScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseAction
@@ -29,12 +33,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.Impor
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportNameConflictDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components.ImportSuccessDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeScreenRoot
-import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
-import org.koin.compose.koinInject
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.auth.presentation.SignInScreenRoot
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase
 
 @Composable
 fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
@@ -42,10 +41,6 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
         val navController = rememberNavController()
         val deepLinkViewModel = koinViewModel<DeepLinkViewModel>()
         val deepLinkState = deepLinkViewModel.state.collectAsStateWithLifecycle().value
-        val welcomePreferences = koinInject<WelcomePreferences>()
-        val currentUserProvider = koinInject<CurrentUserProvider>()
-        val currentUserId = currentUserProvider.getCurrentUserId()
-        val hasShownWelcome = welcomePreferences.hasShownWelcome(currentUserId).collectAsStateWithLifecycle(initialValue = true).value
         val initializeWelcome = koinInject<InitializeWelcomeUseCase>()
 
         // Initialize welcome on first app launch
@@ -73,25 +68,12 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                     route = NavigationRoute.SignIn.ROUTE
                 ) {
                     SignInScreenRoot(
-                        onSignInSuccess = {
-                            // After sign-in, go to Welcome if first time, else Bookcase
-                            val destination = if (hasShownWelcome) {
-                                NavigationRoute.Bookcase.createRoute()
-                            } else {
-                                NavigationRoute.Welcome.createRoute()
+                        onNavigate = { destination ->
+                            val route = when (destination) {
+                                PostSignInDestination.Welcome -> NavigationRoute.Welcome.createRoute()
+                                PostSignInDestination.Bookcase -> NavigationRoute.Bookcase.createRoute()
                             }
-                            navController.navigate(destination) {
-                                popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
-                            }
-                        },
-                        onContinueAsGuest = {
-                            // Guest mode: same flow as sign-in but without auth
-                            val destination = if (hasShownWelcome) {
-                                NavigationRoute.Bookcase.createRoute()
-                            } else {
-                                NavigationRoute.Welcome.createRoute()
-                            }
-                            navController.navigate(destination) {
+                            navController.navigate(route) {
                                 popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
                             }
                         }

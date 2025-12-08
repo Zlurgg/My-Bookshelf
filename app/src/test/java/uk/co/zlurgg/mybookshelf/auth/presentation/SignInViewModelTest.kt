@@ -19,6 +19,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
@@ -68,6 +69,11 @@ class SignInViewModelTest {
         }
     }
 
+    private var mockShouldShowWelcome = false
+    private val mockShouldShowWelcomeUseCase = object : ShouldShowWelcomeUseCase {
+        override suspend fun execute(): Boolean = mockShouldShowWelcome
+    }
+
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockMigrateLocalDataUseCase)
         val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
@@ -79,7 +85,7 @@ class SignInViewModelTest {
             checkSignInStatus = checkSignInStatusUseCase
         )
 
-        return SignInViewModel(useCases)
+        return SignInViewModel(useCases, mockShouldShowWelcomeUseCase)
     }
 
     private fun resetMocks() {
@@ -88,6 +94,7 @@ class SignInViewModelTest {
         mockIsSignedIn = false
         mockCurrentUser = null
         signInStateSet = null
+        mockShouldShowWelcome = false
     }
 
     // ============================================================================

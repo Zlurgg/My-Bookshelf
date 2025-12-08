@@ -25,24 +25,15 @@ import uk.co.zlurgg.mybookshelf.auth.presentation.components.WelcomeHeader
 @Composable
 fun SignInScreenRoot(
     viewModel: SignInViewModel = koinViewModel(),
-    onSignInSuccess: () -> Unit,
-    onContinueAsGuest: () -> Unit
+    onNavigate: (PostSignInDestination) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Handle navigation on successful sign-in
-    LaunchedEffect(state.isSignInSuccessful) {
-        if (state.isSignInSuccessful) {
-            onSignInSuccess()
-            viewModel.onAction(SignInAction.ResetState)
-        }
-    }
-
-    // Handle navigation for guest mode
-    LaunchedEffect(state.isContinuingAsGuest) {
-        if (state.isContinuingAsGuest) {
-            onContinueAsGuest()
+    // Handle navigation when destination is determined
+    LaunchedEffect(state.navigateToDestination) {
+        state.navigateToDestination?.let { destination ->
+            onNavigate(destination)
             viewModel.onAction(SignInAction.ResetState)
         }
     }
