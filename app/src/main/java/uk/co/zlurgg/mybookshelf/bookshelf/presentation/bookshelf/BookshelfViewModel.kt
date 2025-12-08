@@ -17,6 +17,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCas
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
@@ -33,7 +34,10 @@ class BookshelfViewModel(
     }
 
     // Initialize state flow with default value
-    private val _state = MutableStateFlow(BookshelfState(shelfId = shelfId))
+    private val _state = MutableStateFlow(BookshelfState(
+        shelfId = shelfId,
+        isTutorialShelf = shelfId == SystemOwnerIds.TUTORIAL_SHELF_ID
+    ))
     val state: StateFlow<BookshelfState> = _state.asStateFlow()
 
     // Debounced query flow
