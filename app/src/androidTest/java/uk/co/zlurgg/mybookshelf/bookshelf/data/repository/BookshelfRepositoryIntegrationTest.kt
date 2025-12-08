@@ -12,10 +12,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 /**
@@ -27,7 +27,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 @RunWith(AndroidJUnit4::class)
 class BookshelfRepositoryIntegrationTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var repository: BookshelfRepositoryImpl
     private val testTimeProvider = object : TimeProvider {
         override fun currentTimeMillis(): Long = 1000L
@@ -37,7 +37,7 @@ class BookshelfRepositoryIntegrationTest {
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).build()
 
         repository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)

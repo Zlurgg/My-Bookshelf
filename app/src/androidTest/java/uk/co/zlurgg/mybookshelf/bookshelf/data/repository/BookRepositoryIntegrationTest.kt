@@ -11,8 +11,8 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 
 /**
  * Integration test for BookRepository with real Room database.
@@ -23,14 +23,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
 @RunWith(AndroidJUnit4::class)
 class BookRepositoryIntegrationTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
 
     @Before
     fun setup() {
         // Create real Room database on device
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).build()
     }
 

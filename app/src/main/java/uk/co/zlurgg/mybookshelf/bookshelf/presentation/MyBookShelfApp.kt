@@ -32,7 +32,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeScreenRoot
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 import org.koin.compose.koinInject
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInScreenRoot
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase
 
 @Composable
 fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
@@ -41,8 +43,10 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
         val deepLinkViewModel = koinViewModel<DeepLinkViewModel>()
         val deepLinkState = deepLinkViewModel.state.collectAsStateWithLifecycle().value
         val welcomePreferences = koinInject<WelcomePreferences>()
-        val hasShownWelcome = welcomePreferences.hasShownWelcome().collectAsStateWithLifecycle(initialValue = true).value
-        val initializeWelcome = koinInject<uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase>()
+        val currentUserProvider = koinInject<CurrentUserProvider>()
+        val currentUserId = currentUserProvider.getCurrentUserId()
+        val hasShownWelcome = welcomePreferences.hasShownWelcome(currentUserId).collectAsStateWithLifecycle(initialValue = true).value
+        val initializeWelcome = koinInject<InitializeWelcomeUseCase>()
 
         // Initialize welcome on first app launch
         LaunchedEffect(Unit) {

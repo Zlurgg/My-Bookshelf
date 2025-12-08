@@ -11,8 +11,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookIdentifier
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
@@ -30,18 +31,23 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 @RunWith(AndroidJUnit4::class)
 class ValidatorIntegrationTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var bookcaseRepository: BookcaseRepositoryImpl
     private lateinit var validator: BookshelfImportValidatorImpl
+
+    // Stub CurrentUserProvider - returns null (guest mode)
+    private val stubCurrentUserProvider = object : CurrentUserProvider {
+        override fun getCurrentUserId(): String? = null
+    }
 
     @Before
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).build()
 
-        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao)
+        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
         validator = BookshelfImportValidatorImpl(bookcaseRepository)
     }
 

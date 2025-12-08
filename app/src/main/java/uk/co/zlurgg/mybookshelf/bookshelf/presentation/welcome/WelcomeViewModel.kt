@@ -6,10 +6,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 
 class WelcomeViewModel(
-    private val welcomePreferences: WelcomePreferences
+    private val welcomePreferences: WelcomePreferences,
+    private val currentUserProvider: CurrentUserProvider
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(WelcomeState())
@@ -25,7 +27,8 @@ class WelcomeViewModel(
 
     private fun markWelcomeAsShown() {
         viewModelScope.launch {
-            welcomePreferences.setWelcomeShown()
+            val userId = currentUserProvider.getCurrentUserId()
+            welcomePreferences.setWelcomeShown(userId)
         }
     }
 }

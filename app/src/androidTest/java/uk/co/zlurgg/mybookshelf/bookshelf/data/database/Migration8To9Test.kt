@@ -13,8 +13,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.migrations.MIGRATION_8_9
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.migrations.MIGRATION_8_9
 
 /**
  * Integration test for database migration from version 8 to 9.
@@ -35,7 +35,7 @@ class Migration8To9Test {
     @get:Rule
     val helper: MigrationTestHelper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),
-        BookshelfDatabase::class.java
+        MyBookshelfRoomDatabase::class.java
     )
 
     @Test
@@ -329,7 +329,7 @@ class Migration8To9Test {
         // Open with Room to verify schema compatibility
         val roomDb = Room.databaseBuilder(
             InstrumentationRegistry.getInstrumentation().targetContext,
-            BookshelfDatabase::class.java,
+            MyBookshelfRoomDatabase::class.java,
             testDbName
         ).addMigrations(MIGRATION_8_9).build()
 

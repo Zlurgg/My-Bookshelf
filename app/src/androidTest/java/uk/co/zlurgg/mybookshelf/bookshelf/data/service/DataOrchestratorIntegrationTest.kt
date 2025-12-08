@@ -12,16 +12,19 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 /**
@@ -33,7 +36,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 @RunWith(AndroidJUnit4::class)
 class DataOrchestratorIntegrationTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var orchestrator: DatabaseBookshelfDataOrchestrator
     private lateinit var bookcaseRepository: BookcaseRepositoryImpl
     private lateinit var bookshelfRepository: BookshelfRepositoryImpl
@@ -41,6 +44,11 @@ class DataOrchestratorIntegrationTest {
 
     private val testTimeProvider = object : TimeProvider {
         override fun currentTimeMillis(): Long = 1000L
+    }
+
+    // Stub CurrentUserProvider - returns null (guest mode)
+    private val stubCurrentUserProvider = object : CurrentUserProvider {
+        override fun getCurrentUserId(): String? = null
     }
 
     // Stub RemoteBookDataSource - not used in these tests
@@ -52,11 +60,11 @@ class DataOrchestratorIntegrationTest {
             authorFilter: String?,
             titleFilter: String?,
             sort: String?
-        ): Result<uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto, DataError.Remote> {
+        ): Result<SearchResponseDto, DataError.Remote> {
             throw NotImplementedError("Not used in integration tests")
         }
 
-        override suspend fun getBookDetails(bookWorkId: String): Result<uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto, DataError.Remote> {
+        override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
             throw NotImplementedError("Not used in integration tests")
         }
     }
@@ -65,10 +73,10 @@ class DataOrchestratorIntegrationTest {
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).build()
 
-        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao)
+        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
         bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
         bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
 

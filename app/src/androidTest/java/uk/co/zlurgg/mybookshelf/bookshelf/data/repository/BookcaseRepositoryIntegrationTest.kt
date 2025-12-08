@@ -11,12 +11,13 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 
 /**
  * Integration test for BookcaseRepository with real Room database.
@@ -27,17 +28,22 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 @RunWith(AndroidJUnit4::class)
 class BookcaseRepositoryIntegrationTest {
 
-    private lateinit var database: BookshelfDatabase
+    private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var repository: BookcaseRepositoryImpl
+
+    // Stub CurrentUserProvider - returns null (guest mode)
+    private val stubCurrentUserProvider = object : CurrentUserProvider {
+        override fun getCurrentUserId(): String? = null
+    }
 
     @Before
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            BookshelfDatabase::class.java
+            MyBookshelfRoomDatabase::class.java
         ).build()
 
-        repository = BookcaseRepositoryImpl(database.bookshelfDao)
+        repository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
     }
 
     @After
@@ -195,7 +201,7 @@ class BookcaseRepositoryIntegrationTest {
         repository.addShelf(Bookshelf("shelf-2", "Second", emptyList(), ShelfStyle.DarkWood, 1))
 
         // When - Create new repository instance (simulating app restart)
-        val newRepository = BookcaseRepositoryImpl(database.bookshelfDao)
+        val newRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
         val shelves = newRepository.getAllShelves().first()
 
         // Then - Positions should persist
