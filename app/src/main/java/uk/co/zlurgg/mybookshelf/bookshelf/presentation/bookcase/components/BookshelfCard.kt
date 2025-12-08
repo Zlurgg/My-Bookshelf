@@ -162,36 +162,45 @@ fun BookshelfCard(
                                     Icon(Icons.Default.Palette, contentDescription = null)
                                 }
                             )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_delete_shelf)) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onDelete(shelf)
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Delete, contentDescription = null)
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_share_shelf)) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onShareShelf(shelf)
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Share, contentDescription = null)
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(id = R.string.menu_duplicate_shelf)) },
-                                onClick = {
-                                    menuExpanded = false
-                                    onDuplicateShelf(shelf)
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = null)
-                                }
-                            )
+                            // Only show delete for non-tutorial shelves
+                            if (!isTutorialShelf) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = R.string.menu_delete_shelf)) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onDelete(shelf)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Delete, contentDescription = null)
+                                    }
+                                )
+                            }
+                            // Only show share for non-tutorial shelves
+                            if (!isTutorialShelf) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = R.string.menu_share_shelf)) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onShareShelf(shelf)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Share, contentDescription = null)
+                                    }
+                                )
+                            }
+                            // Only show duplicate for non-tutorial shelves
+                            if (!isTutorialShelf) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = R.string.menu_duplicate_shelf)) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onDuplicateShelf(shelf)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.ContentCopy, contentDescription = null)
+                                    }
+                                )
+                            }
                         }
                     }
                 }
