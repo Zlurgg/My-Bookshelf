@@ -31,9 +31,13 @@ interface BookshelfDao {
      * Get shelves filtered by owner. Returns:
      * - User's shelves (ownerId = userId) when signed in
      * - Orphan shelves (ownerId IS NULL) for migration/backwards compatibility
-     * - Only orphan shelves when userId is null (guest mode)
+     * - System shelves (ownerId = '__system_tutorial__') - always visible
+     * - Only orphan + system shelves when userId is null (guest mode)
+     *
+     * Note: The system ownerId is hardcoded here because Room requires compile-time constants.
+     * See SystemOwnerIds.TUTORIAL for the canonical constant.
      */
-    @Query("SELECT * FROM BookshelfEntity WHERE ownerId IS NULL OR ownerId = :userId ORDER BY position ASC")
+    @Query("SELECT * FROM BookshelfEntity WHERE ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__' ORDER BY position ASC")
     fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>>
 
     @Query("SELECT * FROM BookshelfEntity WHERE id = :id")
@@ -98,6 +102,7 @@ interface BookshelfDao {
     suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?)
 
     // Migration queries - assign owner to orphan entities (used when user signs in)
+    // Note: System entities have ownerId = '__system_tutorial__', so they're not counted as orphans
     @Query("SELECT COUNT(*) FROM BookEntity WHERE ownerId IS NULL")
     suspend fun countOrphanBooks(): Int
 

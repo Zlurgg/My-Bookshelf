@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
@@ -37,5 +38,9 @@ class BookcaseRepositoryImpl(
 
     override suspend fun updateShelf(shelf: Bookshelf) {
         dao.upsertShelf(shelf.toEntity())
+    }
+
+    override suspend fun addSystemShelf(shelf: Bookshelf) {
+        dao.upsertShelf(shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL))
     }
 }

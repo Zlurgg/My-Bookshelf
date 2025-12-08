@@ -11,9 +11,11 @@ class MockBookRepository : BookRepository {
 
     var shouldThrowException = false
     var upsertBookCallCount = 0
+    var upsertSystemBookCallCount = 0
     var deleteBookCallCount = 0
     var getBookByIdCallCount = 0
     var lastUpsertedBook: Book? = null
+    var lastUpsertedSystemBook: Book? = null
     var lastDeletedBookId: String? = null
     var lastQueriedBookId: String? = null
 
@@ -21,9 +23,11 @@ class MockBookRepository : BookRepository {
         books.clear()
         shouldThrowException = false
         upsertBookCallCount = 0
+        upsertSystemBookCallCount = 0
         deleteBookCallCount = 0
         getBookByIdCallCount = 0
         lastUpsertedBook = null
+        lastUpsertedSystemBook = null
         lastDeletedBookId = null
         lastQueriedBookId = null
     }
@@ -74,5 +78,16 @@ class MockBookRepository : BookRepository {
 
         val book = books[bookId]
         return Result.Success(book?.description)
+    }
+
+    override suspend fun upsertSystemBook(book: Book) {
+        upsertSystemBookCallCount++
+        lastUpsertedSystemBook = book
+
+        if (shouldThrowException) {
+            throw RuntimeException("Mock repository error")
+        }
+
+        books[book.id] = book
     }
 }

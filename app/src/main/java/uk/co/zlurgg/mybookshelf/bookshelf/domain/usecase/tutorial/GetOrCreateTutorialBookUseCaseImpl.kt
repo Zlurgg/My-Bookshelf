@@ -15,6 +15,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 /**
  * UseCase to get existing tutorial book or create it if it doesn't exist.
  * Creates a welcome book with app usage instructions and adds it to the tutorial shelf.
+ * The tutorial book is created as a system entity (not synced to cloud).
  */
 class GetOrCreateTutorialBookUseCaseImpl(
     private val bookRepository: BookRepository,
@@ -65,8 +66,8 @@ class GetOrCreateTutorialBookUseCaseImpl(
                     internetArchiveId = null
                 )
 
-                // Persist the tutorial book
-                bookRepository.upsertBook(tutorialBook)
+                // Persist the tutorial book as a system entity (not synced to cloud)
+                bookRepository.upsertSystemBook(tutorialBook)
 
                 // Add it to the tutorial shelf
                 bookshelfRepository.addBookToShelf(tutorialShelfId, tutorialBook.id)

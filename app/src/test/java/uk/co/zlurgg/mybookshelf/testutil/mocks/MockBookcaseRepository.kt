@@ -22,11 +22,14 @@ class MockBookcaseRepository : BookcaseRepository {
 
     // Tracking properties
     var addShelfCalled = false
+    var addSystemShelfCalled = false
     var removeShelfCalled = false
     var updateShelfCalled = false
     var addShelfCallCount = 0
+    var addSystemShelfCallCount = 0
     var removeShelfCallCount = 0
     var lastAddedShelf: Bookshelf? = null
+    var lastAddedSystemShelf: Bookshelf? = null
     var lastRemovedShelfId: String? = null
     var lastUpdatedShelf: Bookshelf? = null
 
@@ -69,6 +72,16 @@ class MockBookcaseRepository : BookcaseRepository {
         lastUpdatedShelf = shelf
     }
 
+    override suspend fun addSystemShelf(shelf: Bookshelf) {
+        addSystemShelfCalled = true
+        addSystemShelfCallCount++
+        lastAddedSystemShelf = shelf
+
+        if (shouldThrowException) throw RuntimeException("Test exception")
+
+        shelves[shelf.id] = shelf
+    }
+
     // Helper methods for test setup
     fun reset() {
         shelves.clear()
@@ -77,11 +90,14 @@ class MockBookcaseRepository : BookcaseRepository {
         shelfByIdToReturn = null
         bookCountsToReturn = emptyMap()
         addShelfCalled = false
+        addSystemShelfCalled = false
         removeShelfCalled = false
         updateShelfCalled = false
         addShelfCallCount = 0
+        addSystemShelfCallCount = 0
         removeShelfCallCount = 0
         lastAddedShelf = null
+        lastAddedSystemShelf = null
         lastRemovedShelfId = null
         lastUpdatedShelf = null
     }

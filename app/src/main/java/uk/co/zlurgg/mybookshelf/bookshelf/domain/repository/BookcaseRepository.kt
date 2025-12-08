@@ -10,4 +10,10 @@ interface BookcaseRepository {
     suspend fun addShelf(shelf: Bookshelf)
     suspend fun removeShelf(shelfId: String)
     suspend fun updateShelf(shelf: Bookshelf)
+
+    /**
+     * Adds a system shelf (e.g., tutorial shelf) with SystemOwnerIds.TUTORIAL as owner.
+     * System shelves are visible to all users and not synced to cloud.
+     */
+    suspend fun addSystemShelf(shelf: Bookshelf)
 }

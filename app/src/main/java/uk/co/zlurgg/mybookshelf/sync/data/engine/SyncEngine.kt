@@ -9,6 +9,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
@@ -150,9 +151,9 @@ class SyncEngine(
         var pushedShelves = 0
         var deletedCount = 0
 
-        // Get pending books
+        // Get pending books (exclude system entities like tutorial book)
         val pendingBooks = bookshelfDao.getPendingSyncBooks()
-            .filter { it.ownerId == userId || it.ownerId == null }
+            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
 
         Timber.tag(TAG).d("Found %d pending books", pendingBooks.size)
         updateProgress(SyncPhase.PUSHING_BOOKS, 0, pendingBooks.size)
@@ -184,9 +185,9 @@ class SyncEngine(
             }
         }
 
-        // Get pending shelves
+        // Get pending shelves (exclude system entities like tutorial shelf)
         val pendingShelves = bookshelfDao.getPendingSyncShelves()
-            .filter { it.ownerId == userId || it.ownerId == null }
+            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
 
         Timber.tag(TAG).d("Found %d pending shelves", pendingShelves.size)
         updateProgress(SyncPhase.PUSHING_SHELVES, 0, pendingShelves.size)

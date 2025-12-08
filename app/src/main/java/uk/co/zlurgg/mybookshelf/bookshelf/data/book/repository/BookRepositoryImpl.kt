@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
@@ -30,5 +31,9 @@ class BookRepositoryImpl(
     override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
         return remoteBookDataSource.getBookDetails(bookId)
             .map { bookDetails -> bookDetails.description }
+    }
+
+    override suspend fun upsertSystemBook(book: Book) {
+        dao.upsert(book.toBookEntity(ownerId = SystemOwnerIds.TUTORIAL))
     }
 }

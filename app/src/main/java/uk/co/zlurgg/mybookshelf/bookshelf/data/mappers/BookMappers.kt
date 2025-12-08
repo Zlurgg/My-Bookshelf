@@ -43,6 +43,9 @@ fun SearchedBookDto.toBook(): Book {
     )
 }
 
+/**
+ * Converts Book domain model to entity with default ownerId (null).
+ */
 fun Book.toBookEntity(): BookEntity {
     return BookEntity(
         id = id,
@@ -69,6 +72,43 @@ fun Book.toBookEntity(): BookEntity {
         publisher = publisher,
         publishDate = publishDate,
         internetArchiveId = internetArchiveId
+    )
+}
+
+/**
+ * Converts Book domain model to entity with specified ownerId.
+ * Use this for system entities (e.g., tutorial book with SystemOwnerIds.TUTORIAL).
+ *
+ * @param ownerId The owner ID to set (null for guest, system ID for system entities)
+ */
+fun Book.toBookEntity(ownerId: String?): BookEntity {
+    return BookEntity(
+        id = id,
+        title = title,
+        description = description,
+        imageUrl = imageUrl,
+        languages = languages,
+        authors = authors,
+        firstPublishYear = firstPublishYear,
+        ratingsAverage = averageRating,
+        ratingsCount = ratingCount,
+        numPagesMedian = numPages,
+        numEditions = numEditions,
+        purchased = purchased,
+        spineColor = spineColor,
+        // Personal metadata
+        readingStatus = readingStatus.name,
+        personalRating = personalRating,
+        personalNotes = personalNotes,
+        dateAdded = dateAdded,
+        purchaseDate = purchaseDate,
+        // Enhanced metadata
+        isbn = isbn,
+        publisher = publisher,
+        publishDate = publishDate,
+        internetArchiveId = internetArchiveId,
+        // Sync metadata
+        ownerId = ownerId
     )
 }
 
