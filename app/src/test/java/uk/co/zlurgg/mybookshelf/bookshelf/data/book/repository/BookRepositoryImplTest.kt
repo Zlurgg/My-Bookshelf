@@ -16,6 +16,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
+import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRemoteBookDataSource
 
 @RunWith(RobolectricTestRunner::class)
@@ -24,6 +25,7 @@ class BookRepositoryImplTest {
     private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var mockRemoteDataSource: MockRemoteBookDataSource
     private lateinit var repository: BookRepositoryImpl
+    private val testTimeProvider = TestTimeProvider(currentTime = 1234567890L)
 
     private val mockCurrentUserProvider = object : CurrentUserProvider {
         override fun getCurrentUserId(): String = "test-user-id"
@@ -38,7 +40,7 @@ class BookRepositoryImplTest {
         ).allowMainThreadQueries().build()
 
         mockRemoteDataSource = MockRemoteBookDataSource()
-        repository = BookRepositoryImpl(mockRemoteDataSource, database.bookshelfDao, mockCurrentUserProvider)
+        repository = BookRepositoryImpl(mockRemoteDataSource, database.bookshelfDao, mockCurrentUserProvider, testTimeProvider)
     }
 
     @After

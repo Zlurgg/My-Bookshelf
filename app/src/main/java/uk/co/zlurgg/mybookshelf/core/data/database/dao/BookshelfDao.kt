@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.core.data.database.dao
 
 import androidx.room.Dao
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
@@ -128,6 +129,59 @@ interface BookshelfDao {
 
     @Query("UPDATE BookshelfEntity SET syncStatus = 'PENDING' WHERE ownerId = :ownerId")
     suspend fun markAllShelvesPending(ownerId: String)
+
+    // ========== Sync-aware upsert methods ==========
+    // These methods properly initialize sync metadata for new entities and preserve it for updates.
+    // This ensures lastModifiedAt is never 0, which would cause Firestore pull queries to miss documents.
+
+    /**
+     * Upsert a book with proper sync metadata initialization.
+     *
+     * For new books: Sets lastModifiedAt to initialTimestamp
+     * For existing books: Preserves cloudId, increments version, updates lastModifiedAt
+     *
+     * This ensures local entities are never created with lastModifiedAt=0, which would
+     * be filtered out by Firestore's whereGreaterThan(0) query on pull.
+     */
+    @Transaction
+    suspend fun upsertBookWithSyncInit(book: BookEntity, initialTimestamp: Long) {
+        val existing = getBookById(book.id)
+        if (existing == null) {
+            // New book - set lastModifiedAt to initialTimestamp
+            upsert(book.copy(lastModifiedAt = initialTimestamp))
+        } else {
+            // Existing book - preserve sync metadata, update lastModifiedAt
+            upsert(book.copy(
+                lastModifiedAt = initialTimestamp,
+                cloudId = existing.cloudId,
+                version = existing.version + 1
+            ))
+        }
+    }
+
+    /**
+     * Upsert a shelf with proper sync metadata initialization.
+     *
+     * For new shelves: Sets lastModifiedAt to initialTimestamp
+     * For existing shelves: Preserves cloudId, sharing status, increments version, updates lastModifiedAt
+     */
+    @Transaction
+    suspend fun upsertShelfWithSyncInit(shelf: BookshelfEntity, initialTimestamp: Long) {
+        val existing = getShelfById(shelf.id)
+        if (existing == null) {
+            // New shelf - set lastModifiedAt to initialTimestamp
+            upsertShelf(shelf.copy(lastModifiedAt = initialTimestamp))
+        } else {
+            // Existing shelf - preserve sync metadata, update lastModifiedAt
+            upsertShelf(shelf.copy(
+                lastModifiedAt = initialTimestamp,
+                cloudId = existing.cloudId,
+                version = existing.version + 1,
+                isShared = existing.isShared,
+                shareCode = existing.shareCode
+            ))
+        }
+    }
 
     // ========== Sign-out cleanup queries ==========
     // Delete all user's data when signing out to prevent data leakage to other accounts

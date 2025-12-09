@@ -1,21 +1,23 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
-import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.map
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 class BookRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
     private val dao: BookshelfDao,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
+    private val timeProvider: TimeProvider
 ) : BookRepository {
 
     override suspend fun getBookById(bookId: String): Book? {
@@ -24,7 +26,10 @@ class BookRepositoryImpl(
 
     override suspend fun upsertBook(book: Book) {
         val ownerId = currentUserProvider.getCurrentUserId()
-        dao.upsert(book.toBookEntity(ownerId))
+        dao.upsertBookWithSyncInit(
+            book.toBookEntity(ownerId),
+            timeProvider.currentTimeMillis()
+        )
     }
 
     override suspend fun deleteBook(bookId: String) {

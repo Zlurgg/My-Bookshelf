@@ -3,16 +3,18 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
-import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 class BookcaseRepositoryImpl(
     private val dao: BookshelfDao,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
+    private val timeProvider: TimeProvider
 ): BookcaseRepository {
 
     override fun getAllShelves(): Flow<List<Bookshelf>> {
@@ -28,7 +30,10 @@ class BookcaseRepositoryImpl(
 
     override suspend fun addShelf(shelf: Bookshelf) {
         val ownerId = currentUserProvider.getCurrentUserId()
-        dao.upsertShelf(shelf.toEntity(ownerId))
+        dao.upsertShelfWithSyncInit(
+            shelf.toEntity(ownerId),
+            timeProvider.currentTimeMillis()
+        )
     }
 
     override suspend fun removeShelf(shelfId: String) {
@@ -39,10 +44,14 @@ class BookcaseRepositoryImpl(
 
     override suspend fun updateShelf(shelf: Bookshelf) {
         val ownerId = currentUserProvider.getCurrentUserId()
-        dao.upsertShelf(shelf.toEntity(ownerId))
+        dao.upsertShelfWithSyncInit(
+            shelf.toEntity(ownerId),
+            timeProvider.currentTimeMillis()
+        )
     }
 
     override suspend fun addSystemShelf(shelf: Bookshelf) {
+        // System shelves don't need sync metadata (not synced to cloud)
         dao.upsertShelf(shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL))
     }
 }
