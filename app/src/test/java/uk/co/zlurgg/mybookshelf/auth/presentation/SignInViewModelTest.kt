@@ -26,9 +26,11 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo
 import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
+import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -90,9 +92,11 @@ class SignInViewModelTest {
         override fun getCurrentUserId(): String? = "test-user-id"
     }
 
+    private val mockSyncRepository = MockSyncRepository()
+
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
-        val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserDataUseCase, mockCurrentUserProvider)
+        val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserDataUseCase, mockCurrentUserProvider, mockSyncRepository)
         val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
 
         val useCases = SignInUseCases(

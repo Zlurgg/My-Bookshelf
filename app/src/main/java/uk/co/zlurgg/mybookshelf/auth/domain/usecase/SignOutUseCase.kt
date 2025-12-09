@@ -7,6 +7,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class SignOutUseCase(
@@ -14,7 +15,8 @@ class SignOutUseCase(
     private val authStateRepository: AuthStateRepository,
     private val syncScheduler: SyncSchedulerService,
     private val clearUserData: ClearUserDataUseCase,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
+    private val syncRepository: SyncRepository
 ) {
     companion object {
         private const val TAG = "SignOut"
@@ -40,6 +42,10 @@ class SignOutUseCase(
                     Timber.tag(TAG).w("Failed to clear user data: %s", clearResult.error)
                 }
             }
+
+            // Clear sync metadata so next sign-in triggers a full sync
+            Timber.tag(TAG).d("Clearing sync metadata for: %s", userId)
+            syncRepository.clearSyncData(userId)
         } else {
             Timber.tag(TAG).d("No user signed in, skipping data clearing")
         }

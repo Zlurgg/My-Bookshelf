@@ -237,7 +237,7 @@ val appModule = module {
     // Authentication - UseCases
     single { SignInUseCase(get(), get(), get()) }
     singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
-    single { SignOutUseCase(get(), get(), get(), get(), get()) }
+    single { SignOutUseCase(get(), get(), get(), get(), get(), get()) }
     single { CheckSignInStatusUseCase(get(), get()) }
     single { SignInUseCases(get(), get(), get()) }
 

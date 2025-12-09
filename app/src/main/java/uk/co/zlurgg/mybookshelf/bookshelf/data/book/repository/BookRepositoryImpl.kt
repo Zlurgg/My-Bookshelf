@@ -42,6 +42,9 @@ class BookRepositoryImpl(
     }
 
     override suspend fun upsertSystemBook(book: Book) {
-        dao.upsert(book.toBookEntity(ownerId = SystemOwnerIds.TUTORIAL))
+        // System books are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
+        val entity = book.toBookEntity(ownerId = SystemOwnerIds.TUTORIAL)
+            .copy(syncStatus = "SYNCED")
+        dao.upsert(entity)
     }
 }

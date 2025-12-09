@@ -15,17 +15,22 @@ class BookshelfRepositoryImpl(
 ) : BookshelfRepository {
 
     override suspend fun addBookToShelf(shelfId: String, bookId: String) {
+        val now = timeProvider.currentTimeMillis()
         dao.upsertCrossRef(
             BookshelfBookCrossRef(
                 shelfId = shelfId,
                 bookId = bookId,
-                addedAt = timeProvider.currentTimeMillis()
+                addedAt = now
             )
         )
+        // Mark shelf as pending sync so bookIds list gets updated in Firestore
+        dao.updateShelfSyncStatus(shelfId, "PENDING", now)
     }
 
     override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
         dao.deleteCrossRef(shelfId, bookId)
+        // Mark shelf as pending sync so bookIds list gets updated in Firestore
+        dao.updateShelfSyncStatus(shelfId, "PENDING", timeProvider.currentTimeMillis())
     }
 
     override fun getBooksForShelf(shelfId: String): Flow<List<Book>> {

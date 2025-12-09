@@ -6,6 +6,7 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.engine.SyncEngine
@@ -180,11 +181,11 @@ class SyncRepositoryImpl(
 
     override suspend fun getPendingChangesCount(userId: String): Int {
         val pendingBooks = bookshelfDao.getPendingSyncBooks()
-            .filter { it.ownerId == userId || it.ownerId == null }
+            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
             .size
 
         val pendingShelves = bookshelfDao.getPendingSyncShelves()
-            .filter { it.ownerId == userId || it.ownerId == null }
+            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
             .size
 
         return pendingBooks + pendingShelves

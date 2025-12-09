@@ -14,6 +14,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataU
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 class SignOutUseCaseTest {
 
@@ -24,6 +25,7 @@ class SignOutUseCaseTest {
     private var mockCurrentUserId: String? = "test-user-id"
     private var clearedUserId: String? = null
     private var mockClearResult: Result<Int, DataError.Local> = Result.Success(5)
+    private val mockSyncRepository = MockSyncRepository()
 
     private val mockAuthService = object : AuthService {
         override suspend fun signIn(): Result<UserData, DataError.Local> = Result.Success(
@@ -66,6 +68,7 @@ class SignOutUseCaseTest {
         signedInStateSet = null
         syncCancelled = false
         clearedUserId = null
+        mockSyncRepository.reset()
         mockSignOutResult = Result.Success(Unit)
         mockCurrentUserId = "test-user-id"
         mockClearResult = Result.Success(5)
@@ -74,7 +77,8 @@ class SignOutUseCaseTest {
             mockAuthStateRepository,
             mockSyncScheduler,
             mockClearUserDataUseCase,
-            mockCurrentUserProvider
+            mockCurrentUserProvider,
+            mockSyncRepository
         )
     }
 
@@ -175,5 +179,32 @@ class SignOutUseCaseTest {
         useCase.execute()
 
         assertEquals("specific-user-123", clearedUserId)
+    }
+
+    // ==================== Sync Metadata Clearing Tests ====================
+
+    @Test
+    fun `execute clears sync metadata for user`() = runTest {
+        useCase.execute()
+
+        assertEquals("test-user-id", mockSyncRepository.clearedSyncDataForUserId)
+    }
+
+    @Test
+    fun `execute skips sync metadata clearing when no user is signed in`() = runTest {
+        mockCurrentUserId = null
+
+        useCase.execute()
+
+        assertNull("Should not clear sync metadata when no user signed in", mockSyncRepository.clearedSyncDataForUserId)
+    }
+
+    @Test
+    fun `execute clears sync metadata for correct user id`() = runTest {
+        mockCurrentUserId = "specific-user-456"
+
+        useCase.execute()
+
+        assertEquals("specific-user-456", mockSyncRepository.clearedSyncDataForUserId)
     }
 }

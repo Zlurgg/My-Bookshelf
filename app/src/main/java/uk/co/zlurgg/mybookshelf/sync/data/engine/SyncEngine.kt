@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -311,12 +312,16 @@ class SyncEngine(
             if (localShelf == null) {
                 // New shelf from cloud - insert locally
                 bookshelfDao.upsertShelf(remoteShelf.toEntity(userId))
+                // Recreate cross-refs for books on this shelf
+                recreateCrossRefs(remoteShelf.id, remoteShelf.bookIds)
                 pulledShelves++
             } else if (localShelf.syncStatus == "SYNCED") {
                 // Local is synced, update with remote
                 bookshelfDao.upsertShelf(
                     remoteShelf.toEntity(userId, localShelf.cloudId ?: localShelf.id)
                 )
+                // Update cross-refs to match remote state
+                recreateCrossRefs(remoteShelf.id, remoteShelf.bookIds)
                 pulledShelves++
             } else {
                 // Conflict - local has pending changes
@@ -427,6 +432,29 @@ class SyncEngine(
 
     private fun updateProgress(phase: SyncPhase, current: Int, total: Int) {
         _progress.value = SyncProgress(phase, current, total)
+    }
+
+    /**
+     * Recreates cross-refs for a shelf from the cloud bookIds list.
+     * Clears existing cross-refs first to ensure consistency with remote state.
+     */
+    private suspend fun recreateCrossRefs(shelfId: String, bookIds: List<String>) {
+        // Clear existing cross-refs for this shelf
+        bookshelfDao.deleteAllCrossRefsForShelf(shelfId)
+
+        // Recreate from remote bookIds
+        val now = timeProvider.currentTimeMillis()
+        bookIds.forEachIndexed { index, bookId ->
+            bookshelfDao.upsertCrossRef(
+                BookshelfBookCrossRef(
+                    shelfId = shelfId,
+                    bookId = bookId,
+                    // Use decreasing addedAt to preserve order (first book = highest timestamp)
+                    addedAt = now - index
+                )
+            )
+        }
+        Timber.tag(TAG).d("Recreated %d cross-refs for shelf %s", bookIds.size, shelfId)
     }
 
     companion object {

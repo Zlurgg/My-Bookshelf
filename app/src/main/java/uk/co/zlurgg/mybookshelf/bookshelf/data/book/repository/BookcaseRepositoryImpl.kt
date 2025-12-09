@@ -51,7 +51,9 @@ class BookcaseRepositoryImpl(
     }
 
     override suspend fun addSystemShelf(shelf: Bookshelf) {
-        // System shelves don't need sync metadata (not synced to cloud)
-        dao.upsertShelf(shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL))
+        // System shelves are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
+        val entity = shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL)
+            .copy(syncStatus = "SYNCED")
+        dao.upsertShelf(entity)
     }
 }

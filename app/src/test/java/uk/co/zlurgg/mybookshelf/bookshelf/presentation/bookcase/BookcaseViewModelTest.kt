@@ -42,6 +42,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -130,8 +131,9 @@ class BookcaseViewModelTest {
         val mockCurrentUserProvider = object : CurrentUserProvider {
             override fun getCurrentUserId(): String? = "test-user-id"
         }
+        val mockSyncRepository = MockSyncRepository()
         val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
-        val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserData, mockCurrentUserProvider)
+        val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserData, mockCurrentUserProvider, mockSyncRepository)
 
         return BookcaseViewModel(
             shelfOperations,
