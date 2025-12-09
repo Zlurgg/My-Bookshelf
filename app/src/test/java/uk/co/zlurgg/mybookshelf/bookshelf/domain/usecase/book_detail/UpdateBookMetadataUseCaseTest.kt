@@ -302,7 +302,7 @@ class UpdateBookMetadataUseCaseTest {
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = mockRepository.getBookById("book-11")!!
         assertEquals("Should update reading status", ReadingStatus.READ, updatedBook.readingStatus)
-        assertEquals("Should update personal rating", 4.8f, updatedBook.personalRating ?: 0f, 0.01f)
+        assertEquals("Should update personal rating", 4.8f, updatedBook.personalRating, 0.01f)
         assertEquals("Should update personal notes", notes, updatedBook.personalNotes)
         assertEquals("Should update purchase date", purchaseDate, updatedBook.purchaseDate)
         assertEquals("Should auto-set dateAdded", 1750000000000L, updatedBook.dateAdded)
@@ -413,7 +413,7 @@ class UpdateBookMetadataUseCaseTest {
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = mockRepository.getBookById("book-15")!!
         assertEquals("Should update reading status", ReadingStatus.READ, updatedBook.readingStatus)
-        assertEquals("Should preserve personal rating", 3.5f, updatedBook.personalRating ?: 0f, 0.01f)
+        assertEquals("Should preserve personal rating", 3.5f, updatedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Original notes", updatedBook.personalNotes)
         assertEquals("Should preserve purchase date", 1500000000000L, updatedBook.purchaseDate)
     }
