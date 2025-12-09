@@ -27,7 +27,8 @@ class BookcaseRepositoryImpl(
         dao.getShelfById(shelfId)?.toDomain()
 
     override suspend fun addShelf(shelf: Bookshelf) {
-        dao.upsertShelf(shelf.toEntity())
+        val ownerId = currentUserProvider.getCurrentUserId()
+        dao.upsertShelf(shelf.toEntity(ownerId))
     }
 
     override suspend fun removeShelf(shelfId: String) {
@@ -37,7 +38,8 @@ class BookcaseRepositoryImpl(
     }
 
     override suspend fun updateShelf(shelf: Bookshelf) {
-        dao.upsertShelf(shelf.toEntity())
+        val ownerId = currentUserProvider.getCurrentUserId()
+        dao.upsertShelf(shelf.toEntity(ownerId))
     }
 
     override suspend fun addSystemShelf(shelf: Bookshelf) {

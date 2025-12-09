@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
@@ -13,7 +14,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 class BookRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
-    private val dao: BookshelfDao
+    private val dao: BookshelfDao,
+    private val currentUserProvider: CurrentUserProvider
 ) : BookRepository {
 
     override suspend fun getBookById(bookId: String): Book? {
@@ -21,7 +23,8 @@ class BookRepositoryImpl(
     }
 
     override suspend fun upsertBook(book: Book) {
-        dao.upsert(book.toBookEntity())
+        val ownerId = currentUserProvider.getCurrentUserId()
+        dao.upsert(book.toBookEntity(ownerId))
     }
 
     override suspend fun deleteBook(bookId: String) {
