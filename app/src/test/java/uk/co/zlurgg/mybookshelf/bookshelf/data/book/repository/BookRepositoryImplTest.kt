@@ -26,7 +26,7 @@ class BookRepositoryImplTest {
     private lateinit var repository: BookRepositoryImpl
 
     private val mockCurrentUserProvider = object : CurrentUserProvider {
-        override fun getCurrentUserId(): String? = "test-user-id"
+        override fun getCurrentUserId(): String = "test-user-id"
     }
 
     @Before
