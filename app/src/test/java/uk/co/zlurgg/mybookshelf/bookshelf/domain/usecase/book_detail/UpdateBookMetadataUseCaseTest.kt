@@ -12,6 +12,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 /**
  * Tests for UpdateBookMetadataUseCase demonstrating personal metadata management.
@@ -28,12 +29,14 @@ class UpdateBookMetadataUseCaseTest {
 
     private val mockRepository = MockBookRepository()
     private val testTimeProvider = TestTimeProvider(currentTime = 1234567890L)
-    private val useCase = UpdateBookMetadataUseCaseImpl(mockRepository, testTimeProvider)
+    private val mockSyncSchedulerService = MockSyncSchedulerService()
+    private val useCase = UpdateBookMetadataUseCaseImpl(mockRepository, testTimeProvider, mockSyncSchedulerService)
 
     @After
     fun tearDown() {
         mockRepository.reset()
         testTimeProvider.setTime(0L)
+        mockSyncSchedulerService.reset()
     }
 
     @Test

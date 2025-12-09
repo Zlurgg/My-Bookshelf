@@ -11,6 +11,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 /**
  * TDD-style test for RenameShelfUseCase.
@@ -19,12 +20,14 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 class RenameShelfUseCaseTest {
 
     private val mockRepository = MockBookcaseRepository()
+    private val mockSyncSchedulerService = MockSyncSchedulerService()
     private lateinit var useCase: RenameShelfUseCase
 
     @Before
     fun setup() {
         mockRepository.reset()
-        useCase = RenameShelfUseCaseImpl(mockRepository)
+        mockSyncSchedulerService.reset()
+        useCase = RenameShelfUseCaseImpl(mockRepository, mockSyncSchedulerService)
     }
 
     @Test

@@ -12,15 +12,18 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class DeleteShelfUseCaseTest {
 
     private val mockRepository = MockBookcaseRepository()
-    private val useCase = DeleteShelfUseCaseImpl(mockRepository)
+    private val mockSyncSchedulerService = MockSyncSchedulerService()
+    private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockSyncSchedulerService)
 
     @After
     fun tearDown() {
         mockRepository.reset()
+        mockSyncSchedulerService.reset()
     }
 
     @Test

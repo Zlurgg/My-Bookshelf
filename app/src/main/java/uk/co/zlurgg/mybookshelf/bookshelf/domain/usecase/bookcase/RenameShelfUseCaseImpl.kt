@@ -1,17 +1,21 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import kotlinx.coroutines.flow.first
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of RenameShelfUseCase.
  * Validates new name against existing shelves and updates the repository.
  */
 class RenameShelfUseCaseImpl(
-    private val bookcaseRepository: BookcaseRepository
+    private val bookcaseRepository: BookcaseRepository,
+    private val syncSchedulerService: SyncSchedulerService
 ) : RenameShelfUseCase {
 
     override suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local> {
@@ -43,6 +47,10 @@ class RenameShelfUseCaseImpl(
             // Update the shelf with new name
             val updatedShelf = shelfToRename.copy(name = trimmedName)
             bookcaseRepository.updateShelf(updatedShelf)
+
+            // Trigger sync after successful shelf rename
+            Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: RenameShelf")
+            syncSchedulerService.triggerImmediateSync()
 
             Result.Success(Unit)
         } catch (e: Exception) {

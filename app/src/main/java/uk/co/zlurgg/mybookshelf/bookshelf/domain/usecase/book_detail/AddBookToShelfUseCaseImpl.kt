@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
@@ -7,6 +8,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of AddBookToShelfUseCase that orchestrates book persistence and shelf association.
@@ -15,7 +18,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 class AddBookToShelfUseCaseImpl(
     private val bookRepository: BookRepository,
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfRepository: BookshelfRepository,
+    private val syncSchedulerService: SyncSchedulerService
 ) : AddBookToShelfUseCase {
 
     override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> {
@@ -44,6 +48,10 @@ class AddBookToShelfUseCaseImpl(
 
             // Then create the shelf association
             bookshelfRepository.addBookToShelf(shelfId, book.id)
+
+            // Trigger sync after successful book addition
+            Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: AddBookToShelf")
+            syncSchedulerService.triggerImmediateSync()
 
             Result.Success(Unit)
         } catch (e: Exception) {
