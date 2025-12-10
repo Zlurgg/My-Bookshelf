@@ -252,6 +252,7 @@ class MigrateLocalDataUseCaseImplTest {
         override suspend fun updateBookSyncStatus(id: String, status: String, timestamp: Long) {}
         override suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long) {}
         override suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long) {}
+        override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) {}
         override suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity? = null
         override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}
         override suspend fun getBooksByOwner(ownerId: String): List<BookEntity> = emptyList()

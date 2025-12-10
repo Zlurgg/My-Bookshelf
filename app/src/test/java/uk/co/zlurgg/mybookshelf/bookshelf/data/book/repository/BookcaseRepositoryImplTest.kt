@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -185,7 +186,7 @@ class BookcaseRepositoryImplTest {
     }
 
     @Test
-    fun `removeShelf deletes shelf from database`() = runTest {
+    fun `removeShelf soft deletes shelf from database`() = runTest {
         // Given
         val shelf = TestShelfBuilder()
             .withId("delete-shelf")
@@ -201,12 +202,14 @@ class BookcaseRepositoryImplTest {
         // When
         repository.removeShelf("delete-shelf")
 
-        // Then
-        val afterDeletion = repository.getShelfById("delete-shelf")
-        assertNull("Shelf should not exist after deletion", afterDeletion)
-
+        // Then - Soft delete: shelf still exists but not visible to users
         val allShelves = repository.getAllShelves().first()
-        assertTrue("Should have no shelves after deletion", allShelves.isEmpty())
+        assertTrue("Should have no visible shelves after soft deletion", allShelves.isEmpty())
+
+        // Shelf still exists in database for sync (soft delete)
+        val softDeletedEntity = database.bookshelfDao.getShelfById("delete-shelf")
+        assertNotNull("Soft deleted shelf should still exist in database", softDeletedEntity)
+        assertEquals("Shelf should be marked as DELETED", "DELETED", softDeletedEntity?.syncStatus)
     }
 
     @Test
@@ -329,19 +332,23 @@ class BookcaseRepositoryImplTest {
         val updatedShelf2 = shelf2.copy(name = "Updated Second")
         repository.updateShelf(updatedShelf2)
 
-        // Remove first shelf
+        // Remove first shelf (soft delete)
         repository.removeShelf("multi-1")
 
         // Then
         val allShelves = repository.getAllShelves().first()
-        assertEquals("Should have two shelves remaining", 2, allShelves.size)
+        assertEquals("Should have two visible shelves remaining", 2, allShelves.size)
 
         val remainingShelf1 = repository.getShelfById("multi-2")
         val remainingShelf2 = repository.getShelfById("multi-3")
 
         assertEquals("Should update shelf name", "Updated Second", remainingShelf1?.name)
         assertEquals("Should preserve other shelf", "Third", remainingShelf2?.name)
-        assertNull("Deleted shelf should not exist", repository.getShelfById("multi-1"))
+
+        // Soft deleted shelf still exists in database but marked as DELETED
+        val softDeletedEntity = database.bookshelfDao.getShelfById("multi-1")
+        assertNotNull("Soft deleted shelf should still exist in database", softDeletedEntity)
+        assertEquals("Shelf should be marked as DELETED", "DELETED", softDeletedEntity?.syncStatus)
     }
 
     @Test

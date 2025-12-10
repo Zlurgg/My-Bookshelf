@@ -38,7 +38,7 @@ interface BookshelfDao {
      * Note: The system ownerId is hardcoded here because Room requires compile-time constants.
      * See SystemOwnerIds.TUTORIAL for the canonical constant.
      */
-    @Query("SELECT * FROM BookshelfEntity WHERE ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__' ORDER BY position ASC")
+    @Query("SELECT * FROM BookshelfEntity WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__') AND syncStatus != 'DELETED' ORDER BY position ASC")
     fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>>
 
     @Query("SELECT * FROM BookshelfEntity WHERE id = :id")
@@ -59,18 +59,18 @@ interface BookshelfDao {
 
     // Queries
     @Query(
-        "SELECT b.* FROM BookEntity b INNER JOIN BookshelfBookCrossRef s ON b.id = s.bookId WHERE s.shelfId = :shelfId ORDER BY s.addedAt DESC"
+        "SELECT b.* FROM BookEntity b INNER JOIN BookshelfBookCrossRef s ON b.id = s.bookId WHERE s.shelfId = :shelfId AND s.syncStatus != 'DELETED' ORDER BY s.addedAt DESC"
     )
     fun getBooksForShelf(shelfId: String): Flow<List<BookEntity>>
 
-    @Query("SELECT COUNT(*) FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
+    @Query("SELECT COUNT(*) FROM BookshelfBookCrossRef WHERE shelfId = :shelfId AND syncStatus != 'DELETED'")
     fun getBookCountForShelf(shelfId: String): Flow<Int>
 
     // Book-centric queries
-    @Query("SELECT EXISTS(SELECT 1 FROM BookshelfBookCrossRef WHERE bookId = :bookId)")
+    @Query("SELECT EXISTS(SELECT 1 FROM BookshelfBookCrossRef WHERE bookId = :bookId AND syncStatus != 'DELETED')")
     fun isBookInAnyShelf(bookId: String): Flow<Boolean>
 
-    @Query("SELECT shelfId FROM BookshelfBookCrossRef WHERE bookId = :bookId")
+    @Query("SELECT shelfId FROM BookshelfBookCrossRef WHERE bookId = :bookId AND syncStatus != 'DELETED'")
     fun getShelvesForBook(bookId: String): Flow<List<String>>
 
     // ========== Sync-related queries ==========
@@ -94,6 +94,9 @@ interface BookshelfDao {
 
     @Query("UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId AND bookId = :bookId")
     suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long)
+
+    @Query("UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId")
+    suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long)
 
     // Sharing queries
     @Query("SELECT * FROM BookshelfEntity WHERE shareCode = :shareCode LIMIT 1")

@@ -476,6 +476,7 @@ class SyncEngineTest {
         override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = flowOf(false)
         override fun getShelvesForBook(bookId: String): Flow<List<String>> = flowOf(emptyList())
         override suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long) {}
+        override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) {}
         override suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity? = null
         override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}
         override suspend fun getBooksByOwner(ownerId: String): List<BookEntity> = books.values.filter { it.ownerId == ownerId }

@@ -37,9 +37,11 @@ class BookcaseRepositoryImpl(
     }
 
     override suspend fun removeShelf(shelfId: String) {
-        // Remove cross-refs first to keep DB clean
-        dao.deleteAllCrossRefsForShelf(shelfId)
-        dao.deleteShelf(shelfId)
+        val timestamp = timeProvider.currentTimeMillis()
+        // Soft delete: mark as DELETED so SyncEngine can push delete to Firestore
+        // SyncEngine will hard delete after successful remote delete
+        dao.markAllCrossRefsForShelfAs(shelfId, "DELETED", timestamp)
+        dao.updateShelfSyncStatus(shelfId, "DELETED", timestamp)
     }
 
     override suspend fun updateShelf(shelf: Bookshelf) {
