@@ -204,6 +204,8 @@ class SyncEngine(
             if (shelf.syncStatus == "DELETED") {
                 val deleteResult = remoteDataSource.deleteBookshelf(userId, shelf.id)
                 if (deleteResult is Result.Success) {
+                    // Hard-delete cross-refs first (they were soft-deleted with the shelf)
+                    bookshelfDao.deleteAllCrossRefsForShelf(shelf.id)
                     bookshelfDao.deleteShelf(shelf.id)
                     deletedCount++
                 }
