@@ -5,6 +5,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
 
 /**
  * Interface for remote sync data operations.
@@ -114,4 +115,21 @@ interface RemoteSyncDataSource {
         userId: String,
         shelves: List<BookshelfFirestoreDto>
     ): Result<Int, DataError.Sync>
+
+    // ==================== User Preferences ====================
+
+    /**
+     * Gets user preferences from the cloud.
+     * Returns null if no preferences document exists.
+     */
+    suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync>
+
+    /**
+     * Sets user preferences in the cloud.
+     * Creates the document if it doesn't exist, updates if it does.
+     */
+    suspend fun setUserPreferences(
+        userId: String,
+        preferences: UserPreferencesFirestoreDto
+    ): Result<Unit, DataError.Sync>
 }

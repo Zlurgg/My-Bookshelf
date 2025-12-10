@@ -14,12 +14,14 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 
 class SignInViewModel(
     private val signInUseCases: SignInUseCases,
     private val shouldShowWelcome: ShouldShowWelcomeUseCase,
     private val hasGuestDataUseCase: HasGuestDataUseCase,
-    private val migrateLocalDataUseCase: MigrateLocalDataUseCase
+    private val migrateLocalDataUseCase: MigrateLocalDataUseCase,
+    private val syncUserPreferencesUseCase: SyncUserPreferencesUseCase
 ) : ViewModel() {
 
     companion object {
@@ -59,6 +61,8 @@ class SignInViewModel(
         viewModelScope.launch {
             val isSignedIn = signInUseCases.checkSignInStatus.execute()
             if (isSignedIn) {
+                // Sync user preferences from cloud (handles offline gracefully)
+                syncUserPreferencesUseCase.execute()
                 val destination = determineDestination()
                 _state.update {
                     it.copy(
@@ -76,6 +80,9 @@ class SignInViewModel(
 
             when (val result = signInUseCases.signIn.execute()) {
                 is Result.Success -> {
+                    // Sync user preferences from cloud (handles offline gracefully)
+                    syncUserPreferencesUseCase.execute()
+
                     // Check for guest data before navigating
                     val guestDataInfo = hasGuestDataUseCase.execute()
                     Timber.tag(TAG).d("Guest data check: %s", guestDataInfo)

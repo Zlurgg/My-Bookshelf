@@ -10,6 +10,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.mappers.toBookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.mappers.toBookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.mappers.toSharedShelfDto
@@ -270,6 +271,41 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    // ==================== User Preferences ====================
+
+    override suspend fun getUserPreferences(
+        userId: String
+    ): Result<UserPreferencesFirestoreDto?, DataError.Sync> {
+        return executeFirestoreOperation("getUserPreferences") {
+            val snapshot = firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(SETTINGS_COLLECTION)
+                .document(PREFERENCES_DOCUMENT)
+                .get()
+                .await()
+
+            if (snapshot.exists()) {
+                snapshot.toObject(UserPreferencesFirestoreDto::class.java)
+            } else {
+                null
+            }
+        }
+    }
+
+    override suspend fun setUserPreferences(
+        userId: String,
+        preferences: UserPreferencesFirestoreDto
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("setUserPreferences") {
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(SETTINGS_COLLECTION)
+                .document(PREFERENCES_DOCUMENT)
+                .set(preferences)
+                .await()
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private suspend fun <T> executeFirestoreOperation(
@@ -310,6 +346,10 @@ class FirestoreRemoteDataSource(
         private const val BOOKS_COLLECTION = "books"
         private const val BOOKSHELVES_COLLECTION = "bookshelves"
         private const val SHARED_SHELVES_COLLECTION = "sharedShelves"
+        private const val SETTINGS_COLLECTION = "settings"
+
+        // Document names
+        private const val PREFERENCES_DOCUMENT = "preferences"
 
         // Field names
         private const val FIELD_LAST_MODIFIED = "last_modified_at"

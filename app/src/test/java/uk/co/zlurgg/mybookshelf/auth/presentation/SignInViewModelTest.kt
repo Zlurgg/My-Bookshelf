@@ -30,6 +30,7 @@ import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -94,6 +95,11 @@ class SignInViewModelTest {
 
     private val mockSyncRepository = MockSyncRepository()
 
+    private var mockSyncUserPreferencesResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private val mockSyncUserPreferencesUseCase = object : SyncUserPreferencesUseCase {
+        override suspend fun execute(): Result<Unit, DataError.Sync> = mockSyncUserPreferencesResult
+    }
+
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserDataUseCase, mockCurrentUserProvider, mockSyncRepository)
@@ -109,7 +115,8 @@ class SignInViewModelTest {
             useCases,
             mockShouldShowWelcomeUseCase,
             mockHasGuestDataUseCase,
-            mockMigrateLocalDataUseCase
+            mockMigrateLocalDataUseCase,
+            mockSyncUserPreferencesUseCase
         )
     }
 
@@ -122,6 +129,7 @@ class SignInViewModelTest {
         mockShouldShowWelcome = false
         mockGuestDataInfo = GuestDataInfo(bookCount = 0, shelfCount = 0)
         mockMigrationResult = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
+        mockSyncUserPreferencesResult = Result.Success(Unit)
     }
 
     // ============================================================================

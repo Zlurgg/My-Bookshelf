@@ -153,6 +153,10 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.data.usecase.MigrateLocalDataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.data.usecase.HasGuestDataUseCaseImpl
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
+import uk.co.zlurgg.mybookshelf.sync.data.usecase.SyncUserPreferencesUseCaseImpl
+import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
+import uk.co.zlurgg.mybookshelf.sync.data.repository.UserPreferencesRepositoryImpl
 import com.google.firebase.firestore.FirebaseFirestore
 
 private const val GITHUB_OWNER = "Zlurgg"
@@ -242,7 +246,7 @@ val appModule = module {
     single { SignInUseCases(get(), get(), get()) }
 
     // Authentication - ViewModel
-    viewModel { SignInViewModel(get(), get(), get(), get()) }
+    viewModel { SignInViewModel(get(), get(), get(), get(), get()) }
 
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
@@ -291,6 +295,10 @@ val appModule = module {
     single<SyncSchedulerService> { SyncScheduler(get()) }
     single<MigrateLocalDataUseCase> { MigrateLocalDataUseCaseImpl(get(), get(), get()) }
     single<HasGuestDataUseCase> { HasGuestDataUseCaseImpl(get()) }
+
+    // Sync Feature - User Preferences
+    single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get(), get(), get()) }
+    single<SyncUserPreferencesUseCase> { SyncUserPreferencesUseCaseImpl(get(), get()) }
 
     // Sync Feature - Engine and Repository
     single {

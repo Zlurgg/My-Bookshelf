@@ -18,6 +18,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
@@ -555,5 +556,7 @@ class SyncEngineTest {
             shelves.forEach { uploadedShelves[it.id] = it }
             return Result.Success(shelves.size)
         }
+        override suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync> = Result.Success(null)
+        override suspend fun setUserPreferences(userId: String, preferences: UserPreferencesFirestoreDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
     }
 }
