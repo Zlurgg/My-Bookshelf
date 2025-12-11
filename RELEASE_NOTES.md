@@ -4,6 +4,39 @@
 
 ---
 
+## v1.1.0 - Cloud Sync (December 2025)
+
+🎉 **First full release with cloud sync!**
+
+### What's New
+- **Cloud Sync** - Sign in with Google to sync your library across devices
+- **Automatic Backup** - Your books and shelves sync to secure cloud storage
+- **Offline-First** - Works without an account, sync is optional
+- **Guest Data Import** - Choose whether to import existing data when signing in
+
+### Features
+- Cross-device sync via Firebase Firestore
+- Background sync with WorkManager (every 15 minutes)
+- Immediate sync on data changes
+- Conflict resolution (last-write-wins)
+- Per-user data isolation
+- Clean sign-out with data clearing option
+
+### Technical
+- 510 total tests (448 unit + 62 integration)
+- 280 production Kotlin files
+- 35 UseCases across 8 domains
+- Enterprise-grade sync architecture
+- Full offline support maintained
+
+### Privacy
+- Synced data stored securely in Google Cloud (Firebase)
+- No analytics or tracking
+- No data shared with third parties
+- Open source and transparent
+
+---
+
 ## v1.0.2 - Google Sign-In (December 2025)
 
 ### What's New

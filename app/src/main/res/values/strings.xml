@@ -147,7 +147,7 @@
     <string name="welcome_title">Welcome to My Bookshelf</string>
     <string name="welcome_subtitle">Organize your personal book collection with beautiful virtual shelves</string>
     <string name="welcome_privacy_title">Privacy Notice</string>
-    <string name="welcome_privacy_message">All your data is stored locally on your device. We don\'t collect, store, or transmit any personal information. Your privacy is our priority.</string>
+    <string name="welcome_privacy_message">Your data is stored locally on your device. Sign in with Google to sync across devices via secure cloud storage. We don\'t collect analytics or share your data with third parties.</string>
     <string name="welcome_get_started">Get Started</string>
 
     <!-- Error messages - Remote -->
@@ -219,7 +219,7 @@
     <string name="about_description_title">About</string>
     <string name="about_description_content">My Bookshelf is a personal book collection organizer that lets you create, customize, and organize your books on beautiful virtual shelves.</string>
     <string name="about_privacy_title">Privacy</string>
-    <string name="about_privacy_content">All your data is stored locally on your device. We don\'t collect, store, or transmit any personal information.</string>
+    <string name="about_privacy_content">Your data is stored locally on your device. Optional Google sign-in enables cloud sync via secure cloud storage. We don\'t collect analytics or share your data with third parties.</string>
     <string name="about_open_source_title">Open Source</string>
     <string name="about_open_source_content">Book data is provided by the Open Library API, a project of the Internet Archive.</string>
     <string name="about_credits_title">Credits</string>

@@ -16,21 +16,23 @@
 - 🔍 **Search & Add Books** – Use Open Library API for easy book lookup
 - 🔗 **Bookshelf Sharing** – Export and share your shelves via deep links
 - 🎨 **Custom Shelf Styles** – Choose from different materials and colors
-- 📱 **Offline-First** – All your data stored locally on your device
+- ☁️ **Cloud Sync** – Optional Google sign-in to sync across devices
+- 📱 **Offline-First** – Works without an account, data stored locally
 
 ---
 
 ## 🔒 Privacy & Data
 
-**MyBookshelf is a privacy-first, local-only application:**
-- ✅ All data stored locally on your device
-- ✅ No user accounts or authentication required
+**MyBookshelf is a privacy-first application:**
+- ✅ Works fully offline – no account required
+- ✅ Optional Google sign-in enables cloud sync across devices
+- ✅ Synced data stored securely in Google Cloud (Firebase)
 - ✅ No analytics, tracking, or telemetry
-- ✅ No data collection or transmission to external servers
-- ✅ Internet connection only used for book search via Open Library API
-- ✅ Open source and transparent - review the code yourself
+- ✅ No data shared with third parties
+- ✅ Internet used for book search (Open Library) and optional cloud sync
+- ✅ Open source and transparent – review the code yourself
 
-**Your library data never leaves your device.**
+**Your data stays yours – use it locally or sync it to the cloud.**
 
 ---
 
@@ -40,11 +42,13 @@
 - **UI**: Jetpack Compose
 - **Architecture**: MVVM + Clean Architecture
 - **Database**: Room (local SQLite database)
-- **APIs**: Open Library API for book search and metadata  
+- **Cloud Sync**: Firebase Firestore with WorkManager
+- **Authentication**: Google Sign-In (optional)
+- **APIs**: Open Library API for book search and metadata
 - **Image Loading**: Coil3 with Ktor3 network integration
 - **Dependency Injection**: Koin
 - **Navigation**: Jetpack Navigation Compose
-- **Export/Import**: Local deep link sharing system
+- **Sharing**: Deep link sharing system
 
 ---
 
