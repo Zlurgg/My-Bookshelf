@@ -21,6 +21,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookF
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
@@ -96,7 +100,12 @@ class BookshelfViewModelTest {
             duplicateShelf = MockDuplicateShelfUseCase(),
             shareShelf = MockShareBookshelfUseCase()
         )
-        return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, shelfId)
+        val bookClubUseCases = BookClubUseCases(
+            createBookClub = SimpleCreateBookClubUseCase(),
+            generateInviteLink = SimpleGenerateInviteLinkUseCase()
+        )
+        val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
+        return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, bookClubOperations, shelfId)
     }
 
     @Test
@@ -371,5 +380,23 @@ class BookshelfViewModelTest {
     private class SimpleUpdateShelfTidyModeUseCase : UpdateShelfTidyModeUseCase {
         override suspend fun execute(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError> =
             Result.Success(Unit)
+    }
+
+    private class SimpleCreateBookClubUseCase : CreateBookClubUseCase {
+        var shouldSucceed = true
+        var codeToReturn = "ABC12345"
+
+        override suspend fun execute(shelfId: String): Result<String, DataError.Sync> =
+            if (shouldSucceed) Result.Success(codeToReturn) else Result.Error(DataError.Sync.GENERATION_FAILED)
+
+        fun reset() {
+            shouldSucceed = true
+            codeToReturn = "ABC12345"
+        }
+    }
+
+    private class SimpleGenerateInviteLinkUseCase : GenerateInviteLinkUseCase {
+        override fun execute(clubCode: String, clubName: String?): String =
+            "https://mybookshelf.app/join/$clubCode"
     }
 }

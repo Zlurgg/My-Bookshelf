@@ -13,6 +13,7 @@ import org.koin.dsl.module
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.data.database.DatabaseFactory
 import uk.co.zlurgg.mybookshelf.core.data.database.migrations.MIGRATION_8_9
+import uk.co.zlurgg.mybookshelf.core.data.database.migrations.MIGRATION_9_10
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.KtorRemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryApiService
@@ -51,6 +52,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
@@ -158,6 +160,16 @@ import uk.co.zlurgg.mybookshelf.sync.data.usecase.SyncUserPreferencesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
 import uk.co.zlurgg.mybookshelf.sync.data.repository.UserPreferencesRepositoryImpl
 import com.google.firebase.firestore.FirebaseFirestore
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookClubRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.data.service.BookClubCodeGeneratorImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCaseImpl
+import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 private const val GITHUB_OWNER = "Zlurgg"
 private const val GITHUB_REPO = "My-Bookshelf"
@@ -276,16 +288,18 @@ val appModule = module {
     // Presentation Handlers
     single { ShelfOperationsHandler(get()) }
     single { ShelfManagementHandler(get(), get()) }
+    single { BookClubOperationsHandler(get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
     single {
         get<DatabaseFactory>().create()
-            .addMigrations(MIGRATION_8_9)
+            .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
             .build()
     }
     single { get<MyBookshelfRoomDatabase>().bookshelfDao }
     single { get<MyBookshelfRoomDatabase>().syncDao }
+    single { get<MyBookshelfRoomDatabase>().bookClubDao }
 
     // Sync Feature - Services
     single<ConnectivityMonitor> { AndroidConnectivityMonitor(get()) }
@@ -328,6 +342,7 @@ val appModule = module {
         BookshelfViewModel(
             bookshelfUseCases = get(),
             bookcaseUseCases = get(),
+            bookClubOperations = get(),
             shelfId = shelfId
         )
     }
@@ -336,6 +351,7 @@ val appModule = module {
             shelfOperations = get(),
             shelfManagement = get(),
             bookcaseUseCases = get(),
+            bookClubOperations = get(),
             checkForUpdateUseCase = get(),
             downloadUpdateUseCase = get(),
             dismissUpdateUseCase = get(),
@@ -356,4 +372,21 @@ val appModule = module {
     singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
     singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()
     singleOf(::BookRepositoryImpl).bind<BookRepository>()
+
+    // Book Club Feature
+    single<BookClubCodeGenerator> { BookClubCodeGeneratorImpl(get()) }
+    single<BookClubRepository> {
+        BookClubRepositoryImpl(
+            bookClubDao = get(),
+            bookshelfDao = get(),
+            remoteDataSource = get(),
+            codeGenerator = get(),
+            authService = get(),
+            idGenerator = get(),
+            timeProvider = get()
+        )
+    }
+    singleOf(::CreateBookClubUseCaseImpl).bind<CreateBookClubUseCase>()
+    single<GenerateInviteLinkUseCase> { GenerateInviteLinkUseCaseImpl(ApiConfig.shareBaseUrl) }
+    single { BookClubUseCases(get(), get()) }
 }

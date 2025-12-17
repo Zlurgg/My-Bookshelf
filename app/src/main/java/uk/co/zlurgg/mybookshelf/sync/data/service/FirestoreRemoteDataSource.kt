@@ -7,6 +7,9 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
@@ -306,6 +309,130 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    // ==================== Book Clubs ====================
+
+    override suspend fun createBookClub(
+        code: String,
+        metadata: BookClubMetadataDto
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("createBookClub") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .set(metadata)
+                .await()
+        }
+    }
+
+    override suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync> {
+        return executeFirestoreOperation("getBookClubMetadata") {
+            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .get()
+                .await()
+
+            if (snapshot.exists()) {
+                snapshot.toObject(BookClubMetadataDto::class.java)
+            } else {
+                null
+            }
+        }
+    }
+
+    override suspend fun addBookClubMember(
+        code: String,
+        member: BookClubMemberDto
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("addBookClubMember") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .collection(MEMBERS_COLLECTION)
+                .document(member.userId)
+                .set(member)
+                .await()
+        }
+    }
+
+    override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> {
+        return executeFirestoreOperation("getBookClubMembers") {
+            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .collection(MEMBERS_COLLECTION)
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(BookClubMemberDto::class.java)
+            }
+        }
+    }
+
+    override suspend fun addBookToClub(
+        code: String,
+        book: BookClubBookDto
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("addBookToClub") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(book.id)
+                .set(book)
+                .await()
+        }
+    }
+
+    override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> {
+        return executeFirestoreOperation("getClubBooks") {
+            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(BookClubBookDto::class.java)
+            }
+        }
+    }
+
+    override suspend fun updateBookClubCounts(
+        code: String,
+        bookCount: Int,
+        memberCount: Int
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("updateBookClubCounts") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .update(
+                    mapOf(
+                        "book_count" to bookCount,
+                        "member_count" to memberCount
+                    )
+                )
+                .await()
+        }
+    }
+
+    override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("deleteBookClub") {
+            val clubRef = firestore.collection(BOOK_CLUBS_COLLECTION).document(code)
+
+            // Delete members subcollection
+            val members = clubRef.collection(MEMBERS_COLLECTION).get().await()
+            for (doc in members.documents) {
+                doc.reference.delete().await()
+            }
+
+            // Delete books subcollection
+            val books = clubRef.collection(CLUB_BOOKS_COLLECTION).get().await()
+            for (doc in books.documents) {
+                doc.reference.delete().await()
+            }
+
+            // Delete the club document itself
+            clubRef.delete().await()
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private suspend fun <T> executeFirestoreOperation(
@@ -347,6 +474,9 @@ class FirestoreRemoteDataSource(
         private const val BOOKSHELVES_COLLECTION = "bookshelves"
         private const val SHARED_SHELVES_COLLECTION = "sharedShelves"
         private const val SETTINGS_COLLECTION = "settings"
+        private const val BOOK_CLUBS_COLLECTION = "bookClubs"
+        private const val MEMBERS_COLLECTION = "members"
+        private const val CLUB_BOOKS_COLLECTION = "books"
 
         // Document names
         private const val PREFERENCES_DOCUMENT = "preferences"

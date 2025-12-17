@@ -41,6 +41,10 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
@@ -135,10 +139,26 @@ class BookcaseViewModelTest {
         val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
         val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserData, mockCurrentUserProvider, mockSyncRepository)
 
+        // Book Club operations handler
+        val mockCreateBookClub = object : CreateBookClubUseCase {
+            override suspend fun execute(shelfId: String): Result<String, DataError.Sync> =
+                Result.Success("ABC12345")
+        }
+        val mockGenerateInviteLink = object : GenerateInviteLinkUseCase {
+            override fun execute(clubCode: String, clubName: String?): String =
+                "https://mybookshelf.app/join/$clubCode"
+        }
+        val bookClubUseCases = BookClubUseCases(
+            createBookClub = mockCreateBookClub,
+            generateInviteLink = mockGenerateInviteLink
+        )
+        val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
+
         return BookcaseViewModel(
             shelfOperations,
             shelfManagement,
             useCases,
+            bookClubOperations,
             mockCheckForUpdate,
             mockDownloadUpdate,
             mockDismissUpdate,

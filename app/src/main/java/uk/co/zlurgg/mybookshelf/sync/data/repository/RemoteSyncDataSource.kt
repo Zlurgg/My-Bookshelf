@@ -2,6 +2,9 @@ package uk.co.zlurgg.mybookshelf.sync.data.repository
 
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
@@ -132,4 +135,60 @@ interface RemoteSyncDataSource {
         userId: String,
         preferences: UserPreferencesFirestoreDto
     ): Result<Unit, DataError.Sync>
+
+    // ==================== Book Clubs ====================
+
+    /**
+     * Creates a new book club with the given metadata.
+     */
+    suspend fun createBookClub(
+        code: String,
+        metadata: BookClubMetadataDto
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Gets book club metadata by code.
+     * Returns null if club doesn't exist.
+     */
+    suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync>
+
+    /**
+     * Adds a member to a book club.
+     */
+    suspend fun addBookClubMember(
+        code: String,
+        member: BookClubMemberDto
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Gets all members of a book club.
+     */
+    suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync>
+
+    /**
+     * Adds a book to a book club.
+     */
+    suspend fun addBookToClub(
+        code: String,
+        book: BookClubBookDto
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Gets all books in a book club.
+     */
+    suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync>
+
+    /**
+     * Updates the book/member counts in club metadata.
+     */
+    suspend fun updateBookClubCounts(
+        code: String,
+        bookCount: Int,
+        memberCount: Int
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Deletes a book club and all its subcollections (members, books).
+     */
+    suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync>
 }

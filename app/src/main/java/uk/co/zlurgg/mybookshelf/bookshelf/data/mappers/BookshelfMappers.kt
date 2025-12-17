@@ -10,7 +10,9 @@ fun BookshelfEntity.toDomain(): Bookshelf = Bookshelf(
     books = emptyList(),
     shelfStyle = ShelfStyle.valueOf(shelfMaterial),
     position = position,
-    isTidyMode = isTidyMode
+    isTidyMode = isTidyMode,
+    isBookClub = isBookClub,
+    clubCode = clubCode
 )
 
 /**
@@ -21,7 +23,9 @@ fun Bookshelf.toEntity(): BookshelfEntity = BookshelfEntity(
     name = name,
     shelfMaterial = shelfStyle.name,
     position = position,
-    isTidyMode = isTidyMode
+    isTidyMode = isTidyMode,
+    isBookClub = isBookClub,
+    clubCode = clubCode
 )
 
 /**
@@ -36,5 +40,7 @@ fun Bookshelf.toEntity(ownerId: String?): BookshelfEntity = BookshelfEntity(
     shelfMaterial = shelfStyle.name,
     position = position,
     isTidyMode = isTidyMode,
-    ownerId = ownerId
+    ownerId = ownerId,
+    isBookClub = isBookClub,
+    clubCode = clubCode
 )

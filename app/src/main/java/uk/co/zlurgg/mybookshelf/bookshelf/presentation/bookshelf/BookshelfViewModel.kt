@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
@@ -25,6 +26,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 class BookshelfViewModel(
     private val bookshelfUseCases: BookshelfUseCases,
     private val bookcaseUseCases: BookcaseUseCases,
+    private val bookClubOperations: BookClubOperationsHandler,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -126,6 +128,29 @@ class BookshelfViewModel(
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
                     queryFlow.value = currentQuery  // Triggers debounced search
                 }
+            }
+
+            // Book Club Actions
+            BookshelfAction.OnShowShareOptions -> {
+                _state.update { it.copy(isShareOptionsVisible = true) }
+            }
+            BookshelfAction.OnDismissShareOptions -> {
+                _state.update { it.copy(isShareOptionsVisible = false) }
+            }
+            BookshelfAction.OnShareCopy -> {
+                _state.update { it.copy(isShareOptionsVisible = false) }
+                shareShelf()
+            }
+            BookshelfAction.OnCreateBookClub -> {
+                _state.update { it.copy(isShareOptionsVisible = false) }
+                createBookClub()
+            }
+            BookshelfAction.OnDismissInviteLink -> {
+                _state.update { it.copy(bookClubInviteLink = null, bookClubCode = null) }
+            }
+            BookshelfAction.OnCopyInviteLink -> {
+                // Copy is handled by the UI, just dismiss
+                _state.update { it.copy(bookClubInviteLink = null, bookClubCode = null) }
             }
             else -> Unit
         }
@@ -259,6 +284,32 @@ class BookshelfViewModel(
                         it.copy(
                             isShareLoading = false,
                             errorMessage = ErrorFormatter.formatDataErrorMessage(shareResult.error, "share bookshelf")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun createBookClub() {
+        viewModelScope.launch {
+            _state.update { it.copy(isCreatingBookClub = true, errorMessage = null) }
+
+            when (val createResult = bookClubOperations.createBookClub(shelfId, _state.value.shelfName)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            isCreatingBookClub = false,
+                            bookClubCode = createResult.data.clubCode,
+                            bookClubInviteLink = createResult.data.inviteLink
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isCreatingBookClub = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(createResult.error, "create book club")
                         )
                     }
                 }

@@ -48,6 +48,8 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.InviteLinkDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.ShareOptionsDialog
 
 @Composable
 fun BookcaseScreenRoot(
@@ -294,6 +296,25 @@ fun BookcaseScreen(
             currentVersionInfo = state.currentVersionInfo,
             currentVersionName = BuildConfig.VERSION_NAME,
             onDismiss = { onAction(BookcaseAction.DismissUpToDate) }
+        )
+    }
+
+    // Share options dialog
+    if (state.showShareOptionsDialog) {
+        ShareOptionsDialog(
+            onDismiss = { onAction(BookcaseAction.DismissShareOptions) },
+            onShareCopy = { onAction(BookcaseAction.OnShareCopy) },
+            onCreateBookClub = { onAction(BookcaseAction.OnCreateBookClub) }
+        )
+    }
+
+    // Book club invite link dialog
+    state.bookClubInviteLink?.let { inviteLink ->
+        InviteLinkDialog(
+            clubCode = state.bookClubCode ?: "",
+            inviteLink = inviteLink,
+            clubName = state.shelfToShare?.name ?: "",
+            onDismiss = { onAction(BookcaseAction.DismissInviteLink) }
         )
     }
 }

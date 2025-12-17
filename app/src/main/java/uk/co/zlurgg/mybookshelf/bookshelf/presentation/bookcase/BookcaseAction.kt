@@ -23,6 +23,12 @@ sealed interface BookcaseAction {
     data class OnShareShelfClick(val shelf: Bookshelf) : BookcaseAction
     data class OnDuplicateShelfClick(val shelf: Bookshelf) : BookcaseAction
 
+    // Share Options Actions (Book Club)
+    data object DismissShareOptions : BookcaseAction
+    data object OnShareCopy : BookcaseAction
+    data object OnCreateBookClub : BookcaseAction
+    data object DismissInviteLink : BookcaseAction
+
     // Settings Menu Actions
     data object CheckForUpdates : BookcaseAction
     data object DownloadUpdate : BookcaseAction

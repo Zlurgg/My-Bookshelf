@@ -21,5 +21,11 @@ data class BookshelfState(
     val shelfMaterial: ShelfMaterial = ShelfMaterial.DarkWood,
     val isTidyMode: Boolean = false,
     val isShareLoading: Boolean = false,
-    val isTutorialShelf: Boolean = false  // Tutorial shelf has restricted actions
+    val isTutorialShelf: Boolean = false,  // Tutorial shelf has restricted actions
+
+    // Book Club state
+    val isShareOptionsVisible: Boolean = false,
+    val isCreatingBookClub: Boolean = false,
+    val bookClubInviteLink: String? = null,  // Non-null when invite link sheet should show
+    val bookClubCode: String? = null
 )

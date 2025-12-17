@@ -43,6 +43,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.InviteLinkDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.ShareOptionsDialog
 
 @Composable
 fun BookshelfScreenRoot(
@@ -117,7 +119,7 @@ fun BookshelfScreen(
                     FloatingActionButton(
                         onClick = {
                             if (state.books.isNotEmpty()) {
-                                onAction(BookshelfAction.OnShareShelf)
+                                onAction(BookshelfAction.OnShowShareOptions)
                             }
                         },
                         modifier = Modifier.size(56.dp),
@@ -127,7 +129,7 @@ fun BookshelfScreen(
                             MaterialTheme.colorScheme.primaryContainer
                         }
                     ) {
-                        if (state.isShareLoading) {
+                        if (state.isShareLoading || state.isCreatingBookClub) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         } else {
                             Icon(
@@ -301,6 +303,25 @@ fun BookshelfScreen(
                     onAction(BookshelfAction.OnDismissSearchDialog)
                 }
             }
+        )
+    }
+
+    // Share options dialog
+    if (state.isShareOptionsVisible) {
+        ShareOptionsDialog(
+            onDismiss = { onAction(BookshelfAction.OnDismissShareOptions) },
+            onShareCopy = { onAction(BookshelfAction.OnShareCopy) },
+            onCreateBookClub = { onAction(BookshelfAction.OnCreateBookClub) }
+        )
+    }
+
+    // Book club invite link dialog
+    state.bookClubInviteLink?.let { inviteLink ->
+        InviteLinkDialog(
+            clubCode = state.bookClubCode ?: "",
+            inviteLink = inviteLink,
+            clubName = state.shelfName,
+            onDismiss = { onAction(BookshelfAction.OnDismissInviteLink) }
         )
     }
 }

@@ -14,6 +14,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -32,6 +33,7 @@ class BookcaseViewModel(
     private val shelfOperations: ShelfOperationsHandler,
     private val shelfManagement: ShelfManagementHandler,
     private val bookcaseUseCases: BookcaseUseCases,
+    private val bookClubOperations: BookClubOperationsHandler,
     private val checkForUpdateUseCase: CheckForUpdateUseCase,
     private val downloadUpdateUseCase: DownloadUpdateUseCase,
     private val dismissUpdateUseCase: DismissUpdateUseCase,
@@ -172,11 +174,31 @@ class BookcaseViewModel(
             }
 
             is BookcaseAction.OnShareShelfClick -> {
-                shareShelf(action.shelf)
+                // Show share options dialog instead of directly sharing
+                _state.update { it.copy(showShareOptionsDialog = true, shelfToShare = action.shelf) }
             }
 
             is BookcaseAction.OnDuplicateShelfClick -> {
                 duplicateShelf(action.shelf)
+            }
+
+            // Share Options Actions (Book Club)
+            is BookcaseAction.DismissShareOptions -> {
+                _state.update { it.copy(showShareOptionsDialog = false, shelfToShare = null) }
+            }
+
+            is BookcaseAction.OnShareCopy -> {
+                _state.update { it.copy(showShareOptionsDialog = false) }
+                state.value.shelfToShare?.let { shareShelf(it) }
+            }
+
+            is BookcaseAction.OnCreateBookClub -> {
+                _state.update { it.copy(showShareOptionsDialog = false) }
+                state.value.shelfToShare?.let { createBookClub(it) }
+            }
+
+            is BookcaseAction.DismissInviteLink -> {
+                _state.update { it.copy(bookClubInviteLink = null, bookClubCode = null, shelfToShare = null) }
             }
 
             // Settings Menu Actions
@@ -382,6 +404,32 @@ class BookcaseViewModel(
                 }
                 is Result.Error -> {
                     _state.update { it.withError(duplicateResult.error, "duplicate shelf") }
+                }
+            }
+        }
+    }
+
+    private fun createBookClub(shelf: Bookshelf) {
+        viewModelScope.launch {
+            _state.update { it.copy(isCreatingBookClub = true, errorMessage = null) }
+
+            when (val createResult = bookClubOperations.createBookClub(shelf.id, shelf.name)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            isCreatingBookClub = false,
+                            bookClubCode = createResult.data.clubCode,
+                            bookClubInviteLink = createResult.data.inviteLink
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isCreatingBookClub = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(createResult.error, "create book club")
+                        )
+                    }
                 }
             }
         }

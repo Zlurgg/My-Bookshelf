@@ -15,6 +15,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
@@ -559,5 +562,15 @@ class SyncEngineTest {
         }
         override suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync> = Result.Success(null)
         override suspend fun setUserPreferences(userId: String, preferences: UserPreferencesFirestoreDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+
+        // Book Club methods (not used by SyncEngine, but required by interface)
+        override suspend fun createBookClub(code: String, metadata: BookClubMetadataDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync> = Result.Success(null)
+        override suspend fun addBookClubMember(code: String, member: BookClubMemberDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun addBookToClub(code: String, book: BookClubBookDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun updateBookClubCounts(code: String, bookCount: Int, memberCount: Int): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
     }
 }

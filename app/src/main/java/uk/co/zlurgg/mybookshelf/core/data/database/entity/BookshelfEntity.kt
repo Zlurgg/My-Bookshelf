@@ -1,9 +1,12 @@
 package uk.co.zlurgg.mybookshelf.core.data.database.entity
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(
+    indices = [Index(value = ["clubCode"])]
+)
 data class BookshelfEntity(
     @PrimaryKey val id: String,
     val name: String,
@@ -18,7 +21,11 @@ data class BookshelfEntity(
     val cloudId: String? = null,           // Firestore document ID (may differ from local ID)
     val version: Long = 1L,                // Optimistic concurrency version
 
-    // Sharing metadata
+    // Sharing metadata (deep link sharing)
     val isShared: Boolean = false,         // Is this shelf shared with others?
-    val shareCode: String? = null          // Unique code for live sharing
+    val shareCode: String? = null,         // Unique code for live sharing
+
+    // Book Club metadata (collaborative sharing)
+    val isBookClub: Boolean = false,       // Is this a book club shelf?
+    val clubCode: String? = null           // Links to Firestore book club
 )

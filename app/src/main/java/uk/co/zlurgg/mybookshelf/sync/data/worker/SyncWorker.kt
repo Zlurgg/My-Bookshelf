@@ -78,7 +78,12 @@ class SyncWorker(
             // Permanent errors - don't retry
             DataError.Sync.NOT_SIGNED_IN,
             DataError.Sync.PERMISSION_DENIED,
-            DataError.Sync.QUOTA_EXCEEDED -> {
+            DataError.Sync.QUOTA_EXCEEDED,
+            // Book Club errors - not applicable to sync worker, but need to handle
+            DataError.Sync.GENERATION_FAILED,
+            DataError.Sync.CLUB_NOT_FOUND,
+            DataError.Sync.ALREADY_MEMBER,
+            DataError.Sync.NOT_MEMBER -> {
                 Timber.tag(TAG).e("Permanent sync error, not retrying: %s", error)
                 Result.failure()
             }

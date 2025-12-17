@@ -40,7 +40,8 @@ sealed interface DataError: Error {
         TOO_SHORT,
         TOO_LONG,
         INVALID_CHARACTERS,
-        DUPLICATE_VALUE
+        DUPLICATE_VALUE,
+        INVALID_CLUB_CODE       // Book club code format invalid
     }
 
     enum class Sync: DataError {
@@ -52,6 +53,10 @@ sealed interface DataError: Error {
         PERMISSION_DENIED,
         DOCUMENT_NOT_FOUND,
         NETWORK_ERROR,
+        GENERATION_FAILED,      // Book club code generation exhausted retries
+        CLUB_NOT_FOUND,         // Invalid book club code
+        ALREADY_MEMBER,         // User already in this book club
+        NOT_MEMBER,             // User not a member of this book club
         UNKNOWN
     }
 }

@@ -50,6 +50,7 @@ object ErrorFormatter {
             DataError.Validation.TOO_LONG -> "Input is too long."
             DataError.Validation.INVALID_CHARACTERS -> "Contains invalid characters."
             DataError.Validation.DUPLICATE_VALUE -> "Value already exists."
+            DataError.Validation.INVALID_CLUB_CODE -> "Invalid book club code format."
 
             // Sync errors
             DataError.Sync.NOT_SIGNED_IN -> "Please sign in to sync your data."
@@ -60,6 +61,10 @@ object ErrorFormatter {
             DataError.Sync.PERMISSION_DENIED -> "Permission denied. Please sign in again."
             DataError.Sync.DOCUMENT_NOT_FOUND -> "Requested data not found in cloud."
             DataError.Sync.NETWORK_ERROR -> "Network error during sync. Please check your connection."
+            DataError.Sync.GENERATION_FAILED -> "Unable to generate book club code. Please try again."
+            DataError.Sync.CLUB_NOT_FOUND -> "Book club not found. Check the code and try again."
+            DataError.Sync.ALREADY_MEMBER -> "You're already a member of this book club."
+            DataError.Sync.NOT_MEMBER -> "You're not a member of this book club."
             DataError.Sync.UNKNOWN -> "Unknown sync error occurred."
         }
 
