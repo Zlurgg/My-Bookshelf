@@ -20,11 +20,9 @@
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle { *; }
 
 # ====== Room Database ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDatabase { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookEntity { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfEntity { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfBookCrossRef { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao { *; }
+-keep class uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase { *; }
+-keep class uk.co.zlurgg.mybookshelf.core.data.database.entity.** { *; }
+-keep class uk.co.zlurgg.mybookshelf.core.data.database.dao.** { *; }
 
 # ====== Network DTOs (for Kotlinx Serialization) ======
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** {
@@ -33,6 +31,10 @@
 }
 -keepclassmembers class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** {
     *** Companion;
+}
+-keep class uk.co.zlurgg.mybookshelf.update.data.remote.dto.** {
+    <fields>;
+    <init>();
 }
 
 # ====== Firestore DTOs (for Firebase serialization) ======
