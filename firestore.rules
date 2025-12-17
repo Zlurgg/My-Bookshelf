@@ -21,6 +21,44 @@ service cloud.firestore {
       }
     }
 
+    // ==================== Book Clubs ====================
+    // Collaborative shelves with owner and member access
+
+    match /bookClubs/{clubCode} {
+      // Any authenticated user can read (needed for code checking and joining)
+      allow read: if request.auth != null;
+
+      // Allow creation if user sets themselves as creator
+      allow create: if request.auth != null
+        && request.resource.data.created_by == request.auth.uid;
+
+      // Only creator can update/delete
+      allow update, delete: if request.auth != null
+        && resource.data.created_by == request.auth.uid;
+
+      // Members subcollection
+      match /members/{memberId} {
+        // Creator can manage all members
+        allow read, write: if request.auth != null
+          && get(/databases/$(database)/documents/bookClubs/$(clubCode)).data.created_by == request.auth.uid;
+
+        // Users can add/remove themselves
+        allow read, write: if request.auth != null
+          && request.auth.uid == memberId;
+      }
+
+      // Books subcollection
+      match /books/{bookId} {
+        // Creator can manage books
+        allow read, write: if request.auth != null
+          && get(/databases/$(database)/documents/bookClubs/$(clubCode)).data.created_by == request.auth.uid;
+
+        // Members can read books
+        allow read: if request.auth != null
+          && exists(/databases/$(database)/documents/bookClubs/$(clubCode)/members/$(request.auth.uid));
+      }
+    }
+
     // ==================== Shared Shelves ====================
     // Public read for discovery, owner-only write
 
@@ -39,7 +77,6 @@ service cloud.firestore {
         && resource.data.owner_id == request.auth.uid;
 
       // Allow users to add themselves to subscriber_ids
-      // This uses a special update rule that only allows modifying subscriber_ids
       allow update: if request.auth != null
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['subscriber_ids'])
         && (

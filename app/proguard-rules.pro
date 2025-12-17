@@ -27,12 +27,22 @@
 -keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.database.BookshelfDao { *; }
 
 # ====== Network DTOs (for Kotlinx Serialization) ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** { 
+-keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** {
     <fields>;
     <init>();
 }
 -keepclassmembers class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** {
     *** Companion;
+}
+
+# ====== Firestore DTOs (for Firebase serialization) ======
+# These must preserve field names for Firestore document mapping
+-keep class uk.co.zlurgg.mybookshelf.sync.data.dto.** {
+    <fields>;
+    <init>();
+}
+-keepclassmembers class uk.co.zlurgg.mybookshelf.sync.data.dto.** {
+    @com.google.firebase.firestore.PropertyName <methods>;
 }
 
 # ====== ViewModels ======
