@@ -133,7 +133,7 @@ class BookcaseViewModelTest {
             override suspend fun execute(userId: String): Result<Int, DataError.Local> = Result.Success(0)
         }
         val mockCurrentUserProvider = object : CurrentUserProvider {
-            override fun getCurrentUserId(): String? = "test-user-id"
+            override fun getCurrentUserId(): String = "test-user-id"
         }
         val mockSyncRepository = MockSyncRepository()
         val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
