@@ -48,6 +48,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInvite
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ParseClubCodeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
@@ -165,12 +167,17 @@ class BookcaseViewModelTest {
             override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> =
                 Result.Success(JoinResult.Success("shelf-id", "Test Shelf"))
         }
+        val mockRestoreBookClubMemberships = object : RestoreBookClubMembershipsUseCase {
+            override suspend fun invoke(): Result<RestoreResult, DataError.Sync> =
+                Result.Success(RestoreResult(0, 0))
+        }
         val bookClubUseCases = BookClubUseCases(
             createBookClub = mockCreateBookClub,
             generateInviteLink = mockGenerateInviteLink,
             parseClubCode = mockParseClubCode,
             getBookClubPreview = mockGetBookClubPreview,
-            joinBookClub = mockJoinBookClub
+            joinBookClub = mockJoinBookClub,
+            restoreBookClubMemberships = mockRestoreBookClubMemberships
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
 

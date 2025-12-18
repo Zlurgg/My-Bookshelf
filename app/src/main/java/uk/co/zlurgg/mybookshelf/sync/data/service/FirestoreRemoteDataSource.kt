@@ -343,6 +343,8 @@ class FirestoreRemoteDataSource(
         member: BookClubMemberDto
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("addBookClubMember") {
+            // Use userId as document ID for easy lookup, and also store it as a field
+            // for collection group queries
             firestore.collection(BOOK_CLUBS_COLLECTION)
                 .document(code)
                 .collection(MEMBERS_COLLECTION)
@@ -445,6 +447,30 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    override suspend fun getBookClubsForUser(userId: String): Result<List<String>, DataError.Sync> {
+        return executeFirestoreOperation("getBookClubsForUser") {
+            // Use collection group query to find all member documents where user_id matches
+            val snapshot = firestore.collectionGroup(MEMBERS_COLLECTION)
+                .whereEqualTo(FIELD_USER_ID, userId)
+                .get()
+                .await()
+
+            // Extract club codes from parent document paths
+            // Path format: /bookClubs/{clubCode}/members/{userId}
+            snapshot.documents.mapNotNull { doc ->
+                val path = doc.reference.path
+                // Extract clubCode from path
+                val parts = path.split("/")
+                if (parts.size >= 2 && parts[0] == BOOK_CLUBS_COLLECTION) {
+                    parts[1] // This is the club code
+                } else {
+                    Timber.tag(TAG).w("Unexpected path format: %s", path)
+                    null
+                }
+            }
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private suspend fun <T> executeFirestoreOperation(
@@ -496,5 +522,6 @@ class FirestoreRemoteDataSource(
         // Field names
         private const val FIELD_LAST_MODIFIED = "last_modified_at"
         private const val FIELD_SUBSCRIBER_IDS = "subscriber_ids"
+        private const val FIELD_USER_ID = "user_id"
     }
 }

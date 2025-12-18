@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -21,7 +22,8 @@ class SignInViewModel(
     private val shouldShowWelcome: ShouldShowWelcomeUseCase,
     private val hasGuestDataUseCase: HasGuestDataUseCase,
     private val migrateLocalDataUseCase: MigrateLocalDataUseCase,
-    private val syncUserPreferencesUseCase: SyncUserPreferencesUseCase
+    private val syncUserPreferencesUseCase: SyncUserPreferencesUseCase,
+    private val restoreBookClubMembershipsUseCase: RestoreBookClubMembershipsUseCase
 ) : ViewModel() {
 
     companion object {
@@ -63,6 +65,10 @@ class SignInViewModel(
             if (isSignedIn) {
                 // Sync user preferences from cloud (handles offline gracefully)
                 syncUserPreferencesUseCase.execute()
+
+                // Restore book club memberships from Firestore
+                restoreBookClubMemberships()
+
                 val destination = determineDestination()
                 _state.update {
                     it.copy(
@@ -82,6 +88,9 @@ class SignInViewModel(
                 is Result.Success -> {
                     // Sync user preferences from cloud (handles offline gracefully)
                     syncUserPreferencesUseCase.execute()
+
+                    // Restore book club memberships from Firestore
+                    restoreBookClubMemberships()
 
                     // Check for guest data before navigating
                     val guestDataInfo = hasGuestDataUseCase.execute()
@@ -188,6 +197,23 @@ class SignInViewModel(
                 showGuestDataImportDialog = false,
                 guestDataInfo = null
             )
+        }
+    }
+
+    private suspend fun restoreBookClubMemberships() {
+        Timber.tag(TAG).d("Restoring book club memberships...")
+        when (val result = restoreBookClubMembershipsUseCase()) {
+            is Result.Success -> {
+                Timber.tag(TAG).d(
+                    "Book club memberships restored: %d restored, %d failed",
+                    result.data.restoredCount,
+                    result.data.failedCount
+                )
+            }
+            is Result.Error -> {
+                // Log but don't fail the sign-in flow
+                Timber.tag(TAG).w("Failed to restore book club memberships: %s", result.error)
+            }
         }
     }
 }

@@ -69,6 +69,24 @@ interface BookClubRepository {
      */
     suspend fun joinBookClub(code: String): Result<String, DataError.Sync>
 
+    /**
+     * Gets all book club codes where the user is a member from Firestore.
+     * Used to restore memberships after sign-out/sign-in.
+     *
+     * @param userId The user ID to query memberships for
+     * @return List of club codes the user is a member of
+     */
+    suspend fun getRemoteClubMemberships(userId: String): Result<List<String>, DataError.Sync>
+
+    /**
+     * Restores a book club membership by recreating local data from Firestore.
+     * Creates local shelf and downloads books if needed.
+     *
+     * @param code The club code to restore
+     * @return The local shelf ID on success
+     */
+    suspend fun restoreClubMembership(code: String): Result<String, DataError.Sync>
+
     // ========== Books ==========
 
     /**

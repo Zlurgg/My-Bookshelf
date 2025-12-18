@@ -574,5 +574,6 @@ class SyncEngineTest {
         override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> = Result.Success(emptyList())
         override suspend fun updateBookClubCounts(code: String, bookCount: Int, memberCount: Int): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getBookClubsForUser(userId: String): Result<List<String>, DataError.Sync> = Result.Success(emptyList())
     }
 }

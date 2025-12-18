@@ -14,6 +14,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
@@ -55,17 +56,17 @@ class BookClubRepositoryImpl(
             return Result.Error(DataError.Sync.NOT_SIGNED_IN)
         }
 
-        // Get the shelf
-        val shelfEntity = bookshelfDao.getShelfById(shelfId)
-        if (shelfEntity == null) {
+        // Get the source shelf
+        val sourceShelf = bookshelfDao.getShelfById(shelfId)
+        if (sourceShelf == null) {
             Timber.tag(TAG).e("Cannot create book club: shelf not found")
             return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
         }
 
-        // Check if shelf already has a book club
-        if (shelfEntity.isBookClub && !shelfEntity.clubCode.isNullOrEmpty()) {
-            Timber.tag(TAG).d("Shelf already has book club: %s", shelfEntity.clubCode)
-            return Result.Success(shelfEntity.clubCode)
+        // Check if this shelf is already a book club (don't allow creating club from club)
+        if (sourceShelf.isBookClub && !sourceShelf.clubCode.isNullOrEmpty()) {
+            Timber.tag(TAG).d("Shelf is already a book club: %s", sourceShelf.clubCode)
+            return Result.Success(sourceShelf.clubCode)
         }
 
         // Generate unique club code
@@ -83,8 +84,8 @@ class BookClubRepositoryImpl(
         // Create Firestore metadata
         val metadata = BookClubMetadataDto(
             code = clubCode,
-            name = shelfEntity.name,
-            shelfStyle = shelfEntity.shelfMaterial,
+            name = sourceShelf.name,
+            shelfStyle = sourceShelf.shelfMaterial,
             createdBy = user.userId,
             createdByName = user.username ?: "Unknown",
             lastModifiedAt = now,
@@ -110,7 +111,7 @@ class BookClubRepositoryImpl(
             return Result.Error(memberResult.error)
         }
 
-        // Upload all books from the shelf to the club
+        // Upload all books from the source shelf to the club
         val booksResult = uploadShelfBooksToClub(shelfId, clubCode, user.userId, user.username ?: "Unknown")
         if (booksResult is Result.Error) {
             Timber.tag(TAG).e("Failed to upload books to club: %s", booksResult.error)
@@ -125,20 +126,44 @@ class BookClubRepositoryImpl(
             // Non-critical, continue
         }
 
-        // Update local shelf to mark as book club
-        bookClubDao.updateShelfBookClubStatus(shelfId, true, clubCode)
+        // Create a NEW local shelf for the book club (keep original untouched)
+        val clubShelfName = generateUniqueShelfName(sourceShelf.name)
+        val clubShelfId = idGenerator.generateId()
 
-        // Create local membership record
+        val clubShelfEntity = Bookshelf(
+            id = clubShelfId,
+            name = clubShelfName,
+            books = emptyList(),
+            shelfStyle = sourceShelf.shelfMaterial.let { ShelfStyle.valueOf(it) },
+            position = 0, // Position at top
+            isBookClub = true,
+            clubCode = clubCode
+        ).toEntity(user.userId)
+
+        bookshelfDao.upsertShelf(clubShelfEntity)
+
+        // Copy books from source shelf to club shelf
+        val sourceBookIds = bookClubDao.getBookIdsForShelf(shelfId)
+        for (bookId in sourceBookIds) {
+            val crossRef = BookshelfBookCrossRef(
+                shelfId = clubShelfId,
+                bookId = bookId,
+                addedAt = now
+            )
+            bookshelfDao.upsertCrossRef(crossRef)
+        }
+
+        // Create local membership record pointing to the new club shelf
         val membershipEntity = BookClubMembership(
             clubCode = clubCode,
-            localShelfId = shelfId,
+            localShelfId = clubShelfId,
             joinedAt = now,
             lastSyncedAt = now
         ).toEntity(idGenerator.generateId())
 
         bookClubDao.upsertMembership(membershipEntity)
 
-        Timber.tag(TAG).d("Book club created successfully: %s with %d books", clubCode, bookCount)
+        Timber.tag(TAG).d("Book club created successfully: %s with %d books, local shelf: %s", clubCode, bookCount, clubShelfId)
         return Result.Success(clubCode)
     }
 
@@ -227,7 +252,7 @@ class BookClubRepositoryImpl(
         // Generate unique local shelf name
         val shelfName = generateUniqueShelfName(club.name)
 
-        // Create local shelf
+        // Create local shelf with correct owner
         val shelfId = idGenerator.generateId()
         val now = timeProvider.currentTimeMillis()
 
@@ -239,7 +264,7 @@ class BookClubRepositoryImpl(
             position = 0, // Will be positioned at top
             isBookClub = true,
             clubCode = code
-        ).toEntity()
+        ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(shelfEntity)
 
@@ -256,8 +281,8 @@ class BookClubRepositoryImpl(
             return Result.Error(memberResult.error)
         }
 
-        // Download all club books
-        val booksResult = downloadClubBooksToShelf(code, shelfId)
+        // Download all club books with correct owner
+        val booksResult = downloadClubBooksToShelf(code, shelfId, user.userId)
         if (booksResult is Result.Error) {
             Timber.tag(TAG).w("Failed to download club books: %s", booksResult.error)
             // Non-critical, continue - user can sync later
@@ -281,6 +306,79 @@ class BookClubRepositoryImpl(
         }
 
         Timber.tag(TAG).d("Successfully joined book club: %s, local shelf: %s", code, shelfId)
+        return Result.Success(shelfId)
+    }
+
+    override suspend fun getRemoteClubMemberships(userId: String): Result<List<String>, DataError.Sync> {
+        Timber.tag(TAG).d("Getting remote club memberships for user: %s", userId)
+        return remoteDataSource.getBookClubsForUser(userId)
+    }
+
+    override suspend fun restoreClubMembership(code: String): Result<String, DataError.Sync> {
+        Timber.tag(TAG).d("Restoring book club membership: %s", code)
+
+        // Get current user
+        val user = authService.getSignedInUser()
+        if (user == null) {
+            Timber.tag(TAG).e("Cannot restore membership: not signed in")
+            return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        }
+
+        // Check if local shelf already exists
+        val existingMembership = bookClubDao.getMembershipByClubCode(code)
+        if (existingMembership != null) {
+            Timber.tag(TAG).d("Local membership already exists for club: %s", code)
+            return Result.Success(existingMembership.localShelfId)
+        }
+
+        // Get club metadata
+        val clubResult = getBookClub(code)
+        if (clubResult is Result.Error) {
+            return Result.Error(clubResult.error)
+        }
+        val club = (clubResult as Result.Success).data
+        if (club == null) {
+            Timber.tag(TAG).e("Cannot restore: club not found")
+            return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+        }
+
+        // Generate unique local shelf name
+        val shelfName = generateUniqueShelfName(club.name)
+
+        // Create local shelf with correct owner
+        val shelfId = idGenerator.generateId()
+        val now = timeProvider.currentTimeMillis()
+
+        val shelfEntity = Bookshelf(
+            id = shelfId,
+            name = shelfName,
+            books = emptyList(),
+            shelfStyle = club.style,
+            position = 0,
+            isBookClub = true,
+            clubCode = code
+        ).toEntity(user.userId)
+
+        bookshelfDao.upsertShelf(shelfEntity)
+
+        // Download club books (user is already a member in Firestore)
+        val booksResult = downloadClubBooksToShelf(code, shelfId, user.userId)
+        if (booksResult is Result.Error) {
+            Timber.tag(TAG).w("Failed to download club books: %s", booksResult.error)
+            // Non-critical, continue
+        }
+
+        // Create local membership record
+        val membershipEntity = BookClubMembership(
+            clubCode = code,
+            localShelfId = shelfId,
+            joinedAt = now,
+            lastSyncedAt = now
+        ).toEntity(idGenerator.generateId())
+
+        bookClubDao.upsertMembership(membershipEntity)
+
+        Timber.tag(TAG).d("Restored book club membership: %s, local shelf: %s", code, shelfId)
         return Result.Success(shelfId)
     }
 
@@ -362,7 +460,8 @@ class BookClubRepositoryImpl(
 
     private suspend fun downloadClubBooksToShelf(
         clubCode: String,
-        shelfId: String
+        shelfId: String,
+        userId: String
     ): Result<Int, DataError.Sync> {
         val booksResult = remoteDataSource.getClubBooks(clubCode)
 
@@ -375,9 +474,9 @@ class BookClubRepositoryImpl(
 
         for (bookDto in clubBooks) {
             try {
-                // Convert to Book domain model and save locally
+                // Convert to Book domain model and save locally with correct owner
                 val book = bookDto.toBook()
-                val bookEntity = book.toBookEntity()
+                val bookEntity = book.toBookEntity(userId)
 
                 // Upsert the book (in case it already exists)
                 bookshelfDao.upsert(bookEntity)

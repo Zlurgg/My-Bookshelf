@@ -33,6 +33,8 @@ class DeleteShelfUseCaseTest {
         override suspend fun getClubBooks(code: String): Result<List<Book>, DataError.Sync> = Result.Success(emptyList())
         override suspend fun isMemberOfClub(code: String): Result<Boolean, DataError.Sync> = Result.Success(false)
         override suspend fun joinBookClub(code: String): Result<String, DataError.Sync> = Result.Success("shelf-id")
+        override suspend fun getRemoteClubMemberships(userId: String): Result<List<String>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun restoreClubMembership(code: String): Result<String, DataError.Sync> = Result.Success("restored-shelf-id")
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockBookClubRepository, mockSyncSchedulerService)

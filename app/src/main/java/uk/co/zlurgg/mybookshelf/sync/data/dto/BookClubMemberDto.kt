@@ -9,10 +9,17 @@ import java.util.Date
  * Firestore DTO for Book Club member.
  *
  * Document path: /bookClubs/{clubCode}/members/{userId}
+ *
+ * Note: user_id is stored both as document ID AND as a field to enable
+ * collection group queries (Firestore can't query by document ID in collection groups).
  */
 data class BookClubMemberDto(
     @DocumentId
-    val userId: String = "",
+    val id: String = "",
+
+    @get:PropertyName("user_id")
+    @set:PropertyName("user_id")
+    var userId: String = "",
 
     @get:PropertyName("display_name")
     @set:PropertyName("display_name")

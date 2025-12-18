@@ -196,4 +196,11 @@ interface RemoteSyncDataSource {
      * Deletes a book club and all its subcollections (members, books).
      */
     suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync>
+
+    /**
+     * Gets all book clubs where the user is a member.
+     * Uses a collection group query on the members subcollection.
+     * Returns list of club codes.
+     */
+    suspend fun getBookClubsForUser(userId: String): Result<List<String>, DataError.Sync>
 }

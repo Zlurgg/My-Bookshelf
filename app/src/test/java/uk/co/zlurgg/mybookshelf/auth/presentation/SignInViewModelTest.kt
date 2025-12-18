@@ -31,6 +31,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -99,6 +101,11 @@ class SignInViewModelTest {
         override suspend fun execute(): Result<Unit, DataError.Sync> = mockSyncUserPreferencesResult
     }
 
+    private var mockRestoreResult: Result<RestoreResult, DataError.Sync> = Result.Success(RestoreResult(0, 0))
+    private val mockRestoreBookClubMembershipsUseCase = object : RestoreBookClubMembershipsUseCase {
+        override suspend fun invoke(): Result<RestoreResult, DataError.Sync> = mockRestoreResult
+    }
+
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserDataUseCase, mockCurrentUserProvider, mockSyncRepository)
@@ -115,7 +122,8 @@ class SignInViewModelTest {
             mockShouldShowWelcomeUseCase,
             mockHasGuestDataUseCase,
             mockMigrateLocalDataUseCase,
-            mockSyncUserPreferencesUseCase
+            mockSyncUserPreferencesUseCase,
+            mockRestoreBookClubMembershipsUseCase
         )
     }
 

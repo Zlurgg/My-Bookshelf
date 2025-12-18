@@ -27,6 +27,8 @@ class MockBookClubRepository : BookClubRepository {
     var localShelfForClub: Bookshelf? = null
     var localShelfForClubAfterJoin: Bookshelf? = null  // Used to simulate shelf creation after join
     var myBookClubs: List<BookClubMembership> = emptyList()
+    var getRemoteClubMembershipsResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
+    var restoreClubMembershipResult: Result<String, DataError.Sync> = Result.Success("restored-shelf-id")
 
     // Tracking properties
     var createBookClubCalled = false
@@ -44,6 +46,10 @@ class MockBookClubRepository : BookClubRepository {
     var lastJoinCode: String? = null
     var lastGetBooksCode: String? = null
     var lastGetLocalShelfCode: String? = null
+    var getRemoteClubMembershipsCalled = false
+    var restoreClubMembershipCalled = false
+    var lastGetRemoteMembershipsUserId: String? = null
+    var lastRestoreClubCode: String? = null
 
     override suspend fun createBookClub(shelfId: String): Result<String, DataError.Sync> {
         createBookClubCalled = true
@@ -90,6 +96,18 @@ class MockBookClubRepository : BookClubRepository {
         return joinBookClubResult
     }
 
+    override suspend fun getRemoteClubMemberships(userId: String): Result<List<String>, DataError.Sync> {
+        getRemoteClubMembershipsCalled = true
+        lastGetRemoteMembershipsUserId = userId
+        return getRemoteClubMembershipsResult
+    }
+
+    override suspend fun restoreClubMembership(code: String): Result<String, DataError.Sync> {
+        restoreClubMembershipCalled = true
+        lastRestoreClubCode = code
+        return restoreClubMembershipResult
+    }
+
     override suspend fun getClubBooks(code: String): Result<List<Book>, DataError.Sync> {
         getClubBooksCalled = true
         lastGetBooksCode = code
@@ -107,6 +125,8 @@ class MockBookClubRepository : BookClubRepository {
         localShelfForClub = null
         localShelfForClubAfterJoin = null
         myBookClubs = emptyList()
+        getRemoteClubMembershipsResult = Result.Success(emptyList())
+        restoreClubMembershipResult = Result.Success("restored-shelf-id")
 
         createBookClubCalled = false
         getBookClubCalled = false
@@ -115,6 +135,8 @@ class MockBookClubRepository : BookClubRepository {
         joinBookClubCalled = false
         getClubBooksCalled = false
         getLocalShelfForClubCalled = false
+        getRemoteClubMembershipsCalled = false
+        restoreClubMembershipCalled = false
 
         lastCreateShelfId = null
         lastGetBookClubCode = null
@@ -123,6 +145,8 @@ class MockBookClubRepository : BookClubRepository {
         lastJoinCode = null
         lastGetBooksCode = null
         lastGetLocalShelfCode = null
+        lastGetRemoteMembershipsUserId = null
+        lastRestoreClubCode = null
     }
 
     fun configureBookClub(bookClub: BookClub) {

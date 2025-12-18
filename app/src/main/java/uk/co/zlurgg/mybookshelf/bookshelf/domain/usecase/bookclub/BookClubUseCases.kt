@@ -12,5 +12,8 @@ class BookClubUseCases(
     // Phase 2: Join Book Club
     val parseClubCode: ParseClubCodeUseCase,
     val getBookClubPreview: GetBookClubPreviewUseCase,
-    val joinBookClub: JoinBookClubUseCase
+    val joinBookClub: JoinBookClubUseCase,
+
+    // Membership Management
+    val restoreBookClubMemberships: RestoreBookClubMembershipsUseCase
 )

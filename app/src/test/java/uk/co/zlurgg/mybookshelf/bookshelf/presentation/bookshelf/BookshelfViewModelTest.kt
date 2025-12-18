@@ -29,6 +29,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ParseClubCodeU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
@@ -110,7 +112,8 @@ class BookshelfViewModelTest {
             generateInviteLink = SimpleGenerateInviteLinkUseCase(),
             parseClubCode = SimpleParseClubCodeUseCase(),
             getBookClubPreview = SimpleGetBookClubPreviewUseCase(),
-            joinBookClub = SimpleJoinBookClubUseCase()
+            joinBookClub = SimpleJoinBookClubUseCase(),
+            restoreBookClubMemberships = SimpleRestoreBookClubMembershipsUseCase()
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
         return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, bookClubOperations, shelfId)
@@ -421,5 +424,10 @@ class BookshelfViewModelTest {
     private class SimpleJoinBookClubUseCase : JoinBookClubUseCase {
         override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> =
             Result.Success(JoinResult.Success("shelf-id", "Test Shelf"))
+    }
+
+    private class SimpleRestoreBookClubMembershipsUseCase : RestoreBookClubMembershipsUseCase {
+        override suspend fun invoke(): Result<RestoreResult, DataError.Sync> =
+            Result.Success(RestoreResult(0, 0))
     }
 }
