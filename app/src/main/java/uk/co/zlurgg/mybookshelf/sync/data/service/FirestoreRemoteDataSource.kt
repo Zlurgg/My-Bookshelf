@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.sync.data.service
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -447,27 +448,27 @@ class FirestoreRemoteDataSource(
         }
     }
 
-    override suspend fun getBookClubsForUser(userId: String): Result<List<String>, DataError.Sync> {
-        return executeFirestoreOperation("getBookClubsForUser") {
-            // Use collection group query to find all member documents where user_id matches
-            val snapshot = firestore.collectionGroup(MEMBERS_COLLECTION)
-                .whereEqualTo(FIELD_USER_ID, userId)
-                .get()
+    override suspend fun addClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("addClubMembership") {
+            // Use set with merge to create document if it doesn't exist
+            val data = mapOf(FIELD_CLUB_MEMBERSHIPS to FieldValue.arrayUnion(clubCode))
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(SETTINGS_COLLECTION)
+                .document(PREFERENCES_DOCUMENT)
+                .set(data, SetOptions.merge())
                 .await()
+        }
+    }
 
-            // Extract club codes from parent document paths
-            // Path format: /bookClubs/{clubCode}/members/{userId}
-            snapshot.documents.mapNotNull { doc ->
-                val path = doc.reference.path
-                // Extract clubCode from path
-                val parts = path.split("/")
-                if (parts.size >= 2 && parts[0] == BOOK_CLUBS_COLLECTION) {
-                    parts[1] // This is the club code
-                } else {
-                    Timber.tag(TAG).w("Unexpected path format: %s", path)
-                    null
-                }
-            }
+    override suspend fun removeClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("removeClubMembership") {
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(SETTINGS_COLLECTION)
+                .document(PREFERENCES_DOCUMENT)
+                .update(FIELD_CLUB_MEMBERSHIPS, FieldValue.arrayRemove(clubCode))
+                .await()
         }
     }
 
@@ -486,12 +487,15 @@ class FirestoreRemoteDataSource(
             Timber.tag(TAG).e(e, "%s failed: %s", operationName, error)
             Result.Error(error)
         } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "%s failed with unexpected error", operationName)
+            // Log full exception details - may contain index creation URL
+            Timber.tag(TAG).e(e, "%s failed with unexpected error: %s", operationName, e.message)
             Result.Error(DataError.Sync.UNKNOWN)
         }
     }
 
     private fun mapFirestoreException(e: FirebaseFirestoreException): DataError.Sync {
+        // Log the full message which may contain index creation URLs
+        Timber.tag(TAG).e("Firestore error code: %s, message: %s", e.code, e.message)
         return when (e.code) {
             FirebaseFirestoreException.Code.PERMISSION_DENIED -> DataError.Sync.PERMISSION_DENIED
             FirebaseFirestoreException.Code.NOT_FOUND -> DataError.Sync.DOCUMENT_NOT_FOUND
@@ -499,6 +503,11 @@ class FirestoreRemoteDataSource(
             FirebaseFirestoreException.Code.UNAUTHENTICATED -> DataError.Sync.NOT_SIGNED_IN
             FirebaseFirestoreException.Code.UNAVAILABLE -> DataError.Sync.NETWORK_ERROR
             FirebaseFirestoreException.Code.ABORTED -> DataError.Sync.CONFLICT_UNRESOLVED
+            FirebaseFirestoreException.Code.FAILED_PRECONDITION -> {
+                // This usually means a missing index - the message contains the creation URL
+                Timber.tag(TAG).e("FAILED_PRECONDITION - likely missing index. Check message above for creation URL")
+                DataError.Sync.UNKNOWN
+            }
             else -> DataError.Sync.UNKNOWN
         }
     }
@@ -522,6 +531,6 @@ class FirestoreRemoteDataSource(
         // Field names
         private const val FIELD_LAST_MODIFIED = "last_modified_at"
         private const val FIELD_SUBSCRIBER_IDS = "subscriber_ids"
-        private const val FIELD_USER_ID = "user_id"
+        private const val FIELD_CLUB_MEMBERSHIPS = "club_memberships"
     }
 }

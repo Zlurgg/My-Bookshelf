@@ -163,6 +163,13 @@ class BookClubRepositoryImpl(
 
         bookClubDao.upsertMembership(membershipEntity)
 
+        // Save club code to user preferences for restore on sign-in
+        val membershipSaveResult = remoteDataSource.addClubMembership(user.userId, clubCode)
+        if (membershipSaveResult is Result.Error) {
+            Timber.tag(TAG).w("Failed to save club membership to prefs: %s", membershipSaveResult.error)
+            // Non-critical, continue - local state is saved
+        }
+
         Timber.tag(TAG).d("Book club created successfully: %s with %d books, local shelf: %s", clubCode, bookCount, clubShelfId)
         return Result.Success(clubCode)
     }
@@ -305,13 +312,33 @@ class BookClubRepositoryImpl(
             remoteDataSource.updateBookClubCounts(code, club.bookCount, memberCount)
         }
 
+        // Save club code to user preferences for restore on sign-in
+        val membershipSaveResult = remoteDataSource.addClubMembership(user.userId, code)
+        if (membershipSaveResult is Result.Error) {
+            Timber.tag(TAG).w("Failed to save club membership to prefs: %s", membershipSaveResult.error)
+            // Non-critical, continue - local state is saved
+        }
+
         Timber.tag(TAG).d("Successfully joined book club: %s, local shelf: %s", code, shelfId)
         return Result.Success(shelfId)
     }
 
     override suspend fun getRemoteClubMemberships(userId: String): Result<List<String>, DataError.Sync> {
         Timber.tag(TAG).d("Getting remote club memberships for user: %s", userId)
-        return remoteDataSource.getBookClubsForUser(userId)
+
+        // Read club memberships from user preferences (denormalized approach)
+        val prefsResult = remoteDataSource.getUserPreferences(userId)
+        return when (prefsResult) {
+            is Result.Success -> {
+                val memberships = prefsResult.data?.clubMemberships ?: emptyList()
+                Timber.tag(TAG).d("Found %d club memberships in user prefs", memberships.size)
+                Result.Success(memberships)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to get user preferences: %s", prefsResult.error)
+                Result.Error(prefsResult.error)
+            }
+        }
     }
 
     override suspend fun restoreClubMembership(code: String): Result<String, DataError.Sync> {

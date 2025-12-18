@@ -27,6 +27,9 @@ interface BookClubDao {
     @Query("DELETE FROM book_club_memberships WHERE clubCode = :clubCode")
     suspend fun deleteMembership(clubCode: String)
 
+    @Query("DELETE FROM book_club_memberships")
+    suspend fun deleteAllMemberships()
+
     @Query("UPDATE book_club_memberships SET syncStatus = :status, lastSyncedAt = :timestamp WHERE clubCode = :clubCode")
     suspend fun updateMembershipSyncStatus(clubCode: String, status: String, timestamp: Long)
 

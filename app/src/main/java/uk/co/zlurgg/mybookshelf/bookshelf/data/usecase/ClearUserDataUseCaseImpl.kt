@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.usecase
 
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -16,7 +17,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataU
  * the domain layer to maintain Clean Architecture principles.
  */
 class ClearUserDataUseCaseImpl(
-    private val bookshelfDao: BookshelfDao
+    private val bookshelfDao: BookshelfDao,
+    private val bookClubDao: BookClubDao
 ) : ClearUserDataUseCase {
 
     companion object {
@@ -47,6 +49,10 @@ class ClearUserDataUseCaseImpl(
 
             bookshelfDao.deleteAllShelvesForOwner(userId)
             Timber.tag(TAG).d("Deleted shelves for user")
+
+            // Also clear book club memberships (they reference deleted shelves)
+            bookClubDao.deleteAllMemberships()
+            Timber.tag(TAG).d("Deleted book club memberships")
 
             Timber.tag(TAG).d("=== USER DATA CLEARED: %d items ===", totalItems)
             Result.Success(totalItems)

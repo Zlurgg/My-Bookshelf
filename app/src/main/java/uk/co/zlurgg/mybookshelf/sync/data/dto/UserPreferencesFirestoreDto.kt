@@ -23,6 +23,12 @@ data class UserPreferencesFirestoreDto(
     @set:PropertyName("welcome_shown")
     var welcomeShown: Boolean = false,
 
+    // Book club memberships - list of club codes the user belongs to
+    // Used to restore book club shelves after sign-out/sign-in
+    @get:PropertyName("club_memberships")
+    @set:PropertyName("club_memberships")
+    var clubMemberships: List<String> = emptyList(),
+
     // Sync metadata
     @get:PropertyName("last_modified_at")
     @set:PropertyName("last_modified_at")
