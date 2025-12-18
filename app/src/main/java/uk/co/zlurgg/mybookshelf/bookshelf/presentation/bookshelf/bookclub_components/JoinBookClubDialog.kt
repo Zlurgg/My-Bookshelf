@@ -34,10 +34,10 @@ import uk.co.zlurgg.mybookshelf.R
 fun JoinBookClubDialog(
     onDismiss: () -> Unit,
     onLookup: (code: String) -> Unit,
+    modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     errorMessage: String? = null,
     initialCode: String = "",
-    modifier: Modifier = Modifier
 ) {
     var codeOrUrl by remember { mutableStateOf(initialCode) }
     val focusRequester = remember { FocusRequester() }

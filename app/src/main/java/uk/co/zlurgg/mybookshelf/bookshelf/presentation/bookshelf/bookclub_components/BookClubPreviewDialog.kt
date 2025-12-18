@@ -44,8 +44,8 @@ fun BookClubPreviewDialog(
     bookClub: BookClub,
     onDismiss: () -> Unit,
     onJoin: () -> Unit,
+    modifier: Modifier = Modifier,
     isJoining: Boolean = false,
-    modifier: Modifier = Modifier
 ) {
     AlertDialog(
         onDismissRequest = {
