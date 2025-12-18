@@ -238,6 +238,7 @@ class MigrateLocalDataUseCaseImplTest {
         override fun getAllShelves(): Flow<List<BookshelfEntity>> = flowOf(emptyList())
         override fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>> = flowOf(emptyList())
         override suspend fun getShelfById(id: String): BookshelfEntity? = null
+        override suspend fun getShelfByName(name: String): BookshelfEntity? = null
         override suspend fun deleteShelf(id: String) {}
         override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) {}
         override suspend fun deleteCrossRef(shelfId: String, bookId: String) {}

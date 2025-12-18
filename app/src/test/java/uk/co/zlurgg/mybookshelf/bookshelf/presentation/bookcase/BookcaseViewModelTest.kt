@@ -45,6 +45,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCas
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ParseClubCodeUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
@@ -148,9 +153,24 @@ class BookcaseViewModelTest {
             override fun execute(clubCode: String, clubName: String?): String =
                 "https://mybookshelf.app/join/$clubCode"
         }
+        val mockParseClubCode = object : ParseClubCodeUseCase {
+            override fun invoke(input: String): Result<String, DataError.Validation> =
+                Result.Success("TESTCODE")
+        }
+        val mockGetBookClubPreview = object : GetBookClubPreviewUseCase {
+            override suspend fun invoke(code: String): Result<BookClub?, DataError.Sync> =
+                Result.Success(null)
+        }
+        val mockJoinBookClub = object : JoinBookClubUseCase {
+            override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> =
+                Result.Success(JoinResult.Success("shelf-id", "Test Shelf"))
+        }
         val bookClubUseCases = BookClubUseCases(
             createBookClub = mockCreateBookClub,
-            generateInviteLink = mockGenerateInviteLink
+            generateInviteLink = mockGenerateInviteLink,
+            parseClubCode = mockParseClubCode,
+            getBookClubPreview = mockGetBookClubPreview,
+            joinBookClub = mockJoinBookClub
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
 

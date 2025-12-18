@@ -21,9 +21,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookF
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ParseClubCodeUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
@@ -102,7 +107,10 @@ class BookshelfViewModelTest {
         )
         val bookClubUseCases = BookClubUseCases(
             createBookClub = SimpleCreateBookClubUseCase(),
-            generateInviteLink = SimpleGenerateInviteLinkUseCase()
+            generateInviteLink = SimpleGenerateInviteLinkUseCase(),
+            parseClubCode = SimpleParseClubCodeUseCase(),
+            getBookClubPreview = SimpleGetBookClubPreviewUseCase(),
+            joinBookClub = SimpleJoinBookClubUseCase()
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
         return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, bookClubOperations, shelfId)
@@ -398,5 +406,20 @@ class BookshelfViewModelTest {
     private class SimpleGenerateInviteLinkUseCase : GenerateInviteLinkUseCase {
         override fun execute(clubCode: String, clubName: String?): String =
             "https://mybookshelf.app/join/$clubCode"
+    }
+
+    private class SimpleParseClubCodeUseCase : ParseClubCodeUseCase {
+        override fun invoke(input: String): Result<String, DataError.Validation> =
+            Result.Success("TESTCODE")
+    }
+
+    private class SimpleGetBookClubPreviewUseCase : GetBookClubPreviewUseCase {
+        override suspend fun invoke(code: String): Result<BookClub?, DataError.Sync> =
+            Result.Success(null)
+    }
+
+    private class SimpleJoinBookClubUseCase : JoinBookClubUseCase {
+        override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> =
+            Result.Success(JoinResult.Success("shelf-id", "Test Shelf"))
     }
 }

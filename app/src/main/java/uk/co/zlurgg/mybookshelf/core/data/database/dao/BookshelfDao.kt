@@ -44,6 +44,9 @@ interface BookshelfDao {
     @Query("SELECT * FROM BookshelfEntity WHERE id = :id")
     suspend fun getShelfById(id: String): BookshelfEntity?
 
+    @Query("SELECT * FROM BookshelfEntity WHERE name = :name LIMIT 1")
+    suspend fun getShelfByName(name: String): BookshelfEntity?
+
     @Query("DELETE FROM BookshelfEntity WHERE id = :id")
     suspend fun deleteShelf(id: String)
 

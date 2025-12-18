@@ -5,6 +5,12 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub
  * Simplifies ViewModel constructor dependencies and provides clean separation of concerns.
  */
 class BookClubUseCases(
+    // Phase 1: Create Book Club
     val createBookClub: CreateBookClubUseCase,
-    val generateInviteLink: GenerateInviteLinkUseCase
+    val generateInviteLink: GenerateInviteLinkUseCase,
+
+    // Phase 2: Join Book Club
+    val parseClubCode: ParseClubCodeUseCase,
+    val getBookClubPreview: GetBookClubPreviewUseCase,
+    val joinBookClub: JoinBookClubUseCase
 )

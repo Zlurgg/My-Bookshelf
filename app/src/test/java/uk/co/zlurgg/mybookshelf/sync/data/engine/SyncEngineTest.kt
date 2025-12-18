@@ -429,6 +429,7 @@ class SyncEngineTest {
 
         override suspend fun getBookById(id: String): BookEntity? = books[id]
         override suspend fun getShelfById(id: String): BookshelfEntity? = shelves[id]
+        override suspend fun getShelfByName(name: String): BookshelfEntity? = shelves.values.find { it.name == name }
 
         override suspend fun upsert(book: BookEntity) {
             books[book.id] = book
@@ -568,6 +569,7 @@ class SyncEngineTest {
         override suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync> = Result.Success(null)
         override suspend fun addBookClubMember(code: String, member: BookClubMemberDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync> = Result.Success(false)
         override suspend fun addBookToClub(code: String, book: BookClubBookDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> = Result.Success(emptyList())
         override suspend fun updateBookClubCounts(code: String, bookCount: Int, memberCount: Int): Result<Unit, DataError.Sync> = Result.Success(Unit)

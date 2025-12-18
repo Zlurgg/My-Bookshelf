@@ -31,6 +31,8 @@ class DeleteShelfUseCaseTest {
         override fun observeMyBookClubs(): Flow<List<BookClubMembership>> = flowOf(emptyList())
         override suspend fun getLocalShelfForClub(code: String): Bookshelf? = null
         override suspend fun getClubBooks(code: String): Result<List<Book>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun isMemberOfClub(code: String): Result<Boolean, DataError.Sync> = Result.Success(false)
+        override suspend fun joinBookClub(code: String): Result<String, DataError.Sync> = Result.Success("shelf-id")
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockBookClubRepository, mockSyncSchedulerService)

@@ -51,6 +51,24 @@ interface BookClubRepository {
      */
     suspend fun getLocalShelfForClub(code: String): Bookshelf?
 
+    /**
+     * Checks if the current user is a member of the specified book club.
+     *
+     * @param code The club code to check
+     * @return true if user is a member, false otherwise
+     */
+    suspend fun isMemberOfClub(code: String): Result<Boolean, DataError.Sync>
+
+    /**
+     * Joins an existing book club.
+     * Creates a local shelf linked to the club, adds user as member,
+     * and downloads all club books.
+     *
+     * @param code The club code to join
+     * @return The local shelf ID on success
+     */
+    suspend fun joinBookClub(code: String): Result<String, DataError.Sync>
+
     // ========== Books ==========
 
     /**

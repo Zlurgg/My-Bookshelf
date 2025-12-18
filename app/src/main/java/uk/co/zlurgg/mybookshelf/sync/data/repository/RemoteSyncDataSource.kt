@@ -166,6 +166,11 @@ interface RemoteSyncDataSource {
     suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync>
 
     /**
+     * Checks if a user is a member of a book club.
+     */
+    suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync>
+
+    /**
      * Adds a book to a book club.
      */
     suspend fun addBookToClub(

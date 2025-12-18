@@ -169,6 +169,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ParseClubCodeUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ParseClubCodeUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 private const val GITHUB_OWNER = "Zlurgg"
@@ -388,5 +394,8 @@ val appModule = module {
     }
     singleOf(::CreateBookClubUseCaseImpl).bind<CreateBookClubUseCase>()
     single<GenerateInviteLinkUseCase> { GenerateInviteLinkUseCaseImpl(ApiConfig.shareBaseUrl) }
-    single { BookClubUseCases(get(), get()) }
+    single<ParseClubCodeUseCase> { ParseClubCodeUseCaseImpl() }
+    singleOf(::GetBookClubPreviewUseCaseImpl).bind<GetBookClubPreviewUseCase>()
+    singleOf(::JoinBookClubUseCaseImpl).bind<JoinBookClubUseCase>()
+    single { BookClubUseCases(get(), get(), get(), get(), get()) }
 }

@@ -366,6 +366,18 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    override suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync> {
+        return executeFirestoreOperation("isMember") {
+            val doc = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .collection(MEMBERS_COLLECTION)
+                .document(userId)
+                .get()
+                .await()
+            doc.exists()
+        }
+    }
+
     override suspend fun addBookToClub(
         code: String,
         book: BookClubBookDto
