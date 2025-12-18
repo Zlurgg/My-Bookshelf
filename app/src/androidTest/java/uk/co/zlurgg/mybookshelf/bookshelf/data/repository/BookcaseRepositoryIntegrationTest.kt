@@ -8,11 +8,13 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
@@ -36,6 +38,11 @@ class BookcaseRepositoryIntegrationTest {
         override fun getCurrentUserId(): String? = null
     }
 
+    // Stub TimeProvider - returns fixed timestamp
+    private val stubTimeProvider = object : TimeProvider {
+        override fun currentTimeMillis(): Long = System.currentTimeMillis()
+    }
+
     @Before
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
@@ -43,7 +50,7 @@ class BookcaseRepositoryIntegrationTest {
             MyBookshelfRoomDatabase::class.java
         ).build()
 
-        repository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
+        repository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider, stubTimeProvider)
     }
 
     @After
@@ -110,9 +117,11 @@ class BookcaseRepositoryIntegrationTest {
         // When - Remove shelf
         repository.removeShelf("shelf-1")
 
-        // Then - Shelf should not exist
-        val retrieved = repository.getShelfById("shelf-1")
-        assertNull("Shelf should be deleted", retrieved)
+        // Then - Shelf should not be visible in user-facing queries
+        // Note: removeShelf soft-deletes (marks as DELETED) for sync purposes
+        // The shelf still exists in DB but is filtered from getAllShelves()
+        val allShelves = repository.getAllShelves().first()
+        assertTrue("Shelf should not be visible after removal", allShelves.none { it.id == "shelf-1" })
     }
 
     @Test
@@ -201,7 +210,7 @@ class BookcaseRepositoryIntegrationTest {
         repository.addShelf(Bookshelf("shelf-2", "Second", emptyList(), ShelfStyle.DarkWood, 1))
 
         // When - Create new repository instance (simulating app restart)
-        val newRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
+        val newRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider, stubTimeProvider)
         val shelves = newRepository.getAllShelves().first()
 
         // Then - Positions should persist

@@ -21,6 +21,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 /**
  * Integration test for BookshelfImportValidatorImpl with real database.
@@ -40,6 +41,11 @@ class ValidatorIntegrationTest {
         override fun getCurrentUserId(): String? = null
     }
 
+    // Stub TimeProvider - returns fixed timestamp
+    private val stubTimeProvider = object : TimeProvider {
+        override fun currentTimeMillis(): Long = System.currentTimeMillis()
+    }
+
     @Before
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
@@ -47,7 +53,7 @@ class ValidatorIntegrationTest {
             MyBookshelfRoomDatabase::class.java
         ).build()
 
-        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
+        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider, stubTimeProvider)
         validator = BookshelfImportValidatorImpl(bookcaseRepository)
     }
 

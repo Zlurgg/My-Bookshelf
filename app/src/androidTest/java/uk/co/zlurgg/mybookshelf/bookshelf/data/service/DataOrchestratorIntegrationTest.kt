@@ -76,9 +76,9 @@ class DataOrchestratorIntegrationTest {
             MyBookshelfRoomDatabase::class.java
         ).build()
 
-        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
+        bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider, testTimeProvider)
         bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
-        bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao)
+        bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao, stubCurrentUserProvider, testTimeProvider)
 
         orchestrator = DatabaseBookshelfDataOrchestrator(
             bookcaseRepository,
