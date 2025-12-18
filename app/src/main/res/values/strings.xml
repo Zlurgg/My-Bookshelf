@@ -212,6 +212,26 @@
     <string name="menu_about">About</string>
     <string name="menu_sign_in">Sign In</string>
     <string name="menu_sign_out">Sign Out</string>
+    <string name="menu_join_book_club">Join Book Club</string>
+
+    <!-- Join Book Club dialog -->
+    <string name="join_book_club_title">Join Book Club</string>
+    <string name="join_book_club_hint">Enter code or paste invite link</string>
+    <string name="join_book_club_lookup">Look Up</string>
+    <string name="join_book_club_success">Successfully joined \"%s\"!</string>
+
+    <!-- Book Club Preview dialog -->
+    <string name="book_club_preview_title">Book Club Found</string>
+    <string name="book_club_preview_books">%d books</string>
+    <string name="book_club_preview_members">%d members</string>
+    <string name="book_club_preview_join">Join</string>
+    <string name="book_club_preview_joining">Joining…</string>
+
+    <!-- Book Club error messages -->
+    <string name="error_invalid_club_code">Invalid club code format.</string>
+    <string name="error_club_not_found">Book club not found. Check the code and try again.</string>
+    <string name="error_already_member">You\'re already a member of this book club.</string>
+    <string name="error_not_signed_in">Please sign in to join a book club.</string>
 
     <!-- About dialog -->
     <string name="about_title">About My Bookshelf</string>

@@ -36,6 +36,12 @@ service cloud.firestore {
       allow update, delete: if request.auth != null
         && resource.data.created_by == request.auth.uid;
 
+      // Allow members to update only book_count and member_count fields
+      // This is needed when members join/leave or sync books
+      allow update: if request.auth != null
+        && exists(/databases/$(database)/documents/bookClubs/$(clubCode)/members/$(request.auth.uid))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['book_count', 'member_count', 'last_modified_at']);
+
       // Members subcollection
       match /members/{memberId} {
         // Creator can manage all members

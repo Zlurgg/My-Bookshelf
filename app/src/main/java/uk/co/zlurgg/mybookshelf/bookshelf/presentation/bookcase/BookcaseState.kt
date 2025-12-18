@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase
 
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
 
@@ -40,4 +41,19 @@ data class BookcaseState(
     val isCreatingBookClub: Boolean = false,
     val bookClubInviteLink: String? = null,
     val bookClubCode: String? = null,
+
+    // Join Book Club - Step 1: Code entry
+    val showJoinBookClubDialog: Boolean = false,
+    val joinLookupLoading: Boolean = false,
+    val joinLookupError: String? = null,
+
+    // Join Book Club - Step 2: Preview
+    val bookClubPreview: BookClub? = null,
+    val joinInProgress: Boolean = false,
+
+    // Join Book Club - Success
+    val joinBookClubSuccess: String? = null,
+
+    // For invite link - pre-filled code
+    val pendingInviteCode: String? = null,
 )

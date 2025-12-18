@@ -48,7 +48,9 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.BookClubPreviewDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.InviteLinkDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.JoinBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.ShareOptionsDialog
 
 @Composable
@@ -185,6 +187,7 @@ fun BookcaseScreen(
                         onCheckForUpdates = { onAction(BookcaseAction.CheckForUpdates) },
                         onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
                         onShowAbout = { showAboutDialog = true },
+                        onJoinBookClub = { onAction(BookcaseAction.ShowJoinBookClubDialog) },
                         onSignIn = { onAction(BookcaseAction.OnSignInClick) },
                         onSignOut = { onAction(BookcaseAction.ShowSignOutDialog) }
                     )
@@ -316,6 +319,37 @@ fun BookcaseScreen(
             clubName = state.shelfToShare?.name ?: "",
             onDismiss = { onAction(BookcaseAction.DismissInviteLink) }
         )
+    }
+
+    // Join Book Club dialog - code entry
+    if (state.showJoinBookClubDialog) {
+        JoinBookClubDialog(
+            onDismiss = { onAction(BookcaseAction.DismissJoinBookClubDialog) },
+            onLookup = { codeOrUrl -> onAction(BookcaseAction.OnLookupBookClub(codeOrUrl)) },
+            isLoading = state.joinLookupLoading,
+            errorMessage = state.joinLookupError,
+            initialCode = state.pendingInviteCode ?: ""
+        )
+    }
+
+    // Book Club Preview dialog - confirmation before joining
+    state.bookClubPreview?.let { bookClub ->
+        BookClubPreviewDialog(
+            bookClub = bookClub,
+            onDismiss = { onAction(BookcaseAction.DismissBookClubPreview) },
+            onJoin = { onAction(BookcaseAction.OnConfirmJoinBookClub) },
+            isJoining = state.joinInProgress
+        )
+    }
+
+    // Join Book Club success snackbar
+    state.joinBookClubSuccess?.let { shelfName ->
+        LaunchedEffect(shelfName) {
+            snackbarHostState.showSnackbar(
+                message = "Successfully joined \"$shelfName\"!"
+            )
+            onAction(BookcaseAction.DismissJoinSuccess)
+        }
     }
 }
 

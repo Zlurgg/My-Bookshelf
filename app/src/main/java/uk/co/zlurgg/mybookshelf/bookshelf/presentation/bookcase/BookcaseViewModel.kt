@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
@@ -240,6 +241,52 @@ class BookcaseViewModel(
             is BookcaseAction.ConfirmSignOut -> {
                 signOut()
             }
+
+            // Join Book Club Actions
+            is BookcaseAction.ShowJoinBookClubDialog -> {
+                _state.update {
+                    it.copy(
+                        showJoinBookClubDialog = true,
+                        joinLookupError = null
+                    )
+                }
+            }
+
+            is BookcaseAction.DismissJoinBookClubDialog -> {
+                _state.update {
+                    it.copy(
+                        showJoinBookClubDialog = false,
+                        joinLookupError = null,
+                        pendingInviteCode = null
+                    )
+                }
+                bookClubOperations.clearLookupState()
+            }
+
+            is BookcaseAction.OnLookupBookClub -> {
+                lookupBookClub(action.codeOrUrl)
+            }
+
+            is BookcaseAction.DismissBookClubPreview -> {
+                _state.update {
+                    it.copy(
+                        bookClubPreview = null,
+                        showJoinBookClubDialog = true
+                    )
+                }
+            }
+
+            is BookcaseAction.OnConfirmJoinBookClub -> {
+                confirmJoinBookClub()
+            }
+
+            is BookcaseAction.DismissJoinSuccess -> {
+                _state.update { it.copy(joinBookClubSuccess = null) }
+            }
+
+            is BookcaseAction.HandleInviteLink -> {
+                handleInviteLink(action.code)
+            }
         }
     }
 
@@ -433,6 +480,102 @@ class BookcaseViewModel(
                 }
             }
         }
+    }
+
+    // ============================================================================
+    // Join Book Club Methods
+    // ============================================================================
+
+    private fun lookupBookClub(codeOrUrl: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(joinLookupLoading = true, joinLookupError = null) }
+
+            when (val lookupResult = bookClubOperations.lookupBookClub(codeOrUrl)) {
+                is BookClubOperationsHandler.LookupResult.Found -> {
+                    _state.update {
+                        it.copy(
+                            joinLookupLoading = false,
+                            showJoinBookClubDialog = false,
+                            bookClubPreview = lookupResult.bookClub
+                        )
+                    }
+                }
+                is BookClubOperationsHandler.LookupResult.NotFound -> {
+                    _state.update {
+                        it.copy(
+                            joinLookupLoading = false,
+                            joinLookupError = ErrorFormatter.formatDataErrorMessage(lookupResult.error, "find book club")
+                        )
+                    }
+                }
+                is BookClubOperationsHandler.LookupResult.InvalidCode -> {
+                    _state.update {
+                        it.copy(
+                            joinLookupLoading = false,
+                            joinLookupError = ErrorFormatter.formatDataErrorMessage(lookupResult.error, "validate code")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun confirmJoinBookClub() {
+        viewModelScope.launch {
+            _state.update { it.copy(joinInProgress = true) }
+
+            when (val joinResult = bookClubOperations.joinBookClub()) {
+                is Result.Success -> {
+                    when (val result = joinResult.data) {
+                        is JoinResult.Success -> {
+                            _state.update {
+                                it.copy(
+                                    joinInProgress = false,
+                                    bookClubPreview = null,
+                                    joinBookClubSuccess = result.shelfName
+                                )
+                            }
+                        }
+                        is JoinResult.AlreadyMember -> {
+                            _state.update {
+                                it.copy(
+                                    joinInProgress = false,
+                                    bookClubPreview = null,
+                                    errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                        DataError.Sync.ALREADY_MEMBER,
+                                        "join book club"
+                                    )
+                                )
+                            }
+                        }
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            joinInProgress = false,
+                            bookClubPreview = null,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(joinResult.error, "join book club")
+                        )
+                    }
+                }
+            }
+
+            bookClubOperations.clearLookupState()
+        }
+    }
+
+    private fun handleInviteLink(code: String) {
+        // Show the join dialog with the code pre-filled, then auto-trigger lookup
+        _state.update {
+            it.copy(
+                pendingInviteCode = code,
+                showJoinBookClubDialog = true,
+                joinLookupError = null
+            )
+        }
+        // Auto-trigger the lookup
+        lookupBookClub(code)
     }
 
     private fun calculateNextShelfNumber(shelves: List<Bookshelf>): Int {

@@ -1,6 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers
 
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
@@ -18,6 +20,18 @@ class BookClubOperationsHandler(
         val clubCode: String,
         val inviteLink: String
     )
+
+    /**
+     * Result of a book club lookup operation.
+     */
+    sealed class LookupResult {
+        data class Found(val bookClub: BookClub, val code: String) : LookupResult()
+        data class NotFound(val error: DataError) : LookupResult()
+        data class InvalidCode(val error: DataError.Validation) : LookupResult()
+    }
+
+    // Store the last looked-up code for joining
+    private var lastLookedUpCode: String? = null
 
     /**
      * Creates a book club from a shelf and generates an invite link.
@@ -38,5 +52,66 @@ class BookClubOperationsHandler(
             }
             is Result.Error -> Result.Error(createResult.error)
         }
+    }
+
+    /**
+     * Looks up a book club from a code or URL input.
+     * Parses the input to extract the code, then fetches the club preview.
+     *
+     * @param codeOrUrl The club code or invite URL
+     * @return LookupResult indicating found, not found, or invalid code
+     */
+    suspend fun lookupBookClub(codeOrUrl: String): LookupResult {
+        // Parse the code from input (handles raw codes and URLs)
+        val parseResult = bookClubUseCases.parseClubCode(codeOrUrl)
+        if (parseResult is Result.Error) {
+            return LookupResult.InvalidCode(parseResult.error)
+        }
+
+        val code = (parseResult as Result.Success).data
+
+        // Fetch the club preview
+        return when (val previewResult = bookClubUseCases.getBookClubPreview(code)) {
+            is Result.Success -> {
+                val bookClub = previewResult.data
+                if (bookClub != null) {
+                    lastLookedUpCode = code
+                    LookupResult.Found(bookClub, code)
+                } else {
+                    LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
+                }
+            }
+            is Result.Error -> LookupResult.NotFound(previewResult.error)
+        }
+    }
+
+    /**
+     * Joins the most recently looked-up book club.
+     *
+     * @return Result with JoinResult on success, or DataError.Sync on failure
+     */
+    suspend fun joinBookClub(): Result<JoinResult, DataError.Sync> {
+        val code = lastLookedUpCode
+            ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+
+        return bookClubUseCases.joinBookClub(code)
+    }
+
+    /**
+     * Joins a specific book club by code.
+     *
+     * @param code The club code to join
+     * @return Result with JoinResult on success, or DataError.Sync on failure
+     */
+    suspend fun joinBookClub(code: String): Result<JoinResult, DataError.Sync> {
+        lastLookedUpCode = code
+        return bookClubUseCases.joinBookClub(code)
+    }
+
+    /**
+     * Clears the stored lookup state.
+     */
+    fun clearLookupState() {
+        lastLookedUpCode = null
     }
 }

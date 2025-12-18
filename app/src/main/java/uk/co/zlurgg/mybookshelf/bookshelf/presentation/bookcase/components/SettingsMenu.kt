@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SystemUpdate
@@ -33,6 +34,7 @@ fun SettingsMenu(
     onCheckForUpdates: () -> Unit,
     onShowHelp: () -> Unit,
     onShowAbout: () -> Unit,
+    onJoinBookClub: () -> Unit,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier
@@ -96,6 +98,23 @@ fun SettingsMenu(
                     )
                 }
             )
+
+            // Join Book Club (only shown when signed in)
+            if (isSignedIn) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.menu_join_book_club)) },
+                    onClick = {
+                        expanded = false
+                        onJoinBookClub()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Groups,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
 
             // Sign In or Sign Out based on auth state
             if (isSignedIn) {

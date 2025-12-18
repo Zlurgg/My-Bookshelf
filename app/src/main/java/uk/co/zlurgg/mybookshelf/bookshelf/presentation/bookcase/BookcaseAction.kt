@@ -29,6 +29,15 @@ sealed interface BookcaseAction {
     data object OnCreateBookClub : BookcaseAction
     data object DismissInviteLink : BookcaseAction
 
+    // Join Book Club Actions
+    data object ShowJoinBookClubDialog : BookcaseAction
+    data object DismissJoinBookClubDialog : BookcaseAction
+    data class OnLookupBookClub(val codeOrUrl: String) : BookcaseAction
+    data object DismissBookClubPreview : BookcaseAction
+    data object OnConfirmJoinBookClub : BookcaseAction
+    data object DismissJoinSuccess : BookcaseAction
+    data class HandleInviteLink(val code: String) : BookcaseAction
+
     // Settings Menu Actions
     data object CheckForUpdates : BookcaseAction
     data object DownloadUpdate : BookcaseAction
