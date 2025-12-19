@@ -20,7 +20,7 @@ class BookClubCodeGeneratorImpl(
     override suspend fun generateUniqueCode(): Result<String, DataError.Sync> {
         repeat(MAX_RETRIES) { attempt ->
             val code = generateCode()
-            Timber.tag(TAG).d("Generated code attempt ${attempt + 1}: $code")
+            Timber.tag(TAG).d("Generated code attempt %d: %s", attempt + 1, code)
 
             val existsResult = remoteDataSource.getBookClubMetadata(code)
 
@@ -28,22 +28,22 @@ class BookClubCodeGeneratorImpl(
                 is Result.Success -> {
                     if (existsResult.data == null) {
                         // Code doesn't exist, we can use it
-                        Timber.tag(TAG).d("Code $code is unique, using it")
+                        Timber.tag(TAG).d("Code %s is unique, using it", code)
                         return Result.Success(code)
                     } else {
                         // Code exists, try again
-                        Timber.tag(TAG).w("Code $code already exists, retrying...")
+                        Timber.tag(TAG).w("Code %s already exists, retrying...", code)
                     }
                 }
                 is Result.Error -> {
                     // Network/Firestore error - propagate it
-                    Timber.tag(TAG).e("Failed to check code existence: ${existsResult.error}")
+                    Timber.tag(TAG).e("Failed to check code existence: %s", existsResult.error)
                     return Result.Error(existsResult.error)
                 }
             }
         }
 
-        Timber.tag(TAG).e("Failed to generate unique code after $MAX_RETRIES attempts")
+        Timber.tag(TAG).e("Failed to generate unique code after %d attempts", MAX_RETRIES)
         return Result.Error(DataError.Sync.GENERATION_FAILED)
     }
 

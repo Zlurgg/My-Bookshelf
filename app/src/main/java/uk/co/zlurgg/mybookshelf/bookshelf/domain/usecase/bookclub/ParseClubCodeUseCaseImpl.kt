@@ -25,10 +25,10 @@ class ParseClubCodeUseCaseImpl : ParseClubCodeUseCase {
         val code = extractCode(trimmedInput)
 
         return if (isValidCode(code)) {
-            Timber.tag(TAG).d("Valid code extracted: $code")
+            Timber.tag(TAG).d("Valid code extracted: %s", code)
             Result.Success(code)
         } else {
-            Timber.tag(TAG).d("Invalid code format: $code (from input: $trimmedInput)")
+            Timber.tag(TAG).d("Invalid code format: %s (from input: %s)", code, trimmedInput)
             Result.Error(DataError.Validation.INVALID_CLUB_CODE)
         }
     }

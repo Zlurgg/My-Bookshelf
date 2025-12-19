@@ -21,7 +21,7 @@ class JoinBookClubUseCaseImpl(
 ) : JoinBookClubUseCase {
 
     override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> {
-        Timber.tag(TAG).d("Attempting to join book club: $code")
+        Timber.tag(TAG).d("Attempting to join book club: %s", code)
 
         // 1. Validate user is signed in
         val user = authService.getSignedInUser()
@@ -34,13 +34,13 @@ class JoinBookClubUseCaseImpl(
         val memberCheckResult = bookClubRepository.isMemberOfClub(code)
         when (memberCheckResult) {
             is Result.Error -> {
-                Timber.tag(TAG).e("Failed to check membership: ${memberCheckResult.error}")
+                Timber.tag(TAG).e("Failed to check membership: %s", memberCheckResult.error)
                 return Result.Error(memberCheckResult.error)
             }
             is Result.Success -> {
                 if (memberCheckResult.data) {
                     // User is already a member - get the existing shelf
-                    Timber.tag(TAG).d("User is already a member of club $code")
+                    Timber.tag(TAG).d("User is already a member of club %s", code)
                     val existingShelf = bookClubRepository.getLocalShelfForClub(code)
                     return if (existingShelf != null) {
                         Result.Success(JoinResult.AlreadyMember(existingShelf.id))
@@ -58,12 +58,12 @@ class JoinBookClubUseCaseImpl(
         val clubResult = bookClubRepository.getBookClub(code)
         when (clubResult) {
             is Result.Error -> {
-                Timber.tag(TAG).e("Failed to get club metadata: ${clubResult.error}")
+                Timber.tag(TAG).e("Failed to get club metadata: %s", clubResult.error)
                 return Result.Error(clubResult.error)
             }
             is Result.Success -> {
                 if (clubResult.data == null) {
-                    Timber.tag(TAG).d("Club not found: $code")
+                    Timber.tag(TAG).d("Club not found: %s", code)
                     return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
                 }
             }
@@ -83,11 +83,11 @@ class JoinBookClubUseCaseImpl(
                 val shelf = bookClubRepository.getLocalShelfForClub(code)
                 val shelfName = shelf?.name ?: "Book Club"
 
-                Timber.tag(TAG).d("Successfully joined club $code, local shelf: $localShelfId")
+                Timber.tag(TAG).d("Successfully joined club %s, local shelf: %s", code, localShelfId)
                 Result.Success(JoinResult.Success(localShelfId, shelfName))
             }
             is Result.Error -> {
-                Timber.tag(TAG).e("Failed to join club: ${joinResult.error}")
+                Timber.tag(TAG).e("Failed to join club: %s", joinResult.error)
                 Result.Error(joinResult.error)
             }
         }

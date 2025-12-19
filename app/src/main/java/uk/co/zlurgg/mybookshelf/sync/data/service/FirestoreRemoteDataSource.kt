@@ -289,7 +289,15 @@ class FirestoreRemoteDataSource(
                 .await()
 
             if (snapshot.exists()) {
-                snapshot.toObject(UserPreferencesFirestoreDto::class.java)
+                // Debug: log raw data
+                val rawData = snapshot.data
+                Timber.tag(TAG).d("Raw preferences data: %s", rawData)
+                val clubMembershipsRaw = rawData?.get("club_memberships")
+                Timber.tag(TAG).d("Raw club_memberships: %s (type: %s)", clubMembershipsRaw, clubMembershipsRaw?.javaClass?.simpleName)
+
+                val dto = snapshot.toObject(UserPreferencesFirestoreDto::class.java)
+                Timber.tag(TAG).d("Deserialized clubMemberships: %s", dto?.clubMemberships)
+                dto
             } else {
                 null
             }

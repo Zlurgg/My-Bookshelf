@@ -676,7 +676,7 @@ class BookcaseViewModel(
             val updateInfo = checkForUpdateUseCase(forceCheck = true)
 
             if (updateInfo != null) {
-                Timber.i("Update available: ${updateInfo.versionName}")
+                Timber.i("Update available: %s", updateInfo.versionName)
                 _state.update {
                     it.copy(
                         availableUpdate = updateInfo,
@@ -702,7 +702,7 @@ class BookcaseViewModel(
     private fun downloadUpdate() {
         viewModelScope.launch {
             val updateInfo = _state.value.availableUpdate ?: return@launch
-            Timber.i("Starting download for version ${updateInfo.versionName}")
+            Timber.i("Starting download for version %s", updateInfo.versionName)
 
             val downloadId = downloadUpdateUseCase(updateInfo)
             if (downloadId != null) {
@@ -723,7 +723,7 @@ class BookcaseViewModel(
     private fun dismissUpdate() {
         viewModelScope.launch {
             val updateInfo = _state.value.availableUpdate ?: return@launch
-            Timber.d("User dismissed update ${updateInfo.versionName}")
+            Timber.d("User dismissed update %s", updateInfo.versionName)
 
             dismissUpdateUseCase(updateInfo.versionName)
             _state.update {
