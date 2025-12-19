@@ -48,10 +48,10 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.BookClubPreviewDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.InviteLinkDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.JoinBookClubDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.ShareOptionsDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.BookClubPreviewDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.JoinBookClubDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.ShareOptionsDialog
 
 @Composable
 fun BookcaseScreenRoot(

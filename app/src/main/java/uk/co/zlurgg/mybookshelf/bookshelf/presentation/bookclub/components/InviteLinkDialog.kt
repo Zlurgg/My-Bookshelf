@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components
 
 import android.content.ClipData
 import android.content.ClipboardManager

@@ -43,8 +43,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.InviteLinkDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components.ShareOptionsDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.ShareOptionsDialog
 
 @Composable
 fun BookshelfScreenRoot(

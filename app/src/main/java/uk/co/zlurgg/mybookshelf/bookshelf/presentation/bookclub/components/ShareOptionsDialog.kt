@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookclub_components
+package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
