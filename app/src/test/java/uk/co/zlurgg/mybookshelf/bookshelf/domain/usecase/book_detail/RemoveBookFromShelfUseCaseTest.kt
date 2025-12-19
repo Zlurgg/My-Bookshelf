@@ -8,18 +8,29 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class RemoveBookFromShelfUseCaseTest {
 
     private val mockBookshelfRepository = MockBookshelfRepository()
+    private val mockBookcaseRepository = MockBookcaseRepository()
+    private val mockBookClubRepository = MockBookClubRepository()
     private val mockSyncSchedulerService = MockSyncSchedulerService()
-    private val useCase = RemoveBookFromShelfUseCaseImpl(mockBookshelfRepository, mockSyncSchedulerService)
+    private val useCase = RemoveBookFromShelfUseCaseImpl(
+        mockBookshelfRepository,
+        mockBookcaseRepository,
+        mockBookClubRepository,
+        mockSyncSchedulerService
+    )
 
     @After
     fun tearDown() {
         mockBookshelfRepository.reset()
+        mockBookcaseRepository.reset()
+        mockBookClubRepository.reset()
         mockSyncSchedulerService.reset()
     }
 

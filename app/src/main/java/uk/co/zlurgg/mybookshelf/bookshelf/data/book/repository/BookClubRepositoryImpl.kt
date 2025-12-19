@@ -525,4 +525,68 @@ class BookClubRepositoryImpl(
         Timber.tag(TAG).d("Downloaded %d/%d books to local shelf", addedCount, clubBooks.size)
         return Result.Success(addedCount)
     }
+
+    // ========== Book Sync Operations ==========
+
+    override suspend fun syncBookToClub(code: String, book: Book): Result<Unit, DataError.Sync> {
+        val user = authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        val userId = user.userId
+        val userName = user.username ?: "Unknown"
+
+        Timber.tag(TAG).d("Syncing book %s to club %s", book.id, code)
+
+        val bookDto = book.toBookClubBookDto(userId, userName)
+        val uploadResult = remoteDataSource.addBookToClub(code, bookDto)
+
+        return when (uploadResult) {
+            is Result.Success -> {
+                Timber.tag(TAG).d("Book %s synced to club %s", book.id, code)
+                // Update book count
+                updateClubBookCount(code)
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to sync book %s to club: %s", book.id, uploadResult.error)
+                Result.Error(uploadResult.error)
+            }
+        }
+    }
+
+    override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> {
+        val user = authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Removing book %s from club %s", bookId, code)
+
+        val removeResult = remoteDataSource.removeBookFromClub(code, bookId)
+
+        return when (removeResult) {
+            is Result.Success -> {
+                Timber.tag(TAG).d("Book %s removed from club %s", bookId, code)
+                // Update book count
+                updateClubBookCount(code)
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to remove book %s from club: %s", bookId, removeResult.error)
+                Result.Error(removeResult.error)
+            }
+        }
+    }
+
+    private suspend fun updateClubBookCount(code: String) {
+        // Get current book count from Firestore
+        val booksResult = remoteDataSource.getClubBooks(code)
+        if (booksResult is Result.Success) {
+            val bookCount = booksResult.data.size
+            // Get current member count from metadata
+            val metadataResult = remoteDataSource.getBookClubMetadata(code)
+            if (metadataResult is Result.Success && metadataResult.data != null) {
+                val memberCount = metadataResult.data.memberCount
+                remoteDataSource.updateBookClubCounts(code, bookCount, memberCount)
+            }
+        }
+    }
 }

@@ -114,6 +114,30 @@ class MockBookClubRepository : BookClubRepository {
         return getClubBooksResult
     }
 
+    // Book sync methods (new)
+    var syncBookToClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var removeBookFromClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var syncBookToClubCalled = false
+    var removeBookFromClubCalled = false
+    var lastSyncBookCode: String? = null
+    var lastSyncBook: Book? = null
+    var lastRemoveBookCode: String? = null
+    var lastRemoveBookId: String? = null
+
+    override suspend fun syncBookToClub(code: String, book: Book): Result<Unit, DataError.Sync> {
+        syncBookToClubCalled = true
+        lastSyncBookCode = code
+        lastSyncBook = book
+        return syncBookToClubResult
+    }
+
+    override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> {
+        removeBookFromClubCalled = true
+        lastRemoveBookCode = code
+        lastRemoveBookId = bookId
+        return removeBookFromClubResult
+    }
+
     // Helper methods for test setup
     fun reset() {
         createBookClubResult = Result.Success("TEST1234")
@@ -127,6 +151,8 @@ class MockBookClubRepository : BookClubRepository {
         myBookClubs = emptyList()
         getRemoteClubMembershipsResult = Result.Success(emptyList())
         restoreClubMembershipResult = Result.Success("restored-shelf-id")
+        syncBookToClubResult = Result.Success(Unit)
+        removeBookFromClubResult = Result.Success(Unit)
 
         createBookClubCalled = false
         getBookClubCalled = false
@@ -137,6 +163,8 @@ class MockBookClubRepository : BookClubRepository {
         getLocalShelfForClubCalled = false
         getRemoteClubMembershipsCalled = false
         restoreClubMembershipCalled = false
+        syncBookToClubCalled = false
+        removeBookFromClubCalled = false
 
         lastCreateShelfId = null
         lastGetBookClubCode = null
@@ -147,6 +175,10 @@ class MockBookClubRepository : BookClubRepository {
         lastGetLocalShelfCode = null
         lastGetRemoteMembershipsUserId = null
         lastRestoreClubCode = null
+        lastSyncBookCode = null
+        lastSyncBook = null
+        lastRemoveBookCode = null
+        lastRemoveBookId = null
     }
 
     fun configureBookClub(bookClub: BookClub) {

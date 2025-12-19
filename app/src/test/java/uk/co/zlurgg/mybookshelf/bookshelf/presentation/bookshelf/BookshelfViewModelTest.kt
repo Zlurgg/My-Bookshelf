@@ -31,7 +31,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUs
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookClubOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase

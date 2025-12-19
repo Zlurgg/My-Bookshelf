@@ -8,6 +8,8 @@ import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
@@ -16,13 +18,23 @@ class AddBookToShelfUseCaseTest {
 
     private val mockBookRepository = MockBookRepository()
     private val mockBookshelfRepository = MockBookshelfRepository()
+    private val mockBookcaseRepository = MockBookcaseRepository()
+    private val mockBookClubRepository = MockBookClubRepository()
     private val mockSyncSchedulerService = MockSyncSchedulerService()
-    private val useCase = AddBookToShelfUseCaseImpl(mockBookRepository, mockBookshelfRepository, mockSyncSchedulerService)
+    private val useCase = AddBookToShelfUseCaseImpl(
+        mockBookRepository,
+        mockBookshelfRepository,
+        mockBookcaseRepository,
+        mockBookClubRepository,
+        mockSyncSchedulerService
+    )
 
     @After
     fun tearDown() {
         mockBookRepository.reset()
         mockBookshelfRepository.reset()
+        mockBookcaseRepository.reset()
+        mockBookClubRepository.reset()
         mockSyncSchedulerService.reset()
     }
 

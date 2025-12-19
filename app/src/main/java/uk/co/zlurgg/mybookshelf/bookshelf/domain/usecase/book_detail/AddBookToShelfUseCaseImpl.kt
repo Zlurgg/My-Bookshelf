@@ -2,7 +2,9 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -15,10 +17,13 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
  * Implementation of AddBookToShelfUseCase that orchestrates book persistence and shelf association.
  * Follows Clean Architecture by coordinating between domain repositories.
  * Generates spine color when book is first added to any shelf for optimal performance.
+ * Also syncs to Firestore if the shelf is a book club.
  */
 class AddBookToShelfUseCaseImpl(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
+    private val bookcaseRepository: BookcaseRepository,
+    private val bookClubRepository: BookClubRepository,
     private val syncSchedulerService: SyncSchedulerService
 ) : AddBookToShelfUseCase {
 
@@ -49,6 +54,17 @@ class AddBookToShelfUseCaseImpl(
             // Then create the shelf association
             bookshelfRepository.addBookToShelf(shelfId, book.id)
 
+            // If this is a book club shelf, also sync to Firestore club collection
+            val shelf = bookcaseRepository.getShelfById(shelfId)
+            if (shelf?.isBookClub == true && !shelf.clubCode.isNullOrEmpty()) {
+                Timber.tag(TAG).d("Syncing book %s to book club %s", book.id, shelf.clubCode)
+                val syncResult = bookClubRepository.syncBookToClub(shelf.clubCode, bookToUpsert)
+                if (syncResult is Result.Error) {
+                    Timber.tag(TAG).w("Failed to sync book to club: %s", syncResult.error)
+                    // Don't fail the whole operation - local add succeeded
+                }
+            }
+
             // Trigger sync after successful book addition
             Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: AddBookToShelf")
             syncSchedulerService.triggerImmediateSync()
@@ -60,5 +76,9 @@ class AddBookToShelfUseCaseImpl(
                     ?: DataError.Local.UNKNOWN
             )
         }
+    }
+
+    companion object {
+        private const val TAG = "AddBookToShelf"
     }
 }

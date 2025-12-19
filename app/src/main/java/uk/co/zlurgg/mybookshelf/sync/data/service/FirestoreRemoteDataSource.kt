@@ -403,6 +403,20 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    override suspend fun removeBookFromClub(
+        code: String,
+        bookId: String
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("removeBookFromClub") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .delete()
+                .await()
+        }
+    }
+
     override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> {
         return executeFirestoreOperation("getClubBooks") {
             val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)

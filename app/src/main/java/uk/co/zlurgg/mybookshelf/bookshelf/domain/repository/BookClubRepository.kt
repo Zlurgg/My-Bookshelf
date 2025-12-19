@@ -93,4 +93,22 @@ interface BookClubRepository {
      * Gets all books in a book club.
      */
     suspend fun getClubBooks(code: String): Result<List<Book>, DataError.Sync>
+
+    /**
+     * Syncs a book to a book club in Firestore.
+     * Called when a book is added to a book club shelf.
+     *
+     * @param code The club code
+     * @param book The book to sync
+     */
+    suspend fun syncBookToClub(code: String, book: Book): Result<Unit, DataError.Sync>
+
+    /**
+     * Removes a book from a book club in Firestore.
+     * Called when a book is removed from a book club shelf.
+     *
+     * @param code The club code
+     * @param bookId The book ID to remove
+     */
+    suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync>
 }
