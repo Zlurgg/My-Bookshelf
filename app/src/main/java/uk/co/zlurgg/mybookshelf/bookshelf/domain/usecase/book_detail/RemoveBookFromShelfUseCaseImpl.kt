@@ -34,7 +34,7 @@ class RemoveBookFromShelfUseCaseImpl(
 
             // If this is a book club shelf, also remove from Firestore club collection
             if (isBookClub) {
-                Timber.tag(TAG).d("Removing book %s from book club %s", bookId, clubCode!!)
+                Timber.tag(TAG).d("Removing book %s from book club %s", bookId, clubCode)
                 val syncResult = bookClubRepository.removeBookFromClub(clubCode, bookId)
                 if (syncResult is Result.Error) {
                     Timber.tag(TAG).w("Failed to remove book from club: %s", syncResult.error)
