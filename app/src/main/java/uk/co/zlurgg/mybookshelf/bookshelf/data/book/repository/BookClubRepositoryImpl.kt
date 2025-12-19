@@ -517,7 +517,7 @@ class BookClubRepositoryImpl(
                 bookshelfDao.upsertCrossRef(crossRef)
                 addedCount++
             } catch (e: Exception) {
-                Timber.tag(TAG).w("Failed to add book %s to local shelf: %s", bookDto.id, e)
+                Timber.tag(TAG).w(e, "Failed to add book %s to local shelf", bookDto.id)
                 // Continue with other books
             }
         }
