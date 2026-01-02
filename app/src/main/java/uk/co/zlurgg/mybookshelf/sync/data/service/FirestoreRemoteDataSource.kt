@@ -4,6 +4,7 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -419,10 +420,11 @@ class FirestoreRemoteDataSource(
 
     override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> {
         return executeFirestoreOperation("getClubBooks") {
+            // Force server fetch to get latest books (no caching for sync)
             val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
                 .document(code)
                 .collection(CLUB_BOOKS_COLLECTION)
-                .get()
+                .get(Source.SERVER)
                 .await()
 
             snapshot.documents.mapNotNull { doc ->
