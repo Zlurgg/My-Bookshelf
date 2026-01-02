@@ -70,7 +70,7 @@ fun BookClubBookDto.toBook(): Book = Book(
     languages = emptyList(),
     numEditions = 0,
     purchased = false,
-    spineColor = 0
+    spineColor = spineColor
 )
 
 /**
@@ -92,6 +92,7 @@ fun Book.toBookClubBookDto(
     pageCount = numPages,
     averageRating = averageRating?.toFloat(),
     ratingCount = ratingCount,
+    spineColor = spineColor,
     addedBy = addedBy,
     addedByName = addedByName
 )

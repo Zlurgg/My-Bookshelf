@@ -47,6 +47,10 @@ data class BookClubBookDto(
     @set:PropertyName("rating_count")
     var ratingCount: Int? = null,
 
+    @get:PropertyName("spine_color")
+    @set:PropertyName("spine_color")
+    var spineColor: Int = 0,
+
     @get:PropertyName("added_by")
     @set:PropertyName("added_by")
     var addedBy: String = "",

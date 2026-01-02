@@ -463,19 +463,13 @@ class BookClubRepositoryImpl(
         val baseName = "$clubName (Book Club)"
 
         // Check if name exists
-        val existingShelf = bookshelfDao.getShelfByName(baseName)
-        if (existingShelf == null) {
-            return baseName
-        }
+        bookshelfDao.getShelfByName(baseName) ?: return baseName
 
         // Find unique name with suffix
         var counter = 2
         while (true) {
             val candidateName = "$clubName (Book Club) $counter"
-            val existing = bookshelfDao.getShelfByName(candidateName)
-            if (existing == null) {
-                return candidateName
-            }
+            bookshelfDao.getShelfByName(candidateName) ?: return candidateName
             counter++
             if (counter > 100) {
                 // Safety limit - just use the base name and let it overwrite
@@ -497,13 +491,23 @@ class BookClubRepositoryImpl(
         }
 
         val clubBooks = (booksResult as Result.Success).data
+        Timber.tag(TAG).d("Downloaded %d books from club %s", clubBooks.size, clubCode)
         var addedCount = 0
 
         for (bookDto in clubBooks) {
             try {
+                // Debug: Log the DTO values
+                Timber.tag(TAG).d("BookDTO - id: %s, title: %s, coverUrl: %s, spineColor: %d",
+                    bookDto.id, bookDto.title, bookDto.coverUrl, bookDto.spineColor)
+
                 // Convert to Book domain model and save locally with correct owner
                 val book = bookDto.toBook()
+                Timber.tag(TAG).d("Book - id: %s, imageUrl: %s, spineColor: %d",
+                    book.id, book.imageUrl, book.spineColor)
+
                 val bookEntity = book.toBookEntity(userId)
+                Timber.tag(TAG).d("BookEntity - id: %s, imageUrl: %s, spineColor: %d",
+                    bookEntity.id, bookEntity.imageUrl, bookEntity.spineColor)
 
                 // Upsert the book (in case it already exists)
                 bookshelfDao.upsert(bookEntity)
@@ -555,14 +559,12 @@ class BookClubRepositoryImpl(
     }
 
     override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> {
-        val user = authService.getSignedInUser()
+        authService.getSignedInUser()
             ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         Timber.tag(TAG).d("Removing book %s from club %s", bookId, code)
 
-        val removeResult = remoteDataSource.removeBookFromClub(code, bookId)
-
-        return when (removeResult) {
+        return when (val removeResult = remoteDataSource.removeBookFromClub(code, bookId)) {
             is Result.Success -> {
                 Timber.tag(TAG).d("Book %s removed from club %s", bookId, code)
                 // Update book count
