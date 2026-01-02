@@ -173,13 +173,42 @@ class BookshelfViewModel(
                             it.copy(
                                 shelfName = shelf.name,
                                 shelfMaterial = ShelfMaterial.fromShelfStyle(shelf.shelfStyle),
-                                isTidyMode = shelf.isTidyMode
+                                isTidyMode = shelf.isTidyMode,
+                                isBookClub = shelf.isBookClub,
+                                clubCode = shelf.clubCode
                             )
+                        }
+                        // If this is a book club, sync books from Firestore
+                        if (shelf.isBookClub && !shelf.clubCode.isNullOrEmpty()) {
+                            syncBookClubBooks(shelf.clubCode, shelfId)
                         }
                     }
                 }
                 is Result.Error -> {
                     _state.update { it.withError(result.error, "load shelf details") }
+                }
+            }
+        }
+    }
+
+    private fun syncBookClubBooks(clubCode: String, shelfId: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isSyncing = true) }
+            when (val syncResult = bookClubOperations.syncBooksFromClub(clubCode, shelfId)) {
+                is Result.Success -> {
+                    val result = syncResult.data
+                    _state.update { it.copy(
+                        isSyncing = false,
+                        syncMessage = if (result.booksAdded > 0 || result.booksRemoved > 0) {
+                            "Synced: +${result.booksAdded} / -${result.booksRemoved} books"
+                        } else null
+                    ) }
+                }
+                is Result.Error -> {
+                    _state.update { it.copy(
+                        isSyncing = false,
+                        errorMessage = ErrorFormatter.formatDataErrorMessage(syncResult.error, "sync book club")
+                    ) }
                 }
             }
         }

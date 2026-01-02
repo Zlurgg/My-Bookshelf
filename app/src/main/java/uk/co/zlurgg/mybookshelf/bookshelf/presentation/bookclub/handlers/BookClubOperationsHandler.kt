@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -113,5 +114,20 @@ class BookClubOperationsHandler(
      */
     fun clearLookupState() {
         lastLookedUpCode = null
+    }
+
+    /**
+     * Syncs books from a book club to the local shelf.
+     * Fetches new books added by other members and removes deleted ones.
+     *
+     * @param clubCode The book club code
+     * @param localShelfId The local shelf ID to sync to
+     * @return Result with SyncResult on success, or DataError.Sync on failure
+     */
+    suspend fun syncBooksFromClub(
+        clubCode: String,
+        localShelfId: String
+    ): Result<SyncResult, DataError.Sync> {
+        return bookClubUseCases.syncBookClub.execute(clubCode, localShelfId)
     }
 }

@@ -177,6 +177,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUs
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 private const val GITHUB_OWNER = "Zlurgg"
@@ -399,6 +401,7 @@ val appModule = module {
     single<ParseClubCodeUseCase> { ParseClubCodeUseCaseImpl() }
     singleOf(::GetBookClubPreviewUseCaseImpl).bind<GetBookClubPreviewUseCase>()
     singleOf(::JoinBookClubUseCaseImpl).bind<JoinBookClubUseCase>()
+    singleOf(::SyncBookClubUseCaseImpl).bind<SyncBookClubUseCase>()
     singleOf(::RestoreBookClubMembershipsUseCaseImpl).bind<RestoreBookClubMembershipsUseCase>()
-    single { BookClubUseCases(get(), get(), get(), get(), get(), get()) }
+    single { BookClubUseCases(get(), get(), get(), get(), get(), get(), get()) }
 }

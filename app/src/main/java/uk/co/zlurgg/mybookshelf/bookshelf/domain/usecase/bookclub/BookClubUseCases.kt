@@ -14,6 +14,9 @@ class BookClubUseCases(
     val getBookClubPreview: GetBookClubPreviewUseCase,
     val joinBookClub: JoinBookClubUseCase,
 
+    // Phase 3: Sync
+    val syncBookClub: SyncBookClubUseCase,
+
     // Membership Management
     val restoreBookClubMemberships: RestoreBookClubMembershipsUseCase
 )

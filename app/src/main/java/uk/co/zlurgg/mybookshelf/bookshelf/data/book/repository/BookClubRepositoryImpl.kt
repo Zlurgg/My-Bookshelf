@@ -14,6 +14,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
@@ -590,5 +591,80 @@ class BookClubRepositoryImpl(
                 remoteDataSource.updateBookClubCounts(code, bookCount, memberCount)
             }
         }
+    }
+
+    // ========== Sync Operations ==========
+
+    override suspend fun syncBooksFromClub(
+        code: String,
+        localShelfId: String
+    ): Result<SyncResult, DataError.Sync> {
+        Timber.tag(TAG).d("Syncing books from club %s to shelf %s", code, localShelfId)
+
+        val user = authService.getSignedInUser()
+        if (user == null) {
+            Timber.tag(TAG).e("Cannot sync: not signed in")
+            return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        }
+
+        // Get remote books from Firestore
+        val remoteBooksResult = remoteDataSource.getClubBooks(code)
+        if (remoteBooksResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to get remote books: %s", remoteBooksResult.error)
+            return Result.Error(remoteBooksResult.error)
+        }
+        val remoteBooks = (remoteBooksResult as Result.Success).data
+        val remoteBookIds = remoteBooks.map { it.id }.toSet()
+
+        // Get local book IDs for this shelf
+        val localBookIds = bookClubDao.getBookIdsForShelf(localShelfId).toSet()
+
+        Timber.tag(TAG).d("Remote books: %d, Local books: %d", remoteBookIds.size, localBookIds.size)
+
+        var booksAdded = 0
+        var booksRemoved = 0
+
+        // Add books that are in remote but not local
+        val booksToAdd = remoteBookIds - localBookIds
+        for (bookDto in remoteBooks.filter { it.id in booksToAdd }) {
+            try {
+                Timber.tag(TAG).d("Adding missing book: %s", bookDto.title)
+                val book = bookDto.toBook()
+                val bookEntity = book.toBookEntity(user.userId)
+                bookshelfDao.upsert(bookEntity)
+
+                val crossRef = BookshelfBookCrossRef(
+                    shelfId = localShelfId,
+                    bookId = book.id,
+                    addedAt = timeProvider.currentTimeMillis()
+                )
+                bookshelfDao.upsertCrossRef(crossRef)
+                booksAdded++
+            } catch (e: Exception) {
+                Timber.tag(TAG).w(e, "Failed to add book %s", bookDto.id)
+            }
+        }
+
+        // Remove books that are local but not in remote
+        val booksToRemove = localBookIds - remoteBookIds
+        for (bookId in booksToRemove) {
+            try {
+                Timber.tag(TAG).d("Removing deleted book: %s", bookId)
+                bookshelfDao.deleteCrossRef(localShelfId, bookId)
+                booksRemoved++
+            } catch (e: Exception) {
+                Timber.tag(TAG).w(e, "Failed to remove book %s", bookId)
+            }
+        }
+
+        // Update last synced timestamp
+        val membership = bookClubDao.getMembershipByClubCode(code)
+        if (membership != null) {
+            val updatedMembership = membership.copy(lastSyncedAt = timeProvider.currentTimeMillis())
+            bookClubDao.upsertMembership(updatedMembership)
+        }
+
+        Timber.tag(TAG).d("Sync complete: added %d, removed %d books", booksAdded, booksRemoved)
+        return Result.Success(SyncResult(booksAdded, booksRemoved))
     }
 }

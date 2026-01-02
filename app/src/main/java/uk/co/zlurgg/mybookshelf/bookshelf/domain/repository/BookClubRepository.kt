@@ -111,4 +111,23 @@ interface BookClubRepository {
      * @param bookId The book ID to remove
      */
     suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync>
+
+    /**
+     * Syncs books FROM the club to the local shelf.
+     * Fetches all books from Firestore and adds any missing ones locally.
+     * Also removes local books that were deleted from the club.
+     *
+     * @param code The club code
+     * @param localShelfId The local shelf ID to sync books to
+     * @return Number of books added/removed
+     */
+    suspend fun syncBooksFromClub(code: String, localShelfId: String): Result<SyncResult, DataError.Sync>
 }
+
+/**
+ * Result of syncing books from a club.
+ */
+data class SyncResult(
+    val booksAdded: Int,
+    val booksRemoved: Int
+)
