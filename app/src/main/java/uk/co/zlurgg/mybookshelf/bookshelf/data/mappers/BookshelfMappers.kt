@@ -12,7 +12,8 @@ fun BookshelfEntity.toDomain(): Bookshelf = Bookshelf(
     position = position,
     isTidyMode = isTidyMode,
     isBookClub = isBookClub,
-    clubCode = clubCode
+    clubCode = clubCode,
+    clubCreatorId = clubCreatorId
 )
 
 /**
@@ -25,7 +26,8 @@ fun Bookshelf.toEntity(): BookshelfEntity = BookshelfEntity(
     position = position,
     isTidyMode = isTidyMode,
     isBookClub = isBookClub,
-    clubCode = clubCode
+    clubCode = clubCode,
+    clubCreatorId = clubCreatorId
 )
 
 /**
@@ -42,5 +44,6 @@ fun Bookshelf.toEntity(ownerId: String?): BookshelfEntity = BookshelfEntity(
     isTidyMode = isTidyMode,
     ownerId = ownerId,
     isBookClub = isBookClub,
-    clubCode = clubCode
+    clubCode = clubCode,
+    clubCreatorId = clubCreatorId
 )

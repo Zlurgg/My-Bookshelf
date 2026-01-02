@@ -10,5 +10,6 @@ data class Bookshelf(
     val position: Int = 0,
     val isTidyMode: Boolean = false,
     val isBookClub: Boolean = false,
-    val clubCode: String? = null
+    val clubCode: String? = null,
+    val clubCreatorId: String? = null
 )

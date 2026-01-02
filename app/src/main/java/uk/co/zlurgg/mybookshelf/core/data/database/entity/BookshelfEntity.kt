@@ -27,5 +27,6 @@ data class BookshelfEntity(
 
     // Book Club metadata (collaborative sharing)
     val isBookClub: Boolean = false,       // Is this a book club shelf?
-    val clubCode: String? = null           // Links to Firestore book club
+    val clubCode: String? = null,          // Links to Firestore book club
+    val clubCreatorId: String? = null      // User ID of book club creator (null for non-clubs)
 )
