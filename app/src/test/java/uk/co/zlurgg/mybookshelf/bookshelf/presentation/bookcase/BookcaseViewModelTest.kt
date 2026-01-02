@@ -37,9 +37,9 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
@@ -51,8 +51,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUs
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 /**
@@ -105,7 +108,8 @@ class BookcaseViewModelTest {
         }
 
         val shelfOperations = ShelfOperationsHandler(useCases)
-        val shelfManagement = ShelfManagementHandler(useCases, mockHandleTutorialAccess)
+        val mockBookClubRepository = MockBookClubRepository()
+        val shelfManagement = ShelfManagementHandler(useCases, mockHandleTutorialAccess, mockBookClubRepository)
 
         // No-op update use cases for testing
         val mockCheckForUpdate = object : CheckForUpdateUseCase {
@@ -171,12 +175,17 @@ class BookcaseViewModelTest {
             override suspend fun invoke(): Result<RestoreResult, DataError.Sync> =
                 Result.Success(RestoreResult(0, 0))
         }
+        val mockSyncBookClub = object : SyncBookClubUseCase {
+            override suspend fun execute(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync> =
+                Result.Success(SyncResult(0, 0))
+        }
         val bookClubUseCases = BookClubUseCases(
             createBookClub = mockCreateBookClub,
             generateInviteLink = mockGenerateInviteLink,
             parseClubCode = mockParseClubCode,
             getBookClubPreview = mockGetBookClubPreview,
             joinBookClub = mockJoinBookClub,
+            syncBookClub = mockSyncBookClub,
             restoreBookClubMemberships = mockRestoreBookClubMemberships
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
@@ -191,7 +200,8 @@ class BookcaseViewModelTest {
             mockDismissUpdate,
             mockGetCurrentVersionInfo,
             mockCheckSignInStatus,
-            mockSignOut
+            mockSignOut,
+            mockCurrentUserProvider
         )
     }
 

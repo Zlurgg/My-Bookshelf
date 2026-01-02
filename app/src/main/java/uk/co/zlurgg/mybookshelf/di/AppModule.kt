@@ -12,8 +12,6 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.data.database.DatabaseFactory
-import uk.co.zlurgg.mybookshelf.core.data.database.migrations.MIGRATION_8_9
-import uk.co.zlurgg.mybookshelf.core.data.database.migrations.MIGRATION_9_10
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.KtorRemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryApiService
@@ -297,16 +295,12 @@ val appModule = module {
 
     // Presentation Handlers
     single { ShelfOperationsHandler(get()) }
-    single { ShelfManagementHandler(get(), get()) }
+    single { ShelfManagementHandler(get(), get(), get()) }
     single { BookClubOperationsHandler(get()) }
 
     single<DatabaseFactory> { DatabaseFactory(get()) }
 
-    single {
-        get<DatabaseFactory>().create()
-            .addMigrations(MIGRATION_8_9, MIGRATION_9_10)
-            .build()
-    }
+    single { get<DatabaseFactory>().create() }
     single { get<MyBookshelfRoomDatabase>().bookshelfDao }
     single { get<MyBookshelfRoomDatabase>().syncDao }
     single { get<MyBookshelfRoomDatabase>().bookClubDao }
@@ -367,7 +361,8 @@ val appModule = module {
             dismissUpdateUseCase = get(),
             getCurrentVersionInfoUseCase = get(),
             checkSignInStatusUseCase = get(),
-            signOutUseCase = get()
+            signOutUseCase = get(),
+            currentUserProvider = get()
         )
     }
     viewModel { (bookId: String, shelfId: String) ->

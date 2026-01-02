@@ -7,6 +7,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -138,6 +139,30 @@ class MockBookClubRepository : BookClubRepository {
         return removeBookFromClubResult
     }
 
+    // Sync and rename methods
+    var syncBooksFromClubResult: Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
+    var renameBookClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var syncBooksFromClubCalled = false
+    var renameBookClubCalled = false
+    var lastSyncFromClubCode: String? = null
+    var lastSyncFromClubShelfId: String? = null
+    var lastRenameClubCode: String? = null
+    var lastRenameNewName: String? = null
+
+    override suspend fun syncBooksFromClub(code: String, localShelfId: String): Result<SyncResult, DataError.Sync> {
+        syncBooksFromClubCalled = true
+        lastSyncFromClubCode = code
+        lastSyncFromClubShelfId = localShelfId
+        return syncBooksFromClubResult
+    }
+
+    override suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync> {
+        renameBookClubCalled = true
+        lastRenameClubCode = code
+        lastRenameNewName = newName
+        return renameBookClubResult
+    }
+
     // Helper methods for test setup
     fun reset() {
         createBookClubResult = Result.Success("TEST1234")
@@ -153,6 +178,8 @@ class MockBookClubRepository : BookClubRepository {
         restoreClubMembershipResult = Result.Success("restored-shelf-id")
         syncBookToClubResult = Result.Success(Unit)
         removeBookFromClubResult = Result.Success(Unit)
+        syncBooksFromClubResult = Result.Success(SyncResult(0, 0))
+        renameBookClubResult = Result.Success(Unit)
 
         createBookClubCalled = false
         getBookClubCalled = false
@@ -165,6 +192,8 @@ class MockBookClubRepository : BookClubRepository {
         restoreClubMembershipCalled = false
         syncBookToClubCalled = false
         removeBookFromClubCalled = false
+        syncBooksFromClubCalled = false
+        renameBookClubCalled = false
 
         lastCreateShelfId = null
         lastGetBookClubCode = null
@@ -179,6 +208,10 @@ class MockBookClubRepository : BookClubRepository {
         lastSyncBook = null
         lastRemoveBookCode = null
         lastRemoveBookId = null
+        lastSyncFromClubCode = null
+        lastSyncFromClubShelfId = null
+        lastRenameClubCode = null
+        lastRenameNewName = null
     }
 
     fun configureBookClub(bookClub: BookClub) {

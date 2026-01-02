@@ -13,6 +13,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -28,6 +29,7 @@ class DeleteShelfUseCaseTest {
         override suspend fun createBookClub(shelfId: String): Result<String, DataError.Sync> = Result.Success("test-code")
         override suspend fun getBookClub(code: String): Result<BookClub?, DataError.Sync> = Result.Success(null)
         override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override fun observeMyBookClubs(): Flow<List<BookClubMembership>> = flowOf(emptyList())
         override suspend fun getLocalShelfForClub(code: String): Bookshelf? = null
         override suspend fun getClubBooks(code: String): Result<List<Book>, DataError.Sync> = Result.Success(emptyList())
@@ -35,6 +37,9 @@ class DeleteShelfUseCaseTest {
         override suspend fun joinBookClub(code: String): Result<String, DataError.Sync> = Result.Success("shelf-id")
         override suspend fun getRemoteClubMemberships(userId: String): Result<List<String>, DataError.Sync> = Result.Success(emptyList())
         override suspend fun restoreClubMembership(code: String): Result<String, DataError.Sync> = Result.Success("restored-shelf-id")
+        override suspend fun syncBookToClub(code: String, book: Book): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun syncBooksFromClub(code: String, localShelfId: String): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockBookClubRepository, mockSyncSchedulerService)
