@@ -178,13 +178,15 @@ interface BookshelfDao {
             // New shelf - set lastModifiedAt to initialTimestamp
             upsertShelf(shelf.copy(lastModifiedAt = initialTimestamp))
         } else {
-            // Existing shelf - preserve sync metadata, update lastModifiedAt
+            // Existing shelf - preserve sync metadata and local-only fields, update lastModifiedAt
             upsertShelf(shelf.copy(
                 lastModifiedAt = initialTimestamp,
                 cloudId = existing.cloudId,
                 version = existing.version + 1,
                 isShared = existing.isShared,
-                shareCode = existing.shareCode
+                shareCode = existing.shareCode,
+                isBookClub = existing.isBookClub,
+                clubCode = existing.clubCode
             ))
         }
     }

@@ -319,8 +319,12 @@ class SyncEngine(
                 pulledShelves++
             } else if (localShelf.syncStatus == "SYNCED") {
                 // Local is synced, update with remote
+                // Preserve local-only fields (isBookClub, clubCode) that aren't in Firestore
                 bookshelfDao.upsertShelf(
-                    remoteShelf.toEntity(userId, localShelf.cloudId ?: localShelf.id)
+                    remoteShelf.toEntity(userId, localShelf.cloudId ?: localShelf.id).copy(
+                        isBookClub = localShelf.isBookClub,
+                        clubCode = localShelf.clubCode
+                    )
                 )
                 // Update cross-refs to match remote state
                 recreateCrossRefs(remoteShelf.id, remoteShelf.bookIds)
@@ -410,7 +414,19 @@ class SyncEngine(
                 )
             }
             ConflictResolution.KeepRemote, ConflictResolution.LastWriteWins -> {
-                bookshelfDao.upsertShelf(remoteShelf.toEntity(userId))
+                // Preserve local-only fields (isBookClub, clubCode) that aren't in Firestore
+                val localShelf = bookshelfDao.getShelfById(conflict.entityId)
+                val remoteEntity = remoteShelf.toEntity(userId)
+                bookshelfDao.upsertShelf(
+                    if (localShelf != null) {
+                        remoteEntity.copy(
+                            isBookClub = localShelf.isBookClub,
+                            clubCode = localShelf.clubCode
+                        )
+                    } else {
+                        remoteEntity
+                    }
+                )
             }
             else -> {
                 bookshelfDao.updateShelfSyncStatus(

@@ -16,6 +16,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseC
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
@@ -31,6 +32,7 @@ class BookshelfViewModel(
 ) : ViewModel() {
 
     companion object {
+        private const val TAG = "BookshelfViewModel"
         private const val SEARCH_DEBOUNCE_MS = 250L  // Reduced from 450ms for faster perceived response
         private const val MIN_SEARCH_QUERY_LENGTH = 2
     }
@@ -166,9 +168,12 @@ class BookshelfViewModel(
 
     private fun loadShelfDetails() {
         viewModelScope.launch {
+            Timber.tag(TAG).d("Loading shelf details for: %s", shelfId)
             when (val result = bookcaseUseCases.getShelfById.execute(shelfId)) {
                 is Result.Success -> {
                     result.data?.let { shelf ->
+                        Timber.tag(TAG).d("Shelf loaded: name=%s, isBookClub=%s, clubCode=%s",
+                            shelf.name, shelf.isBookClub, shelf.clubCode)
                         _state.update {
                             it.copy(
                                 shelfName = shelf.name,
@@ -180,11 +185,15 @@ class BookshelfViewModel(
                         }
                         // If this is a book club, sync books from Firestore
                         if (shelf.isBookClub && !shelf.clubCode.isNullOrEmpty()) {
+                            Timber.tag(TAG).d("Triggering book club sync for: %s", shelf.clubCode)
                             syncBookClubBooks(shelf.clubCode, shelfId)
+                        } else {
+                            Timber.tag(TAG).d("Not a book club, skipping sync")
                         }
                     }
                 }
                 is Result.Error -> {
+                    Timber.tag(TAG).e("Failed to load shelf: %s", result.error)
                     _state.update { it.withError(result.error, "load shelf details") }
                 }
             }
