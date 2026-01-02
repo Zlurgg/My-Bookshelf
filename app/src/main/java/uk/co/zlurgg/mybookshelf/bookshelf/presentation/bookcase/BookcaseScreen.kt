@@ -229,7 +229,8 @@ fun BookcaseScreen(
                         displayState = ShelfDisplayState(
                             isReorderMode = state.isReorderMode,
                             isTutorialShelf = isTutorialShelf,
-                            bookCountOverride = state.bookCounts[shelf.id] ?: 0
+                            bookCountOverride = state.bookCounts[shelf.id] ?: 0,
+                            currentUserId = state.currentUserId
                         ),
                         modifier = Modifier.animateItem()
                     )

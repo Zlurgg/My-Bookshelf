@@ -65,12 +65,12 @@ fun BookcaseShelf(
                             // Calculate movement from current database position
                             val itemHeightPx = totalItemHeight.toPx()
                             val positionsMoved = (offsetY / itemHeightPx).toInt()
-                            
+
                             if (positionsMoved != 0) {
                                 val newPosition = (shelf.position + positionsMoved).coerceAtLeast(0)
                                 callbacks.onReorderShelf(shelf, newPosition)
                             }
-                            
+
                             offsetY = 0f
                         }
                     ) { _, dragAmount ->
@@ -83,6 +83,7 @@ fun BookcaseShelf(
                 bookCount = bookCount,
                 isReorderMode = true,
                 isTutorialShelf = displayState.isTutorialShelf,
+                currentUserId = displayState.currentUserId,
                 onBookshelfClick = callbacks::onBookshelfClick,
                 onLongClick = callbacks::onLongClick,
                 onChangeStyle = callbacks::onChangeStyle,
@@ -159,6 +160,7 @@ fun BookcaseShelf(
                 bookCount = bookCount,
                 isReorderMode = false,
                 isTutorialShelf = displayState.isTutorialShelf,
+                currentUserId = displayState.currentUserId,
                 onBookshelfClick = callbacks::onBookshelfClick,
                 onLongClick = callbacks::onLongClick,
                 onChangeStyle = callbacks::onChangeStyle,

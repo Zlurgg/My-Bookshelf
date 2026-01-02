@@ -6,10 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
@@ -38,6 +40,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -53,6 +56,7 @@ fun BookshelfCard(
     bookCount: Int,
     isReorderMode: Boolean,
     isTutorialShelf: Boolean,
+    currentUserId: String?,
     onBookshelfClick: (Bookshelf) -> Unit,
     onLongClick: (Bookshelf) -> Unit,
     onChangeStyle: (Bookshelf) -> Unit,
@@ -103,12 +107,26 @@ fun BookshelfCard(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = shelf.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = shelf.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (shelf.isBookClub) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = "[BC]",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                     Text(
                         text = pluralStringResource(
                             id = R.plurals.bookcount_books,
@@ -139,8 +157,10 @@ fun BookshelfCard(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false }
                         ) {
-                            // Only show rename for non-tutorial shelves
-                            if (!isTutorialShelf) {
+                            // Show rename for non-tutorial shelves, but for book clubs only show to creator
+                            val canRename = !isTutorialShelf &&
+                                (!shelf.isBookClub || shelf.clubCreatorId == currentUserId)
+                            if (canRename) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(id = R.string.menu_rename_shelf)) },
                                     onClick = {
@@ -219,6 +239,7 @@ fun BookshelfCardPreview() {
                 bookCount = 5,
                 isReorderMode = false,
                 isTutorialShelf = false,
+                currentUserId = null,
                 onBookshelfClick = {},
                 onLongClick = {},
                 onChangeStyle = {},
@@ -231,6 +252,7 @@ fun BookshelfCardPreview() {
                 bookCount = 12,
                 isReorderMode = true,
                 isTutorialShelf = false,
+                currentUserId = null,
                 onBookshelfClick = {},
                 onLongClick = {},
                 onChangeStyle = {},

@@ -26,6 +26,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 
@@ -40,7 +41,8 @@ class BookcaseViewModel(
     private val dismissUpdateUseCase: DismissUpdateUseCase,
     private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase,
     private val checkSignInStatusUseCase: CheckSignInStatusUseCase,
-    private val signOutUseCase: SignOutUseCase
+    private val signOutUseCase: SignOutUseCase,
+    private val currentUserProvider: CurrentUserProvider
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -54,7 +56,8 @@ class BookcaseViewModel(
     private fun checkSignInStatus() {
         viewModelScope.launch {
             val isSignedIn = checkSignInStatusUseCase.execute()
-            _state.update { it.copy(isSignedIn = isSignedIn) }
+            val currentUserId = currentUserProvider.getCurrentUserId()
+            _state.update { it.copy(isSignedIn = isSignedIn, currentUserId = currentUserId) }
         }
     }
 
