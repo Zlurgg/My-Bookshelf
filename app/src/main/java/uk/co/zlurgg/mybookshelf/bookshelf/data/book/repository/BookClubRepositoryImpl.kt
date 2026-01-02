@@ -138,7 +138,8 @@ class BookClubRepositoryImpl(
             shelfStyle = sourceShelf.shelfMaterial.let { ShelfStyle.valueOf(it) },
             position = 0, // Position at top
             isBookClub = true,
-            clubCode = clubCode
+            clubCode = clubCode,
+            clubCreatorId = user.userId  // Creator is the current user
         ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(clubShelfEntity)
@@ -212,6 +213,47 @@ class BookClubRepositoryImpl(
         return Result.Success(Unit)
     }
 
+    override suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync> {
+        Timber.tag(TAG).d("Renaming book club %s to: %s", code, newName)
+
+        val user = authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        // Get club to verify creator
+        val clubResult = getBookClub(code)
+        if (clubResult is Result.Error) return clubResult
+        val club = (clubResult as Result.Success).data
+            ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+
+        // Only creator can rename
+        if (club.createdBy != user.userId) {
+            Timber.tag(TAG).w("User %s is not creator of club %s", user.userId, code)
+            return Result.Error(DataError.Sync.PERMISSION_DENIED)
+        }
+
+        // Update Firestore
+        val updateResult = remoteDataSource.updateBookClubName(
+            code, newName, timeProvider.currentTimeMillis()
+        )
+        if (updateResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to update club name in Firestore: %s", updateResult.error)
+            return Result.Error(updateResult.error)
+        }
+
+        // Update local shelf
+        val membership = bookClubDao.getMembershipByClubCode(code)
+        if (membership != null) {
+            val localShelf = bookshelfDao.getShelfById(membership.localShelfId)
+            if (localShelf != null) {
+                bookshelfDao.upsertShelf(localShelf.copy(name = newName))
+                Timber.tag(TAG).d("Updated local shelf name to: %s", newName)
+            }
+        }
+
+        Timber.tag(TAG).d("Book club renamed successfully")
+        return Result.Success(Unit)
+    }
+
     override fun observeMyBookClubs(): Flow<List<BookClubMembership>> {
         return bookClubDao.observeAllMemberships().map { entities ->
             entities.map { it.toDomain() }
@@ -271,7 +313,8 @@ class BookClubRepositoryImpl(
             shelfStyle = club.style,
             position = 0, // Will be positioned at top
             isBookClub = true,
-            clubCode = code
+            clubCode = code,
+            clubCreatorId = club.createdBy  // Store creator ID from club metadata
         ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(shelfEntity)
@@ -384,7 +427,8 @@ class BookClubRepositoryImpl(
             shelfStyle = club.style,
             position = 0,
             isBookClub = true,
-            clubCode = code
+            clubCode = code,
+            clubCreatorId = club.createdBy  // Store creator ID from club metadata
         ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(shelfEntity)
@@ -461,15 +505,16 @@ class BookClubRepositoryImpl(
     }
 
     private suspend fun generateUniqueShelfName(clubName: String): String {
-        val baseName = "$clubName (Book Club)"
+        // Use club name directly - badge [BC] will indicate it's a book club
+        val baseName = clubName
 
         // Check if name exists
         bookshelfDao.getShelfByName(baseName) ?: return baseName
 
-        // Find unique name with suffix
+        // Find unique name with numeric suffix
         var counter = 2
         while (true) {
-            val candidateName = "$clubName (Book Club) $counter"
+            val candidateName = "$clubName $counter"
             bookshelfDao.getShelfByName(candidateName) ?: return candidateName
             counter++
             if (counter > 100) {
@@ -654,6 +699,18 @@ class BookClubRepositoryImpl(
                 booksRemoved++
             } catch (e: Exception) {
                 Timber.tag(TAG).w(e, "Failed to remove book %s", bookId)
+            }
+        }
+
+        // Sync club name from Firestore to local shelf
+        val metadataResult = remoteDataSource.getBookClubMetadata(code)
+        if (metadataResult is Result.Success && metadataResult.data != null) {
+            val clubMetadata = metadataResult.data
+            val localShelf = bookshelfDao.getShelfById(localShelfId)
+            if (localShelf != null && localShelf.name != clubMetadata.name) {
+                // Update local shelf name to match Firestore
+                bookshelfDao.upsertShelf(localShelf.copy(name = clubMetadata.name))
+                Timber.tag(TAG).d("Updated local shelf name to: %s", clubMetadata.name)
             }
         }
 

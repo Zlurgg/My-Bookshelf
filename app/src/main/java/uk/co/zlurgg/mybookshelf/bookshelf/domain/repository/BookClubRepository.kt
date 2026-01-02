@@ -39,6 +39,15 @@ interface BookClubRepository {
      */
     suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync>
 
+    /**
+     * Renames a book club. Only the creator can rename.
+     * Updates both local shelf and Firestore metadata.
+     *
+     * @param code The club code
+     * @param newName The new name for the club
+     */
+    suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync>
+
     // ========== Membership ==========
 
     /**
