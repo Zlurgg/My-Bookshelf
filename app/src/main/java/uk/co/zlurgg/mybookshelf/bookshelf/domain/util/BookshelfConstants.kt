@@ -19,10 +19,10 @@ object BookshelfConstants {
     const val MAX_SHELF_NAME_LENGTH = 50
 
     /**
-     * Regex pattern for valid shelf names - alphanumeric and spaces only
+     * Regex pattern for valid shelf names - alphanumeric, spaces, parentheses, and hyphens
      * Prevents special characters that could cause JSON or UI issues
      */
-    private val SHELF_NAME_PATTERN = Regex("^[a-zA-Z0-9 ]+$")
+    private val SHELF_NAME_PATTERN = Regex("^[a-zA-Z0-9 ()\\-]+$")
 
     /**
      * Validates a shelf name according to business rules.
@@ -30,7 +30,7 @@ object BookshelfConstants {
      * Rules:
      * - Cannot be blank
      * - Must be 50 characters or less
-     * - Can only contain letters, numbers, and spaces (no special characters)
+     * - Can only contain letters, numbers, spaces, parentheses, and hyphens
      *
      * @param name The shelf name to validate
      * @return Result indicating success or specific validation error
