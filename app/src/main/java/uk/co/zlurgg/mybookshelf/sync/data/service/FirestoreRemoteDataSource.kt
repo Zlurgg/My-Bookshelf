@@ -451,6 +451,24 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    override suspend fun updateBookClubName(
+        code: String,
+        name: String,
+        lastModifiedAt: Long
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("updateBookClubName") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .update(
+                    mapOf(
+                        "name" to name,
+                        "last_modified_at" to lastModifiedAt
+                    )
+                )
+                .await()
+        }
+    }
+
     override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("deleteBookClub") {
             val clubRef = firestore.collection(BOOK_CLUBS_COLLECTION).document(code)
