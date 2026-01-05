@@ -32,6 +32,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.LeaveBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
@@ -116,7 +117,8 @@ class BookshelfViewModelTest {
             getBookClubPreview = SimpleGetBookClubPreviewUseCase(),
             joinBookClub = SimpleJoinBookClubUseCase(),
             syncBookClub = SimpleSyncBookClubUseCase(),
-            restoreBookClubMemberships = SimpleRestoreBookClubMembershipsUseCase()
+            restoreBookClubMemberships = SimpleRestoreBookClubMembershipsUseCase(),
+            leaveBookClub = SimpleLeaveBookClubUseCase()
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
         return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, bookClubOperations, shelfId)
@@ -437,5 +439,10 @@ class BookshelfViewModelTest {
     private class SimpleSyncBookClubUseCase : SyncBookClubUseCase {
         override suspend fun execute(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync> =
             Result.Success(SyncResult(0, 0))
+    }
+
+    private class SimpleLeaveBookClubUseCase : LeaveBookClubUseCase {
+        override suspend fun invoke(shelfId: String): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
     }
 }

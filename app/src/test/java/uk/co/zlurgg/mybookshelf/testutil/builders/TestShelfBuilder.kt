@@ -14,19 +14,31 @@ class TestShelfBuilder {
     private var books = emptyList<Book>()
     private var shelfStyle = ShelfStyle.DarkWood
     private var position = 0
+    private var isTidyMode = false
+    private var isBookClub = false
+    private var clubCode: String? = null
+    private var clubCreatorId: String? = null
 
     fun withId(id: String) = apply { this.id = id }
     fun withName(name: String) = apply { this.name = name }
     fun withBooks(books: List<Book>) = apply { this.books = books }
     fun withStyle(style: ShelfStyle) = apply { this.shelfStyle = style }
     fun withPosition(position: Int) = apply { this.position = position }
+    fun withTidyMode(isTidyMode: Boolean) = apply { this.isTidyMode = isTidyMode }
+    fun withIsBookClub(isBookClub: Boolean) = apply { this.isBookClub = isBookClub }
+    fun withClubCode(clubCode: String?) = apply { this.clubCode = clubCode }
+    fun withClubCreatorId(clubCreatorId: String?) = apply { this.clubCreatorId = clubCreatorId }
 
     fun build() = Bookshelf(
         id = id,
         name = name,
         books = books,
         shelfStyle = shelfStyle,
-        position = position
+        position = position,
+        isTidyMode = isTidyMode,
+        isBookClub = isBookClub,
+        clubCode = clubCode,
+        clubCreatorId = clubCreatorId
     )
 
     companion object {

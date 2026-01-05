@@ -52,6 +52,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClu
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.LeaveBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
@@ -179,6 +180,10 @@ class BookcaseViewModelTest {
             override suspend fun execute(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync> =
                 Result.Success(SyncResult(0, 0))
         }
+        val mockLeaveBookClub = object : LeaveBookClubUseCase {
+            override suspend fun invoke(shelfId: String): Result<Unit, DataError.Sync> =
+                Result.Success(Unit)
+        }
         val bookClubUseCases = BookClubUseCases(
             createBookClub = mockCreateBookClub,
             generateInviteLink = mockGenerateInviteLink,
@@ -186,7 +191,8 @@ class BookcaseViewModelTest {
             getBookClubPreview = mockGetBookClubPreview,
             joinBookClub = mockJoinBookClub,
             syncBookClub = mockSyncBookClub,
-            restoreBookClubMemberships = mockRestoreBookClubMemberships
+            restoreBookClubMemberships = mockRestoreBookClubMemberships,
+            leaveBookClub = mockLeaveBookClub
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
 
