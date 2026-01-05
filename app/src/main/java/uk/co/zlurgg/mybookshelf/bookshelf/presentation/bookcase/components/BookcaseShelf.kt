@@ -89,7 +89,8 @@ fun BookcaseShelf(
                 onChangeStyle = callbacks::onChangeStyle,
                 onDelete = callbacks::onDelete,
                 onShareShelf = callbacks::onShareShelf,
-                onDuplicateShelf = callbacks::onDuplicateShelf
+                onDuplicateShelf = callbacks::onDuplicateShelf,
+                onLeaveBookClub = callbacks::onLeaveBookClub
             )
         }
     } else {
@@ -166,7 +167,8 @@ fun BookcaseShelf(
                 onChangeStyle = callbacks::onChangeStyle,
                 onDelete = callbacks::onDelete,
                 onShareShelf = callbacks::onShareShelf,
-                onDuplicateShelf = callbacks::onDuplicateShelf
+                onDuplicateShelf = callbacks::onDuplicateShelf,
+                onLeaveBookClub = callbacks::onLeaveBookClub
             )
         }
     }
@@ -185,6 +187,7 @@ fun BookcaseShelfPreview() {
         override fun onShareShelf(shelf: Bookshelf) {}
         override fun onDuplicateShelf(shelf: Bookshelf) {}
         override fun onReorderShelf(shelf: Bookshelf, position: Int) {}
+        override fun onLeaveBookClub(shelf: Bookshelf) {}
     }
 
     MyBookshelfTheme {

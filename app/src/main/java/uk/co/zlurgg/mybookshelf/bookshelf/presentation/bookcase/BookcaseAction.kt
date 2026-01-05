@@ -30,6 +30,16 @@ sealed interface BookcaseAction {
     data object OnCreateBookClub : BookcaseAction
     data object DismissInviteLink : BookcaseAction
 
+    // Delete Book Club Actions
+    data class ShowDeleteBookClubDialog(val bookshelf: Bookshelf) : BookcaseAction
+    data object DismissDeleteBookClubDialog : BookcaseAction
+    data object ConfirmDeleteBookClub : BookcaseAction
+
+    // Leave Book Club Actions
+    data class ShowLeaveBookClubDialog(val bookshelf: Bookshelf) : BookcaseAction
+    data object DismissLeaveBookClubDialog : BookcaseAction
+    data object ConfirmLeaveBookClub : BookcaseAction
+
     // Join Book Club Actions
     data object ShowJoinBookClubDialog : BookcaseAction
     data object DismissJoinBookClubDialog : BookcaseAction

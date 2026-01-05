@@ -133,6 +133,7 @@
     <string name="dialog_change_style_message">Select a new style for your bookshelf</string>
     <string name="action_change">Change</string>
     <string name="cd_shelf_options">Shelf options</string>
+    <string name="cd_book_club_owner">Book club owner</string>
     <string name="menu_rename_shelf">Rename</string>
     <string name="menu_change_style">Change Style</string>
     <string name="menu_delete_shelf">Delete</string>
@@ -184,6 +185,7 @@
     <string name="error_unsupported_format_version">Unsupported file format version.</string>
     <string name="error_share_failed">Sharing failed.</string>
     <string name="error_share_link_too_large">This bookshelf is too large to share. Try sharing a smaller shelf or splitting it into multiple shelves.</string>
+    <string name="error_permission_denied">You don\'t have permission to perform this action.</string>
     <string name="error_unknown_local">Unknown local error occurred.</string>
 
     <!-- Error messages - Validation -->
@@ -263,6 +265,17 @@
     <string name="sign_out_message">Are you sure you want to sign out?</string>
     <string name="sign_out_confirm">Sign Out</string>
     <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+
+    <!-- Delete Book Club dialog -->
+    <string name="delete_book_club_title">Delete Book Club?</string>
+    <string name="delete_book_club_message">Delete \"%1$s\"? This will remove the club for all members.</string>
+
+    <!-- Leave Book Club dialog -->
+    <string name="leave_book_club_title">Leave Book Club?</string>
+    <string name="leave_book_club_message">Leave \"%1$s\"? This will remove the club from your shelves.</string>
+    <string name="leave">Leave</string>
+    <string name="menu_leave_book_club">Leave Club</string>
 
     <!-- Guest data import dialog -->
     <string name="import_guest_data_title">Import Guest Data?</string>

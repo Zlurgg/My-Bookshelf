@@ -11,4 +11,5 @@ interface ShelfCallbacks {
     fun onShareShelf(shelf: Bookshelf)
     fun onDuplicateShelf(shelf: Bookshelf)
     fun onReorderShelf(shelf: Bookshelf, position: Int)
+    fun onLeaveBookClub(shelf: Bookshelf)
 }

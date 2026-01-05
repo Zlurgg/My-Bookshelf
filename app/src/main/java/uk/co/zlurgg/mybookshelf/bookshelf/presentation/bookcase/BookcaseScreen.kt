@@ -52,8 +52,10 @@ import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.BookClubPreviewDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.DeleteBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.JoinBookClubDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.LeaveBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.ShareOptionsDialog
 
 @Composable
@@ -272,8 +274,8 @@ fun BookcaseScreen(
                 ) { shelf ->
                     val isTutorialShelf = shelf.name == BookshelfConstants.TUTORIAL_SHELF_NAME
 
-                    val shelfCallbacks = remember(onAction, isTutorialShelf) {
-                        createShelfCallbacks(onAction, isTutorialShelf)
+                    val shelfCallbacks = remember(onAction, isTutorialShelf, state.currentUserId) {
+                        createShelfCallbacks(onAction, isTutorialShelf, state.currentUserId)
                     }
 
                     BookcaseShelf(
@@ -393,6 +395,24 @@ fun BookcaseScreen(
             onDismiss = { onAction(BookcaseAction.DismissBookClubPreview) },
             onJoin = { onAction(BookcaseAction.OnConfirmJoinBookClub) },
             isJoining = state.joinInProgress
+        )
+    }
+
+    // Delete Book Club confirmation dialog
+    if (state.showDeleteBookClubDialog && state.shelfToDelete != null) {
+        DeleteBookClubDialog(
+            clubName = state.shelfToDelete.name,
+            onConfirm = { onAction(BookcaseAction.ConfirmDeleteBookClub) },
+            onDismiss = { onAction(BookcaseAction.DismissDeleteBookClubDialog) }
+        )
+    }
+
+    // Leave Book Club confirmation dialog
+    if (state.showLeaveBookClubDialog && state.shelfToLeave != null) {
+        LeaveBookClubDialog(
+            clubName = state.shelfToLeave.name,
+            onConfirm = { onAction(BookcaseAction.ConfirmLeaveBookClub) },
+            onDismiss = { onAction(BookcaseAction.DismissLeaveBookClubDialog) }
         )
     }
 

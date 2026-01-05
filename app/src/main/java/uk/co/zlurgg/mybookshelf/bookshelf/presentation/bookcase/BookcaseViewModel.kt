@@ -209,6 +209,52 @@ class BookcaseViewModel(
                 _state.update { it.copy(bookClubInviteLink = null, bookClubCode = null, shelfToShare = null) }
             }
 
+            // Delete Book Club Actions
+            is BookcaseAction.ShowDeleteBookClubDialog -> {
+                _state.update {
+                    it.copy(
+                        showDeleteBookClubDialog = true,
+                        shelfToDelete = action.bookshelf
+                    )
+                }
+            }
+
+            is BookcaseAction.DismissDeleteBookClubDialog -> {
+                _state.update {
+                    it.copy(
+                        showDeleteBookClubDialog = false,
+                        shelfToDelete = null
+                    )
+                }
+            }
+
+            is BookcaseAction.ConfirmDeleteBookClub -> {
+                deleteBookClub()
+            }
+
+            // Leave Book Club Actions
+            is BookcaseAction.ShowLeaveBookClubDialog -> {
+                _state.update {
+                    it.copy(
+                        showLeaveBookClubDialog = true,
+                        shelfToLeave = action.bookshelf
+                    )
+                }
+            }
+
+            is BookcaseAction.DismissLeaveBookClubDialog -> {
+                _state.update {
+                    it.copy(
+                        showLeaveBookClubDialog = false,
+                        shelfToLeave = null
+                    )
+                }
+            }
+
+            is BookcaseAction.ConfirmLeaveBookClub -> {
+                leaveBookClub()
+            }
+
             // Settings Menu Actions
             is BookcaseAction.CheckForUpdates -> {
                 checkForUpdates()
@@ -459,6 +505,74 @@ class BookcaseViewModel(
                 }
                 is Result.Error -> {
                     _state.update { it.withError(duplicateResult.error, "duplicate shelf") }
+                }
+            }
+        }
+    }
+
+    private fun deleteBookClub() {
+        val shelfToDelete = state.value.shelfToDelete ?: return
+
+        // Optimistic UI update - remove shelf from list
+        _state.update {
+            it.copy(
+                showDeleteBookClubDialog = false,
+                bookshelves = it.bookshelves - shelfToDelete,
+                recentlyDeleted = shelfToDelete,
+                shelfToDelete = null
+            )
+        }
+
+        // Persist deletion via UseCase
+        viewModelScope.launch {
+            when (val deleteResult = shelfOperations.deleteShelf(shelfToDelete.id)) {
+                is Result.Success -> {
+                    // Success - optimistic update already applied
+                    _state.update { it.copy(recentlyDeleted = null) }
+                }
+                is Result.Error -> {
+                    // Revert UI on failure - add shelf back
+                    _state.update {
+                        it.copy(
+                            bookshelves = it.bookshelves + shelfToDelete,
+                            recentlyDeleted = null,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(deleteResult.error, "delete book club")
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun leaveBookClub() {
+        val shelfToLeave = state.value.shelfToLeave ?: return
+
+        // Optimistic UI update - remove shelf from list
+        _state.update {
+            it.copy(
+                showLeaveBookClubDialog = false,
+                bookshelves = it.bookshelves - shelfToLeave,
+                recentlyDeleted = shelfToLeave,
+                shelfToLeave = null
+            )
+        }
+
+        // Persist via UseCase
+        viewModelScope.launch {
+            when (val leaveResult = bookClubOperations.leaveBookClub(shelfToLeave.id)) {
+                is Result.Success -> {
+                    // Success - optimistic update already applied
+                    _state.update { it.copy(recentlyDeleted = null) }
+                }
+                is Result.Error -> {
+                    // Revert UI on failure - add shelf back
+                    _state.update {
+                        it.copy(
+                            bookshelves = it.bookshelves + shelfToLeave,
+                            recentlyDeleted = null,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(leaveResult.error, "leave book club")
+                        )
+                    }
                 }
             }
         }

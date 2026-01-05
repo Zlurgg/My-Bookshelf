@@ -43,6 +43,14 @@ data class BookcaseState(
     val bookClubInviteLink: String? = null,
     val bookClubCode: String? = null,
 
+    // Delete Book Club confirmation
+    val showDeleteBookClubDialog: Boolean = false,
+    val shelfToDelete: Bookshelf? = null,
+
+    // Leave Book Club confirmation
+    val showLeaveBookClubDialog: Boolean = false,
+    val shelfToLeave: Bookshelf? = null,
+
     // Join Book Club - Step 1: Code entry
     val showJoinBookClubDialog: Boolean = false,
     val joinLookupLoading: Boolean = false,

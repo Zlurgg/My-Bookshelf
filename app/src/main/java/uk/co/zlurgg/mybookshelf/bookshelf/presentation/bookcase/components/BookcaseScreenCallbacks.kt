@@ -5,10 +5,16 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseAction
 
 fun createShelfCallbacks(
     onAction: (BookcaseAction) -> Unit,
-    isTutorialShelf: Boolean
+    isTutorialShelf: Boolean,
+    currentUserId: String? = null
 ): ShelfCallbacks = object : ShelfCallbacks {
     override fun onRemoveBookshelf(shelf: Bookshelf) {
-        onAction(BookcaseAction.OnRemoveBookShelf(shelf))
+        // For book clubs owned by the user, show confirmation dialog
+        if (shelf.isBookClub && shelf.clubCreatorId == currentUserId) {
+            onAction(BookcaseAction.ShowDeleteBookClubDialog(shelf))
+        } else {
+            onAction(BookcaseAction.OnRemoveBookShelf(shelf))
+        }
     }
 
     override fun onBookshelfClick(shelf: Bookshelf) {
@@ -26,7 +32,12 @@ fun createShelfCallbacks(
     }
 
     override fun onDelete(shelf: Bookshelf) {
-        onAction(BookcaseAction.OnRemoveBookShelf(shelf))
+        // For book clubs owned by the user, show confirmation dialog
+        if (shelf.isBookClub && shelf.clubCreatorId == currentUserId) {
+            onAction(BookcaseAction.ShowDeleteBookClubDialog(shelf))
+        } else {
+            onAction(BookcaseAction.OnRemoveBookShelf(shelf))
+        }
     }
 
     override fun onShareShelf(shelf: Bookshelf) {
@@ -39,5 +50,9 @@ fun createShelfCallbacks(
 
     override fun onReorderShelf(shelf: Bookshelf, position: Int) {
         onAction(BookcaseAction.OnReorderShelf(shelf, position))
+    }
+
+    override fun onLeaveBookClub(shelf: Bookshelf) {
+        onAction(BookcaseAction.ShowLeaveBookClubDialog(shelf))
     }
 }

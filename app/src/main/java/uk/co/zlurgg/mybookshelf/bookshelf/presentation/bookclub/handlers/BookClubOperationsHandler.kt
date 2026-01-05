@@ -130,4 +130,15 @@ class BookClubOperationsHandler(
     ): Result<SyncResult, DataError.Sync> {
         return bookClubUseCases.syncBookClub.execute(clubCode, localShelfId)
     }
+
+    /**
+     * Leaves a book club.
+     * Removes the user from the club and deletes the local shelf.
+     *
+     * @param shelfId The local shelf ID of the book club
+     * @return Result with Unit on success, or DataError.Sync on failure
+     */
+    suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync> {
+        return bookClubUseCases.leaveBookClub(shelfId)
+    }
 }
