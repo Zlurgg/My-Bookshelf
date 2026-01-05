@@ -104,6 +104,14 @@ fun BookcaseScreenRoot(
         }
     }
 
+    // Switch to My Shelves tab after creating a personal copy
+    LaunchedEffect(state.switchToPersonalTab) {
+        if (state.switchToPersonalTab) {
+            selectedTab = BookcaseTab.MY_SHELVES
+            viewModel.onAction(BookcaseAction.ResetSwitchToPersonalTab)
+        }
+    }
+
     // Show sign out confirmation dialog
     if (state.showSignOutDialog) {
         SignOutDialog(

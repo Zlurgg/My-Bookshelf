@@ -57,4 +57,7 @@ data class BookcaseState(
 
     // For invite link - pre-filled code
     val pendingInviteCode: String? = null,
+
+    // Tab navigation after personal copy
+    val switchToPersonalTab: Boolean = false,
 )

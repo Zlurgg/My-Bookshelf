@@ -186,6 +186,10 @@ class BookcaseViewModel(
                 duplicateShelf(action.shelf)
             }
 
+            is BookcaseAction.ResetSwitchToPersonalTab -> {
+                _state.update { it.copy(switchToPersonalTab = false) }
+            }
+
             // Share Options Actions (Book Club)
             is BookcaseAction.DismissShareOptions -> {
                 _state.update { it.copy(showShareOptionsDialog = false, shelfToShare = null) }
@@ -447,7 +451,8 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            operationSuccess = true
+                            operationSuccess = true,
+                            switchToPersonalTab = shelf.isBookClub  // Switch tab if was a book club
                         )
                     }
                     // Shelf list will update automatically via reactive flow

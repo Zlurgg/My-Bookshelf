@@ -22,6 +22,7 @@ sealed interface BookcaseAction {
     data object OnTutorialShelfClick : BookcaseAction
     data class OnShareShelfClick(val shelf: Bookshelf) : BookcaseAction
     data class OnDuplicateShelfClick(val shelf: Bookshelf) : BookcaseAction
+    data object ResetSwitchToPersonalTab : BookcaseAction
 
     // Share Options Actions (Book Club)
     data object DismissShareOptions : BookcaseAction
