@@ -28,6 +28,7 @@ data class BookshelfState(
     val isCreatingBookClub: Boolean = false,
     val bookClubInviteLink: String? = null,  // Non-null when invite link sheet should show
     val bookClubCode: String? = null,
+    val isNewlyCreatedBookClub: Boolean = true, // false when showing existing club's code
     val isBookClub: Boolean = false,
     val clubCode: String? = null,
     val isSyncing: Boolean = false,

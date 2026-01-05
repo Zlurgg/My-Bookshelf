@@ -348,10 +348,13 @@ fun BookshelfScreen(
             clubCode = state.bookClubCode ?: "",
             inviteLink = inviteLink,
             clubName = state.shelfName,
+            isNewClub = state.isNewlyCreatedBookClub,
             onDismiss = {
                 onAction(BookshelfAction.OnDismissInviteLink)
-                // Navigate to book clubs tab after creating a book club
-                onNavigateToBookClubs()
+                // Navigate to book clubs tab after creating a book club (only if newly created)
+                if (state.isNewlyCreatedBookClub) {
+                    onNavigateToBookClubs()
+                }
             }
         )
     }

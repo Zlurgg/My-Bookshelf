@@ -41,6 +41,7 @@ fun InviteLinkDialog(
     clubCode: String,
     inviteLink: String,
     clubName: String,
+    isNewClub: Boolean = true,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -50,7 +51,7 @@ fun InviteLinkDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = "Book Club Created!",
+                text = if (isNewClub) "Book Club Created!" else "Share Book Club",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )

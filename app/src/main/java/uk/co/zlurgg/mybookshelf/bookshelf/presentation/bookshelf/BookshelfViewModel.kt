@@ -331,6 +331,8 @@ class BookshelfViewModel(
 
     private fun createBookClub() {
         viewModelScope.launch {
+            // Check if shelf was already a book club before calling create
+            val wasAlreadyBookClub = _state.value.isBookClub
             _state.update { it.copy(isCreatingBookClub = true, errorMessage = null) }
 
             when (val createResult = bookClubOperations.createBookClub(shelfId, _state.value.shelfName)) {
@@ -339,7 +341,8 @@ class BookshelfViewModel(
                         it.copy(
                             isCreatingBookClub = false,
                             bookClubCode = createResult.data.clubCode,
-                            bookClubInviteLink = createResult.data.inviteLink
+                            bookClubInviteLink = createResult.data.inviteLink,
+                            isNewlyCreatedBookClub = !wasAlreadyBookClub // false if was already a club
                         )
                     }
                 }
