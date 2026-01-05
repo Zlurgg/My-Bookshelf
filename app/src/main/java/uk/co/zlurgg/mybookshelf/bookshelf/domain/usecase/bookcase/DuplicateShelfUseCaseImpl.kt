@@ -4,15 +4,19 @@ import kotlinx.coroutines.flow.first
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
+import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class DuplicateShelfUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
     private val bookshelfRepository: BookshelfRepository,
-    private val idGenerator: IdGenerator
+    private val idGenerator: IdGenerator,
+    private val syncSchedulerService: SyncSchedulerService
 ) : DuplicateShelfUseCase {
 
     override suspend fun execute(shelfId: String): Result<Bookshelf, DataError.Local> {
@@ -43,6 +47,10 @@ class DuplicateShelfUseCaseImpl(
             books.forEach { book ->
                 bookshelfRepository.addBookToShelf(duplicatedShelf.id, book.id)
             }
+
+            // Trigger sync to upload the new personal shelf to Firebase
+            Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: DuplicateShelf")
+            syncSchedulerService.triggerImmediateSync()
 
             duplicatedShelf
         }
