@@ -186,9 +186,14 @@ class SyncEngine(
             }
         }
 
-        // Get pending shelves (exclude system entities like tutorial shelf)
+        // Get pending shelves (exclude system entities like tutorial shelf and book clubs)
+        // Book club shelves sync via BookClubRepository, not personal sync
         val pendingShelves = bookshelfDao.getPendingSyncShelves()
-            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
+            .filter {
+                (it.ownerId == userId || it.ownerId == null) &&
+                !SystemOwnerIds.isSystemOwner(it.ownerId) &&
+                !it.isBookClub  // Book clubs sync separately via bookClubs collection
+            }
 
         Timber.tag(TAG).d("Found %d pending shelves", pendingShelves.size)
         updateProgress(SyncPhase.PUSHING_SHELVES, 0, pendingShelves.size)
@@ -310,6 +315,12 @@ class SyncEngine(
             )
 
             val localShelf = bookshelfDao.getShelfById(remoteShelf.id)
+
+            // Skip book club shelves - they sync via BookClubRepository, not personal sync
+            if (localShelf?.isBookClub == true) {
+                Timber.tag(TAG).d("Skipping book club shelf %s in personal sync", remoteShelf.id)
+                return@forEach
+            }
 
             if (localShelf == null) {
                 // New shelf from cloud - insert locally
