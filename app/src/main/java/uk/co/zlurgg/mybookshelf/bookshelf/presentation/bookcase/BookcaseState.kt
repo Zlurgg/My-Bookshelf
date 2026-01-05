@@ -68,4 +68,7 @@ data class BookcaseState(
 
     // Tab navigation after personal copy
     val switchToPersonalTab: Boolean = false,
+
+    // Converted book clubs notification (clubs deleted by creator, converted to personal shelves)
+    val deletedBookClubNames: List<String> = emptyList(),
 )

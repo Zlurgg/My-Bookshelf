@@ -66,6 +66,20 @@ interface BookClubRepository {
      */
     suspend fun leaveBookClub(code: String): Result<Unit, DataError.Sync>
 
+    /**
+     * Converts a book club shelf to a personal shelf.
+     * Used when a club is deleted by its creator - the member keeps their books
+     * but the shelf is no longer linked to the club.
+     *
+     * - Removes club properties from the shelf (isBookClub, clubCode, clubCreatorId)
+     * - Deletes the local membership record
+     * - Removes from user's remote preferences
+     * - Keeps all books intact
+     *
+     * @param code The club code of the deleted club
+     */
+    suspend fun convertClubToPersonalShelf(code: String): Result<Unit, DataError.Sync>
+
     // ========== Membership ==========
 
     /**

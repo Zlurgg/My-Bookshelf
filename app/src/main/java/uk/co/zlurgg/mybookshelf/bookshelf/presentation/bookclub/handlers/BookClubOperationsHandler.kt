@@ -141,4 +141,17 @@ class BookClubOperationsHandler(
     suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync> {
         return bookClubUseCases.leaveBookClub(shelfId)
     }
+
+    /**
+     * Validates all local book club memberships against Firestore.
+     * Cleans up any clubs that have been deleted by their creators.
+     *
+     * @return List of deleted club names (for user notification), or empty if all valid
+     */
+    suspend fun validateMemberships(): List<String> {
+        return when (val result = bookClubUseCases.validateMemberships()) {
+            is Result.Success -> result.data
+            is Result.Error -> emptyList() // Silently fail - validation is best-effort
+        }
+    }
 }

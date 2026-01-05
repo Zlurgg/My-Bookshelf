@@ -174,6 +174,17 @@ class MockBookClubRepository : BookClubRepository {
         return leaveBookClubResult
     }
 
+    // Convert club to personal shelf
+    var convertClubToPersonalShelfResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var convertClubToPersonalShelfCalled = false
+    var lastConvertCode: String? = null
+
+    override suspend fun convertClubToPersonalShelf(code: String): Result<Unit, DataError.Sync> {
+        convertClubToPersonalShelfCalled = true
+        lastConvertCode = code
+        return convertClubToPersonalShelfResult
+    }
+
     // Update club style
     var updateClubStyleResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
     var updateClubStyleCalled = false
@@ -205,6 +216,7 @@ class MockBookClubRepository : BookClubRepository {
         syncBooksFromClubResult = Result.Success(SyncResult(0, 0))
         renameBookClubResult = Result.Success(Unit)
         leaveBookClubResult = Result.Success(Unit)
+        convertClubToPersonalShelfResult = Result.Success(Unit)
         updateClubStyleResult = Result.Success(Unit)
 
         createBookClubCalled = false
@@ -221,6 +233,7 @@ class MockBookClubRepository : BookClubRepository {
         syncBooksFromClubCalled = false
         renameBookClubCalled = false
         leaveBookClubCalled = false
+        convertClubToPersonalShelfCalled = false
         updateClubStyleCalled = false
 
         lastCreateShelfId = null
@@ -241,6 +254,7 @@ class MockBookClubRepository : BookClubRepository {
         lastRenameClubCode = null
         lastRenameNewName = null
         lastLeaveCode = null
+        lastConvertCode = null
         lastUpdateStyleCode = null
         lastUpdateStyleValue = null
     }

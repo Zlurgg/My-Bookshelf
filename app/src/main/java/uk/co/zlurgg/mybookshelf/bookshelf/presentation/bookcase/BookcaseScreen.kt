@@ -175,6 +175,19 @@ fun BookcaseScreen(
         }
     }
 
+    // Show converted book clubs notification (clubs deleted by owner, converted to personal shelves)
+    if (state.deletedBookClubNames.isNotEmpty()) {
+        LaunchedEffect(state.deletedBookClubNames) {
+            val message = if (state.deletedBookClubNames.size == 1) {
+                "'${state.deletedBookClubNames.first()}' was deleted by owner - converted to personal shelf"
+            } else {
+                "${state.deletedBookClubNames.size} book clubs were deleted - converted to personal shelves"
+            }
+            snackbarHostState.showSnackbar(message)
+            onAction(BookcaseAction.DismissDeletedBookClubsNotification)
+        }
+    }
+
     // Watch for operation success to close dialog
     LaunchedEffect(state.operationSuccess) {
         if (state.operationSuccess) {

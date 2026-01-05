@@ -11,13 +11,15 @@ This document provides a comprehensive manual testing plan for the Book Club col
 | Phase 1: Create | Complete | Create book club from shelf, generate invite code |
 | Phase 2: Join | Complete | Join via code/URL, preview before joining |
 | Phase 3: Sync | Complete | Add/remove books syncs to all members |
+| Phase 4: Leave & Delete | Complete | Leave club, delete club (owner), auto-convert deleted clubs |
+| Phase 5: Permissions | Complete | Owner-only rename/style/delete, member count tracking |
 
 ## What's Remaining
 
 | Phase | Status | Features |
 |-------|--------|----------|
-| Phase 4: Reviews | Not Started | Add rating/review, see other members' reviews |
-| Phase 5: Leave & Members | Not Started | View members, leave club, auto-cleanup |
+| Reviews | Not Started | Add rating/review, see other members' reviews |
+| Members List | Not Started | View all members of a club |
 
 ### Deferred Items
 - Web page for club preview (`docs/club/index.html`)
@@ -31,6 +33,17 @@ This document provides a comprehensive manual testing plan for the Book Club col
 - Both signed into different Google accounts
 - Fresh app install recommended (or clear app data)
 - Firestore console access for verification
+
+## ⚠️ IMPORTANT: Deploy Firestore Rules First
+
+Before testing delete functionality, deploy updated `firestore.rules` to Firebase Console:
+
+1. Go to Firebase Console > Firestore Database > Rules
+2. Copy contents of `firestore.rules` from project root
+3. Paste and click **Publish**
+4. Wait ~1 minute for propagation
+
+The updated rules allow creators to delete books after members are removed.
 
 ---
 
@@ -174,27 +187,81 @@ This document provides a comprehensive manual testing plan for the Book Club col
 
 ---
 
-### Test 11: Delete Book Club Shelf (Creator)
+### Test 11: Delete Book Club - Converts to Personal Shelf (KEY TEST)
 
 | Step | Action | Expected Result |
 |------|--------|-----------------|
-| 11.1 | User A: Long-press book club shelf → Delete | Confirmation dialog |
-| 11.2 | Confirm delete | Shelf deleted locally |
+| 11.1 | User A (creator): Long-press book club shelf | Context menu appears with "Delete" |
+| 11.2 | Tap "Delete" and confirm | Club deleted from User A's app |
 | 11.3 | Check Firestore console | `/bookClubs/{code}/` document deleted |
-| 11.4 | User B: Refresh | Club shelf should show error or disappear |
+| 11.4 | Force close User B's app completely | App closed |
+| 11.5 | Reopen User B's app | App launches |
+| 11.6 | Wait for sync on launch | Snackbar: "'[name]' was deleted by owner - converted to personal shelf" |
+| 11.7 | Check User B's bookcase | Shelf still exists in **Personal Shelves** tab |
+| 11.8 | Open the converted shelf | All books are preserved |
+| 11.9 | Verify NO [BC] badge | Badge removed (now personal shelf) |
 
 **Pass:** [ ] **Fail:** [ ] **Notes:** _______________
 
 ---
 
-### Test 12: Non-Club Shelf Behavior Unchanged
+### Test 12: Member Count Updates Correctly
 
 | Step | Action | Expected Result |
 |------|--------|-----------------|
-| 12.1 | Create a regular shelf (not book club) | Shelf created |
-| 12.2 | Add books | Books added locally only |
-| 12.3 | Check Firestore `/bookClubs/` | No new club created |
-| 12.4 | Remove books | Books removed locally only |
+| 12.1 | Create new club as User A | Club created |
+| 12.2 | Check Firestore: `member_count` | Should be 1 |
+| 12.3 | User B joins the club | Successfully joined |
+| 12.4 | Check Firestore: `member_count` | Should be 2 |
+| 12.5 | User B leaves the club | Successfully left |
+| 12.6 | Check Firestore: `member_count` | Should be 1 |
+| 12.7 | User B rejoins the club | Successfully rejoined |
+| 12.8 | Check Firestore: `member_count` | Should be 2 |
+
+**Pass:** [ ] **Fail:** [ ] **Notes:** _______________
+
+---
+
+### Test 13: Owner-Only Operations
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 13.1 | Both users in same club | Verified |
+| 13.2 | User B (member): Long-press club shelf | Context menu appears |
+| 13.3 | Verify "Rename" is HIDDEN | Not visible (non-owner) |
+| 13.4 | Verify "Change Style" is HIDDEN | Not visible (non-owner) |
+| 13.5 | Verify "Leave Club" is VISIBLE | Available for members |
+| 13.6 | User A (owner): Long-press club shelf | Context menu appears |
+| 13.7 | Verify "Rename" is VISIBLE | Available for owner |
+| 13.8 | Verify "Change Style" is VISIBLE | Available for owner |
+| 13.9 | Verify "Delete" is VISIBLE | Available for owner |
+| 13.10 | Verify "Leave Club" is HIDDEN | Owner cannot leave (must delete) |
+
+**Pass:** [ ] **Fail:** [ ] **Notes:** _______________
+
+---
+
+### Test 14: Owner Badge (Crown Icon)
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 14.1 | User A creates club | Club created |
+| 14.2 | Check User A's shelf card | Shows [BC] badge AND crown icon |
+| 14.3 | User B joins club | Successfully joined |
+| 14.4 | Check User B's shelf card | Shows [BC] badge but NO crown icon |
+
+**Pass:** [ ] **Fail:** [ ] **Notes:** _______________
+
+---
+
+### Test 15: Non-Club Shelf Behavior Unchanged
+
+| Step | Action | Expected Result |
+|------|--------|-----------------|
+| 15.1 | Create a regular shelf (not book club) | Shelf created |
+| 15.2 | Add books | Books added locally only |
+| 15.3 | Check Firestore `/bookClubs/` | No new club created |
+| 15.4 | Remove books | Books removed locally only |
 
 **Pass:** [ ] **Fail:** [ ] **Notes:** _______________
 
@@ -258,8 +325,11 @@ adb logcat *:E | grep -i "bookclub\|club"
 | 8 | URL Parsing | [ ] Pass [ ] Fail |
 | 9 | Sign-Out Clears Data | [ ] Pass [ ] Fail |
 | 10 | Sign-In Restores Memberships | [ ] Pass [ ] Fail |
-| 11 | Delete Book Club | [ ] Pass [ ] Fail |
-| 12 | Non-Club Shelf Unchanged | [ ] Pass [ ] Fail |
+| **11** | **Delete Club → Converts to Personal (KEY)** | [ ] Pass [ ] Fail |
+| 12 | Member Count Updates | [ ] Pass [ ] Fail |
+| 13 | Owner-Only Operations | [ ] Pass [ ] Fail |
+| 14 | Owner Badge (Crown Icon) | [ ] Pass [ ] Fail |
+| 15 | Non-Club Shelf Unchanged | [ ] Pass [ ] Fail |
 
 **Tester:** _______________
 **Date:** _______________

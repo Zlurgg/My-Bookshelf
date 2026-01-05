@@ -19,5 +19,6 @@ class BookClubUseCases(
 
     // Membership Management
     val restoreBookClubMemberships: RestoreBookClubMembershipsUseCase,
-    val leaveBookClub: LeaveBookClubUseCase
+    val leaveBookClub: LeaveBookClubUseCase,
+    val validateMemberships: ValidateBookClubMembershipsUseCase
 )
