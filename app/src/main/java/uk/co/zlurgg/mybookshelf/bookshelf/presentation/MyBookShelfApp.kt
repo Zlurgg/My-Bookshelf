@@ -97,6 +97,10 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                         navArgument(NavigationRoute.Bookcase.ARG_NEW_SHELF) {
                             type = NavType.BoolType
                             defaultValue = false
+                        },
+                        navArgument(NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS) {
+                            type = NavType.BoolType
+                            defaultValue = false
                         }
                     )
                 ) { backStackEntry ->
@@ -104,9 +108,13 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                     val isNewShelf = backStackEntry.arguments?.getBoolean(
                         NavigationRoute.Bookcase.ARG_NEW_SHELF
                     ) ?: false
+                    val switchToBookClubs = backStackEntry.arguments?.getBoolean(
+                        NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS
+                    ) ?: false
 
                     BookcaseScreenRoot(
                         viewModel = viewModel,
+                        switchToBookClubs = switchToBookClubs,
                         onBookshelfClick = { shelf ->
                             navController.navigate(NavigationRoute.Bookshelf.createRoute(shelf.id))
                         },
@@ -169,6 +177,11 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                             }
                         },
                         onBackClick = { navController.popBackStack() },
+                        onNavigateToBookClubs = {
+                            navController.navigate(NavigationRoute.Bookcase.createRoute(switchToBookClubs = true)) {
+                                popUpTo(NavigationRoute.Bookcase.ROUTE) { inclusive = true }
+                            }
+                        },
                         shelfName = state.shelfName,
                         shelfMaterial = state.shelfMaterial,
                     )

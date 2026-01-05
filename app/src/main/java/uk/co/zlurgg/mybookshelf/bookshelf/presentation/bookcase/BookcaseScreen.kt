@@ -65,11 +65,19 @@ fun BookcaseScreenRoot(
     onBookDetailClick: (String, String) -> Unit,
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
     onSignIn: () -> Unit = {},
-    onSignOut: () -> Unit = {}
+    onSignOut: () -> Unit = {},
+    switchToBookClubs: Boolean = false
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableStateOf(BookcaseTab.MY_SHELVES) }
+
+    // Switch to book clubs tab when navigating back from creating a book club
+    LaunchedEffect(switchToBookClubs) {
+        if (switchToBookClubs) {
+            selectedTab = BookcaseTab.BOOK_CLUBS
+        }
+    }
 
     // Handle navigation to tutorial shelf when ID is set
     LaunchedEffect(state.tutorialShelfIdForNavigation) {

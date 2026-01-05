@@ -55,6 +55,7 @@ fun BookshelfScreenRoot(
     onAddBookClick: (Book) -> Unit,
     onBookClick: (Book) -> Unit,
     onBackClick: () -> Unit,
+    onNavigateToBookClubs: () -> Unit = {},
     shelfName: String? = null,
     shelfMaterial: ShelfMaterial? = null,
 ) {
@@ -74,7 +75,8 @@ fun BookshelfScreenRoot(
                 is BookshelfAction.OnBackClick -> onBackClick()
                 else -> viewModel.onAction(action)
             }
-        }
+        },
+        onNavigateToBookClubs = onNavigateToBookClubs
     )
 }
 
@@ -84,6 +86,7 @@ fun BookshelfScreenRoot(
 fun BookshelfScreen(
     state: BookshelfState,
     onAction: (BookshelfAction) -> Unit,
+    onNavigateToBookClubs: () -> Unit = {},
 ) {
     // Use books in their original order (no forced sorting)
     val books = state.books
@@ -345,7 +348,11 @@ fun BookshelfScreen(
             clubCode = state.bookClubCode ?: "",
             inviteLink = inviteLink,
             clubName = state.shelfName,
-            onDismiss = { onAction(BookshelfAction.OnDismissInviteLink) }
+            onDismiss = {
+                onAction(BookshelfAction.OnDismissInviteLink)
+                // Navigate to book clubs tab after creating a book club
+                onNavigateToBookClubs()
+            }
         )
     }
 }

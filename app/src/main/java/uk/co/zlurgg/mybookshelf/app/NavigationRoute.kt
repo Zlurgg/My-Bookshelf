@@ -24,7 +24,9 @@ sealed interface NavigationRoute {
     data object Bookcase : NavigationRoute {
         const val ROUTE = "bookcase"
         const val ARG_NEW_SHELF = "new_shelf"
-        fun createRoute(isNew: Boolean = false) = "bookcase?$ARG_NEW_SHELF=$isNew"
+        const val ARG_SWITCH_TO_BOOK_CLUBS = "switch_to_book_clubs"
+        fun createRoute(isNew: Boolean = false, switchToBookClubs: Boolean = false) =
+            "bookcase?$ARG_NEW_SHELF=$isNew&$ARG_SWITCH_TO_BOOK_CLUBS=$switchToBookClubs"
     }
 
     @Serializable
