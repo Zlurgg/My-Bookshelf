@@ -25,13 +25,21 @@ class DeleteShelfUseCaseImpl(
             // Get shelf to check if it has a book club
             val shelf = repository.getShelfById(shelfId)
 
-            // Delete associated book club if exists
+            // Delete associated book club if exists (creator must delete from Firestore first)
             if (shelf?.clubCode != null) {
                 Timber.tag(TAG).d("Deleting associated book club: %s", shelf.clubCode)
                 val deleteClubResult = bookClubRepository.deleteBookClub(shelf.clubCode)
                 if (deleteClubResult is Result.Error) {
-                    Timber.tag(TAG).w("Failed to delete book club, continuing with shelf deletion: %s", deleteClubResult.error)
-                    // Continue with shelf deletion even if club deletion fails
+                    Timber.tag(TAG).e("Failed to delete book club from Firestore: %s", deleteClubResult.error)
+                    // Map Sync errors to Local errors for proper UI feedback
+                    val localError = when (deleteClubResult.error) {
+                        DataError.Sync.PERMISSION_DENIED -> DataError.Local.PERMISSION_DENIED
+                        DataError.Sync.NETWORK_ERROR -> DataError.Local.DISK_FULL // No better mapping available
+                        else -> DataError.Local.UNKNOWN
+                    }
+                    // Don't continue with local deletion if Firestore deletion failed
+                    // This prevents orphaned clubs in Firestore
+                    return Result.Error(localError)
                 }
             }
 
