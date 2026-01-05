@@ -31,6 +31,7 @@ sealed interface DataError: Error {
         AUTH_NO_CREDENTIAL,
         AUTH_FAILED,
         AUTH_NETWORK_ERROR,
+        PERMISSION_DENIED,
         UNKNOWN
     }
 
@@ -57,6 +58,7 @@ sealed interface DataError: Error {
         CLUB_NOT_FOUND,         // Invalid book club code
         ALREADY_MEMBER,         // User already in this book club
         NOT_MEMBER,             // User not a member of this book club
+        CREATOR_CANNOT_LEAVE,   // Creator must delete the club instead of leaving
         UNKNOWN
     }
 }

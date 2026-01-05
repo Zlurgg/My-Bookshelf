@@ -41,6 +41,7 @@ object ErrorFormatter {
             DataError.Local.AUTH_NO_CREDENTIAL -> "No Google account found. Please add a Google account to your device."
             DataError.Local.AUTH_FAILED -> "Sign-in failed. Please try again."
             DataError.Local.AUTH_NETWORK_ERROR -> "Network error during sign-in. Please check your connection."
+            DataError.Local.PERMISSION_DENIED -> "You don't have permission to perform this action."
             DataError.Local.UNKNOWN -> "Unknown local error occurred."
 
             // Validation errors
@@ -65,6 +66,7 @@ object ErrorFormatter {
             DataError.Sync.CLUB_NOT_FOUND -> "Book club not found. Check the code and try again."
             DataError.Sync.ALREADY_MEMBER -> "You're already a member of this book club."
             DataError.Sync.NOT_MEMBER -> "You're not a member of this book club."
+            DataError.Sync.CREATOR_CANNOT_LEAVE -> "As the creator, you cannot leave. Delete the club instead."
             DataError.Sync.UNKNOWN -> "Unknown sync error occurred."
         }
 
