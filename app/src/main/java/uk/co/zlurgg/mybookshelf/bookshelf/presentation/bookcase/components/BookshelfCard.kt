@@ -208,10 +208,17 @@ fun BookshelfCard(
                                     }
                                 )
                             }
-                            // Only show duplicate for non-tutorial shelves
+                            // Only show duplicate/personal copy for non-tutorial shelves
                             if (!isTutorialShelf) {
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(id = R.string.menu_duplicate_shelf)) },
+                                    text = {
+                                        Text(stringResource(
+                                            id = if (shelf.isBookClub)
+                                                R.string.menu_save_personal_copy
+                                            else
+                                                R.string.menu_duplicate_shelf
+                                        ))
+                                    },
                                     onClick = {
                                         menuExpanded = false
                                         onDuplicateShelf(shelf)

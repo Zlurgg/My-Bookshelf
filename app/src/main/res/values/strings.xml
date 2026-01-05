@@ -138,6 +138,7 @@
     <string name="menu_delete_shelf">Delete</string>
     <string name="menu_share_shelf">Share</string>
     <string name="menu_duplicate_shelf">Duplicate</string>
+    <string name="menu_save_personal_copy">Save Personal Copy</string>
 
     <!-- Deep link import -->
     <string name="import_success_title">Import Successful</string>

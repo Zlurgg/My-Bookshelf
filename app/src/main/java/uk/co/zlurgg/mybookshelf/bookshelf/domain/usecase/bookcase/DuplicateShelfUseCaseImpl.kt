@@ -25,11 +25,15 @@ class DuplicateShelfUseCaseImpl(
             val books = bookshelfRepository.getBooksForShelf(shelfId).first()
 
             // Create duplicated shelf with new ID and name
+            // Always create as personal shelf (reset book club properties)
             val duplicatedShelf = originalShelf.copy(
                 id = idGenerator.generateId(),
-                name = "Copy of ${originalShelf.name}",
+                name = if (originalShelf.isBookClub) originalShelf.name else "Copy of ${originalShelf.name}",
                 books = books,
-                position = Int.MAX_VALUE // Will be positioned at the end
+                position = Int.MAX_VALUE, // Will be positioned at the end
+                isBookClub = false,
+                clubCode = null,
+                clubCreatorId = null
             )
 
             // Add the duplicated shelf
