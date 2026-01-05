@@ -1,12 +1,13 @@
-# Next Session: Database Cleanup & Name Uniqueness
+# Next Session: Book Club Cleanup & Name Uniqueness
 
 ## Problem Summary
 
-Local Room database is not properly cleaning up deleted data:
-1. Shelves marked as `syncStatus = 'DELETED'` but not hard deleted
-2. BookshelfBookCrossRef records not cleaned up
+Book club shelves are not being properly cleaned up from local Room database:
+1. Book club shelves marked as `syncStatus = 'DELETED'` but not hard deleted
+2. BookshelfBookCrossRef records not cleaned up for book clubs
 3. `getShelfByName()` finds "ghost" shelves causing false duplicate detection
-4. Data accumulates indefinitely in local database
+
+**Note**: Personal shelf deletion works correctly - this is book club specific.
 
 ## Tasks
 
@@ -37,59 +38,26 @@ Local Room database is not properly cleaning up deleted data:
 - [ ] `BookClubRepositoryImpl.kt`:
   - `leaveBookClub()` - use hard delete
   - `deleteBookClub()` - use hard delete
-  - `cleanupLocalClubData()` - ensure it hard deletes
-  - `convertClubToPersonalShelf()` - only removes BC properties, keeps shelf
+  - `cleanupLocalClubData()` - ensure it hard deletes (already does!)
+  - `convertClubToPersonalShelf()` - only removes BC properties, keeps shelf (correct)
+
+**Current issue**: Some code paths use soft delete instead of calling `cleanupLocalClubData()` which does hard delete.
 
 **Pattern**:
 ```kotlin
-// Instead of soft delete:
-dao.updateShelfSyncStatus(shelfId, "DELETED", timestamp)
-
-// Use hard delete:
-dao.deleteAllCrossRefsForShelf(shelfId)
-dao.deleteShelf(shelfId)
+// Use hard delete (what cleanupLocalClubData does):
+dao.deleteAllCrossRefsForShelf(shelfId)  // Clean cross-refs first
+dao.deleteShelf(shelfId)                  // Then delete shelf
+bookClubDao.deleteMembership(code)        // Clean membership record
 ```
 
 ---
 
-### 3. Review Personal Shelf Deletion Flow
+### 3. Clean Up Cross-References
 
-**Current flow**:
-1. `BookcaseRepositoryImpl.removeShelf()` marks as DELETED (soft delete)
-2. SyncEngine should push delete to Firestore
-3. SyncEngine should hard delete after cloud confirmation
+**Goal**: Ensure BookshelfBookCrossRef records are cleaned when book club shelves are deleted.
 
-**Question**: Is step 3 actually happening?
-
-**Files to check**:
-- [ ] `SyncEngine.kt` or equivalent - find the sync implementation
-- [ ] Look for cleanup logic after successful cloud sync
-
-**Options**:
-- **A**: Fix SyncEngine to hard delete after successful cloud sync
-- **B**: Add periodic cleanup job for DELETED records older than X days
-- **C**: Hard delete immediately if user is signed out (no sync needed)
-
----
-
-### 4. Clean Up Cross-References
-
-**Goal**: Ensure BookshelfBookCrossRef records are cleaned when shelves are deleted.
-
-**Current behavior**:
-- `deleteAllCrossRefsForShelf(shelfId)` exists in DAO
-- But is it being called consistently?
-
-**Files to check**:
-- [ ] All places that delete shelves - ensure cross-refs are cleaned
-
----
-
-## Questions to Answer
-
-1. Do we sync personal shelf data to Firestore for backup?
-2. If yes, is there a cleanup step after successful cloud delete?
-3. If no sync, should personal shelves just hard delete immediately?
+**Check**: Is `deleteAllCrossRefsForShelf(shelfId)` being called before `deleteShelf()`?
 
 ---
 
@@ -97,11 +65,11 @@ dao.deleteShelf(shelfId)
 
 After changes:
 1. Create book club, member joins
-2. Delete book club → verify local shelf AND cross-refs are gone
-3. Leave book club → verify local shelf AND cross-refs are gone
+2. Delete book club → verify local shelf AND cross-refs are gone from Room
+3. Leave book club → verify local shelf AND cross-refs are gone from Room
 4. Convert to personal → verify shelf exists but BC properties removed
 5. Create two shelves with same name → should work
-6. Delete personal shelf → verify it's actually gone from database
+6. Check Room database directly - no ghost DELETED records
 
 ---
 
@@ -109,17 +77,12 @@ After changes:
 
 ```
 Data Layer:
-- BookClubRepositoryImpl.kt - book club CRUD
-- BookcaseRepositoryImpl.kt - personal shelf CRUD
+- BookClubRepositoryImpl.kt - book club CRUD (main focus)
+- BookcaseRepositoryImpl.kt - personal shelf CRUD (working fine)
 - BookshelfDao.kt - Room queries
 
 Use Cases:
-- DeleteShelfUseCaseImpl.kt
 - CreateShelfUseCaseImpl.kt
 - RenameShelfUseCaseImpl.kt
 - DuplicateShelfUseCaseImpl.kt
-- LeaveBookClubUseCaseImpl.kt
-
-Sync:
-- SyncEngine.kt (or equivalent) - need to find this
 ```
