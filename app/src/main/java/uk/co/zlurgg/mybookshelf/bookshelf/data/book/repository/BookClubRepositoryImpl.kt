@@ -297,6 +297,37 @@ class BookClubRepositoryImpl(
         return Result.Success(Unit)
     }
 
+    override suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync> {
+        Timber.tag(TAG).d("Updating book club %s style to: %s", code, style)
+
+        val user = authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        // Get club to verify creator
+        val clubResult = getBookClub(code)
+        if (clubResult is Result.Error) return clubResult
+        val club = (clubResult as Result.Success).data
+            ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+
+        // Only creator can update style
+        if (club.createdBy != user.userId) {
+            Timber.tag(TAG).w("User %s is not creator of club %s", user.userId, code)
+            return Result.Error(DataError.Sync.PERMISSION_DENIED)
+        }
+
+        // Update Firestore
+        val updateResult = remoteDataSource.updateBookClubStyle(
+            code, style, timeProvider.currentTimeMillis()
+        )
+        if (updateResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to update club style in Firestore: %s", updateResult.error)
+            return Result.Error(updateResult.error)
+        }
+
+        Timber.tag(TAG).d("Book club style updated successfully")
+        return Result.Success(Unit)
+    }
+
     override suspend fun leaveBookClub(code: String): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Leaving book club: %s", code)
 

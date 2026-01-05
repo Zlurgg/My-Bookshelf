@@ -218,6 +218,15 @@ interface RemoteSyncDataSource {
     ): Result<Unit, DataError.Sync>
 
     /**
+     * Updates the book club style. Only the creator can update.
+     */
+    suspend fun updateBookClubStyle(
+        code: String,
+        style: String,
+        lastModifiedAt: Long
+    ): Result<Unit, DataError.Sync>
+
+    /**
      * Deletes a book club and all its subcollections (members, books).
      */
     suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync>

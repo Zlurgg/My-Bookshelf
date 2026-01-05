@@ -49,6 +49,15 @@ interface BookClubRepository {
     suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync>
 
     /**
+     * Updates a book club's style. Only the creator can update.
+     * Updates Firestore metadata.
+     *
+     * @param code The club code
+     * @param style The new style name
+     */
+    suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync>
+
+    /**
      * Leaves a book club. Removes the user from the club's member list,
      * decrements member count, cleans up user settings, and deletes local data.
      * The creator cannot leave - they must delete the club instead.

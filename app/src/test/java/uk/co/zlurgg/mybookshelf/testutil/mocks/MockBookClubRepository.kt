@@ -174,6 +174,19 @@ class MockBookClubRepository : BookClubRepository {
         return leaveBookClubResult
     }
 
+    // Update club style
+    var updateClubStyleResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var updateClubStyleCalled = false
+    var lastUpdateStyleCode: String? = null
+    var lastUpdateStyleValue: String? = null
+
+    override suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync> {
+        updateClubStyleCalled = true
+        lastUpdateStyleCode = code
+        lastUpdateStyleValue = style
+        return updateClubStyleResult
+    }
+
     // Helper methods for test setup
     fun reset() {
         createBookClubResult = Result.Success("TEST1234")
@@ -192,6 +205,7 @@ class MockBookClubRepository : BookClubRepository {
         syncBooksFromClubResult = Result.Success(SyncResult(0, 0))
         renameBookClubResult = Result.Success(Unit)
         leaveBookClubResult = Result.Success(Unit)
+        updateClubStyleResult = Result.Success(Unit)
 
         createBookClubCalled = false
         getBookClubCalled = false
@@ -207,6 +221,7 @@ class MockBookClubRepository : BookClubRepository {
         syncBooksFromClubCalled = false
         renameBookClubCalled = false
         leaveBookClubCalled = false
+        updateClubStyleCalled = false
 
         lastCreateShelfId = null
         lastGetBookClubCode = null
@@ -226,6 +241,8 @@ class MockBookClubRepository : BookClubRepository {
         lastRenameClubCode = null
         lastRenameNewName = null
         lastLeaveCode = null
+        lastUpdateStyleCode = null
+        lastUpdateStyleValue = null
     }
 
     fun configureBookClub(bookClub: BookClub) {

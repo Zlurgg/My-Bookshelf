@@ -483,6 +483,24 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    override suspend fun updateBookClubStyle(
+        code: String,
+        style: String,
+        lastModifiedAt: Long
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("updateBookClubStyle") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .update(
+                    mapOf(
+                        "shelf_style" to style,
+                        "last_modified_at" to lastModifiedAt
+                    )
+                )
+                .await()
+        }
+    }
+
     override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("deleteBookClub") {
             val clubRef = firestore.collection(BOOK_CLUBS_COLLECTION).document(code)
