@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -23,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -36,6 +38,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBookshelfDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseBottomBar
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ChangeStyleDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
@@ -64,6 +67,7 @@ fun BookcaseScreenRoot(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
+    var selectedTab by rememberSaveable { mutableStateOf(BookcaseTab.MY_SHELVES) }
 
     // Handle navigation to tutorial shelf when ID is set
     LaunchedEffect(state.tutorialShelfIdForNavigation) {
@@ -110,6 +114,8 @@ fun BookcaseScreenRoot(
 
     BookcaseScreen(
         state = state,
+        selectedTab = selectedTab,
+        onTabSelected = { selectedTab = it },
         showAddBookshelfDialog = showDialog,
         onShowAddBookshelfDialogChange = { showDialog = it },
         onAction = { action ->
@@ -133,6 +139,8 @@ fun BookcaseScreenRoot(
 @OptIn(ExperimentalMaterial3Api::class)
 fun BookcaseScreen(
     state: BookcaseState,
+    selectedTab: BookcaseTab,
+    onTabSelected: (BookcaseTab) -> Unit,
     showAddBookshelfDialog: Boolean,
     onShowAddBookshelfDialogChange: (Boolean) -> Unit,
     onAction: (BookcaseAction) -> Unit
@@ -157,21 +165,28 @@ fun BookcaseScreen(
         }
     }
 
+    // Filter shelves based on selected tab
+    val displayedShelves = remember(state.bookshelves, selectedTab) {
+        state.bookshelves.filter { shelf ->
+            shelf.isBookClub == (selectedTab == BookcaseTab.BOOK_CLUBS)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = if (state.isReorderMode)
-                            stringResource(id = R.string.reorder_shelves_title)
-                        else
-                            stringResource(id = R.string.app_name),
+                        text = when {
+                            state.isReorderMode -> stringResource(id = R.string.reorder_shelves_title)
+                            else -> stringResource(id = selectedTab.labelResId)
+                        },
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
                 actions = {
-                    // Reorder shelves toggle - only shown when shelves exist
-                    if (state.bookshelves.isNotEmpty()) {
+                    // Reorder shelves toggle - only shown when shelves exist in current tab
+                    if (displayedShelves.isNotEmpty()) {
                         IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                             Icon(
                                 imageVector = if (state.isReorderMode) Icons.Default.LockOpen else Icons.Default.Lock,
@@ -194,19 +209,49 @@ fun BookcaseScreen(
                 }
             )
         },
+        bottomBar = {
+            BookcaseBottomBar(
+                selectedTab = selectedTab,
+                onTabSelected = onTabSelected
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onShowAddBookshelfDialogChange(true)  }) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.fab_add_shelf))
+            FloatingActionButton(
+                onClick = {
+                    if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+                        onAction(BookcaseAction.ShowJoinBookClubDialog)
+                    } else {
+                        onShowAddBookshelfDialogChange(true)
+                    }
+                }
+            ) {
+                Icon(
+                    imageVector = if (selectedTab == BookcaseTab.BOOK_CLUBS)
+                        Icons.Default.PersonAdd
+                    else
+                        Icons.Default.Add,
+                    contentDescription = stringResource(
+                        id = if (selectedTab == BookcaseTab.BOOK_CLUBS)
+                            R.string.fab_join_book_club
+                        else
+                            R.string.fab_add_shelf
+                    )
+                )
             }
         },
         modifier = Modifier.fillMaxSize()
     ) { padding ->
-        if (!state.isLoading && state.bookshelves.isEmpty()) {
+        if (!state.isLoading && displayedShelves.isEmpty()) {
             LazyColumn(contentPadding = padding) {
                 item {
                     Text(
-                        text = stringResource(id = R.string.bookcase_empty_state_hint),
+                        text = stringResource(
+                            id = if (selectedTab == BookcaseTab.BOOK_CLUBS)
+                                R.string.bookcase_empty_book_clubs
+                            else
+                                R.string.bookcase_empty_personal
+                        ),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                     )
                 }
@@ -214,7 +259,7 @@ fun BookcaseScreen(
         } else {
             LazyColumn(contentPadding = padding) {
                 items(
-                    items = state.bookshelves,
+                    items = displayedShelves,
                     key = { it.id }
                 ) { shelf ->
                     val isTutorialShelf = shelf.name == BookshelfConstants.TUTORIAL_SHELF_NAME
@@ -363,6 +408,8 @@ fun BookcaseScreenPreview() {
             state = BookcaseState(
                 bookshelves = bookshelves,
             ),
+            selectedTab = BookcaseTab.MY_SHELVES,
+            onTabSelected = {},
             onAction = {},
             showAddBookshelfDialog = false,
             onShowAddBookshelfDialogChange = {}
