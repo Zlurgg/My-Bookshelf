@@ -374,10 +374,14 @@ class BookClubRepositoryImpl(
         }
 
         // 7. Decrement member count in Firestore
-        val membersResult = remoteDataSource.getBookClubMembers(code)
-        if (membersResult is Result.Success) {
-            val memberCount = membersResult.data.size
-            remoteDataSource.updateBookClubCounts(code, club.bookCount, memberCount)
+        // Use stored member count minus 1 (the user we just removed)
+        val newMemberCount = maxOf(0, club.memberCount - 1)
+        val updateCountResult = remoteDataSource.updateBookClubCounts(code, club.bookCount, newMemberCount)
+        if (updateCountResult is Result.Error) {
+            Timber.tag(TAG).w("Failed to update member count: %s", updateCountResult.error)
+            // Non-critical, continue - member has been removed
+        } else {
+            Timber.tag(TAG).d("Updated member count to: %d", newMemberCount)
         }
 
         // 8. Delete local membership record
