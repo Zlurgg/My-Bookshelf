@@ -685,18 +685,9 @@ class BookClubRepositoryImpl(
 
         for (bookDto in clubBooks) {
             try {
-                // Debug: Log the DTO values
-                Timber.tag(TAG).d("BookDTO - id: %s, title: %s, coverUrl: %s, spineColor: %d",
-                    bookDto.id, bookDto.title, bookDto.coverUrl, bookDto.spineColor)
-
                 // Convert to Book domain model and save locally with correct owner
                 val book = bookDto.toBook()
-                Timber.tag(TAG).d("Book - id: %s, imageUrl: %s, spineColor: %d",
-                    book.id, book.imageUrl, book.spineColor)
-
                 val bookEntity = book.toBookEntity(userId)
-                Timber.tag(TAG).d("BookEntity - id: %s, imageUrl: %s, spineColor: %d",
-                    bookEntity.id, bookEntity.imageUrl, bookEntity.spineColor)
 
                 // Upsert the book (in case it already exists)
                 bookshelfDao.upsert(bookEntity)
