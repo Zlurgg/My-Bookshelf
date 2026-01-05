@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew testDebugUnitTest:*)",
+      "Bash(./gradlew connectedAndroidTest:*)",
+      "Bash(./gradlew compileDebugKotlin:*)",
+      "Bash(./gradlew compileDebugUnitTestKotlin:*)"
+    ]
+  }
+}
