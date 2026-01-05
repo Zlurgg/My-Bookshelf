@@ -219,7 +219,7 @@ class BookClubRepositoryImpl(
 
         // 3. Permission check - only creator can delete
         if (club.createdBy != user.userId) {
-            Timber.tag(TAG).w("User %s is not creator of club %s", user.userId, code)
+            Timber.tag(TAG).w("PERMISSION DENIED: User '%s' is not creator '%s' of club %s", user.userId, club.createdBy, code)
             return Result.Error(DataError.Sync.PERMISSION_DENIED)
         }
 
