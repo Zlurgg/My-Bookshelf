@@ -412,6 +412,50 @@ class BookClubRepositoryImpl(
         }
     }
 
+    override suspend fun convertClubToPersonalShelf(code: String): Result<Unit, DataError.Sync> {
+        Timber.tag(TAG).d("Converting club %s to personal shelf", code)
+
+        val user = authService.getSignedInUser()
+        if (user == null) {
+            Timber.tag(TAG).e("Cannot convert: not signed in")
+            return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        }
+
+        // Get local membership to find the shelf
+        val membership = bookClubDao.getMembershipByClubCode(code)
+        if (membership == null) {
+            Timber.tag(TAG).w("No local membership found for club: %s", code)
+            return Result.Success(Unit) // Nothing to convert
+        }
+
+        val localShelfId = membership.localShelfId
+
+        // Get the local shelf and convert it to a personal shelf
+        val shelfEntity = bookshelfDao.getShelfById(localShelfId)
+        if (shelfEntity != null) {
+            val convertedShelf = shelfEntity.copy(
+                isBookClub = false,
+                clubCode = null,
+                clubCreatorId = null,
+                syncStatus = "LOCAL" // No longer syncs with cloud
+            )
+            bookshelfDao.upsertShelf(convertedShelf)
+            Timber.tag(TAG).d("Converted shelf '%s' to personal shelf", shelfEntity.name)
+        }
+
+        // Delete local membership record
+        bookClubDao.deleteMembership(code)
+
+        // Remove from user's remote preferences (best effort)
+        val removeResult = remoteDataSource.removeClubMembership(user.userId, code)
+        if (removeResult is Result.Error) {
+            Timber.tag(TAG).w("Failed to remove from user preferences: %s", removeResult.error)
+        }
+
+        Timber.tag(TAG).d("Successfully converted club %s to personal shelf", code)
+        return Result.Success(Unit)
+    }
+
     override fun observeMyBookClubs(): Flow<List<BookClubMembership>> {
         return bookClubDao.observeAllMemberships().map { entities ->
             entities.map { it.toDomain() }

@@ -51,6 +51,7 @@ class BookcaseViewModel(
     init {
         loadBookshelves()
         checkSignInStatus()
+        validateBookClubMemberships()
     }
 
     private fun checkSignInStatus() {
@@ -58,6 +59,15 @@ class BookcaseViewModel(
             val isSignedIn = checkSignInStatusUseCase.execute()
             val currentUserId = currentUserProvider.getCurrentUserId()
             _state.update { it.copy(isSignedIn = isSignedIn, currentUserId = currentUserId) }
+        }
+    }
+
+    private fun validateBookClubMemberships() {
+        viewModelScope.launch {
+            val deletedClubNames = bookClubOperations.validateMemberships()
+            if (deletedClubNames.isNotEmpty()) {
+                _state.update { it.copy(deletedBookClubNames = deletedClubNames) }
+            }
         }
     }
 
@@ -339,6 +349,10 @@ class BookcaseViewModel(
 
             is BookcaseAction.HandleInviteLink -> {
                 handleInviteLink(action.code)
+            }
+
+            is BookcaseAction.DismissDeletedBookClubsNotification -> {
+                _state.update { it.copy(deletedBookClubNames = emptyList()) }
             }
         }
     }

@@ -18,6 +18,7 @@ class MockBookcaseRepository : BookcaseRepository {
     var shouldThrowException = false
     var shelvesToReturn = emptyList<Bookshelf>()
     var shelfByIdToReturn: Bookshelf? = null
+    var shelfById: Map<String, Bookshelf> = emptyMap() // Map-based lookup (takes priority over shelfByIdToReturn)
     var bookCountsToReturn = emptyMap<String, Int>()
 
     // Tracking properties
@@ -43,7 +44,8 @@ class MockBookcaseRepository : BookcaseRepository {
 
     override suspend fun getShelfById(shelfId: String): Bookshelf? {
         if (shouldThrowException) throw RuntimeException("Test exception")
-        return shelfByIdToReturn
+        // Map-based lookup takes priority for multi-shelf tests
+        return shelfById[shelfId] ?: shelfByIdToReturn
     }
 
     override suspend fun addShelf(shelf: Bookshelf) {
@@ -88,6 +90,7 @@ class MockBookcaseRepository : BookcaseRepository {
         shouldThrowException = false
         shelvesToReturn = emptyList()
         shelfByIdToReturn = null
+        shelfById = emptyMap()
         bookCountsToReturn = emptyMap()
         addShelfCalled = false
         addSystemShelfCalled = false
