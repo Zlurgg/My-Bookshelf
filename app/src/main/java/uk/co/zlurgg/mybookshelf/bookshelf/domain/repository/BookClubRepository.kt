@@ -48,6 +48,15 @@ interface BookClubRepository {
      */
     suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync>
 
+    /**
+     * Leaves a book club. Removes the user from the club's member list,
+     * decrements member count, cleans up user settings, and deletes local data.
+     * The creator cannot leave - they must delete the club instead.
+     *
+     * @param code The club code to leave
+     */
+    suspend fun leaveBookClub(code: String): Result<Unit, DataError.Sync>
+
     // ========== Membership ==========
 
     /**

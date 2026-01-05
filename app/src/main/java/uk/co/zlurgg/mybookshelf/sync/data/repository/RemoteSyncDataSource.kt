@@ -161,6 +161,14 @@ interface RemoteSyncDataSource {
     ): Result<Unit, DataError.Sync>
 
     /**
+     * Removes a member from a book club.
+     */
+    suspend fun removeBookClubMember(
+        code: String,
+        userId: String
+    ): Result<Unit, DataError.Sync>
+
+    /**
      * Gets all members of a book club.
      */
     suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync>

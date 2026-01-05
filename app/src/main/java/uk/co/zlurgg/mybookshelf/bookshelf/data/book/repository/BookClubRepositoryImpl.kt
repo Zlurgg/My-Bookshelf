@@ -199,14 +199,57 @@ class BookClubRepositoryImpl(
     override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Deleting book club: %s", code)
 
-        // Delete from Firestore
+        // 1. Verify user is signed in
+        val user = authService.getSignedInUser()
+        if (user == null) {
+            Timber.tag(TAG).e("Cannot delete book club: not signed in")
+            return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        }
+
+        // 2. Get club metadata to verify creator
+        val clubResult = getBookClub(code)
+        if (clubResult is Result.Error) {
+            return Result.Error(clubResult.error)
+        }
+        val club = (clubResult as Result.Success).data
+        if (club == null) {
+            Timber.tag(TAG).e("Cannot delete: club not found")
+            return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+        }
+
+        // 3. Permission check - only creator can delete
+        if (club.createdBy != user.userId) {
+            Timber.tag(TAG).w("User %s is not creator of club %s", user.userId, code)
+            return Result.Error(DataError.Sync.PERMISSION_DENIED)
+        }
+
+        // 4. Get all members BEFORE deleting to clean up their settings
+        val membersResult = remoteDataSource.getBookClubMembers(code)
+        val memberIds = if (membersResult is Result.Success) {
+            membersResult.data.map { it.userId }
+        } else {
+            Timber.tag(TAG).w("Failed to get members, proceeding with deletion")
+            emptyList()
+        }
+
+        // 5. Clean up each member's club_memberships in user settings
+        for (memberId in memberIds) {
+            val removeResult = remoteDataSource.removeClubMembership(memberId, code)
+            if (removeResult is Result.Error) {
+                Timber.tag(TAG).w("Failed to remove membership for user %s: %s", memberId, removeResult.error)
+                // Continue with other members
+            }
+        }
+
+        // 6. Delete Firestore subcollections and document
         val deleteResult = remoteDataSource.deleteBookClub(code)
         if (deleteResult is Result.Error) {
             Timber.tag(TAG).e("Failed to delete book club from Firestore: %s", deleteResult.error)
             return Result.Error(deleteResult.error)
         }
 
-        // Delete local membership record
+        // 7. Delete local membership record
+        // Note: Local shelf deletion is handled by DeleteShelfUseCaseImpl
         bookClubDao.deleteMembership(code)
 
         Timber.tag(TAG).d("Book club deleted successfully: %s", code)
@@ -251,6 +294,71 @@ class BookClubRepositoryImpl(
         }
 
         Timber.tag(TAG).d("Book club renamed successfully")
+        return Result.Success(Unit)
+    }
+
+    override suspend fun leaveBookClub(code: String): Result<Unit, DataError.Sync> {
+        Timber.tag(TAG).d("Leaving book club: %s", code)
+
+        // 1. Verify user is signed in
+        val user = authService.getSignedInUser()
+        if (user == null) {
+            Timber.tag(TAG).e("Cannot leave book club: not signed in")
+            return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        }
+
+        // 2. Get club metadata to check creator
+        val clubResult = getBookClub(code)
+        if (clubResult is Result.Error) {
+            return Result.Error(clubResult.error)
+        }
+        val club = (clubResult as Result.Success).data
+        if (club == null) {
+            Timber.tag(TAG).e("Cannot leave: club not found")
+            return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+        }
+
+        // 3. Creator cannot leave - they must delete the club instead
+        if (club.createdBy == user.userId) {
+            Timber.tag(TAG).w("Creator cannot leave club %s - must delete instead", code)
+            return Result.Error(DataError.Sync.CREATOR_CANNOT_LEAVE)
+        }
+
+        // 4. Get local membership for cleanup later
+        val membership = bookClubDao.getMembershipByClubCode(code)
+        val localShelfId = membership?.localShelfId
+
+        // 5. Remove user from Firestore members collection
+        val removeMemberResult = remoteDataSource.removeBookClubMember(code, user.userId)
+        if (removeMemberResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to remove member from club: %s", removeMemberResult.error)
+            return Result.Error(removeMemberResult.error)
+        }
+
+        // 6. Remove from user settings (club_memberships in preferences)
+        val removeFromSettingsResult = remoteDataSource.removeClubMembership(user.userId, code)
+        if (removeFromSettingsResult is Result.Error) {
+            Timber.tag(TAG).w("Failed to remove from user settings: %s", removeFromSettingsResult.error)
+            // Non-critical, continue
+        }
+
+        // 7. Decrement member count in Firestore
+        val membersResult = remoteDataSource.getBookClubMembers(code)
+        if (membersResult is Result.Success) {
+            val memberCount = membersResult.data.size
+            remoteDataSource.updateBookClubCounts(code, club.bookCount, memberCount)
+        }
+
+        // 8. Delete local membership record
+        bookClubDao.deleteMembership(code)
+
+        // 9. Delete local shelf if it exists
+        if (localShelfId != null) {
+            bookshelfDao.deleteShelf(localShelfId)
+            Timber.tag(TAG).d("Deleted local shelf: %s", localShelfId)
+        }
+
+        Timber.tag(TAG).d("Successfully left book club: %s", code)
         return Result.Success(Unit)
     }
 

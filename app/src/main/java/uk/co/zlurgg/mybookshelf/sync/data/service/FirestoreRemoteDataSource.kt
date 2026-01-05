@@ -364,6 +364,20 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    override suspend fun removeBookClubMember(
+        code: String,
+        userId: String
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("removeBookClubMember") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(code)
+                .collection(MEMBERS_COLLECTION)
+                .document(userId)
+                .delete()
+                .await()
+        }
+    }
+
     override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> {
         return executeFirestoreOperation("getBookClubMembers") {
             val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)

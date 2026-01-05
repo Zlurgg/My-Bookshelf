@@ -18,5 +18,6 @@ class BookClubUseCases(
     val syncBookClub: SyncBookClubUseCase,
 
     // Membership Management
-    val restoreBookClubMemberships: RestoreBookClubMembershipsUseCase
+    val restoreBookClubMemberships: RestoreBookClubMembershipsUseCase,
+    val leaveBookClub: LeaveBookClubUseCase
 )

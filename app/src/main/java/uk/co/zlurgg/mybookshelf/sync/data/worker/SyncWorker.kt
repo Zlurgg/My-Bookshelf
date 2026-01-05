@@ -83,7 +83,8 @@ class SyncWorker(
             DataError.Sync.GENERATION_FAILED,
             DataError.Sync.CLUB_NOT_FOUND,
             DataError.Sync.ALREADY_MEMBER,
-            DataError.Sync.NOT_MEMBER -> {
+            DataError.Sync.NOT_MEMBER,
+            DataError.Sync.CREATOR_CANNOT_LEAVE -> {
                 Timber.tag(TAG).e("Permanent sync error, not retrying: %s", error)
                 Result.failure()
             }
