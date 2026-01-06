@@ -41,9 +41,13 @@ class DeleteShelfUseCaseImpl(
                     // This prevents orphaned clubs in Firestore
                     return Result.Error(localError)
                 }
+                // Book club deleted from Firestore - hard delete locally (no sync needed)
+                Timber.tag(TAG).d("Hard deleting local book club shelf: %s", shelfId)
+                repository.hardDeleteShelf(shelfId)
+            } else {
+                // Regular shelf - soft delete for sync
+                repository.removeShelf(shelfId)
             }
-
-            repository.removeShelf(shelfId)
 
             // Trigger sync after successful shelf deletion
             Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: DeleteShelf")

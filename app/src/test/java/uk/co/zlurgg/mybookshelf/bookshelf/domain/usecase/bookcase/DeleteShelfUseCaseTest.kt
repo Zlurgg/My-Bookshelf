@@ -262,4 +262,51 @@ class DeleteShelfUseCaseTest {
         val addedShelf = mockRepository.lastAddedShelf!!
         assertTrue("Should preserve empty book list", addedShelf.books.isEmpty())
     }
+
+    @Test
+    fun `regular shelf uses soft delete (removeShelf)`() = runTest {
+        // Given - A regular shelf (not a book club)
+        val shelfId = "regular-shelf"
+        val shelf = TestShelfBuilder()
+            .withId(shelfId)
+            .withName("Regular Shelf")
+            .withIsBookClub(false)
+            .withClubCode(null)
+            .build()
+        mockRepository.shelfByIdToReturn = shelf
+
+        // When
+        val result = useCase.execute(shelfId)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertTrue("Should call removeShelf (soft delete)", mockRepository.removeShelfCalled)
+        assertFalse("Should NOT call hardDeleteShelf", mockRepository.hardDeleteShelfCalled)
+        assertEquals("Should soft delete correct shelf", shelfId, mockRepository.lastRemovedShelfId)
+    }
+
+    @Test
+    fun `book club shelf uses hard delete after Firestore deletion`() = runTest {
+        // Given - A book club shelf
+        val shelfId = "club-shelf"
+        val clubCode = "ABC12345"
+        val shelf = TestShelfBuilder()
+            .withId(shelfId)
+            .withName("Book Club Shelf")
+            .withIsBookClub(true)
+            .withClubCode(clubCode)
+            .build()
+        mockRepository.shelfByIdToReturn = shelf
+        mockRepository.addShelfForTest(shelf)
+
+        // When
+        val result = useCase.execute(shelfId)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertTrue("Should call hardDeleteShelf", mockRepository.hardDeleteShelfCalled)
+        assertFalse("Should NOT call removeShelf (soft delete)", mockRepository.removeShelfCalled)
+        assertEquals("Should hard delete correct shelf", shelfId, mockRepository.lastHardDeletedShelfId)
+        assertFalse("Shelf should be removed from repository", mockRepository.hasShelf(shelfId))
+    }
 }

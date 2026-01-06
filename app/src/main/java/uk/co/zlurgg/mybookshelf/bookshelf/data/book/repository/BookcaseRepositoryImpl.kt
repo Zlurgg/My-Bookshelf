@@ -44,6 +44,13 @@ class BookcaseRepositoryImpl(
         dao.updateShelfSyncStatus(shelfId, "DELETED", timestamp)
     }
 
+    override suspend fun hardDeleteShelf(shelfId: String) {
+        // Hard delete: immediately remove from Room database
+        // Use for book clubs where Firestore is source of truth
+        dao.deleteAllCrossRefsForShelf(shelfId)
+        dao.deleteShelf(shelfId)
+    }
+
     override suspend fun updateShelf(shelf: Bookshelf) {
         val ownerId = currentUserProvider.getCurrentUserId()
         dao.upsertShelfWithSyncInit(

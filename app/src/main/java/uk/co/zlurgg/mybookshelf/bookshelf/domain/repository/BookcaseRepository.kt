@@ -12,6 +12,13 @@ interface BookcaseRepository {
     suspend fun updateShelf(shelf: Bookshelf)
 
     /**
+     * Hard deletes a shelf and its cross-refs immediately from Room.
+     * Use for book clubs where Firestore is source of truth and already deleted.
+     * Unlike removeShelf() which soft-deletes for sync, this is immediate.
+     */
+    suspend fun hardDeleteShelf(shelfId: String)
+
+    /**
      * Adds a system shelf (e.g., tutorial shelf) with SystemOwnerIds.TUTORIAL as owner.
      * System shelves are visible to all users and not synced to cloud.
      */

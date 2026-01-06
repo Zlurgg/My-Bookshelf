@@ -394,15 +394,17 @@ class BookClubRepositoryImpl(
 
     /**
      * Cleans up local data for a book club (membership record, shelf, user preferences).
+     * Hard deletes local data since Firestore is source of truth.
      */
     private suspend fun cleanupLocalClubData(code: String, localShelfId: String?, userId: String) {
         // Delete local membership record
         bookClubDao.deleteMembership(code)
 
-        // Delete local shelf if it exists
+        // Hard delete local shelf if it exists (cross-refs first, then shelf)
         if (localShelfId != null) {
+            bookshelfDao.deleteAllCrossRefsForShelf(localShelfId)
             bookshelfDao.deleteShelf(localShelfId)
-            Timber.tag(TAG).d("Deleted local shelf: %s", localShelfId)
+            Timber.tag(TAG).d("Hard deleted local shelf and cross-refs: %s", localShelfId)
         }
 
         // Remove from user's remote preferences (best effort)
@@ -437,10 +439,10 @@ class BookClubRepositoryImpl(
                 isBookClub = false,
                 clubCode = null,
                 clubCreatorId = null,
-                syncStatus = "LOCAL" // No longer syncs with cloud
+                syncStatus = "PENDING" // Sync as personal shelf to user's Firestore
             )
             bookshelfDao.upsertShelf(convertedShelf)
-            Timber.tag(TAG).d("Converted shelf '%s' to personal shelf", shelfEntity.name)
+            Timber.tag(TAG).d("Converted shelf '%s' to personal shelf (will sync)", shelfEntity.name)
         }
 
         // Delete local membership record

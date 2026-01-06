@@ -14,16 +14,19 @@ import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockAuthService
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class ValidateBookClubMembershipsUseCaseImplTest {
 
     private val mockAuthService = MockAuthService()
     private val mockBookClubRepository = MockBookClubRepository()
     private val mockBookcaseRepository = MockBookcaseRepository()
+    private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = ValidateBookClubMembershipsUseCaseImpl(
         mockAuthService,
         mockBookClubRepository,
-        mockBookcaseRepository
+        mockBookcaseRepository,
+        mockSyncSchedulerService
     )
 
     @After
@@ -31,6 +34,7 @@ class ValidateBookClubMembershipsUseCaseImplTest {
         mockAuthService.reset()
         mockBookClubRepository.reset()
         mockBookcaseRepository.reset()
+        mockSyncSchedulerService.reset()
     }
 
     // ========== User Not Signed In Tests ==========

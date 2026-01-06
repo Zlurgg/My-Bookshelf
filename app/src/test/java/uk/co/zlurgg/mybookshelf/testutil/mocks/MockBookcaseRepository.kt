@@ -25,13 +25,16 @@ class MockBookcaseRepository : BookcaseRepository {
     var addShelfCalled = false
     var addSystemShelfCalled = false
     var removeShelfCalled = false
+    var hardDeleteShelfCalled = false
     var updateShelfCalled = false
     var addShelfCallCount = 0
     var addSystemShelfCallCount = 0
     var removeShelfCallCount = 0
+    var hardDeleteShelfCallCount = 0
     var lastAddedShelf: Bookshelf? = null
     var lastAddedSystemShelf: Bookshelf? = null
     var lastRemovedShelfId: String? = null
+    var lastHardDeletedShelfId: String? = null
     var lastUpdatedShelf: Bookshelf? = null
 
     override fun getAllShelves(): Flow<List<Bookshelf>> = flow {
@@ -68,6 +71,16 @@ class MockBookcaseRepository : BookcaseRepository {
         shelves.remove(shelfId)
     }
 
+    override suspend fun hardDeleteShelf(shelfId: String) {
+        hardDeleteShelfCalled = true
+        hardDeleteShelfCallCount++
+        lastHardDeletedShelfId = shelfId
+
+        if (shouldThrowException) throw RuntimeException("Test exception")
+
+        shelves.remove(shelfId)
+    }
+
     override suspend fun updateShelf(shelf: Bookshelf) {
         if (shouldThrowException) throw RuntimeException("Test exception")
         updateShelfCalled = true
@@ -95,13 +108,16 @@ class MockBookcaseRepository : BookcaseRepository {
         addShelfCalled = false
         addSystemShelfCalled = false
         removeShelfCalled = false
+        hardDeleteShelfCalled = false
         updateShelfCalled = false
         addShelfCallCount = 0
         addSystemShelfCallCount = 0
         removeShelfCallCount = 0
+        hardDeleteShelfCallCount = 0
         lastAddedShelf = null
         lastAddedSystemShelf = null
         lastRemovedShelfId = null
+        lastHardDeletedShelfId = null
         lastUpdatedShelf = null
     }
 
