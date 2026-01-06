@@ -225,6 +225,11 @@
     <string name="menu_sign_in">Sign In</string>
     <string name="menu_sign_out">Sign Out</string>
     <string name="menu_join_book_club">Join Book Club</string>
+    <string name="action_sign_in">Sign In</string>
+
+    <!-- Sign In Required dialog -->
+    <string name="sign_in_required_book_clubs_title">Sign In Required</string>
+    <string name="sign_in_required_book_clubs_message">Book Clubs require an account. Please sign in to access this feature.</string>
 
     <!-- Join Book Club dialog -->
     <string name="join_book_club_title">Join Book Club</string>

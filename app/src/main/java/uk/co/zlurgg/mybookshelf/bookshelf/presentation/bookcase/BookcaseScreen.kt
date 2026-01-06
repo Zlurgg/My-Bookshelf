@@ -50,6 +50,7 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
 import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.BookClubPreviewDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.DeleteBookClubDialog
@@ -70,6 +71,7 @@ fun BookcaseScreenRoot(
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableStateOf(BookcaseTab.MY_SHELVES) }
+    var showSignInRequiredDialog by remember { mutableStateOf(false) }
 
     // Switch to book clubs tab when navigating back from creating a book club
     LaunchedEffect(switchToBookClubs) {
@@ -137,10 +139,29 @@ fun BookcaseScreenRoot(
         )
     }
 
+    // Sign in required dialog for guest users attempting Book Clubs
+    if (showSignInRequiredDialog) {
+        SignInRequiredDialog(
+            title = stringResource(R.string.sign_in_required_book_clubs_title),
+            message = stringResource(R.string.sign_in_required_book_clubs_message),
+            onSignIn = {
+                showSignInRequiredDialog = false
+                onSignIn()
+            },
+            onDismiss = { showSignInRequiredDialog = false }
+        )
+    }
+
     BookcaseScreen(
         state = state,
         selectedTab = selectedTab,
-        onTabSelected = { selectedTab = it },
+        onTabSelected = { tab ->
+            if (tab == BookcaseTab.BOOK_CLUBS && !state.isSignedIn) {
+                showSignInRequiredDialog = true
+            } else {
+                selectedTab = tab
+            }
+        },
         showAddBookshelfDialog = showDialog,
         onShowAddBookshelfDialogChange = { showDialog = it },
         onAction = { action ->
@@ -153,6 +174,13 @@ fun BookcaseScreenRoot(
                 }
                 is BookcaseAction.ShowAddDialog -> {
                     showDialog = action.showDialog
+                }
+                is BookcaseAction.OnCreateBookClub -> {
+                    if (!state.isSignedIn) {
+                        showSignInRequiredDialog = true
+                    } else {
+                        viewModel.onAction(action)
+                    }
                 }
                 else -> viewModel.onAction(action)
             }
