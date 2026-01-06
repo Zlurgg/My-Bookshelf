@@ -36,12 +36,12 @@ data class BookcaseState(
     val signedOutSuccessfully: Boolean = false,
     val navigateToSignIn: Boolean = false,
 
-    // Share options state (Book Club)
-    val showShareOptionsDialog: Boolean = false,
-    val shelfToShare: Bookshelf? = null,
+    // Book Club invite state
     val isCreatingBookClub: Boolean = false,
     val bookClubInviteLink: String? = null,
     val bookClubCode: String? = null,
+    val bookClubName: String? = null,
+    val isNewlyCreatedBookClub: Boolean = true,
 
     // Delete Book Club confirmation
     val showDeleteBookClubDialog: Boolean = false,

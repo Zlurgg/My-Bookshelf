@@ -88,7 +88,8 @@ fun BookcaseShelf(
                 onLongClick = callbacks::onLongClick,
                 onChangeStyle = callbacks::onChangeStyle,
                 onDelete = callbacks::onDelete,
-                onShareShelf = callbacks::onShareShelf,
+                onCreateBookClub = callbacks::onCreateBookClub,
+                onInviteToClub = callbacks::onInviteToClub,
                 onDuplicateShelf = callbacks::onDuplicateShelf,
                 onLeaveBookClub = callbacks::onLeaveBookClub
             )
@@ -166,7 +167,8 @@ fun BookcaseShelf(
                 onLongClick = callbacks::onLongClick,
                 onChangeStyle = callbacks::onChangeStyle,
                 onDelete = callbacks::onDelete,
-                onShareShelf = callbacks::onShareShelf,
+                onCreateBookClub = callbacks::onCreateBookClub,
+                onInviteToClub = callbacks::onInviteToClub,
                 onDuplicateShelf = callbacks::onDuplicateShelf,
                 onLeaveBookClub = callbacks::onLeaveBookClub
             )
@@ -184,7 +186,8 @@ fun BookcaseShelfPreview() {
         override fun onLongClick(shelf: Bookshelf) {}
         override fun onChangeStyle(shelf: Bookshelf) {}
         override fun onDelete(shelf: Bookshelf) {}
-        override fun onShareShelf(shelf: Bookshelf) {}
+        override fun onCreateBookClub(shelf: Bookshelf) {}
+        override fun onInviteToClub(shelf: Bookshelf) {}
         override fun onDuplicateShelf(shelf: Bookshelf) {}
         override fun onReorderShelf(shelf: Bookshelf, position: Int) {}
         override fun onLeaveBookClub(shelf: Bookshelf) {}

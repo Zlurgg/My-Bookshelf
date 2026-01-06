@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Palette
@@ -64,7 +65,8 @@ fun BookshelfCard(
     onLongClick: (Bookshelf) -> Unit,
     onChangeStyle: (Bookshelf) -> Unit,
     onDelete: (Bookshelf) -> Unit,
-    onShareShelf: (Bookshelf) -> Unit,
+    onCreateBookClub: (Bookshelf) -> Unit,
+    onInviteToClub: (Bookshelf) -> Unit,
     onDuplicateShelf: (Bookshelf) -> Unit,
     onLeaveBookClub: (Bookshelf) -> Unit,
     modifier: Modifier = Modifier
@@ -228,18 +230,33 @@ fun BookshelfCard(
                                     )
                                 }
                             }
-                            // Only show share for non-tutorial shelves
+                            // Contextual share option - different for personal vs book club shelves
                             if (!isTutorialShelf) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(id = R.string.menu_share_shelf)) },
-                                    onClick = {
-                                        menuExpanded = false
-                                        onShareShelf(shelf)
-                                    },
-                                    leadingIcon = {
-                                        Icon(Icons.Default.Share, contentDescription = null)
-                                    }
-                                )
+                                if (shelf.isBookClub) {
+                                    // Book club: Show "Invite" to share with others
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.menu_invite_to_club)) },
+                                        onClick = {
+                                            menuExpanded = false
+                                            onInviteToClub(shelf)
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Share, contentDescription = null)
+                                        }
+                                    )
+                                } else {
+                                    // Personal shelf: Show "Create Book Club"
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.menu_create_book_club)) },
+                                        onClick = {
+                                            menuExpanded = false
+                                            onCreateBookClub(shelf)
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Groups, contentDescription = null)
+                                        }
+                                    )
+                                }
                             }
                             // Only show duplicate/personal copy for non-tutorial shelves
                             if (!isTutorialShelf) {
@@ -284,7 +301,8 @@ fun BookshelfCardPreview() {
                 onLongClick = {},
                 onChangeStyle = {},
                 onDelete = {},
-                onShareShelf = {},
+                onCreateBookClub = {},
+                onInviteToClub = {},
                 onDuplicateShelf = {},
                 onLeaveBookClub = {}
             )
@@ -298,7 +316,8 @@ fun BookshelfCardPreview() {
                 onLongClick = {},
                 onChangeStyle = {},
                 onDelete = {},
-                onShareShelf = {},
+                onCreateBookClub = {},
+                onInviteToClub = {},
                 onDuplicateShelf = {},
                 onLeaveBookClub = {}
             )

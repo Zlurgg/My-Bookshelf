@@ -46,8 +46,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.ShareOptionsDialog
 
 @Composable
 fun BookshelfScreenRoot(
@@ -55,7 +53,6 @@ fun BookshelfScreenRoot(
     onAddBookClick: (Book) -> Unit,
     onBookClick: (Book) -> Unit,
     onBackClick: () -> Unit,
-    onNavigateToBookClubs: () -> Unit = {},
     shelfName: String? = null,
     shelfMaterial: ShelfMaterial? = null,
 ) {
@@ -75,8 +72,7 @@ fun BookshelfScreenRoot(
                 is BookshelfAction.OnBackClick -> onBackClick()
                 else -> viewModel.onAction(action)
             }
-        },
-        onNavigateToBookClubs = onNavigateToBookClubs
+        }
     )
 }
 
@@ -86,7 +82,6 @@ fun BookshelfScreenRoot(
 fun BookshelfScreen(
     state: BookshelfState,
     onAction: (BookshelfAction) -> Unit,
-    onNavigateToBookClubs: () -> Unit = {},
 ) {
     // Use books in their original order (no forced sorting)
     val books = state.books
@@ -146,7 +141,7 @@ fun BookshelfScreen(
                     FloatingActionButton(
                         onClick = {
                             if (state.books.isNotEmpty()) {
-                                onAction(BookshelfAction.OnShowShareOptions)
+                                onAction(BookshelfAction.OnShareShelf)
                             }
                         },
                         modifier = Modifier.size(56.dp),
@@ -156,7 +151,7 @@ fun BookshelfScreen(
                             MaterialTheme.colorScheme.primaryContainer
                         }
                     ) {
-                        if (state.isShareLoading || state.isCreatingBookClub) {
+                        if (state.isShareLoading) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp))
                         } else {
                             Icon(
@@ -333,31 +328,6 @@ fun BookshelfScreen(
         )
     }
 
-    // Share options dialog
-    if (state.isShareOptionsVisible) {
-        ShareOptionsDialog(
-            onDismiss = { onAction(BookshelfAction.OnDismissShareOptions) },
-            onShareCopy = { onAction(BookshelfAction.OnShareCopy) },
-            onCreateBookClub = { onAction(BookshelfAction.OnCreateBookClub) }
-        )
-    }
-
-    // Book club invite link dialog
-    state.bookClubInviteLink?.let { inviteLink ->
-        InviteLinkDialog(
-            clubCode = state.bookClubCode ?: "",
-            inviteLink = inviteLink,
-            clubName = state.shelfName,
-            isNewClub = state.isNewlyCreatedBookClub,
-            onDismiss = {
-                onAction(BookshelfAction.OnDismissInviteLink)
-                // Navigate to book clubs tab after creating a book club (only if newly created)
-                if (state.isNewlyCreatedBookClub) {
-                    onNavigateToBookClubs()
-                }
-            }
-        )
-    }
 }
 
 @Preview(showBackground = true)

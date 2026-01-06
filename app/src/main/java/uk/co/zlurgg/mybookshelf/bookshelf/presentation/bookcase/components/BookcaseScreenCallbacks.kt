@@ -40,8 +40,12 @@ fun createShelfCallbacks(
         }
     }
 
-    override fun onShareShelf(shelf: Bookshelf) {
-        onAction(BookcaseAction.OnShareShelfClick(shelf))
+    override fun onCreateBookClub(shelf: Bookshelf) {
+        onAction(BookcaseAction.OnCreateBookClub(shelf))
+    }
+
+    override fun onInviteToClub(shelf: Bookshelf) {
+        onAction(BookcaseAction.OnInviteToClub(shelf))
     }
 
     override fun onDuplicateShelf(shelf: Bookshelf) {

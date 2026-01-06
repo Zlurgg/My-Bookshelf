@@ -56,7 +56,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.Delet
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.JoinBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.LeaveBookClubDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.ShareOptionsDialog
 
 @Composable
 fun BookcaseScreenRoot(
@@ -379,21 +378,13 @@ fun BookcaseScreen(
         )
     }
 
-    // Share options dialog
-    if (state.showShareOptionsDialog) {
-        ShareOptionsDialog(
-            onDismiss = { onAction(BookcaseAction.DismissShareOptions) },
-            onShareCopy = { onAction(BookcaseAction.OnShareCopy) },
-            onCreateBookClub = { onAction(BookcaseAction.OnCreateBookClub) }
-        )
-    }
-
     // Book club invite link dialog
     state.bookClubInviteLink?.let { inviteLink ->
         InviteLinkDialog(
             clubCode = state.bookClubCode ?: "",
             inviteLink = inviteLink,
-            clubName = state.shelfToShare?.name ?: "",
+            clubName = state.bookClubName ?: "",
+            isNewClub = state.isNewlyCreatedBookClub,
             onDismiss = { onAction(BookcaseAction.DismissInviteLink) }
         )
     }

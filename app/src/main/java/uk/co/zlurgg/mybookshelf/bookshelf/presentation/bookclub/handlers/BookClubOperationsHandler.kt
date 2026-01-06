@@ -117,6 +117,17 @@ class BookClubOperationsHandler(
     }
 
     /**
+     * Generates an invite link for an existing book club.
+     *
+     * @param clubCode The club code
+     * @param shelfName The name of the shelf (optional, defaults to "Book Club")
+     * @return The invite link URL
+     */
+    fun generateInviteLink(clubCode: String, shelfName: String = "Book Club"): String {
+        return bookClubUseCases.generateInviteLink.execute(clubCode, shelfName)
+    }
+
+    /**
      * Syncs books from a book club to the local shelf.
      * Fetches new books added by other members and removes deleted ones.
      *

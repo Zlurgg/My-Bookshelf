@@ -23,12 +23,7 @@ data class BookshelfState(
     val isShareLoading: Boolean = false,
     val isTutorialShelf: Boolean = false,  // Tutorial shelf has restricted actions
 
-    // Book Club state
-    val isShareOptionsVisible: Boolean = false,
-    val isCreatingBookClub: Boolean = false,
-    val bookClubInviteLink: String? = null,  // Non-null when invite link sheet should show
-    val bookClubCode: String? = null,
-    val isNewlyCreatedBookClub: Boolean = true, // false when showing existing club's code
+    // Book Club state (read-only for display)
     val isBookClub: Boolean = false,
     val clubCode: String? = null,
     val isSyncing: Boolean = false,

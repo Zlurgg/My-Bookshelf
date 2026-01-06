@@ -177,11 +177,6 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                             }
                         },
                         onBackClick = { navController.popBackStack() },
-                        onNavigateToBookClubs = {
-                            navController.navigate(NavigationRoute.Bookcase.createRoute(switchToBookClubs = true)) {
-                                popUpTo(NavigationRoute.Bookcase.ROUTE) { inclusive = true }
-                            }
-                        },
                         shelfName = state.shelfName,
                         shelfMaterial = state.shelfMaterial,
                     )

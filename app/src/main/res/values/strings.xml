@@ -140,6 +140,8 @@
     <string name="menu_share_shelf">Share</string>
     <string name="menu_duplicate_shelf">Duplicate</string>
     <string name="menu_save_personal_copy">Save Personal Copy</string>
+    <string name="menu_create_book_club">Create Book Club</string>
+    <string name="menu_invite_to_club">Invite</string>
 
     <!-- Deep link import -->
     <string name="import_success_title">Import Successful</string>

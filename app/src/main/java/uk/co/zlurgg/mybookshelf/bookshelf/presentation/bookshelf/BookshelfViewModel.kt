@@ -131,29 +131,6 @@ class BookshelfViewModel(
                     queryFlow.value = currentQuery  // Triggers debounced search
                 }
             }
-
-            // Book Club Actions
-            BookshelfAction.OnShowShareOptions -> {
-                _state.update { it.copy(isShareOptionsVisible = true) }
-            }
-            BookshelfAction.OnDismissShareOptions -> {
-                _state.update { it.copy(isShareOptionsVisible = false) }
-            }
-            BookshelfAction.OnShareCopy -> {
-                _state.update { it.copy(isShareOptionsVisible = false) }
-                shareShelf()
-            }
-            BookshelfAction.OnCreateBookClub -> {
-                _state.update { it.copy(isShareOptionsVisible = false) }
-                createBookClub()
-            }
-            BookshelfAction.OnDismissInviteLink -> {
-                _state.update { it.copy(bookClubInviteLink = null, bookClubCode = null) }
-            }
-            BookshelfAction.OnCopyInviteLink -> {
-                // Copy is handled by the UI, just dismiss
-                _state.update { it.copy(bookClubInviteLink = null, bookClubCode = null) }
-            }
             else -> Unit
         }
     }
@@ -322,35 +299,6 @@ class BookshelfViewModel(
                         it.copy(
                             isShareLoading = false,
                             errorMessage = ErrorFormatter.formatDataErrorMessage(shareResult.error, "share bookshelf")
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun createBookClub() {
-        viewModelScope.launch {
-            // Check if shelf was already a book club before calling create
-            val wasAlreadyBookClub = _state.value.isBookClub
-            _state.update { it.copy(isCreatingBookClub = true, errorMessage = null) }
-
-            when (val createResult = bookClubOperations.createBookClub(shelfId, _state.value.shelfName)) {
-                is Result.Success -> {
-                    _state.update {
-                        it.copy(
-                            isCreatingBookClub = false,
-                            bookClubCode = createResult.data.clubCode,
-                            bookClubInviteLink = createResult.data.inviteLink,
-                            isNewlyCreatedBookClub = !wasAlreadyBookClub // false if was already a club
-                        )
-                    }
-                }
-                is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            isCreatingBookClub = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(createResult.error, "create book club")
                         )
                     }
                 }
