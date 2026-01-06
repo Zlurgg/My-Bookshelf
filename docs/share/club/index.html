@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Import Bookshelf - MyBookshelf</title>
+    <title id="page-title">Join Book Club - MyBookshelf</title>
     <style>
         * {
             margin: 0;
@@ -31,7 +31,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: url('../assets/shelf_wood_textured_brown.jpg');
+            background-image: url('../../assets/shelf_wood_textured_brown.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -192,17 +192,6 @@
             transform: translateY(0);
         }
 
-        .secondary-btn {
-            background: transparent;
-            color: #6D4C41;
-            border: 2px solid #D7CCC8;
-        }
-
-        .secondary-btn:hover {
-            background: rgba(109, 76, 65, 0.05);
-            border-color: #6D4C41;
-        }
-
         .instructions {
             margin-top: 1.5rem;
             padding: 1.25rem;
@@ -272,21 +261,21 @@
 <body>
     <div class="container">
         <div id="main-section" class="loading">
-            <div class="book-icon">📖</div>
-            <h1 id="bookshelf-title" onclick="launchApp()">
-                Loading Bookshelf...
+            <div class="book-icon">📚</div>
+            <h1 id="bookclub-title" onclick="launchApp()">
+                Loading Book Club...
             </h1>
-            <p class="subtitle">Tap the title above to open in MyBookshelf</p>
+            <p class="subtitle">Tap the title above to join this Book Club</p>
 
             <div class="action-hint">
-                👆 Click to import into your collection
+                👆 Click to join this Book Club
             </div>
 
             <div id="fallback-info" class="fallback">
                 <div class="divider"></div>
 
                 <h2>📱 MyBookshelf Not Installed?</h2>
-                <p>Download the app to import this bookshelf into your collection.</p>
+                <p>Download the app to join this Book Club and share your reading with friends.</p>
 
                 <a href="https://github.com/Zlurgg/My-Bookshelf/releases/latest" class="download-btn">
                     📦 Download MyBookshelf
@@ -297,67 +286,35 @@
                 </p>
 
                 <div class="instructions">
-                    <strong>📋 How to import this bookshelf:</strong>
+                    <strong>📋 How to join this Book Club:</strong>
                     1. Download and install MyBookshelf APK<br>
-                    2. Return to this page and tap the title above<br>
-                    3. The bookshelf will be imported automatically!
+                    2. Sign in with your Google account<br>
+                    3. Return to this page and tap the title above<br>
+                    4. You'll be added to the Book Club automatically!
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let shareToken = '';
-        let bookshelfName = '';
-        let appLaunchAttempted = false;
-        let isBookClubInvite = false;
+        let bookClubName = '';
         let bookClubCode = '';
-
-        function isBookClubUrl() {
-            // Check if path contains /club
-            return window.location.pathname.includes('/club');
-        }
+        let appLaunchAttempted = false;
 
         function getBookClubCode() {
             const params = new URLSearchParams(window.location.search);
             return params.get('code') || '';
         }
 
-        function getBookshelfNameFromUrl() {
+        function getBookClubName() {
             const params = new URLSearchParams(window.location.search);
             return params.get('name') || null;
         }
 
-        function getTokenFromUrl() {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(window.location.search);
-            const encodedToken = hash || params.get('token') || params.get('t');
-            return encodedToken ? decodeURIComponent(encodedToken) : '';
-        }
-
-        function updatePageTitle(shelfName = 'Bookshelf') {
-            bookshelfName = shelfName;
-            if (isBookClubInvite) {
-                document.getElementById('page-title').textContent = `Join ${bookshelfName} - MyBookshelf`;
-                document.getElementById('bookshelf-title').textContent = `Join "${bookshelfName}"`;
-                document.querySelector('.subtitle').textContent = 'Tap the title above to join this Book Club';
-                document.querySelector('.action-hint').innerHTML = '👆 Click to join this Book Club';
-                document.querySelector('.book-icon').textContent = '📚';
-            } else {
-                document.getElementById('page-title').textContent = `${bookshelfName} - MyBookshelf`;
-                document.getElementById('bookshelf-title').textContent = bookshelfName;
-            }
-        }
-
-        function extractShelfNameFromToken() {
-            try {
-                const token = getTokenFromUrl();
-                if (!token) return null;
-                return null;
-            } catch (e) {
-                console.log('Could not extract shelf name from token:', e);
-                return null;
-            }
+        function updatePageTitle(clubName = 'Book Club') {
+            bookClubName = clubName;
+            document.getElementById('page-title').textContent = `Join ${bookClubName} - MyBookshelf`;
+            document.getElementById('bookclub-title').textContent = `Join "${bookClubName}"`;
         }
 
         function launchApp() {
@@ -365,27 +322,16 @@
         }
 
         function attemptAppLaunch() {
-            let appUrl;
+            bookClubCode = getBookClubCode();
 
-            if (isBookClubInvite) {
-                // Book Club invite link
-                bookClubCode = getBookClubCode();
-                if (!bookClubCode) {
-                    showFallback();
-                    return;
-                }
-                console.log('Attempting to launch app with club code:', bookClubCode);
-                appUrl = `mybookshelf://club/${bookClubCode}`;
-            } else {
-                // Personal shelf share link
-                shareToken = getTokenFromUrl();
-                if (!shareToken) {
-                    showFallback();
-                    return;
-                }
-                console.log('Attempting to launch app with token:', shareToken.substring(0, 20) + '...');
-                appUrl = `mybookshelf://share/${shareToken}`;
+            if (!bookClubCode) {
+                showFallback();
+                return;
             }
+
+            console.log('Attempting to launch app with club code:', bookClubCode);
+
+            const appUrl = `mybookshelf://club/${bookClubCode}`;
 
             // Direct navigation
             window.location.href = appUrl;
@@ -410,19 +356,10 @@
 
         // Initialize
         window.onload = function() {
-            console.log('Share page loaded');
+            console.log('Book Club invite page loaded');
 
-            // Detect if this is a book club invite
-            isBookClubInvite = isBookClubUrl();
-
-            const nameFromUrl = getBookshelfNameFromUrl();
-            const nameFromToken = extractShelfNameFromToken();
-
-            if (isBookClubInvite) {
-                updatePageTitle(nameFromUrl || 'Book Club');
-            } else {
-                updatePageTitle(nameFromUrl || nameFromToken || 'Bookshelf');
-            }
+            const nameFromUrl = getBookClubName();
+            updatePageTitle(nameFromUrl || 'Book Club');
         };
 
         // Handle visibility change

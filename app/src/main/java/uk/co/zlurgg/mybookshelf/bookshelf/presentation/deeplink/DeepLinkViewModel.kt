@@ -27,7 +27,17 @@ class DeepLinkViewModel(
             is DeepLinkAction.OnDismissSuccess -> dismissSuccess()
             is DeepLinkAction.OnDismissNameConflict -> dismissNameConflict()
             is DeepLinkAction.ResolveNameConflictWithNewName -> resolveNameConflict(action.jsonData, action.newName)
+            is DeepLinkAction.ReceiveBookClubInvite -> receiveBookClubInvite(action.code)
+            is DeepLinkAction.ClearBookClubInvite -> clearBookClubInvite()
         }
+    }
+
+    private fun receiveBookClubInvite(code: String) {
+        _state.update { it.copy(pendingClubCode = code) }
+    }
+
+    private fun clearBookClubInvite() {
+        _state.update { it.copy(pendingClubCode = null) }
     }
 
     private fun importFromToken(token: String) {

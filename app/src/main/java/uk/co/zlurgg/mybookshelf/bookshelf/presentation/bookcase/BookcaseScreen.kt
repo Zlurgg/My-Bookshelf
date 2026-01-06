@@ -35,7 +35,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose
 import uk.co.zlurgg.mybookshelf.BuildConfig
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
@@ -77,6 +80,18 @@ fun BookcaseScreenRoot(
     var showDialog by remember { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableStateOf(BookcaseTab.MY_SHELVES) }
     var showSignInRequiredDialog by remember { mutableStateOf(false) }
+
+    // Observe deep link ViewModel for pending book club invites
+    val deepLinkViewModel = koinViewModelCompose<DeepLinkViewModel>()
+    val deepLinkState by deepLinkViewModel.state.collectAsStateWithLifecycle()
+
+    // Handle pending book club invite from deep link
+    LaunchedEffect(deepLinkState.pendingClubCode) {
+        deepLinkState.pendingClubCode?.let { code ->
+            viewModel.onAction(BookcaseAction.HandleInviteLink(code))
+            deepLinkViewModel.onAction(DeepLinkAction.ClearBookClubInvite)
+        }
+    }
 
     // Switch to book clubs tab when navigating back from creating a book club
     LaunchedEffect(switchToBookClubs) {

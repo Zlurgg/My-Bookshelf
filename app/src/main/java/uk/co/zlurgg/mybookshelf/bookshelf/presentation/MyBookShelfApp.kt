@@ -255,10 +255,22 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
 }
 
 private fun handleDeepLink(uri: Uri, deepLinkViewModel: DeepLinkViewModel) {
-    if (uri.scheme == "mybookshelf" && uri.host == "share") {
-        val token = uri.path?.removePrefix("/") // Remove leading slash
-        if (!token.isNullOrBlank()) {
-            deepLinkViewModel.onAction(DeepLinkAction.ImportFromToken(token))
+    if (uri.scheme != "mybookshelf") return
+
+    when (uri.host) {
+        "share" -> {
+            // Personal shelf import: mybookshelf://share/{token}
+            val token = uri.path?.removePrefix("/")
+            if (!token.isNullOrBlank()) {
+                deepLinkViewModel.onAction(DeepLinkAction.ImportFromToken(token))
+            }
+        }
+        "club" -> {
+            // Book club invite: mybookshelf://club/{code}
+            val code = uri.path?.removePrefix("/")
+            if (!code.isNullOrBlank()) {
+                deepLinkViewModel.onAction(DeepLinkAction.ReceiveBookClubInvite(code))
+            }
         }
     }
 }
