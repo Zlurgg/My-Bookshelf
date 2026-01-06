@@ -118,7 +118,7 @@ class RenameShelfUseCaseTest {
     }
 
     @Test
-    fun `returns error when new name conflicts with existing shelf`() = runTest {
+    fun `allows renaming to existing shelf name (duplicates allowed)`() = runTest {
         // Given - Two shelves, trying to rename to existing name
         val shelfToRename = TestShelfBuilder()
             .withId("shelf-1")
@@ -133,13 +133,13 @@ class RenameShelfUseCaseTest {
         mockRepository.shelfByIdToReturn = shelfToRename
         mockRepository.configureShelves(listOf(shelfToRename, existingShelf))
 
-        // When - Try to rename to existing shelf's name
+        // When - Rename to existing shelf's name (now allowed)
         val result = useCase.execute("shelf-1", "Science Fiction")
 
-        // Then
-        assertTrue("Should return error", result is Result.Error)
-        val error = (result as Result.Error).error
-        assertEquals("Should return NAME_CONFLICT error", DataError.Local.NAME_CONFLICT, error)
+        // Then - Should succeed (duplicate names are allowed)
+        assertTrue("Should return success", result is Result.Success)
+        assertTrue("Should call updateShelf", mockRepository.updateShelfCalled)
+        assertEquals("Should have new name", "Science Fiction", mockRepository.lastUpdatedShelf?.name)
     }
 
     @Test

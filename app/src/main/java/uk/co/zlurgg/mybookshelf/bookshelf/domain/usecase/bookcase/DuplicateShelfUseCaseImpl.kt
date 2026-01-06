@@ -28,22 +28,15 @@ class DuplicateShelfUseCaseImpl(
             // Get all books from the original shelf
             val books = bookshelfRepository.getBooksForShelf(shelfId).first()
 
-            // Get existing shelf names to ensure uniqueness
-            val allShelves = bookcaseRepository.getAllShelves().first()
-            val existingNames = allShelves
-                .filter { shelf -> !shelf.isBookClub }
-                .map { shelf -> shelf.name.lowercase() }
-                .toSet()
-
-            // Generate unique name
-            val baseName = if (originalShelf.isBookClub) originalShelf.name else "Copy of ${originalShelf.name}"
-            val uniqueName = generateUniqueName(baseName, existingNames)
+            // Generate name for duplicate
+            // Note: Duplicate names are allowed - users can have multiple shelves with the same name
+            val duplicateName = if (originalShelf.isBookClub) originalShelf.name else "Copy of ${originalShelf.name}"
 
             // Create duplicated shelf with new ID and name
             // Always create as personal shelf (reset book club properties)
             val duplicatedShelf = originalShelf.copy(
                 id = idGenerator.generateId(),
-                name = uniqueName,
+                name = duplicateName,
                 books = books,
                 position = Int.MAX_VALUE, // Will be positioned at the end
                 isBookClub = false,
@@ -64,26 +57,6 @@ class DuplicateShelfUseCaseImpl(
             syncSchedulerService.triggerImmediateSync()
 
             duplicatedShelf
-        }
-    }
-
-    /**
-     * Generates a unique shelf name by appending a number suffix if the base name already exists.
-     * Example: "My Shelf" -> "My Shelf (2)" -> "My Shelf (3)" etc.
-     */
-    private fun generateUniqueName(baseName: String, existingNames: Set<String>): String {
-        val baseNameLower = baseName.lowercase()
-        if (baseNameLower !in existingNames) {
-            return baseName
-        }
-
-        var counter = 2
-        while (true) {
-            val candidateName = "$baseName ($counter)"
-            if (candidateName.lowercase() !in existingNames) {
-                return candidateName
-            }
-            counter++
         }
     }
 }

@@ -706,25 +706,12 @@ class BookClubRepositoryImpl(
         return Result.Success(uploadedCount)
     }
 
-    private suspend fun generateUniqueShelfName(clubName: String): String {
-        // Use club name directly - badge [BC] will indicate it's a book club
-        val baseName = clubName
-
-        // Check if name exists
-        bookshelfDao.getShelfByName(baseName) ?: return baseName
-
-        // Find unique name with numeric suffix
-        var counter = 2
-        while (true) {
-            val candidateName = "$clubName $counter"
-            bookshelfDao.getShelfByName(candidateName) ?: return candidateName
-            counter++
-            if (counter > 100) {
-                // Safety limit - just use the base name and let it overwrite
-                Timber.tag(TAG).w("Could not find unique name after 100 attempts")
-                return baseName
-            }
-        }
+    /**
+     * Returns the shelf name for a book club.
+     * Users can have multiple shelves with the same name - the [BC] badge distinguishes book clubs.
+     */
+    private fun generateUniqueShelfName(clubName: String): String {
+        return clubName
     }
 
     private suspend fun downloadClubBooksToShelf(

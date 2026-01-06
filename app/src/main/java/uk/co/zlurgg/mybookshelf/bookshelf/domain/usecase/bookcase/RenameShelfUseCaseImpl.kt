@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
-import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -11,7 +10,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of RenameShelfUseCase.
- * Validates new name against existing shelves and updates the repository.
+ * Validates new name is not blank and updates the repository.
+ * Duplicate names are allowed - users can have multiple shelves with the same name.
  */
 class RenameShelfUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
@@ -32,17 +32,7 @@ class RenameShelfUseCaseImpl(
             val shelfToRename = bookcaseRepository.getShelfById(shelfId)
                 ?: return Result.Error(DataError.Local.NOT_FOUND)
 
-            // Get all shelves to check for name conflicts
-            val allShelves = bookcaseRepository.getAllShelves().first()
-
-            // Check for name conflict (case insensitive, excluding self)
-            val hasConflict = allShelves.any { shelf ->
-                shelf.id != shelfId && shelf.name.equals(trimmedName, ignoreCase = true)
-            }
-
-            if (hasConflict) {
-                return Result.Error(DataError.Local.NAME_CONFLICT)
-            }
+            // Note: Duplicate names are allowed - users can have multiple shelves with the same name
 
             // Update the shelf with new name
             val updatedShelf = shelfToRename.copy(name = trimmedName)

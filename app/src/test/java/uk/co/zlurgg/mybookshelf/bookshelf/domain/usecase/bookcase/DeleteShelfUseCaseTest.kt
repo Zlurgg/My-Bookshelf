@@ -41,6 +41,8 @@ class DeleteShelfUseCaseTest {
         override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun syncBooksFromClub(code: String, localShelfId: String): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
         override suspend fun leaveBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun convertClubToPersonalShelf(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+
         override suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
