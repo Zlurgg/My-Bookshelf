@@ -9,9 +9,14 @@ fun createShelfCallbacks(
     currentUserId: String? = null
 ): ShelfCallbacks = object : ShelfCallbacks {
     override fun onRemoveBookshelf(shelf: Bookshelf) {
-        // For book clubs owned by the user, show confirmation dialog
-        if (shelf.isBookClub && shelf.clubCreatorId == currentUserId) {
-            onAction(BookcaseAction.ShowDeleteBookClubDialog(shelf))
+        if (shelf.isBookClub) {
+            if (shelf.clubCreatorId == currentUserId) {
+                // Owner deletes the book club
+                onAction(BookcaseAction.ShowDeleteBookClubDialog(shelf))
+            } else {
+                // Member leaves the book club
+                onAction(BookcaseAction.ShowLeaveBookClubDialog(shelf))
+            }
         } else {
             onAction(BookcaseAction.OnRemoveBookShelf(shelf))
         }
@@ -32,9 +37,14 @@ fun createShelfCallbacks(
     }
 
     override fun onDelete(shelf: Bookshelf) {
-        // For book clubs owned by the user, show confirmation dialog
-        if (shelf.isBookClub && shelf.clubCreatorId == currentUserId) {
-            onAction(BookcaseAction.ShowDeleteBookClubDialog(shelf))
+        if (shelf.isBookClub) {
+            if (shelf.clubCreatorId == currentUserId) {
+                // Owner deletes the book club
+                onAction(BookcaseAction.ShowDeleteBookClubDialog(shelf))
+            } else {
+                // Member leaves the book club
+                onAction(BookcaseAction.ShowLeaveBookClubDialog(shelf))
+            }
         } else {
             onAction(BookcaseAction.OnRemoveBookShelf(shelf))
         }
