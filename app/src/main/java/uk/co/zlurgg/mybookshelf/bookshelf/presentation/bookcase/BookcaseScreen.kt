@@ -121,6 +121,14 @@ fun BookcaseScreenRoot(
         }
     }
 
+    // Switch to Book Clubs tab after creating a book club
+    LaunchedEffect(state.switchToBookClubsTab) {
+        if (state.switchToBookClubsTab) {
+            selectedTab = BookcaseTab.BOOK_CLUBS
+            viewModel.onAction(BookcaseAction.ResetSwitchToBookClubsTab)
+        }
+    }
+
     // Show sign out confirmation dialog
     if (state.showSignOutDialog) {
         SignOutDialog(

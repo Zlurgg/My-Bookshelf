@@ -66,8 +66,9 @@ data class BookcaseState(
     // For invite link - pre-filled code
     val pendingInviteCode: String? = null,
 
-    // Tab navigation after personal copy
+    // Tab navigation after operations
     val switchToPersonalTab: Boolean = false,
+    val switchToBookClubsTab: Boolean = false,
 
     // Converted book clubs notification (clubs deleted by creator, converted to personal shelves)
     val deletedBookClubNames: List<String> = emptyList(),

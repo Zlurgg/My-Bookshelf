@@ -195,6 +195,10 @@ class BookcaseViewModel(
                 _state.update { it.copy(switchToPersonalTab = false) }
             }
 
+            is BookcaseAction.ResetSwitchToBookClubsTab -> {
+                _state.update { it.copy(switchToBookClubsTab = false) }
+            }
+
             // Book Club Actions
             is BookcaseAction.OnCreateBookClub -> {
                 createBookClub(action.shelf)
@@ -573,7 +577,8 @@ class BookcaseViewModel(
                             bookClubCode = createResult.data.clubCode,
                             bookClubInviteLink = createResult.data.inviteLink,
                             bookClubName = shelf.name,
-                            isNewlyCreatedBookClub = true
+                            isNewlyCreatedBookClub = true,
+                            switchToBookClubsTab = true
                         )
                     }
                 }
