@@ -297,4 +297,11 @@
     </plurals>
     <string name="import_guest_data_warning">If you skip, this data will remain unassigned and won\'t appear in your account.</string>
     <string name="action_skip">Skip</string>
+
+    <!-- Shelf limits -->
+    <string name="shelf_limit_counter">%1$d / %2$d</string>
+    <string name="shelf_limit_reached_title">Shelf Limit Reached</string>
+    <string name="shelf_limit_reached_message">You\'ve reached the maximum of %1$d shelves. Delete a shelf to create a new one.</string>
+    <string name="book_club_limit_reached_title">Book Club Limit Reached</string>
+    <string name="book_club_limit_reached_message">You can have a maximum of %1$d book clubs. Leave a club to create or join another.</string>
 </resources>

@@ -42,6 +42,7 @@ object ErrorFormatter {
             DataError.Local.AUTH_FAILED -> "Sign-in failed. Please try again."
             DataError.Local.AUTH_NETWORK_ERROR -> "Network error during sign-in. Please check your connection."
             DataError.Local.PERMISSION_DENIED -> "You don't have permission to perform this action."
+            DataError.Local.MAX_SHELVES_REACHED -> "You've reached the maximum of 20 shelves."
             DataError.Local.UNKNOWN -> "Unknown local error occurred."
 
             // Validation errors
@@ -67,6 +68,7 @@ object ErrorFormatter {
             DataError.Sync.ALREADY_MEMBER -> "You're already a member of this book club."
             DataError.Sync.NOT_MEMBER -> "You're not a member of this book club."
             DataError.Sync.CREATOR_CANNOT_LEAVE -> "As the creator, you cannot leave. Delete the club instead."
+            DataError.Sync.MAX_BOOK_CLUBS_REACHED -> "You can have a maximum of 5 book clubs."
             DataError.Sync.UNKNOWN -> "Unknown sync error occurred."
         }
 

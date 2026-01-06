@@ -1,6 +1,9 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,7 +47,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.Chang
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.RenameShelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.SettingsMenu
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfDisplayState
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfLimitDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.createShelfCallbacks
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
@@ -308,8 +313,26 @@ fun BookcaseScreen(
         },
         modifier = Modifier.fillMaxSize()
     ) { padding ->
+        // Counter showing current/max shelves
+        val maxCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) 5 else ShelfOperationsHandler.MAX_PERSONAL_SHELVES
+        val currentCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) state.bookClubCount else state.personalShelfCount
+
         if (!state.isLoading && displayedShelves.isEmpty()) {
             LazyColumn(contentPadding = padding) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = stringResource(R.string.shelf_limit_counter, currentCount, maxCount),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
                 item {
                     Text(
                         text = stringResource(
@@ -324,6 +347,20 @@ fun BookcaseScreen(
             }
         } else {
             LazyColumn(contentPadding = padding) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = stringResource(R.string.shelf_limit_counter, currentCount, maxCount),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
                 items(
                     items = displayedShelves,
                     key = { it.id }
@@ -461,6 +498,24 @@ fun BookcaseScreen(
             clubName = state.shelfToLeave.name,
             onConfirm = { onAction(BookcaseAction.ConfirmLeaveBookClub) },
             onDismiss = { onAction(BookcaseAction.DismissLeaveBookClubDialog) }
+        )
+    }
+
+    // Shelf limit reached dialog
+    if (state.showShelfLimitDialog) {
+        ShelfLimitDialog(
+            title = stringResource(R.string.shelf_limit_reached_title),
+            message = stringResource(R.string.shelf_limit_reached_message, ShelfOperationsHandler.MAX_PERSONAL_SHELVES),
+            onDismiss = { onAction(BookcaseAction.DismissShelfLimitDialog) }
+        )
+    }
+
+    // Book club limit reached dialog
+    if (state.showBookClubLimitDialog) {
+        ShelfLimitDialog(
+            title = stringResource(R.string.book_club_limit_reached_title),
+            message = stringResource(R.string.book_club_limit_reached_message, 5),
+            onDismiss = { onAction(BookcaseAction.DismissBookClubLimitDialog) }
         )
     }
 

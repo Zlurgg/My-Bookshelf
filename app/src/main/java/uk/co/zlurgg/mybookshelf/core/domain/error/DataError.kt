@@ -32,6 +32,7 @@ sealed interface DataError: Error {
         AUTH_FAILED,
         AUTH_NETWORK_ERROR,
         PERMISSION_DENIED,
+        MAX_SHELVES_REACHED,
         UNKNOWN
     }
 
@@ -59,6 +60,7 @@ sealed interface DataError: Error {
         ALREADY_MEMBER,         // User already in this book club
         NOT_MEMBER,             // User not a member of this book club
         CREATOR_CANNOT_LEAVE,   // Creator must delete the club instead of leaving
+        MAX_BOOK_CLUBS_REACHED, // User has reached maximum book clubs limit
         UNKNOWN
     }
 }

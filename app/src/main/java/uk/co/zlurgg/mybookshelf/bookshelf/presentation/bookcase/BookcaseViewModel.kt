@@ -14,6 +14,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
@@ -347,6 +348,14 @@ class BookcaseViewModel(
             is BookcaseAction.DismissDeletedBookClubsNotification -> {
                 _state.update { it.copy(deletedBookClubNames = emptyList()) }
             }
+
+            is BookcaseAction.DismissShelfLimitDialog -> {
+                _state.update { it.copy(showShelfLimitDialog = false) }
+            }
+
+            is BookcaseAction.DismissBookClubLimitDialog -> {
+                _state.update { it.copy(showBookClubLimitDialog = false) }
+            }
         }
     }
 
@@ -357,7 +366,11 @@ class BookcaseViewModel(
                     _state.update { it.withShelfAdded(result.data) }
                 }
                 is Result.Error -> {
-                    _state.update { it.withError(result.error, "add shelf") }
+                    if (result.error == DataError.Local.MAX_SHELVES_REACHED) {
+                        _state.update { it.copy(showShelfLimitDialog = true) }
+                    } else {
+                        _state.update { it.withError(result.error, "add shelf") }
+                    }
                 }
             }
         }
@@ -377,13 +390,21 @@ class BookcaseViewModel(
                     _state.update { it.withError(error, "load shelves") }
                 }
                 .collect { bookcase ->
+                    // Calculate shelf counts for limit display
+                    val personalCount = bookcase.bookshelves.count {
+                        !it.isBookClub && it.name != BookshelfConstants.TUTORIAL_SHELF_NAME
+                    }
+                    val clubCount = bookcase.bookshelves.count { it.isBookClub }
+
                     _state.update {
                         it.copy(
                             bookshelves = bookcase.bookshelves,
                             bookCounts = bookcase.bookCounts,
                             isLoading = false,
                             errorMessage = null,
-                            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(bookcase.bookshelves)}"
+                            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(bookcase.bookshelves)}",
+                            personalShelfCount = personalCount,
+                            bookClubCount = clubCount
                         )
                     }
                 }
@@ -583,11 +604,17 @@ class BookcaseViewModel(
                     }
                 }
                 is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            isCreatingBookClub = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(createResult.error, "create book club")
-                        )
+                    if (createResult.error == DataError.Sync.MAX_BOOK_CLUBS_REACHED) {
+                        _state.update {
+                            it.copy(isCreatingBookClub = false, showBookClubLimitDialog = true)
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                isCreatingBookClub = false,
+                                errorMessage = ErrorFormatter.formatDataErrorMessage(createResult.error, "create book club")
+                            )
+                        }
                     }
                 }
             }
@@ -677,12 +704,22 @@ class BookcaseViewModel(
                     }
                 }
                 is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            joinInProgress = false,
-                            bookClubPreview = null,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(joinResult.error, "join book club")
-                        )
+                    if (joinResult.error == DataError.Sync.MAX_BOOK_CLUBS_REACHED) {
+                        _state.update {
+                            it.copy(
+                                joinInProgress = false,
+                                bookClubPreview = null,
+                                showBookClubLimitDialog = true
+                            )
+                        }
+                    } else {
+                        _state.update {
+                            it.copy(
+                                joinInProgress = false,
+                                bookClubPreview = null,
+                                errorMessage = ErrorFormatter.formatDataErrorMessage(joinResult.error, "join book club")
+                            )
+                        }
                     }
                 }
             }

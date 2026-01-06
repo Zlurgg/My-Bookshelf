@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub
 
+import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
@@ -30,7 +31,14 @@ class JoinBookClubUseCaseImpl(
             return Result.Error(DataError.Sync.NOT_SIGNED_IN)
         }
 
-        // 2. Check if already a member
+        // 2. Check book club limit before joining
+        val currentBookClubs = bookClubRepository.observeMyBookClubs().first()
+        if (currentBookClubs.size >= MAX_BOOK_CLUBS) {
+            Timber.tag(TAG).w("User has reached max book clubs limit: %d", MAX_BOOK_CLUBS)
+            return Result.Error(DataError.Sync.MAX_BOOK_CLUBS_REACHED)
+        }
+
+        // 3. Check if already a member
         val memberCheckResult = bookClubRepository.isMemberOfClub(code)
         when (memberCheckResult) {
             is Result.Error -> {
@@ -54,7 +62,7 @@ class JoinBookClubUseCaseImpl(
             }
         }
 
-        // 3. Get club metadata to verify it exists
+        // 4. Get club metadata to verify it exists
         val clubResult = bookClubRepository.getBookClub(code)
         when (clubResult) {
             is Result.Error -> {
@@ -69,7 +77,7 @@ class JoinBookClubUseCaseImpl(
             }
         }
 
-        // 4. Perform the join
+        // 5. Perform the join
         return performJoin(code)
     }
 
@@ -95,5 +103,6 @@ class JoinBookClubUseCaseImpl(
 
     companion object {
         private const val TAG = "JoinBookClub"
+        private const val MAX_BOOK_CLUBS = 5
     }
 }

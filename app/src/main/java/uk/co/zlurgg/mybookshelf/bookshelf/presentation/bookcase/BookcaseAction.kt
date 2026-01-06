@@ -63,4 +63,8 @@ sealed interface BookcaseAction {
 
     // Deleted book clubs notification
     data object DismissDeletedBookClubsNotification : BookcaseAction
+
+    // Shelf limit dialogs
+    data object DismissShelfLimitDialog : BookcaseAction
+    data object DismissBookClubLimitDialog : BookcaseAction
 }
