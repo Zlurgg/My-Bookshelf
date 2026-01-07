@@ -85,7 +85,8 @@ class SyncWorker(
             DataError.Sync.ALREADY_MEMBER,
             DataError.Sync.NOT_MEMBER,
             DataError.Sync.CREATOR_CANNOT_LEAVE,
-            DataError.Sync.MAX_BOOK_CLUBS_REACHED -> {
+            DataError.Sync.MAX_BOOK_CLUBS_REACHED,
+            DataError.Sync.INVALID_INPUT -> {
                 Timber.tag(TAG).e("Permanent sync error, not retrying: %s", error)
                 Result.failure()
             }

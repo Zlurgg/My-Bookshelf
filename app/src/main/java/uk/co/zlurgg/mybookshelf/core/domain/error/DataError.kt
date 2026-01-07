@@ -61,6 +61,7 @@ sealed interface DataError: Error {
         NOT_MEMBER,             // User not a member of this book club
         CREATOR_CANNOT_LEAVE,   // Creator must delete the club instead of leaving
         MAX_BOOK_CLUBS_REACHED, // User has reached maximum book clubs limit
+        INVALID_INPUT,          // Validation failed (rating, text length, etc.)
         UNKNOWN
     }
 }

@@ -181,6 +181,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.LeaveBookClubU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.LeaveBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ValidateBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ValidateBookClubMembershipsUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubReviewsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubReviewsUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClubReviewUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClubReviewUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCaseImpl
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 private const val GITHUB_OWNER = "Zlurgg"
@@ -404,5 +410,8 @@ val appModule = module {
     singleOf(::RestoreBookClubMembershipsUseCaseImpl).bind<RestoreBookClubMembershipsUseCase>()
     singleOf(::LeaveBookClubUseCaseImpl).bind<LeaveBookClubUseCase>()
     singleOf(::ValidateBookClubMembershipsUseCaseImpl).bind<ValidateBookClubMembershipsUseCase>()
-    single { BookClubUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    singleOf(::GetBookClubReviewsUseCaseImpl).bind<GetBookClubReviewsUseCase>()
+    singleOf(::UpsertBookClubReviewUseCaseImpl).bind<UpsertBookClubReviewUseCase>()
+    singleOf(::DeleteBookClubReviewUseCaseImpl).bind<DeleteBookClubReviewUseCase>()
+    single { BookClubUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 }
