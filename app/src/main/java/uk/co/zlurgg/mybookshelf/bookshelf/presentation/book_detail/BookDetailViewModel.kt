@@ -55,9 +55,10 @@ class BookDetailViewModel(
                 )
             }
 
-            // Load club reviews if this is a book club book
+            // Load club reviews and comments if this is a book club book
             if (bookDetails.isBookClub && bookDetails.clubCode != null) {
                 loadClubReviews(bookDetails.clubCode)
+                loadClubComments(bookDetails.clubCode)
             }
         }
 
@@ -103,6 +104,34 @@ class BookDetailViewModel(
                             errorMessage = ErrorFormatter.formatDataErrorMessage(
                                 reviewsResult.error,
                                 "load club reviews"
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun loadClubComments(clubCode: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingComments = true) }
+
+            when (val commentsResult = bookClubUseCases.getBookClubComments(clubCode, bookId)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            clubComments = commentsResult.data,
+                            isLoadingComments = false
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoadingComments = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                commentsResult.error,
+                                "load club comments"
                             )
                         )
                     }
@@ -295,6 +324,83 @@ class BookDetailViewModel(
                         }
                         is Result.Error -> {
                             _state.update { it.withError(deleteResult.error, "delete club review") }
+                        }
+                    }
+                }
+            }
+
+            // Club comment actions
+            is BookDetailAction.OnCommentTextChange -> {
+                _state.update { it.copy(commentText = action.text) }
+            }
+            is BookDetailAction.OnCommentSubmit -> {
+                val clubCode = state.value.clubCode ?: return
+                val text = state.value.commentText.trim()
+                if (text.isEmpty()) return
+
+                viewModelScope.launch {
+                    when (val addResult = bookClubUseCases.addBookClubComment(clubCode, bookId, text)) {
+                        is Result.Success -> {
+                            _state.update { it.copy(commentText = "") }
+                            loadClubComments(clubCode)
+                        }
+                        is Result.Error -> {
+                            _state.update { it.withError(addResult.error, "add comment") }
+                        }
+                    }
+                }
+            }
+            is BookDetailAction.OnCommentEditStart -> {
+                _state.update {
+                    it.copy(
+                        editingCommentId = action.commentId,
+                        editingCommentText = action.currentText
+                    )
+                }
+            }
+            is BookDetailAction.OnCommentEditTextChange -> {
+                _state.update { it.copy(editingCommentText = action.text) }
+            }
+            is BookDetailAction.OnCommentEditSave -> {
+                val clubCode = state.value.clubCode ?: return
+                val commentId = state.value.editingCommentId ?: return
+                val newText = state.value.editingCommentText.trim()
+                if (newText.isEmpty()) return
+
+                viewModelScope.launch {
+                    when (val editResult = bookClubUseCases.editBookClubComment(clubCode, bookId, commentId, newText)) {
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(
+                                    editingCommentId = null,
+                                    editingCommentText = ""
+                                )
+                            }
+                            loadClubComments(clubCode)
+                        }
+                        is Result.Error -> {
+                            _state.update { it.withError(editResult.error, "edit comment") }
+                        }
+                    }
+                }
+            }
+            is BookDetailAction.OnCommentEditCancel -> {
+                _state.update {
+                    it.copy(
+                        editingCommentId = null,
+                        editingCommentText = ""
+                    )
+                }
+            }
+            is BookDetailAction.OnCommentDelete -> {
+                val clubCode = state.value.clubCode ?: return
+                viewModelScope.launch {
+                    when (val deleteResult = bookClubUseCases.deleteBookClubComment(clubCode, bookId, action.commentId)) {
+                        is Result.Success -> {
+                            loadClubComments(clubCode)
+                        }
+                        is Result.Error -> {
+                            _state.update { it.withError(deleteResult.error, "delete comment") }
                         }
                     }
                 }
