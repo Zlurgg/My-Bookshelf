@@ -1,7 +1,10 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components
 
 import android.text.format.DateUtils
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -11,9 +14,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
@@ -22,14 +27,21 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,7 +56,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
  * Features:
  * - Scrollable list with max height (shows ~3-4 comments)
  * - Oldest comments first, auto-scrolls to show latest
- * - Edit/Delete buttons on user's own comments
+ * - Own comments aligned right with primary background
+ * - Other comments aligned left with surface variant background
+ * - Long-press on own comment shows dropdown menu with Edit/Delete
  * - Inline editing mode
  */
 @Composable
@@ -107,7 +121,7 @@ fun ClubCommentsCard(
                         val isOwnComment = comment.userId == currentUserId
                         val isEditing = editingCommentId == comment.id
 
-                        CommentItem(
+                        CommentBubble(
                             comment = comment,
                             isOwnComment = isOwnComment,
                             isEditing = isEditing,
@@ -167,8 +181,9 @@ fun ClubCommentsCard(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun CommentItem(
+private fun CommentBubble(
     comment: BookClubComment,
     isOwnComment: Boolean,
     isEditing: Boolean,
@@ -180,115 +195,172 @@ private fun CommentItem(
     onDelete: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 2.dp)
+    var showMenu by remember { mutableStateOf(false) }
+
+    // Alignment and colors based on ownership
+    val horizontalArrangement = if (isOwnComment) Arrangement.End else Arrangement.Start
+    val bubbleShape = RoundedCornerShape(
+        topStart = 12.dp,
+        topEnd = 12.dp,
+        bottomStart = if (isOwnComment) 12.dp else 4.dp,
+        bottomEnd = if (isOwnComment) 4.dp else 12.dp
+    )
+    val backgroundColor = if (isOwnComment) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+    val contentColor = if (isOwnComment) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = horizontalArrangement
     ) {
-        // Header: Display name and timestamp
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = comment.displayName.ifBlank { "Anonymous" },
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = formatRelativeTime(comment.createdAt),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                // Show (edited) indicator
-                if (comment.updatedAt > comment.createdAt) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.club_comment_edited),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontStyle = FontStyle.Italic,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(4.dp))
-
-        // Content: Text or edit field
-        if (isEditing) {
-            OutlinedTextField(
-                value = editingText,
-                onValueChange = onEditTextChange,
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = 5
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
-                IconButton(onClick = onEditCancel) {
-                    Icon(
-                        imageVector = Icons.Filled.Close,
-                        contentDescription = stringResource(R.string.action_cancel),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                IconButton(
-                    onClick = onEditSave,
-                    enabled = editingText.isNotBlank()
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Check,
-                        contentDescription = stringResource(R.string.club_comment_save),
-                        tint = if (editingText.isNotBlank()) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
+        Box {
+            Surface(
+                shape = bubbleShape,
+                color = backgroundColor,
+                modifier = Modifier
+                    .widthIn(max = 280.dp)
+                    .combinedClickable(
+                        onClick = { },
+                        onLongClick = {
+                            if (isOwnComment && !isEditing) {
+                                showMenu = true
+                            }
                         }
                     )
-                }
-            }
-        } else {
-            Text(
-                text = comment.text,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            // Edit/Delete buttons for own comments
-            if (isOwnComment) {
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp)
                 ) {
-                    IconButton(onClick = onEditStart) {
-                        Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = stringResource(R.string.club_comment_edit),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    // Header: Display name and timestamp
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = comment.displayName.ifBlank { "Anonymous" },
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = contentColor
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = formatRelativeTime(comment.createdAt),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = contentColor.copy(alpha = 0.7f)
+                            )
+
+                            // Show (edited) indicator
+                            if (comment.updatedAt > comment.createdAt) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stringResource(R.string.club_comment_edited),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontStyle = FontStyle.Italic,
+                                    color = contentColor.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Content: Text or edit field
+                    if (isEditing) {
+                        OutlinedTextField(
+                            value = editingText,
+                            onValueChange = onEditTextChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            maxLines = 5
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            IconButton(onClick = onEditCancel) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.action_cancel),
+                                    tint = contentColor
+                                )
+                            }
+                            IconButton(
+                                onClick = onEditSave,
+                                enabled = editingText.isNotBlank()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = stringResource(R.string.club_comment_save),
+                                    tint = if (editingText.isNotBlank()) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        contentColor.copy(alpha = 0.5f)
+                                    }
+                                )
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = comment.text,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = contentColor
                         )
                     }
-                    IconButton(onClick = onDelete) {
+                }
+            }
+
+            // Dropdown menu for own comments
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                DropdownMenuItem(
+                    text = { Text(stringResource(R.string.club_comment_edit)) },
+                    onClick = {
+                        showMenu = false
+                        onEditStart()
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = stringResource(R.string.club_comment_delete),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    onClick = {
+                        showMenu = false
+                        onDelete()
+                    },
+                    leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Delete,
-                            contentDescription = stringResource(R.string.club_comment_delete),
+                            contentDescription = null,
                             tint = MaterialTheme.colorScheme.error
                         )
                     }
-                }
+                )
             }
         }
     }
