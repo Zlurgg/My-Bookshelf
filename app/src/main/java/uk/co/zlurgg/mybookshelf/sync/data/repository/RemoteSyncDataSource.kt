@@ -5,6 +5,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
@@ -241,4 +242,33 @@ interface RemoteSyncDataSource {
      * Removes a club code from the user's membership list in their preferences.
      */
     suspend fun removeClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync>
+
+    // ==================== Book Club Reviews ====================
+
+    /**
+     * Gets all reviews for a book in a book club.
+     */
+    suspend fun getBookReviews(
+        clubCode: String,
+        bookId: String
+    ): Result<List<BookClubReviewDto>, DataError.Sync>
+
+    /**
+     * Creates or updates a review for a book in a book club.
+     * Document ID is the user's ID (one review per user per book).
+     */
+    suspend fun upsertBookReview(
+        clubCode: String,
+        bookId: String,
+        review: BookClubReviewDto
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Deletes a user's review for a book in a book club.
+     */
+    suspend fun deleteBookReview(
+        clubCode: String,
+        bookId: String,
+        userId: String
+    ): Result<Unit, DataError.Sync>
 }

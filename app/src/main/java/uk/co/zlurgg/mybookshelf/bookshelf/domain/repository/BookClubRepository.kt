@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -163,6 +164,40 @@ interface BookClubRepository {
      * @return Number of books added/removed
      */
     suspend fun syncBooksFromClub(code: String, localShelfId: String): Result<SyncResult, DataError.Sync>
+
+    // ========== Reviews ==========
+
+    /**
+     * Gets all reviews for a book in a book club.
+     *
+     * @param code The club code
+     * @param bookId The book ID to get reviews for
+     * @return List of reviews from all members
+     */
+    suspend fun getBookReviews(code: String, bookId: String): Result<List<BookClubReview>, DataError.Sync>
+
+    /**
+     * Creates or updates the current user's review for a book.
+     *
+     * @param code The club code
+     * @param bookId The book ID being reviewed
+     * @param rating The rating (0 = no rating, 1-5 = rated)
+     * @param reviewText The review text (empty = no text)
+     */
+    suspend fun upsertBookReview(
+        code: String,
+        bookId: String,
+        rating: Float,
+        reviewText: String
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Deletes the current user's review for a book.
+     *
+     * @param code The club code
+     * @param bookId The book ID to delete review for
+     */
+    suspend fun deleteBookReview(code: String, bookId: String): Result<Unit, DataError.Sync>
 }
 
 /**

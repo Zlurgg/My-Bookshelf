@@ -12,6 +12,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
@@ -26,6 +27,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
 import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
 
 /**
@@ -913,5 +915,96 @@ class BookClubRepositoryImpl(
 
         Timber.tag(TAG).d("Sync complete: added %d, removed %d books", booksAdded, booksRemoved)
         return Result.Success(SyncResult(booksAdded, booksRemoved))
+    }
+
+    // ========== Reviews ==========
+
+    override suspend fun getBookReviews(
+        code: String,
+        bookId: String
+    ): Result<List<BookClubReview>, DataError.Sync> {
+        authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Getting reviews for book %s in club %s", bookId, code)
+
+        return when (val result = remoteDataSource.getBookReviews(code, bookId)) {
+            is Result.Success -> {
+                val reviews = result.data.map { dto ->
+                    BookClubReview(
+                        id = dto.id,
+                        bookId = dto.bookId,
+                        userId = dto.userId,
+                        displayName = dto.displayName,
+                        rating = dto.rating,
+                        reviewText = dto.reviewText,
+                        createdAt = dto.createdAt?.time ?: 0L,
+                        updatedAt = dto.updatedAt?.time ?: 0L
+                    )
+                }
+                Timber.tag(TAG).d("Got %d reviews for book %s", reviews.size, bookId)
+                Result.Success(reviews)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to get reviews: %s", result.error)
+                Result.Error(result.error)
+            }
+        }
+    }
+
+    override suspend fun upsertBookReview(
+        code: String,
+        bookId: String,
+        rating: Float,
+        reviewText: String
+    ): Result<Unit, DataError.Sync> {
+        val user = authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Upserting review for book %s in club %s", bookId, code)
+
+        val now = java.util.Date(timeProvider.currentTimeMillis())
+        val reviewDto = BookClubReviewDto(
+            id = user.userId,
+            bookId = bookId,
+            userId = user.userId,
+            displayName = user.username ?: "Anonymous",
+            rating = rating,
+            reviewText = reviewText,
+            createdAt = now,
+            updatedAt = now
+        )
+
+        return when (val result = remoteDataSource.upsertBookReview(code, bookId, reviewDto)) {
+            is Result.Success -> {
+                Timber.tag(TAG).d("Review upserted successfully")
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to upsert review: %s", result.error)
+                Result.Error(result.error)
+            }
+        }
+    }
+
+    override suspend fun deleteBookReview(
+        code: String,
+        bookId: String
+    ): Result<Unit, DataError.Sync> {
+        val user = authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Deleting review for book %s in club %s", bookId, code)
+
+        return when (val result = remoteDataSource.deleteBookReview(code, bookId, user.userId)) {
+            is Result.Success -> {
+                Timber.tag(TAG).d("Review deleted successfully")
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to delete review: %s", result.error)
+                Result.Error(result.error)
+            }
+        }
     }
 }

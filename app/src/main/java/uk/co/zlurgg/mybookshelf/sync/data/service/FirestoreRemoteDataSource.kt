@@ -12,6 +12,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
@@ -538,6 +539,61 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    // ==================== Book Club Reviews ====================
+
+    override suspend fun getBookReviews(
+        clubCode: String,
+        bookId: String
+    ): Result<List<BookClubReviewDto>, DataError.Sync> {
+        return executeFirestoreOperation("getBookReviews") {
+            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .collection(REVIEWS_COLLECTION)
+                .get(Source.SERVER)
+                .await()
+
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(BookClubReviewDto::class.java)
+            }
+        }
+    }
+
+    override suspend fun upsertBookReview(
+        clubCode: String,
+        bookId: String,
+        review: BookClubReviewDto
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("upsertBookReview") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .collection(REVIEWS_COLLECTION)
+                .document(review.userId)
+                .set(review)
+                .await()
+        }
+    }
+
+    override suspend fun deleteBookReview(
+        clubCode: String,
+        bookId: String,
+        userId: String
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("deleteBookReview") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .collection(REVIEWS_COLLECTION)
+                .document(userId)
+                .delete()
+                .await()
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private suspend fun <T> executeFirestoreOperation(
@@ -590,6 +646,7 @@ class FirestoreRemoteDataSource(
         private const val BOOK_CLUBS_COLLECTION = "bookClubs"
         private const val MEMBERS_COLLECTION = "members"
         private const val CLUB_BOOKS_COLLECTION = "books"
+        private const val REVIEWS_COLLECTION = "reviews"
 
         // Document names
         private const val PREFERENCES_DOCUMENT = "preferences"
