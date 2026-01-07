@@ -583,5 +583,11 @@ class SyncEngineTest {
         override suspend fun getBookReviews(clubCode: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto>, DataError.Sync> = Result.Success(emptyList())
         override suspend fun upsertBookReview(clubCode: String, bookId: String, review: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun deleteBookReview(clubCode: String, bookId: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+
+        // Comment methods (not used by SyncEngine, but required by interface)
+        override suspend fun getBookComments(clubCode: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun addBookComment(clubCode: String, bookId: String, comment: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto): Result<String, DataError.Sync> = Result.Success("comment-id")
+        override suspend fun editBookComment(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun deleteBookComment(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
     }
 }

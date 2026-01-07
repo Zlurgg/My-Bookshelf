@@ -11,6 +11,7 @@ import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
@@ -47,6 +48,10 @@ class DeleteShelfUseCaseTest {
         override suspend fun getBookReviews(code: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview>, DataError.Sync> = Result.Success(emptyList())
         override suspend fun upsertBookReview(code: String, bookId: String, rating: Float, reviewText: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun deleteBookReview(code: String, bookId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getBookComments(code: String, bookId: String): Result<List<BookClubComment>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun addBookComment(code: String, bookId: String, text: String): Result<String, DataError.Sync> = Result.Success("comment-id")
+        override suspend fun editBookComment(code: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun deleteBookComment(code: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockBookClubRepository, mockSyncSchedulerService)

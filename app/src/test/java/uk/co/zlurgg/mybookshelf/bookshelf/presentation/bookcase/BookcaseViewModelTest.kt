@@ -41,8 +41,13 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
@@ -205,6 +210,22 @@ class BookcaseViewModelTest {
             override suspend fun invoke(clubCode: String, bookId: String): Result<Unit, DataError.Sync> =
                 Result.Success(Unit)
         }
+        val mockGetBookClubComments = object : GetBookClubCommentsUseCase {
+            override suspend fun invoke(clubCode: String, bookId: String): Result<List<BookClubComment>, DataError.Sync> =
+                Result.Success(emptyList())
+        }
+        val mockAddBookClubComment = object : AddBookClubCommentUseCase {
+            override suspend fun invoke(clubCode: String, bookId: String, text: String): Result<String, DataError.Sync> =
+                Result.Success("comment-id")
+        }
+        val mockEditBookClubComment = object : EditBookClubCommentUseCase {
+            override suspend fun invoke(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> =
+                Result.Success(Unit)
+        }
+        val mockDeleteBookClubComment = object : DeleteBookClubCommentUseCase {
+            override suspend fun invoke(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> =
+                Result.Success(Unit)
+        }
         val bookClubUseCases = BookClubUseCases(
             createBookClub = mockCreateBookClub,
             generateInviteLink = mockGenerateInviteLink,
@@ -217,7 +238,11 @@ class BookcaseViewModelTest {
             validateMemberships = mockValidateMemberships,
             getBookClubReviews = mockGetBookClubReviews,
             upsertBookClubReview = mockUpsertBookClubReview,
-            deleteBookClubReview = mockDeleteBookClubReview
+            deleteBookClubReview = mockDeleteBookClubReview,
+            getBookClubComments = mockGetBookClubComments,
+            addBookClubComment = mockAddBookClubComment,
+            editBookClubComment = mockEditBookClubComment,
+            deleteBookClubComment = mockDeleteBookClubComment
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
 

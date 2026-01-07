@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
@@ -221,6 +222,62 @@ class MockBookClubRepository : BookClubRepository {
         return deleteBookReviewResult
     }
 
+    // Comments
+    var getBookCommentsResult: Result<List<BookClubComment>, DataError.Sync> = Result.Success(emptyList())
+    var addBookCommentResult: Result<String, DataError.Sync> = Result.Success("comment-id")
+    var editBookCommentResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var deleteBookCommentResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+
+    var getBookCommentsCalled = false
+    var addBookCommentCalled = false
+    var editBookCommentCalled = false
+    var deleteBookCommentCalled = false
+
+    var lastGetCommentsCode: String? = null
+    var lastGetCommentsBookId: String? = null
+    var lastAddCommentCode: String? = null
+    var lastAddCommentBookId: String? = null
+    var lastAddCommentText: String? = null
+    var lastEditCommentCode: String? = null
+    var lastEditCommentBookId: String? = null
+    var lastEditCommentId: String? = null
+    var lastEditCommentText: String? = null
+    var lastDeleteCommentCode: String? = null
+    var lastDeleteCommentBookId: String? = null
+    var lastDeleteCommentId: String? = null
+
+    override suspend fun getBookComments(code: String, bookId: String): Result<List<BookClubComment>, DataError.Sync> {
+        getBookCommentsCalled = true
+        lastGetCommentsCode = code
+        lastGetCommentsBookId = bookId
+        return getBookCommentsResult
+    }
+
+    override suspend fun addBookComment(code: String, bookId: String, text: String): Result<String, DataError.Sync> {
+        addBookCommentCalled = true
+        lastAddCommentCode = code
+        lastAddCommentBookId = bookId
+        lastAddCommentText = text
+        return addBookCommentResult
+    }
+
+    override suspend fun editBookComment(code: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> {
+        editBookCommentCalled = true
+        lastEditCommentCode = code
+        lastEditCommentBookId = bookId
+        lastEditCommentId = commentId
+        lastEditCommentText = newText
+        return editBookCommentResult
+    }
+
+    override suspend fun deleteBookComment(code: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> {
+        deleteBookCommentCalled = true
+        lastDeleteCommentCode = code
+        lastDeleteCommentBookId = bookId
+        lastDeleteCommentId = commentId
+        return deleteBookCommentResult
+    }
+
     // Helper methods for test setup
     fun reset() {
         createBookClubResult = Result.Success("TEST1234")
@@ -258,6 +315,10 @@ class MockBookClubRepository : BookClubRepository {
         leaveBookClubCalled = false
         convertClubToPersonalShelfCalled = false
         updateClubStyleCalled = false
+        getBookCommentsCalled = false
+        addBookCommentCalled = false
+        editBookCommentCalled = false
+        deleteBookCommentCalled = false
 
         lastCreateShelfId = null
         lastGetBookClubCode = null
@@ -280,6 +341,23 @@ class MockBookClubRepository : BookClubRepository {
         lastConvertCode = null
         lastUpdateStyleCode = null
         lastUpdateStyleValue = null
+        lastGetCommentsCode = null
+        lastGetCommentsBookId = null
+        lastAddCommentCode = null
+        lastAddCommentBookId = null
+        lastAddCommentText = null
+        lastEditCommentCode = null
+        lastEditCommentBookId = null
+        lastEditCommentId = null
+        lastEditCommentText = null
+        lastDeleteCommentCode = null
+        lastDeleteCommentBookId = null
+        lastDeleteCommentId = null
+
+        getBookCommentsResult = Result.Success(emptyList())
+        addBookCommentResult = Result.Success("comment-id")
+        editBookCommentResult = Result.Success(Unit)
+        deleteBookCommentResult = Result.Success(Unit)
     }
 
     fun configureBookClub(bookClub: BookClub) {
