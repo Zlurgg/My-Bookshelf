@@ -187,6 +187,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClubReviewUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCaseImpl
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 private const val GITHUB_OWNER = "Zlurgg"
@@ -415,5 +423,9 @@ val appModule = module {
     singleOf(::GetBookClubReviewsUseCaseImpl).bind<GetBookClubReviewsUseCase>()
     singleOf(::UpsertBookClubReviewUseCaseImpl).bind<UpsertBookClubReviewUseCase>()
     singleOf(::DeleteBookClubReviewUseCaseImpl).bind<DeleteBookClubReviewUseCase>()
-    single { BookClubUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    singleOf(::GetBookClubCommentsUseCaseImpl).bind<GetBookClubCommentsUseCase>()
+    singleOf(::AddBookClubCommentUseCaseImpl).bind<AddBookClubCommentUseCase>()
+    singleOf(::EditBookClubCommentUseCaseImpl).bind<EditBookClubCommentUseCase>()
+    singleOf(::DeleteBookClubCommentUseCaseImpl).bind<DeleteBookClubCommentUseCase>()
+    single { BookClubUseCases(get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 }

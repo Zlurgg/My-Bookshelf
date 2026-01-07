@@ -22,8 +22,14 @@ class BookClubUseCases(
     val leaveBookClub: LeaveBookClubUseCase,
     val validateMemberships: ValidateBookClubMembershipsUseCase,
 
-    // Reviews
+    // Reviews (for ratings)
     val getBookClubReviews: GetBookClubReviewsUseCase,
     val upsertBookClubReview: UpsertBookClubReviewUseCase,
-    val deleteBookClubReview: DeleteBookClubReviewUseCase
+    val deleteBookClubReview: DeleteBookClubReviewUseCase,
+
+    // Comments (for discussion)
+    val getBookClubComments: GetBookClubCommentsUseCase,
+    val addBookClubComment: AddBookClubCommentUseCase,
+    val editBookClubComment: EditBookClubCommentUseCase,
+    val deleteBookClubComment: DeleteBookClubCommentUseCase
 )
