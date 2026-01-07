@@ -44,6 +44,9 @@ class DeleteShelfUseCaseTest {
         override suspend fun convertClubToPersonalShelf(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
 
         override suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getBookReviews(code: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview>, DataError.Sync> = Result.Success(emptyList())
+        override suspend fun upsertBookReview(code: String, bookId: String, rating: Float, reviewText: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun deleteBookReview(code: String, bookId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockBookClubRepository, mockSyncSchedulerService)

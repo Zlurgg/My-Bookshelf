@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.flowOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
@@ -196,6 +197,28 @@ class MockBookClubRepository : BookClubRepository {
         lastUpdateStyleCode = code
         lastUpdateStyleValue = style
         return updateClubStyleResult
+    }
+
+    // Reviews
+    var getBookReviewsResult: Result<List<BookClubReview>, DataError.Sync> = Result.Success(emptyList())
+    var upsertBookReviewResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var deleteBookReviewResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+
+    override suspend fun getBookReviews(code: String, bookId: String): Result<List<BookClubReview>, DataError.Sync> {
+        return getBookReviewsResult
+    }
+
+    override suspend fun upsertBookReview(
+        code: String,
+        bookId: String,
+        rating: Float,
+        reviewText: String
+    ): Result<Unit, DataError.Sync> {
+        return upsertBookReviewResult
+    }
+
+    override suspend fun deleteBookReview(code: String, bookId: String): Result<Unit, DataError.Sync> {
+        return deleteBookReviewResult
     }
 
     // Helper methods for test setup
