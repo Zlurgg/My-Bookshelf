@@ -9,7 +9,9 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
@@ -594,6 +596,87 @@ class FirestoreRemoteDataSource(
         }
     }
 
+    // ==================== Book Club Comments ====================
+
+    override suspend fun getBookComments(
+        clubCode: String,
+        bookId: String
+    ): Result<List<BookClubCommentDto>, DataError.Sync> {
+        return executeFirestoreOperation("getBookComments") {
+            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .collection(COMMENTS_COLLECTION)
+                .orderBy("created_at", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                .get(Source.SERVER)
+                .await()
+
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(BookClubCommentDto::class.java)
+            }
+        }
+    }
+
+    override suspend fun addBookComment(
+        clubCode: String,
+        bookId: String,
+        comment: BookClubCommentDto
+    ): Result<String, DataError.Sync> {
+        return executeFirestoreOperation("addBookComment") {
+            // Use .add() for auto-generated document ID
+            val docRef = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .collection(COMMENTS_COLLECTION)
+                .add(BookClubCommentDto.toFirestoreMap(comment.toDomain()))
+                .await()
+
+            docRef.id
+        }
+    }
+
+    override suspend fun editBookComment(
+        clubCode: String,
+        bookId: String,
+        commentId: String,
+        newText: String
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("editBookComment") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .collection(COMMENTS_COLLECTION)
+                .document(commentId)
+                .update(
+                    mapOf(
+                        "text" to newText,
+                        "updated_at" to com.google.firebase.Timestamp.now()
+                    )
+                )
+                .await()
+        }
+    }
+
+    override suspend fun deleteBookComment(
+        clubCode: String,
+        bookId: String,
+        commentId: String
+    ): Result<Unit, DataError.Sync> {
+        return executeFirestoreOperation("deleteBookComment") {
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .document(bookId)
+                .collection(COMMENTS_COLLECTION)
+                .document(commentId)
+                .delete()
+                .await()
+        }
+    }
+
     // ==================== Helper Methods ====================
 
     private suspend fun <T> executeFirestoreOperation(
@@ -647,6 +730,7 @@ class FirestoreRemoteDataSource(
         private const val MEMBERS_COLLECTION = "members"
         private const val CLUB_BOOKS_COLLECTION = "books"
         private const val REVIEWS_COLLECTION = "reviews"
+        private const val COMMENTS_COLLECTION = "comments"
 
         // Document names
         private const val PREFERENCES_DOCUMENT = "preferences"

@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.repository
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
@@ -198,6 +199,63 @@ interface BookClubRepository {
      * @param bookId The book ID to delete review for
      */
     suspend fun deleteBookReview(code: String, bookId: String): Result<Unit, DataError.Sync>
+
+    // ========== Comments ==========
+
+    /**
+     * Gets all comments for a book in a book club.
+     * Comments are ordered by created_at ascending (oldest first).
+     *
+     * @param code The club code
+     * @param bookId The book ID to get comments for
+     * @return List of comments from all members
+     */
+    suspend fun getBookComments(code: String, bookId: String): Result<List<BookClubComment>, DataError.Sync>
+
+    /**
+     * Adds a new comment for the current user.
+     * Unlike reviews, users can add multiple comments.
+     *
+     * @param code The club code
+     * @param bookId The book ID being commented on
+     * @param text The comment text
+     * @return The generated comment ID on success
+     */
+    suspend fun addBookComment(
+        code: String,
+        bookId: String,
+        text: String
+    ): Result<String, DataError.Sync>
+
+    /**
+     * Edits an existing comment's text.
+     * Only the comment author can edit their comment.
+     *
+     * @param code The club code
+     * @param bookId The book ID
+     * @param commentId The comment ID to edit
+     * @param newText The new text for the comment
+     */
+    suspend fun editBookComment(
+        code: String,
+        bookId: String,
+        commentId: String,
+        newText: String
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Deletes a comment.
+     * Only the comment author can delete their comment.
+     *
+     * @param code The club code
+     * @param bookId The book ID
+     * @param commentId The comment ID to delete
+     */
+    suspend fun deleteBookComment(
+        code: String,
+        bookId: String,
+        commentId: String
+    ): Result<Unit, DataError.Sync>
 }
 
 /**

@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.sync.data.repository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
@@ -270,5 +271,48 @@ interface RemoteSyncDataSource {
         clubCode: String,
         bookId: String,
         userId: String
+    ): Result<Unit, DataError.Sync>
+
+    // ==================== Book Club Comments ====================
+
+    /**
+     * Gets all comments for a book in a book club, ordered by created_at ascending.
+     */
+    suspend fun getBookComments(
+        clubCode: String,
+        bookId: String
+    ): Result<List<BookClubCommentDto>, DataError.Sync>
+
+    /**
+     * Adds a new comment for a book in a book club.
+     * Uses auto-generated document ID (via .add()) to allow multiple comments per user.
+     *
+     * @return The generated comment ID on success
+     */
+    suspend fun addBookComment(
+        clubCode: String,
+        bookId: String,
+        comment: BookClubCommentDto
+    ): Result<String, DataError.Sync>
+
+    /**
+     * Edits an existing comment's text.
+     * Only the comment author can edit their comment.
+     */
+    suspend fun editBookComment(
+        clubCode: String,
+        bookId: String,
+        commentId: String,
+        newText: String
+    ): Result<Unit, DataError.Sync>
+
+    /**
+     * Deletes a comment.
+     * Only the comment author can delete their comment.
+     */
+    suspend fun deleteBookComment(
+        clubCode: String,
+        bookId: String,
+        commentId: String
     ): Result<Unit, DataError.Sync>
 }

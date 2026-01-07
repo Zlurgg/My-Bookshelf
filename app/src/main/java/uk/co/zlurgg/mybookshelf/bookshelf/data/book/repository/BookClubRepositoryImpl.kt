@@ -11,6 +11,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
@@ -25,6 +26,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
+import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
@@ -1003,6 +1005,107 @@ class BookClubRepositoryImpl(
             }
             is Result.Error -> {
                 Timber.tag(TAG).e("Failed to delete review: %s", result.error)
+                Result.Error(result.error)
+            }
+        }
+    }
+
+    // ========== Comments ==========
+
+    override suspend fun getBookComments(
+        code: String,
+        bookId: String
+    ): Result<List<BookClubComment>, DataError.Sync> {
+        authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Getting comments for book %s in club %s", bookId, code)
+
+        return when (val result = remoteDataSource.getBookComments(code, bookId)) {
+            is Result.Success -> {
+                val comments = result.data.map { it.toDomain() }
+                Timber.tag(TAG).d("Got %d comments for book %s", comments.size, bookId)
+                Result.Success(comments)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to get comments: %s", result.error)
+                Result.Error(result.error)
+            }
+        }
+    }
+
+    override suspend fun addBookComment(
+        code: String,
+        bookId: String,
+        text: String
+    ): Result<String, DataError.Sync> {
+        val user = authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Adding comment for book %s in club %s", bookId, code)
+
+        val commentDto = BookClubCommentDto(
+            id = "", // Will be auto-generated
+            bookId = bookId,
+            userId = user.userId,
+            displayName = user.username ?: "Anonymous",
+            text = text,
+            createdAt = java.util.Date(timeProvider.currentTimeMillis()),
+            updatedAt = java.util.Date(timeProvider.currentTimeMillis())
+        )
+
+        return when (val result = remoteDataSource.addBookComment(code, bookId, commentDto)) {
+            is Result.Success -> {
+                Timber.tag(TAG).d("Comment added successfully with ID: %s", result.data)
+                Result.Success(result.data)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to add comment: %s", result.error)
+                Result.Error(result.error)
+            }
+        }
+    }
+
+    override suspend fun editBookComment(
+        code: String,
+        bookId: String,
+        commentId: String,
+        newText: String
+    ): Result<Unit, DataError.Sync> {
+        authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Editing comment %s for book %s in club %s", commentId, bookId, code)
+
+        return when (val result = remoteDataSource.editBookComment(code, bookId, commentId, newText)) {
+            is Result.Success -> {
+                Timber.tag(TAG).d("Comment edited successfully")
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to edit comment: %s", result.error)
+                Result.Error(result.error)
+            }
+        }
+    }
+
+    override suspend fun deleteBookComment(
+        code: String,
+        bookId: String,
+        commentId: String
+    ): Result<Unit, DataError.Sync> {
+        authService.getSignedInUser()
+            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+
+        Timber.tag(TAG).d("Deleting comment %s for book %s in club %s", commentId, bookId, code)
+
+        return when (val result = remoteDataSource.deleteBookComment(code, bookId, commentId)) {
+            is Result.Success -> {
+                Timber.tag(TAG).d("Comment deleted successfully")
+                Result.Success(Unit)
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to delete comment: %s", result.error)
                 Result.Error(result.error)
             }
         }
