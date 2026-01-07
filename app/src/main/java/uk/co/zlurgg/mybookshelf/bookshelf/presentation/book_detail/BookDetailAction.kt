@@ -13,4 +13,10 @@ sealed interface BookDetailAction {
     data class OnReadingStatusChange(val status: ReadingStatus) : BookDetailAction
     data class OnPersonalRatingChange(val rating: Float) : BookDetailAction    // 0 = clear rating
     data class OnPersonalNotesChange(val notes: String) : BookDetailAction     // "" = clear notes
+
+    // Club review actions
+    data class OnClubRatingChange(val rating: Float) : BookDetailAction        // 0 = clear rating
+    data class OnClubReviewTextChange(val text: String) : BookDetailAction
+    data object OnClubReviewSubmit : BookDetailAction
+    data object OnClubReviewDelete : BookDetailAction
 }

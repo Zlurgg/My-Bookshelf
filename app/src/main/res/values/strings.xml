@@ -49,6 +49,22 @@
     <string name="cd_rate_stars">Rate %1$d stars</string>
     <string name="rating_display">%1$d/5</string>
 
+    <!-- Club rating card -->
+    <string name="club_rating_title">Club Rating</string>
+    <string name="club_rating_average">%1$s average (%2$d members)</string>
+    <string name="club_rating_no_ratings">No ratings yet</string>
+    <string name="club_rating_your_rating">Your club rating</string>
+    <string name="club_rating_tap_to_rate">Tap to rate</string>
+
+    <!-- Club reviews card -->
+    <string name="club_reviews_title">Club Reviews</string>
+    <string name="club_reviews_count">Club Reviews (%1$d)</string>
+    <string name="club_review_your_review">Your review</string>
+    <string name="club_review_placeholder">Add your thoughts…</string>
+    <string name="club_review_post">Post</string>
+    <string name="club_review_delete">Delete</string>
+    <string name="club_review_empty">No reviews yet. Be the first!</string>
+
     <!-- Purchase toggle card -->
     <string name="book_purchased_label">I own this book</string>
 

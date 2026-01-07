@@ -38,9 +38,13 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.Pu
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.LanguagesCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PurchasedToggleCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubRatingCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubReviewsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBook
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
+import org.koin.compose.koinInject
+import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 
 @Composable
 fun BookDetailsScreenRoot(
@@ -66,9 +70,11 @@ fun BookDetailsScreen(
     state: BookDetailState,
     onAction: (BookDetailAction) -> Unit,
     modifier: Modifier = Modifier,
+    authService: AuthService = koinInject()
 ) {
     if (state.book != null) {
         val isTutorialBook = state.book.id == BookDetailConstants.TUTORIAL_BOOK_ID
+        val currentUserId = authService.getSignedInUser()?.userId
 
         Scaffold(
             topBar = {
@@ -146,6 +152,63 @@ fun BookDetailsScreen(
                         DescriptionCard(
                             description = state.book.description,
                             initiallyExpanded = true  // Show full tutorial content by default
+                        )
+                    }
+                } else if (state.isBookClub) {
+                    // Book Club view - minimal, club-focused only
+                    // 1. Book Overview Card
+                    item {
+                        BookOverviewCard(
+                            title = state.book.title,
+                            authors = state.book.authors,
+                            firstPublishYear = state.book.firstPublishYear,
+                            numPages = state.book.numPages,
+                            numEditions = state.book.numEditions
+                        )
+                    }
+
+                    // Book Image (if available)
+                    if (showImageWithSpacing) {
+                        item {
+                            BookDetailImage(
+                                imageUrl = state.book.withMediumImage(),
+                                title = state.book.title,
+                                onImageLoadResult = { success ->
+                                    if (!success) {
+                                        showImageWithSpacing = false
+                                    }
+                                }
+                            )
+                        }
+                    }
+
+                    // 2. Club Rating Card
+                    item {
+                        ClubRatingCard(
+                            reviews = state.clubReviews,
+                            userClubRating = state.userClubRating,
+                            onClubRatingChange = { rating ->
+                                onAction(BookDetailAction.OnClubRatingChange(rating))
+                            }
+                        )
+                    }
+
+                    // 3. Club Reviews Card
+                    item {
+                        ClubReviewsCard(
+                            reviews = state.clubReviews,
+                            currentUserId = currentUserId,
+                            userReviewText = state.userClubReviewText,
+                            onReviewTextChange = { text ->
+                                onAction(BookDetailAction.OnClubReviewTextChange(text))
+                            },
+                            onReviewSubmit = {
+                                onAction(BookDetailAction.OnClubReviewSubmit)
+                            },
+                            onReviewDelete = {
+                                onAction(BookDetailAction.OnClubReviewDelete)
+                            },
+                            isLoading = state.isLoadingReviews
                         )
                     }
                 } else {

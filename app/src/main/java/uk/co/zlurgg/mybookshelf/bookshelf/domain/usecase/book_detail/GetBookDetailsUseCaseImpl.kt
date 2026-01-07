@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookDetailsWithShelfStatus
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -15,10 +16,16 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 class GetBookDetailsUseCaseImpl(
     private val bookRepository: BookRepository,
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfRepository: BookshelfRepository,
+    private val bookcaseRepository: BookcaseRepository
 ) : GetBookDetailsUseCase {
 
     override suspend fun execute(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> {
+        // Get shelf info to check if it's a book club
+        val shelf = bookcaseRepository.getShelfById(shelfId)
+        val isBookClub = shelf?.isBookClub ?: false
+        val clubCode = shelf?.clubCode
+
         // Get the shelf status Flow and combine with book data
         return bookshelfRepository.isBookOnShelf(bookId, shelfId)
             .combine(
@@ -29,7 +36,9 @@ class GetBookDetailsUseCaseImpl(
             ) { isOnShelf, book ->
                 BookDetailsWithShelfStatus(
                     book = book,
-                    isOnShelf = isOnShelf
+                    isOnShelf = isOnShelf,
+                    isBookClub = isBookClub,
+                    clubCode = clubCode
                 )
             }
     }

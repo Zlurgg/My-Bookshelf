@@ -378,6 +378,8 @@ val appModule = module {
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookDetailUseCases = get(),
+            bookClubUseCases = get(),
+            authService = get(),
             bookId = bookId,
             shelfId = shelfId
         )

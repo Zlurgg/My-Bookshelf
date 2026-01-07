@@ -10,8 +10,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
@@ -20,6 +22,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class BookDetailViewModel(
     private val bookDetailUseCases: BookDetailUseCases,
+    private val bookClubUseCases: BookClubUseCases,
+    private val authService: AuthService,
     private val bookId: String,
     private val shelfId: String
 ) : ViewModel() {
@@ -29,6 +33,8 @@ class BookDetailViewModel(
 
     // Job for debounced auto-save of personal notes
     private var saveNotesJob: Job? = null
+    // Job for debounced auto-save of club review
+    private var saveReviewJob: Job? = null
 
     init {
         loadBookDetails()
@@ -43,8 +49,15 @@ class BookDetailViewModel(
                 currentState.copy(
                     book = bookDetails.book,
                     onShelf = bookDetails.isOnShelf,
+                    isBookClub = bookDetails.isBookClub,
+                    clubCode = bookDetails.clubCode,
                     isLoading = false
                 )
+            }
+
+            // Load club reviews if this is a book club book
+            if (bookDetails.isBookClub && bookDetails.clubCode != null) {
+                loadClubReviews(bookDetails.clubCode)
             }
         }
 
@@ -59,6 +72,42 @@ class BookDetailViewModel(
                 .onError {
                     // ignore, keep UI usable
                 }
+        }
+    }
+
+    private fun loadClubReviews(clubCode: String) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoadingReviews = true) }
+
+            when (val reviewsResult = bookClubUseCases.getBookClubReviews(clubCode, bookId)) {
+                is Result.Success -> {
+                    val reviews = reviewsResult.data
+                    val currentUserId = authService.getSignedInUser()?.userId
+
+                    // Find current user's review to pre-populate their rating/text
+                    val userReview = reviews.find { it.userId == currentUserId }
+
+                    _state.update {
+                        it.copy(
+                            clubReviews = reviews,
+                            userClubRating = userReview?.rating ?: 0f,
+                            userClubReviewText = userReview?.reviewText ?: "",
+                            isLoadingReviews = false
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoadingReviews = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                reviewsResult.error,
+                                "load club reviews"
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -200,6 +249,73 @@ class BookDetailViewModel(
                             _state.update { it.withError(metadataResult.error, "update personal notes") }
                         }
                     }
+                }
+            }
+
+            // Club review actions
+            is BookDetailAction.OnClubRatingChange -> {
+                val clubCode = state.value.clubCode ?: return
+                _state.update { it.copy(userClubRating = action.rating) }
+                submitClubReview(clubCode, action.rating, state.value.userClubReviewText)
+            }
+            is BookDetailAction.OnClubReviewTextChange -> {
+                // Cancel previous auto-save job if user is still typing
+                saveReviewJob?.cancel()
+
+                // Update state immediately (optimistic UI)
+                _state.update { it.copy(userClubReviewText = action.text) }
+
+                // Start debounced auto-save (2 seconds after user stops typing)
+                saveReviewJob = viewModelScope.launch {
+                    delay(2000) // Wait 2 seconds
+                    val clubCode = state.value.clubCode ?: return@launch
+                    submitClubReview(clubCode, state.value.userClubRating, action.text)
+                }
+            }
+            is BookDetailAction.OnClubReviewSubmit -> {
+                val clubCode = state.value.clubCode ?: return
+                saveReviewJob?.cancel()
+                submitClubReview(clubCode, state.value.userClubRating, state.value.userClubReviewText)
+            }
+            is BookDetailAction.OnClubReviewDelete -> {
+                val clubCode = state.value.clubCode ?: return
+                viewModelScope.launch {
+                    when (val deleteResult = bookClubUseCases.deleteBookClubReview(clubCode, bookId)) {
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(
+                                    userClubRating = 0f,
+                                    userClubReviewText = "",
+                                    // Remove user's review from the list
+                                    clubReviews = it.clubReviews.filter { review ->
+                                        review.userId != authService.getSignedInUser()?.userId
+                                    }
+                                )
+                            }
+                        }
+                        is Result.Error -> {
+                            _state.update { it.withError(deleteResult.error, "delete club review") }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun submitClubReview(clubCode: String, rating: Float, reviewText: String) {
+        viewModelScope.launch {
+            when (val upsertResult = bookClubUseCases.upsertBookClubReview(
+                clubCode = clubCode,
+                bookId = bookId,
+                rating = rating,
+                reviewText = reviewText
+            )) {
+                is Result.Success -> {
+                    // Reload reviews to get updated list
+                    loadClubReviews(clubCode)
+                }
+                is Result.Error -> {
+                    _state.update { it.withError(upsertResult.error, "save club review") }
                 }
             }
         }
