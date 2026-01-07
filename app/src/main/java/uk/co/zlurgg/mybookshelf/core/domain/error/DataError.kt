@@ -33,6 +33,7 @@ sealed interface DataError: Error {
         AUTH_NETWORK_ERROR,
         PERMISSION_DENIED,
         MAX_SHELVES_REACHED,
+        MAX_BOOKS_REACHED,
         UNKNOWN
     }
 

@@ -8,6 +8,7 @@ import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
+import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
@@ -29,6 +30,17 @@ class AddBookToShelfUseCaseTest {
         mockSyncSchedulerService
     )
 
+    /**
+     * Helper to set up a default shelf for tests that don't need specific shelf configuration.
+     */
+    private fun setUpDefaultShelf(shelfId: String) {
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withName("Test Shelf")
+            .withBooks(emptyList())
+            .build()
+    }
+
     @After
     fun tearDown() {
         mockBookRepository.reset()
@@ -46,6 +58,7 @@ class AddBookToShelfUseCaseTest {
             .withTitle("Test Book")
             .build()
         val shelfId = "shelf-456"
+        setUpDefaultShelf(shelfId)
 
         // When
         val result = useCase.execute(book, shelfId)
@@ -70,6 +83,7 @@ class AddBookToShelfUseCaseTest {
             .withTitle("Science Fiction Novel")
             .build()
         val shelfId = "sci-fi-shelf"
+        setUpDefaultShelf(shelfId)
 
         // When
         val result = useCase.execute(book, shelfId)
@@ -97,6 +111,7 @@ class AddBookToShelfUseCaseTest {
             .withPurchased(true)
             .build()
         val shelfId = "test-shelf"
+        setUpDefaultShelf(shelfId)
 
         // When
         val result = useCase.execute(updatedBook, shelfId)
@@ -118,9 +133,16 @@ class AddBookToShelfUseCaseTest {
             .build()
         val firstShelf = "fiction-shelf"
         val secondShelf = "favorites-shelf"
+        setUpDefaultShelf(firstShelf)
 
         // When - Add to first shelf
         val firstResult = useCase.execute(book, firstShelf)
+        // Set up second shelf
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(secondShelf)
+            .withName("Favorites")
+            .withBooks(emptyList())
+            .build()
         // When - Add to second shelf
         val secondResult = useCase.execute(book, secondShelf)
 
@@ -140,6 +162,7 @@ class AddBookToShelfUseCaseTest {
         // Given
         val book = TestBookBuilder().withId("test-book").build()
         val shelfId = "test-shelf"
+        setUpDefaultShelf(shelfId)
         mockBookRepository.shouldThrowException = true
 
         // When
@@ -159,6 +182,7 @@ class AddBookToShelfUseCaseTest {
         // Given
         val book = TestBookBuilder().withId("test-book").build()
         val shelfId = "test-shelf"
+        setUpDefaultShelf(shelfId)
         mockBookshelfRepository.shouldThrowException = true
 
         // When
@@ -180,6 +204,7 @@ class AddBookToShelfUseCaseTest {
             .withTitle("Book with Empty ID")
             .build()
         val shelfId = "test-shelf"
+        setUpDefaultShelf(shelfId)
 
         // When
         val result = useCase.execute(book, shelfId)
@@ -196,6 +221,7 @@ class AddBookToShelfUseCaseTest {
         // Given
         val book = TestBookBuilder().withId("test-book").build()
         val shelfId = "" // Empty shelf ID
+        setUpDefaultShelf(shelfId)
 
         // When
         val result = useCase.execute(book, shelfId)
@@ -212,6 +238,7 @@ class AddBookToShelfUseCaseTest {
         // Given
         val book = TestBookBuilder.completeBook()
         val shelfId = "complete-shelf"
+        setUpDefaultShelf(shelfId)
 
         // When
         val result = useCase.execute(book, shelfId)
@@ -255,6 +282,7 @@ class AddBookToShelfUseCaseTest {
             .withPurchased(false) // Default
             .build()
         val shelfId = "test-shelf"
+        setUpDefaultShelf(shelfId)
 
         // When - Add fresh API book to shelf
         val result = useCase.execute(freshBookFromApi, shelfId)
@@ -290,6 +318,7 @@ class AddBookToShelfUseCaseTest {
             .withPurchased(false)
             .build()
         val shelfId = "test-shelf"
+        setUpDefaultShelf(shelfId)
 
         // When
         val result = useCase.execute(newBookFromApi, shelfId)
@@ -303,5 +332,117 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should use default rating", 0f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should use default notes", "", upsertedBook.personalNotes)
         assertEquals("Should use default reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ, upsertedBook.readingStatus)
+    }
+
+    // Book Limit Tests
+
+    @Test
+    fun `execute returns MAX_BOOKS_REACHED when shelf has 20 books`() = runTest {
+        // Given - Shelf already at max capacity
+        val existingBooks = (1..AddBookToShelfUseCaseImpl.MAX_BOOKS_PER_SHELF).map { i ->
+            TestBookBuilder()
+                .withId("book-$i")
+                .withTitle("Book $i")
+                .build()
+        }
+        val shelfId = "full-shelf"
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withName("Full Shelf")
+            .withBooks(existingBooks)
+            .build()
+
+        val newBook = TestBookBuilder()
+            .withId("new-book")
+            .withTitle("One Too Many")
+            .build()
+
+        // When
+        val result = useCase.execute(newBook, shelfId)
+
+        // Then
+        assertTrue("Should return error", result is Result.Error)
+        val error = (result as Result.Error).error
+        assertEquals("Should be MAX_BOOKS_REACHED error", DataError.Local.MAX_BOOKS_REACHED, error)
+        assertEquals("Should not call upsertBook", 0, mockBookRepository.upsertBookCallCount)
+        assertEquals("Should not call addBookToShelf", 0, mockBookshelfRepository.addBookToShelfCallCount)
+    }
+
+    @Test
+    fun `execute adds book successfully when shelf has fewer than 20 books`() = runTest {
+        // Given - Shelf with only 5 books
+        val existingBooks = (1..5).map { i ->
+            TestBookBuilder()
+                .withId("book-$i")
+                .withTitle("Book $i")
+                .build()
+        }
+        val shelfId = "partial-shelf"
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withName("Partial Shelf")
+            .withBooks(existingBooks)
+            .build()
+
+        val newBook = TestBookBuilder()
+            .withId("new-book")
+            .withTitle("New Book")
+            .build()
+
+        // When
+        val result = useCase.execute(newBook, shelfId)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
+        assertEquals("Should call addBookToShelf once", 1, mockBookshelfRepository.addBookToShelfCallCount)
+    }
+
+    @Test
+    fun `execute adds 20th book successfully at the limit boundary`() = runTest {
+        // Given - Shelf with 19 books (one below max)
+        val existingBooks = (1..19).map { i ->
+            TestBookBuilder()
+                .withId("book-$i")
+                .withTitle("Book $i")
+                .build()
+        }
+        val shelfId = "almost-full-shelf"
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withName("Almost Full Shelf")
+            .withBooks(existingBooks)
+            .build()
+
+        val book20 = TestBookBuilder()
+            .withId("book-20")
+            .withTitle("Book 20 - The Last One")
+            .build()
+
+        // When
+        val result = useCase.execute(book20, shelfId)
+
+        // Then
+        assertTrue("Should return success for 20th book", result is Result.Success)
+        assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
+        assertEquals("Should call addBookToShelf once", 1, mockBookshelfRepository.addBookToShelfCallCount)
+    }
+
+    @Test
+    fun `execute returns NOT_FOUND when shelf does not exist`() = runTest {
+        // Given - No shelf configured (returns null)
+        mockBookcaseRepository.shelfByIdToReturn = null
+        val book = TestBookBuilder().withId("test-book").build()
+        val shelfId = "non-existent-shelf"
+
+        // When
+        val result = useCase.execute(book, shelfId)
+
+        // Then
+        assertTrue("Should return error", result is Result.Error)
+        val error = (result as Result.Error).error
+        assertEquals("Should be NOT_FOUND error", DataError.Local.NOT_FOUND, error)
+        assertEquals("Should not call upsertBook", 0, mockBookRepository.upsertBookCallCount)
+        assertEquals("Should not call addBookToShelf", 0, mockBookshelfRepository.addBookToShelfCallCount)
     }
 }

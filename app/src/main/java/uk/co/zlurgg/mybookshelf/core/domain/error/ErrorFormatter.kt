@@ -43,6 +43,7 @@ object ErrorFormatter {
             DataError.Local.AUTH_NETWORK_ERROR -> "Network error during sign-in. Please check your connection."
             DataError.Local.PERMISSION_DENIED -> "You don't have permission to perform this action."
             DataError.Local.MAX_SHELVES_REACHED -> "You've reached the maximum of 20 shelves."
+            DataError.Local.MAX_BOOKS_REACHED -> "This shelf has reached its maximum of 20 books."
             DataError.Local.UNKNOWN -> "Unknown local error occurred."
 
             // Validation errors

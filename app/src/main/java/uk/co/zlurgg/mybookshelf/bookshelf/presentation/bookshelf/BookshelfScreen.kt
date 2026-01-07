@@ -1,8 +1,10 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,6 +48,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCaseImpl
 
 @Composable
 fun BookshelfScreenRoot(
@@ -180,6 +183,27 @@ fun BookshelfScreen(
     ) { paddingValues ->
         if (!state.isLoading && books.isEmpty()) {
             LazyColumn(contentPadding = paddingValues) {
+                // Book count counter (hidden for tutorial shelf)
+                if (!state.isTutorialShelf) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.shelf_book_count,
+                                    books.size,
+                                    AddBookToShelfUseCaseImpl.MAX_BOOKS_PER_SHELF
+                                ),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
                 item {
                     Text(
                         text = stringResource(id = R.string.bookshelf_empty_state_hint),
@@ -201,8 +225,30 @@ fun BookshelfScreen(
             }
         } else {
             LazyColumn(contentPadding = paddingValues) {
+                // Book count counter (hidden for tutorial shelf)
+                if (!state.isTutorialShelf) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    R.string.shelf_book_count,
+                                    books.size,
+                                    AddBookToShelfUseCaseImpl.MAX_BOOKS_PER_SHELF
+                                ),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
                 var bookIndex = 0
-                
+
                 while (bookIndex < books.size) {
                     // Calculate how many books fit in a row based on their individual styles
                     var currentRowWidth = 0f

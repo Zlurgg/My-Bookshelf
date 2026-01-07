@@ -29,6 +29,15 @@ class AddBookToShelfUseCaseImpl(
 
     override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> {
         return try {
+            // Check shelf book limit before adding
+            val shelf = bookcaseRepository.getShelfById(shelfId)
+                ?: return Result.Error(DataError.Local.NOT_FOUND)
+
+            if (shelf.books.size >= MAX_BOOKS_PER_SHELF) {
+                Timber.tag(TAG).w("Shelf %s has reached maximum of %d books", shelfId, MAX_BOOKS_PER_SHELF)
+                return Result.Error(DataError.Local.MAX_BOOKS_REACHED)
+            }
+
             // Check if book already exists to preserve personal metadata
             val existingBook = bookRepository.getBookById(book.id)
 
@@ -55,8 +64,7 @@ class AddBookToShelfUseCaseImpl(
             bookshelfRepository.addBookToShelf(shelfId, book.id)
 
             // If this is a book club shelf, also sync to Firestore club collection
-            val shelf = bookcaseRepository.getShelfById(shelfId)
-            if (shelf?.isBookClub == true && !shelf.clubCode.isNullOrEmpty()) {
+            if (shelf.isBookClub && !shelf.clubCode.isNullOrEmpty()) {
                 Timber.tag(TAG).d("Syncing book %s to book club %s", book.id, shelf.clubCode)
                 val syncResult = bookClubRepository.syncBookToClub(shelf.clubCode, bookToUpsert)
                 if (syncResult is Result.Error) {
@@ -80,5 +88,6 @@ class AddBookToShelfUseCaseImpl(
 
     companion object {
         private const val TAG = "AddBookToShelf"
+        const val MAX_BOOKS_PER_SHELF = 20
     }
 }
