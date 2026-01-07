@@ -65,6 +65,17 @@
     <string name="club_review_delete">Delete</string>
     <string name="club_review_empty">No reviews yet. Be the first!</string>
 
+    <!-- Club comments card (discussion) -->
+    <string name="club_discussion_title">Discussion</string>
+    <string name="club_comments_count">Discussion (%1$d)</string>
+    <string name="club_comment_placeholder">Add a comment…</string>
+    <string name="club_comment_send">Send</string>
+    <string name="club_comment_edit">Edit</string>
+    <string name="club_comment_delete">Delete</string>
+    <string name="club_comment_save">Save</string>
+    <string name="club_comment_empty">No comments yet. Start the discussion!</string>
+    <string name="club_comment_edited">(edited)</string>
+
     <!-- Purchase toggle card -->
     <string name="book_purchased_label">I own this book</string>
 

@@ -40,6 +40,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.Pu
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubRatingCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubReviewsCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubCommentsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBook
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
@@ -193,22 +194,36 @@ fun BookDetailsScreen(
                         )
                     }
 
-                    // 3. Club Reviews Card
+                    // 3. Club Comments Card (Discussion)
                     item {
-                        ClubReviewsCard(
-                            reviews = state.clubReviews,
+                        ClubCommentsCard(
+                            comments = state.clubComments,
                             currentUserId = currentUserId,
-                            userReviewText = state.userClubReviewText,
-                            onReviewTextChange = { text ->
-                                onAction(BookDetailAction.OnClubReviewTextChange(text))
+                            commentText = state.commentText,
+                            onCommentTextChange = { text ->
+                                onAction(BookDetailAction.OnCommentTextChange(text))
                             },
-                            onReviewSubmit = {
-                                onAction(BookDetailAction.OnClubReviewSubmit)
+                            onCommentSubmit = {
+                                onAction(BookDetailAction.OnCommentSubmit)
                             },
-                            onReviewDelete = {
-                                onAction(BookDetailAction.OnClubReviewDelete)
+                            editingCommentId = state.editingCommentId,
+                            editingCommentText = state.editingCommentText,
+                            onCommentEditStart = { commentId, currentText ->
+                                onAction(BookDetailAction.OnCommentEditStart(commentId, currentText))
                             },
-                            isLoading = state.isLoadingReviews
+                            onCommentEditTextChange = { text ->
+                                onAction(BookDetailAction.OnCommentEditTextChange(text))
+                            },
+                            onCommentEditSave = {
+                                onAction(BookDetailAction.OnCommentEditSave)
+                            },
+                            onCommentEditCancel = {
+                                onAction(BookDetailAction.OnCommentEditCancel)
+                            },
+                            onCommentDelete = { commentId ->
+                                onAction(BookDetailAction.OnCommentDelete(commentId))
+                            },
+                            isLoading = state.isLoadingComments
                         )
                     }
                 } else {
