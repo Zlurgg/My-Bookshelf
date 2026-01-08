@@ -12,7 +12,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles offline scenarios gracefully - if fetch fails, local cache is used.
  */
 interface SyncUserPreferencesUseCase {
-
     /**
      * Fetches user preferences from cloud and caches locally.
      *

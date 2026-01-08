@@ -3,7 +3,6 @@ package uk.co.zlurgg.mybookshelf.core.data.network
 import uk.co.zlurgg.mybookshelf.BuildConfig
 
 object ApiConfig {
-
     private val openLibraryBaseUrl: String = BuildConfig.OPEN_LIBRARY_BASE_URL
     val shareBaseUrl: String = BuildConfig.SHARE_BASE_URL
     val httpTimeoutMillis: Long = BuildConfig.HTTP_TIMEOUT_MILLIS
@@ -11,6 +10,7 @@ object ApiConfig {
     object OpenLibrary {
         val baseUrl: String = openLibraryBaseUrl
         val searchEndpoint: String = "$baseUrl/search.json"
+
         fun workDetailsEndpoint(workId: String): String = "$baseUrl/works/$workId.json"
 
         object DefaultParams {
@@ -27,7 +27,7 @@ object ApiConfig {
             enum class CoverSize(val suffix: String) {
                 SMALL("-S.jpg"),
                 MEDIUM("-M.jpg"),
-                LARGE("-L.jpg")
+                LARGE("-L.jpg"),
             }
 
             /**
@@ -38,7 +38,10 @@ object ApiConfig {
              * @param size The desired image size
              * @return Complete cover URL, or empty string if coverKey is null
              */
-            fun buildCoverUrl(coverKey: String?, size: CoverSize): String {
+            fun buildCoverUrl(
+                coverKey: String?,
+                size: CoverSize,
+            ): String {
                 return when {
                     coverKey == null -> ""
                     coverKey.startsWith("OL") -> "$COVER_BASE_URL/b/olid/$coverKey${size.suffix}"

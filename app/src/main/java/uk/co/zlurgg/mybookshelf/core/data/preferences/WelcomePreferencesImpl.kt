@@ -23,9 +23,8 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  */
 class WelcomePreferencesImpl(
     private val context: Context,
-    private val dataStore: DataStore<Preferences> = context.dataStore
+    private val dataStore: DataStore<Preferences> = context.dataStore,
 ) : WelcomePreferences, UpdatePreferencesRepository {
-
     private object PreferencesKeys {
         val DISMISSED_UPDATE_VERSION = stringPreferencesKey("dismissed_update_version")
 

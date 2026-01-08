@@ -11,16 +11,15 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
  * to a user's account.
  */
 class HasGuestDataUseCaseImpl(
-    private val bookshelfDao: BookshelfDao
+    private val bookshelfDao: BookshelfDao,
 ) : HasGuestDataUseCase {
-
     override suspend fun execute(): GuestDataInfo {
         val bookCount = bookshelfDao.countOrphanBooks()
         val shelfCount = bookshelfDao.countOrphanShelves()
 
         return GuestDataInfo(
             bookCount = bookCount,
-            shelfCount = shelfCount
+            shelfCount = shelfCount,
         )
     }
 }

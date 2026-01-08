@@ -33,7 +33,7 @@ fun ChangeStyleDialog(
     currentStyle: ShelfStyle,
     onDismiss: () -> Unit,
     onChangeStyle: (ShelfStyle) -> Unit,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
 ) {
     var selectedStyle by remember { mutableStateOf(currentStyle) }
 
@@ -47,21 +47,33 @@ fun ChangeStyleDialog(
                 Text(stringResource(id = R.string.dialog_change_style_message))
                 Spacer(modifier = Modifier.height(12.dp))
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(ShelfStyle.entries.size) { index ->
                         val style = ShelfStyle.entries[index]
                         Card(
                             onClick = { selectedStyle = style },
-                            border = if (selectedStyle == style) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            border =
+                                if (selectedStyle == style) {
+                                    BorderStroke(
+                                        2.dp,
+                                        MaterialTheme.colorScheme.primary,
+                                    )
+                                } else {
+                                    null
+                                },
+                            colors =
+                                CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                ),
                         ) {
                             Image(
                                 painter = ShelfMaterial.fromShelfStyle(style).painterSmall(),
                                 contentDescription = style.name,
-                                modifier = Modifier
-                                    .height(48.dp)
-                                    .fillMaxWidth()
+                                modifier =
+                                    Modifier
+                                        .height(48.dp)
+                                        .fillMaxWidth(),
                             )
                         }
                     }
@@ -78,7 +90,7 @@ fun ChangeStyleDialog(
             } else {
                 Button(
                     enabled = selectedStyle != currentStyle,
-                    onClick = { onChangeStyle(selectedStyle) }
+                    onClick = { onChangeStyle(selectedStyle) },
                 ) {
                     Text(stringResource(id = R.string.action_change))
                 }
@@ -87,10 +99,10 @@ fun ChangeStyleDialog(
         dismissButton = {
             Button(
                 onClick = onDismiss,
-                enabled = !isLoading
+                enabled = !isLoading,
             ) {
                 Text(stringResource(id = R.string.action_cancel))
             }
-        }
+        },
     )
 }

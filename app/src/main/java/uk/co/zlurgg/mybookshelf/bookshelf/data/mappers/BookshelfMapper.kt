@@ -12,14 +12,14 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
  * since it requires API calls to fetch book details.
  */
 object BookshelfMapper {
-
     fun toExportedBookshelf(shelf: Bookshelf): ExportedBookshelf {
         return ExportedBookshelf(
             name = shelf.name,
             shelfStyle = shelf.shelfStyle,
-            bookIds = shelf.books.map { book ->
-                BookIdentifier(workId = book.id)
-            }
+            bookIds =
+                shelf.books.map { book ->
+                    BookIdentifier(workId = book.id)
+                },
         )
     }
 }

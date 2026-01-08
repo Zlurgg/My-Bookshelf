@@ -21,9 +21,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class GoogleAuthUiClient(
     private val context: Context,
-    private val authConfig: AuthConfig
+    private val authConfig: AuthConfig,
 ) : AuthService {
-
     companion object {
         private const val TAG = "GoogleAuth"
     }
@@ -35,22 +34,25 @@ class GoogleAuthUiClient(
         Timber.tag(TAG).d("=== GOOGLE SIGN-IN START ===")
 
         return try {
-            val googleIdOption = GetGoogleIdOption.Builder()
-                .setFilterByAuthorizedAccounts(false)
-                .setServerClientId(authConfig.webClientId)
-                .setAutoSelectEnabled(true)
-                .build()
+            val googleIdOption =
+                GetGoogleIdOption.Builder()
+                    .setFilterByAuthorizedAccounts(false)
+                    .setServerClientId(authConfig.webClientId)
+                    .setAutoSelectEnabled(true)
+                    .build()
 
-            val request = GetCredentialRequest.Builder()
-                .addCredentialOption(googleIdOption)
-                .build()
+            val request =
+                GetCredentialRequest.Builder()
+                    .addCredentialOption(googleIdOption)
+                    .build()
 
             Timber.tag(TAG).d("Requesting credential from CredentialManager...")
 
-            val result = credentialManager.getCredential(
-                request = request,
-                context = context
-            )
+            val result =
+                credentialManager.getCredential(
+                    request = request,
+                    context = context,
+                )
 
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
             val idToken = googleIdTokenCredential.idToken
@@ -67,8 +69,8 @@ class GoogleAuthUiClient(
                     UserData(
                         userId = user.uid,
                         username = user.displayName,
-                        profilePictureUrl = user.photoUrl?.toString()
-                    )
+                        profilePictureUrl = user.photoUrl?.toString(),
+                    ),
                 )
             } else {
                 Timber.tag(TAG).e("Firebase returned null user")
@@ -107,7 +109,7 @@ class GoogleAuthUiClient(
             UserData(
                 userId = user.uid,
                 username = user.displayName,
-                profilePictureUrl = user.photoUrl?.toString()
+                profilePictureUrl = user.photoUrl?.toString(),
             )
         }
     }

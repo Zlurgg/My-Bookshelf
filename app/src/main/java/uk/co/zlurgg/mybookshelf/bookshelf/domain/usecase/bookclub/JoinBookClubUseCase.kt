@@ -30,7 +30,7 @@ sealed class JoinResult {
      */
     data class Success(
         val localShelfId: String,
-        val shelfName: String
+        val shelfName: String,
     ) : JoinResult()
 
     /**

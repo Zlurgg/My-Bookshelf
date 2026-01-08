@@ -55,21 +55,22 @@ fun BookClubPreviewDialog(
             Text(
                 text = stringResource(R.string.book_club_preview_title),
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // Shelf style preview
                 ShelfStylePreview(
                     style = bookClub.style,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(60.dp)
-                        .clip(RoundedCornerShape(8.dp))
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .height(60.dp)
+                            .clip(RoundedCornerShape(8.dp)),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -79,7 +80,7 @@ fun BookClubPreviewDialog(
                     text = bookClub.name,
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -89,7 +90,7 @@ fun BookClubPreviewDialog(
                     text = "Created by ${bookClub.createdByName}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -97,7 +98,7 @@ fun BookClubPreviewDialog(
                 // Stats row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     // Book count
                     StatItem(
@@ -106,10 +107,10 @@ fun BookClubPreviewDialog(
                                 imageVector = Icons.Default.Book,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(20.dp),
                             )
                         },
-                        label = stringResource(R.string.book_club_preview_books, bookClub.bookCount)
+                        label = stringResource(R.string.book_club_preview_books, bookClub.bookCount),
                     )
 
                     // Member count
@@ -119,10 +120,10 @@ fun BookClubPreviewDialog(
                                 imageVector = Icons.Default.Groups,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(20.dp),
                             )
                         },
-                        label = stringResource(R.string.book_club_preview_members, bookClub.memberCount)
+                        label = stringResource(R.string.book_club_preview_members, bookClub.memberCount),
                     )
                 }
             }
@@ -131,7 +132,7 @@ fun BookClubPreviewDialog(
             if (isJoining) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     CircularProgressIndicator(modifier = Modifier.size(20.dp))
                     Text(stringResource(R.string.book_club_preview_joining))
@@ -145,13 +146,13 @@ fun BookClubPreviewDialog(
         dismissButton = {
             TextButton(
                 onClick = onDismiss,
-                enabled = !isJoining
+                enabled = !isJoining,
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -159,18 +160,18 @@ fun BookClubPreviewDialog(
 private fun StatItem(
     icon: @Composable () -> Unit,
     label: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         icon()
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
         )
     }
 }
@@ -178,30 +179,33 @@ private fun StatItem(
 @Composable
 private fun ShelfStylePreview(
     style: ShelfStyle,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val backgroundColor = when (style) {
-        ShelfStyle.DarkWood -> Color(0xFF5D4E37)
-        ShelfStyle.SilverMetal -> Color(0xFFC0C0C0)
-        ShelfStyle.WhiteMetal -> Color(0xFFE8E8E8)
-        ShelfStyle.GreyMetal -> Color(0xFF808080)
-        ShelfStyle.DarkGreyMetal -> Color(0xFF404040)
-    }
+    val backgroundColor =
+        when (style) {
+            ShelfStyle.DarkWood -> Color(0xFF5D4E37)
+            ShelfStyle.SilverMetal -> Color(0xFFC0C0C0)
+            ShelfStyle.WhiteMetal -> Color(0xFFE8E8E8)
+            ShelfStyle.GreyMetal -> Color(0xFF808080)
+            ShelfStyle.DarkGreyMetal -> Color(0xFF404040)
+        }
 
     Box(
-        modifier = modifier
-            .background(backgroundColor)
-            .padding(8.dp),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .background(backgroundColor)
+                .padding(8.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Text(
             text = style.name.replace("([A-Z])".toRegex(), " $1").trim(),
             style = MaterialTheme.typography.labelMedium,
-            color = if (style == ShelfStyle.DarkWood || style == ShelfStyle.DarkGreyMetal) {
-                Color.White.copy(alpha = 0.8f)
-            } else {
-                Color.Black.copy(alpha = 0.6f)
-            }
+            color =
+                if (style == ShelfStyle.DarkWood || style == ShelfStyle.DarkGreyMetal) {
+                    Color.White.copy(alpha = 0.8f)
+                } else {
+                    Color.Black.copy(alpha = 0.6f)
+                },
         )
     }
 }

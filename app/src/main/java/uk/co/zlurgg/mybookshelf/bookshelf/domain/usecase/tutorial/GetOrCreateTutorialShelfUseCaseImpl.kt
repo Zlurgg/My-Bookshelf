@@ -11,31 +11,32 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class GetOrCreateTutorialShelfUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
+    private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase,
 ) : GetOrCreateTutorialShelfUseCase {
-
     override suspend fun execute(): Result<String, DataError.Local> {
         return ErrorMapper.safeCall {
             // Check if tutorial shelf already exists (using fixed ID)
             val existingShelf = bookcaseRepository.getShelfById(SystemOwnerIds.TUTORIAL_SHELF_ID)
 
-            val shelfId = if (existingShelf != null) {
-                // Tutorial shelf exists, use its ID
-                existingShelf.id
-            } else {
-                // Create new tutorial shelf with fixed ID and system owner
-                val randomStyle = ShelfStyle.entries.random()
-                val newTutorialShelf = Bookshelf(
-                    id = SystemOwnerIds.TUTORIAL_SHELF_ID,
-                    name = BookshelfConstants.TUTORIAL_SHELF_NAME,
-                    shelfStyle = randomStyle,
-                    position = 0,
-                    books = emptyList()
-                )
+            val shelfId =
+                if (existingShelf != null) {
+                    // Tutorial shelf exists, use its ID
+                    existingShelf.id
+                } else {
+                    // Create new tutorial shelf with fixed ID and system owner
+                    val randomStyle = ShelfStyle.entries.random()
+                    val newTutorialShelf =
+                        Bookshelf(
+                            id = SystemOwnerIds.TUTORIAL_SHELF_ID,
+                            name = BookshelfConstants.TUTORIAL_SHELF_NAME,
+                            shelfStyle = randomStyle,
+                            position = 0,
+                            books = emptyList(),
+                        )
 
-                bookcaseRepository.addSystemShelf(newTutorialShelf)
-                newTutorialShelf.id
-            }
+                    bookcaseRepository.addSystemShelf(newTutorialShelf)
+                    newTutorialShelf.id
+                }
 
             // Ensure tutorial book exists in the shelf
             getOrCreateTutorialBook.execute(shelfId)

@@ -18,13 +18,14 @@ interface DownloadUpdateUseCase {
  */
 class DownloadUpdateUseCaseImpl(
     private val updateRepository: UpdateRepository,
-    private val config: UpdateConfig
+    private val config: UpdateConfig,
 ) : DownloadUpdateUseCase {
     override operator fun invoke(updateInfo: UpdateInfo): Long? {
-        val downloadUrl = updateInfo.apkDownloadUrl ?: run {
-            Timber.e("No APK download URL available")
-            return null
-        }
+        val downloadUrl =
+            updateInfo.apkDownloadUrl ?: run {
+                Timber.e("No APK download URL available")
+                return null
+            }
 
         val fileName = "${config.appName}-${updateInfo.versionName}.apk"
         Timber.i("Starting download: $fileName")

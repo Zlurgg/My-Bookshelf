@@ -23,26 +23,27 @@ private const val GITHUB_OWNER = "Zlurgg"
 private const val GITHUB_REPO = "My-Bookshelf"
 private const val APP_NAME = "my-bookshelf"
 
-val updateModule = module {
-    // Config
-    single {
-        UpdateConfig(
-            gitHubOwner = GITHUB_OWNER,
-            gitHubRepo = GITHUB_REPO,
-            appName = APP_NAME
-        )
+val updateModule =
+    module {
+        // Config
+        single {
+            UpdateConfig(
+                gitHubOwner = GITHUB_OWNER,
+                gitHubRepo = GITHUB_REPO,
+                appName = APP_NAME,
+            )
+        }
+
+        // Services
+        single { GitHubApiService(httpClient = get()) }
+        single { ApkDownloadService(context = get<Context>(), downloadTitle = get<UpdateConfig>().downloadTitle) }
+
+        // Repository
+        singleOf(::UpdateRepositoryImpl).bind<UpdateRepository>()
+
+        // UseCases
+        single<CheckForUpdateUseCase> { CheckForUpdateUseCaseImpl(get(), get(), BuildConfig.VERSION_NAME) }
+        single<DismissUpdateUseCase> { DismissUpdateUseCaseImpl(get()) }
+        single<DownloadUpdateUseCase> { DownloadUpdateUseCaseImpl(get(), get()) }
+        single<GetCurrentVersionInfoUseCase> { GetCurrentVersionInfoUseCaseImpl(get(), BuildConfig.VERSION_NAME) }
     }
-
-    // Services
-    single { GitHubApiService(httpClient = get()) }
-    single { ApkDownloadService(context = get<Context>(), downloadTitle = get<UpdateConfig>().downloadTitle) }
-
-    // Repository
-    singleOf(::UpdateRepositoryImpl).bind<UpdateRepository>()
-
-    // UseCases
-    single<CheckForUpdateUseCase> { CheckForUpdateUseCaseImpl(get(), get(), BuildConfig.VERSION_NAME) }
-    single<DismissUpdateUseCase> { DismissUpdateUseCaseImpl(get()) }
-    single<DownloadUpdateUseCase> { DownloadUpdateUseCaseImpl(get(), get()) }
-    single<GetCurrentVersionInfoUseCase> { GetCurrentVersionInfoUseCaseImpl(get(), BuildConfig.VERSION_NAME) }
-}

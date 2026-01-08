@@ -26,10 +26,11 @@ fun BookDetailImage(
     onImageLoadResult: (Boolean) -> Unit = {},
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(200.dp)
-            .clip(RoundedCornerShape(8.dp))
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .clip(RoundedCornerShape(8.dp)),
     ) {
         if (imageUrl?.isNotBlank() == true) {
             SubcomposeAsyncImage(
@@ -49,7 +50,7 @@ fun BookDetailImage(
                 },
                 onSuccess = {
                     onImageLoadResult(true)
-                }
+                },
             )
         } else {
             // No URL available - show placeholder

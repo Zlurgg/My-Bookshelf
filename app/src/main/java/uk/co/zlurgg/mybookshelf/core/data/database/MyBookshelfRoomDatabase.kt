@@ -18,13 +18,13 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
         BookshelfEntity::class,
         BookshelfBookCrossRef::class,
         SyncMetadataEntity::class,
-        BookClubMembershipEntity::class
+        BookClubMembershipEntity::class,
     ],
     version = 11,
-    exportSchema = true
+    exportSchema = true,
 )
 @TypeConverters(
-    StringListTypeConverter::class
+    StringListTypeConverter::class,
 )
 abstract class MyBookshelfRoomDatabase : RoomDatabase() {
     abstract val bookshelfDao: BookshelfDao

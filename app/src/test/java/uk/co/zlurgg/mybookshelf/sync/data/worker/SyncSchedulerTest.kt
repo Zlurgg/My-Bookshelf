@@ -12,7 +12,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
  * since work-testing library requires Android runtime.
  */
 class SyncSchedulerTest {
-
     @Test
     fun `SyncScheduler implements SyncSchedulerService interface`() {
         // Verifies that SyncScheduler implements the domain interface
@@ -22,7 +21,7 @@ class SyncSchedulerTest {
 
         assertTrue(
             "SyncScheduler should implement SyncSchedulerService",
-            interfaces.any { it == SyncSchedulerService::class.java }
+            interfaces.any { it == SyncSchedulerService::class.java },
         )
     }
 
@@ -35,7 +34,7 @@ class SyncSchedulerTest {
         // Verify they are distinct
         assertTrue(
             "WORK_NAME and WORK_NAME_PERIODIC should be different",
-            SyncWorker.WORK_NAME != SyncWorker.WORK_NAME_PERIODIC
+            SyncWorker.WORK_NAME != SyncWorker.WORK_NAME_PERIODIC,
         )
     }
 
@@ -46,15 +45,15 @@ class SyncSchedulerTest {
 
         assertTrue(
             "schedulePeriodicSync should be in interface",
-            interfaceMethods.contains("schedulePeriodicSync")
+            interfaceMethods.contains("schedulePeriodicSync"),
         )
         assertTrue(
             "triggerImmediateSync should be in interface",
-            interfaceMethods.contains("triggerImmediateSync")
+            interfaceMethods.contains("triggerImmediateSync"),
         )
         assertTrue(
             "cancelAllSync should be in interface",
-            interfaceMethods.contains("cancelAllSync")
+            interfaceMethods.contains("cancelAllSync"),
         )
     }
 }

@@ -8,7 +8,13 @@ import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
  */
 interface UpdateRepository {
     suspend fun getLatestRelease(): Result<UpdateInfo>
+
     suspend fun getReleaseByVersion(version: String): Result<UpdateInfo>
-    fun downloadApk(url: String, fileName: String): Long
+
+    fun downloadApk(
+        url: String,
+        fileName: String,
+    ): Long
+
     fun installApk(downloadId: Long)
 }

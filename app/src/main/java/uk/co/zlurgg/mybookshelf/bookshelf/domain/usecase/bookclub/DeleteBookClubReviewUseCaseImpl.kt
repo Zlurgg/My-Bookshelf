@@ -9,12 +9,11 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Implementation of DeleteBookClubReviewUseCase.
  */
 class DeleteBookClubReviewUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : DeleteBookClubReviewUseCase {
-
     override suspend fun invoke(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Deleting review for book %s in club %s", bookId, clubCode)
 

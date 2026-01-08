@@ -17,9 +17,8 @@ class BookRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
     private val dao: BookshelfDao,
     private val currentUserProvider: CurrentUserProvider,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
 ) : BookRepository {
-
     override suspend fun getBookById(bookId: String): Book? {
         return dao.getBookById(bookId)?.toBook()
     }
@@ -28,7 +27,7 @@ class BookRepositoryImpl(
         val ownerId = currentUserProvider.getCurrentUserId()
         dao.upsertBookWithSyncInit(
             book.toBookEntity(ownerId),
-            timeProvider.currentTimeMillis()
+            timeProvider.currentTimeMillis(),
         )
     }
 
@@ -43,8 +42,9 @@ class BookRepositoryImpl(
 
     override suspend fun upsertSystemBook(book: Book) {
         // System books are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
-        val entity = book.toBookEntity(ownerId = SystemOwnerIds.TUTORIAL)
-            .copy(syncStatus = "SYNCED")
+        val entity =
+            book.toBookEntity(ownerId = SystemOwnerIds.TUTORIAL)
+                .copy(syncStatus = "SYNCED")
         dao.upsert(entity)
     }
 }

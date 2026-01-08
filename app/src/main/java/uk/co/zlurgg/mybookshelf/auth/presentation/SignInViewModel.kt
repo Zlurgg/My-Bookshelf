@@ -23,9 +23,8 @@ class SignInViewModel(
     private val hasGuestDataUseCase: HasGuestDataUseCase,
     private val migrateLocalDataUseCase: MigrateLocalDataUseCase,
     private val syncUserPreferencesUseCase: SyncUserPreferencesUseCase,
-    private val restoreBookClubMembershipsUseCase: RestoreBookClubMembershipsUseCase
+    private val restoreBookClubMembershipsUseCase: RestoreBookClubMembershipsUseCase,
 ) : ViewModel() {
-
     companion object {
         private const val TAG = "SignInVM"
     }
@@ -53,7 +52,7 @@ class SignInViewModel(
             _state.update {
                 it.copy(
                     isContinuingAsGuest = true,
-                    navigateToDestination = destination
+                    navigateToDestination = destination,
                 )
             }
         }
@@ -73,7 +72,7 @@ class SignInViewModel(
                 _state.update {
                     it.copy(
                         isSignInSuccessful = true,
-                        navigateToDestination = destination
+                        navigateToDestination = destination,
                     )
                 }
             }
@@ -104,7 +103,7 @@ class SignInViewModel(
                                 isLoading = false,
                                 isSignInSuccessful = true,
                                 showGuestDataImportDialog = true,
-                                guestDataInfo = guestDataInfo
+                                guestDataInfo = guestDataInfo,
                             )
                         }
                     } else {
@@ -115,7 +114,7 @@ class SignInViewModel(
                             it.copy(
                                 isLoading = false,
                                 isSignInSuccessful = true,
-                                navigateToDestination = destination
+                                navigateToDestination = destination,
                             )
                         }
                     }
@@ -124,7 +123,7 @@ class SignInViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "sign in")
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "sign in"),
                         )
                     }
                 }
@@ -154,7 +153,7 @@ class SignInViewModel(
                             isLoading = false,
                             showGuestDataImportDialog = false,
                             guestDataInfo = null,
-                            navigateToDestination = destination
+                            navigateToDestination = destination,
                         )
                     }
                 }
@@ -164,7 +163,7 @@ class SignInViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "import guest data")
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "import guest data"),
                         )
                     }
                 }
@@ -180,7 +179,7 @@ class SignInViewModel(
                 it.copy(
                     showGuestDataImportDialog = false,
                     guestDataInfo = null,
-                    navigateToDestination = destination
+                    navigateToDestination = destination,
                 )
             }
         }
@@ -195,7 +194,7 @@ class SignInViewModel(
                 errorMessage = null,
                 navigateToDestination = null,
                 showGuestDataImportDialog = false,
-                guestDataInfo = null
+                guestDataInfo = null,
             )
         }
     }
@@ -207,7 +206,7 @@ class SignInViewModel(
                 Timber.tag(TAG).d(
                     "Book club memberships restored: %d restored, %d failed",
                     result.data.restoredCount,
-                    result.data.failedCount
+                    result.data.failedCount,
                 )
             }
             is Result.Error -> {

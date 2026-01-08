@@ -12,6 +12,6 @@ interface ReorderShelvesUseCase {
     suspend fun execute(
         shelfToMove: Bookshelf,
         newPosition: Int,
-        currentShelves: List<Bookshelf>
+        currentShelves: List<Bookshelf>,
     ): Result<List<Bookshelf>, DataError.Local>
 }

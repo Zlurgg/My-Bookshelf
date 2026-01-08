@@ -8,7 +8,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class ShelfOperationsHandler(
-    private val bookcaseUseCases: BookcaseUseCases
+    private val bookcaseUseCases: BookcaseUseCases,
 ) {
     companion object {
         const val MAX_PERSONAL_SHELVES = 20
@@ -17,12 +17,13 @@ class ShelfOperationsHandler(
     suspend fun createShelf(
         name: String,
         style: ShelfStyle,
-        existingShelves: List<Bookshelf>
+        existingShelves: List<Bookshelf>,
     ): Result<Bookshelf, DataError> {
         // Check personal shelf limit (exclude book clubs and tutorial shelf)
-        val personalShelfCount = existingShelves.count {
-            !it.isBookClub && it.name != BookshelfConstants.TUTORIAL_SHELF_NAME
-        }
+        val personalShelfCount =
+            existingShelves.count {
+                !it.isBookClub && it.name != BookshelfConstants.TUTORIAL_SHELF_NAME
+            }
         if (personalShelfCount >= MAX_PERSONAL_SHELVES) {
             return Result.Error(DataError.Local.MAX_SHELVES_REACHED)
         }

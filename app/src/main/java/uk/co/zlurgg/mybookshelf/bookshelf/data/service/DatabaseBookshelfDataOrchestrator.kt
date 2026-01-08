@@ -17,14 +17,14 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class DatabaseBookshelfDataOrchestrator(
     private val bookcaseRepository: BookcaseRepository,
     private val bookshelfRepository: BookshelfRepository,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
 ) : BookshelfDataOrchestrator {
-
     override suspend fun loadShelfForExport(shelfId: String): Result<Bookshelf, DataError.Local> {
         return try {
             val allShelves = bookcaseRepository.getAllShelves().first()
-            val shelf = allShelves.find { it.id == shelfId }
-                ?: return Result.Error(DataError.Local.NOT_FOUND)
+            val shelf =
+                allShelves.find { it.id == shelfId }
+                    ?: return Result.Error(DataError.Local.NOT_FOUND)
 
             val books = bookshelfRepository.getBooksForShelf(shelfId).first()
             Result.Success(shelf.copy(books = books))

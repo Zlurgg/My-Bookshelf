@@ -11,8 +11,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 
 /**
@@ -25,7 +25,6 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class GetBookDetailsUseCaseTest {
-
     private val mockBookRepository = MockBookRepository()
     private val mockBookshelfRepository = MockBookshelfRepository()
     private val mockBookcaseRepository = MockBookcaseRepository()
@@ -39,155 +38,165 @@ class GetBookDetailsUseCaseTest {
     }
 
     @Test
-    fun `returns book with isOnShelf true when book is on shelf`() = runTest {
-        // Given
-        val bookId = "book-1"
-        val shelfId = "fiction-shelf"
-        val book = TestBookBuilder().withId(bookId).withTitle("Test Book").build()
+    fun `returns book with isOnShelf true when book is on shelf`() =
+        runTest {
+            // Given
+            val bookId = "book-1"
+            val shelfId = "fiction-shelf"
+            val book = TestBookBuilder().withId(bookId).withTitle("Test Book").build()
 
-        mockBookRepository.addBook(book)
-        mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
+            mockBookRepository.addBook(book)
+            mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
 
-        // When
-        val result = useCase.execute(bookId, shelfId).first()
+            // When
+            val result = useCase.execute(bookId, shelfId).first()
 
-        // Then
-        assertEquals("Should return book", book, result.book)
-        assertTrue("Should be on shelf", result.isOnShelf)
-    }
-
-    @Test
-    fun `returns book with isOnShelf false when book not on shelf`() = runTest {
-        // Given
-        val bookId = "book-1"
-        val shelfId = "fiction-shelf"
-        val book = TestBookBuilder().withId(bookId).withTitle("Test Book").build()
-
-        mockBookRepository.addBook(book)
-        mockBookshelfRepository.configureShelfWithBooks(shelfId, emptyList())
-
-        // When
-        val result = useCase.execute(bookId, shelfId).first()
-
-        // Then
-        assertEquals("Should return book", book, result.book)
-        assertFalse("Should not be on shelf", result.isOnShelf)
-    }
+            // Then
+            assertEquals("Should return book", book, result.book)
+            assertTrue("Should be on shelf", result.isOnShelf)
+        }
 
     @Test
-    fun `returns null book when book does not exist`() = runTest {
-        // Given
-        val bookId = "non-existent-book"
-        val shelfId = "fiction-shelf"
+    fun `returns book with isOnShelf false when book not on shelf`() =
+        runTest {
+            // Given
+            val bookId = "book-1"
+            val shelfId = "fiction-shelf"
+            val book = TestBookBuilder().withId(bookId).withTitle("Test Book").build()
 
-        // When
-        val result = useCase.execute(bookId, shelfId).first()
+            mockBookRepository.addBook(book)
+            mockBookshelfRepository.configureShelfWithBooks(shelfId, emptyList())
 
-        // Then
-        assertNull("Should return null book", result.book)
-        assertFalse("Should not be on shelf", result.isOnShelf)
-    }
+            // When
+            val result = useCase.execute(bookId, shelfId).first()
 
-    @Test
-    fun `returns correct shelf status for different shelves`() = runTest {
-        // Given
-        val bookId = "book-1"
-        val shelfId1 = "fiction-shelf"
-        val shelfId2 = "scifi-shelf"
-        val book = TestBookBuilder().withId(bookId).build()
-
-        mockBookRepository.addBook(book)
-        mockBookshelfRepository.configureShelfWithBooks(shelfId1, listOf(bookId))
-        mockBookshelfRepository.configureShelfWithBooks(shelfId2, emptyList())
-
-        // When
-        val result1 = useCase.execute(bookId, shelfId1).first()
-        val result2 = useCase.execute(bookId, shelfId2).first()
-
-        // Then
-        assertTrue("Should be on fiction shelf", result1.isOnShelf)
-        assertFalse("Should not be on scifi shelf", result2.isOnShelf)
-    }
+            // Then
+            assertEquals("Should return book", book, result.book)
+            assertFalse("Should not be on shelf", result.isOnShelf)
+        }
 
     @Test
-    fun `loadBookDescription returns success when description loaded`() = runTest {
-        // Given
-        val bookId = "book-1"
-        val book = TestBookBuilder()
-            .withId(bookId)
-            .withDescription("Original description")
-            .build()
+    fun `returns null book when book does not exist`() =
+        runTest {
+            // Given
+            val bookId = "non-existent-book"
+            val shelfId = "fiction-shelf"
 
-        mockBookRepository.addBook(book)
-        mockBookRepository.shouldThrowException = false
+            // When
+            val result = useCase.execute(bookId, shelfId).first()
 
-        // When
-        val result = useCase.loadBookDescription(bookId)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-    }
+            // Then
+            assertNull("Should return null book", result.book)
+            assertFalse("Should not be on shelf", result.isOnShelf)
+        }
 
     @Test
-    fun `loadBookDescription returns error when repository fails`() = runTest {
-        // Given
-        val bookId = "book-1"
-        mockBookRepository.shouldThrowException = true
+    fun `returns correct shelf status for different shelves`() =
+        runTest {
+            // Given
+            val bookId = "book-1"
+            val shelfId1 = "fiction-shelf"
+            val shelfId2 = "scifi-shelf"
+            val book = TestBookBuilder().withId(bookId).build()
 
-        // When
-        val result = useCase.loadBookDescription(bookId)
+            mockBookRepository.addBook(book)
+            mockBookshelfRepository.configureShelfWithBooks(shelfId1, listOf(bookId))
+            mockBookshelfRepository.configureShelfWithBooks(shelfId2, emptyList())
 
-        // Then
-        assertTrue("Should return error", result is Result.Error)
-        // Error is correctly typed after unwrapping Result.Error
-    }
+            // When
+            val result1 = useCase.execute(bookId, shelfId1).first()
+            val result2 = useCase.execute(bookId, shelfId2).first()
 
-    @Test
-    fun `loadBookDescription handles missing book gracefully`() = runTest {
-        // Given
-        val nonExistentBookId = "does-not-exist"
-
-        // When
-        val result = useCase.loadBookDescription(nonExistentBookId)
-
-        // Then
-        // Should return success even if book doesn't exist (null description is valid)
-        assertTrue("Should handle gracefully", result is Result.Success || result is Result.Error)
-    }
+            // Then
+            assertTrue("Should be on fiction shelf", result1.isOnShelf)
+            assertFalse("Should not be on scifi shelf", result2.isOnShelf)
+        }
 
     @Test
-    fun `execute queries correct repositories`() = runTest {
-        // Given
-        val bookId = "book-1"
-        val shelfId = "fiction-shelf"
-        val book = TestBookBuilder().withId(bookId).build()
+    fun `loadBookDescription returns success when description loaded`() =
+        runTest {
+            // Given
+            val bookId = "book-1"
+            val book =
+                TestBookBuilder()
+                    .withId(bookId)
+                    .withDescription("Original description")
+                    .build()
 
-        mockBookRepository.addBook(book)
-        mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
+            mockBookRepository.addBook(book)
+            mockBookRepository.shouldThrowException = false
 
-        // When
-        useCase.execute(bookId, shelfId).first()
+            // When
+            val result = useCase.loadBookDescription(bookId)
 
-        // Then
-        assertEquals("Should query book repository", bookId, mockBookRepository.lastQueriedBookId)
-        assertTrue("Should query book repository once", mockBookRepository.getBookByIdCallCount >= 1)
-    }
+            // Then
+            assertTrue("Should return success", result is Result.Success)
+        }
 
     @Test
-    fun `handles purchased book status correctly`() = runTest {
-        // Given
-        val bookId = "purchased-book"
-        val shelfId = "fiction-shelf"
-        val purchasedBook = TestBookBuilder().withId(bookId).withPurchased(true).build()
+    fun `loadBookDescription returns error when repository fails`() =
+        runTest {
+            // Given
+            val bookId = "book-1"
+            mockBookRepository.shouldThrowException = true
 
-        mockBookRepository.addBook(purchasedBook)
-        mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
+            // When
+            val result = useCase.loadBookDescription(bookId)
 
-        // When
-        val result = useCase.execute(bookId, shelfId).first()
+            // Then
+            assertTrue("Should return error", result is Result.Error)
+            // Error is correctly typed after unwrapping Result.Error
+        }
 
-        // Then
-        assertTrue("Should preserve purchased status", result.book?.purchased == true)
-        assertTrue("Should be on shelf", result.isOnShelf)
-    }
+    @Test
+    fun `loadBookDescription handles missing book gracefully`() =
+        runTest {
+            // Given
+            val nonExistentBookId = "does-not-exist"
+
+            // When
+            val result = useCase.loadBookDescription(nonExistentBookId)
+
+            // Then
+            // Should return success even if book doesn't exist (null description is valid)
+            assertTrue("Should handle gracefully", result is Result.Success || result is Result.Error)
+        }
+
+    @Test
+    fun `execute queries correct repositories`() =
+        runTest {
+            // Given
+            val bookId = "book-1"
+            val shelfId = "fiction-shelf"
+            val book = TestBookBuilder().withId(bookId).build()
+
+            mockBookRepository.addBook(book)
+            mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
+
+            // When
+            useCase.execute(bookId, shelfId).first()
+
+            // Then
+            assertEquals("Should query book repository", bookId, mockBookRepository.lastQueriedBookId)
+            assertTrue("Should query book repository once", mockBookRepository.getBookByIdCallCount >= 1)
+        }
+
+    @Test
+    fun `handles purchased book status correctly`() =
+        runTest {
+            // Given
+            val bookId = "purchased-book"
+            val shelfId = "fiction-shelf"
+            val purchasedBook = TestBookBuilder().withId(bookId).withPurchased(true).build()
+
+            mockBookRepository.addBook(purchasedBook)
+            mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
+
+            // When
+            val result = useCase.execute(bookId, shelfId).first()
+
+            // Then
+            assertTrue("Should preserve purchased status", result.book?.purchased == true)
+            assertTrue("Should be on shelf", result.isOnShelf)
+        }
 }

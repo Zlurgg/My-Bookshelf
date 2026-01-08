@@ -1,9 +1,11 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail
 
+import androidx.compose.runtime.Stable
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 
+@Stable
 data class BookDetailState(
     val isLoading: Boolean = true,
     val book: Book? = null,
@@ -22,5 +24,5 @@ data class BookDetailState(
     val isLoadingComments: Boolean = false,
     val commentText: String = "",
     val editingCommentId: String? = null,
-    val editingCommentText: String = ""
+    val editingCommentText: String = "",
 )

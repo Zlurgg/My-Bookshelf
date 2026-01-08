@@ -9,9 +9,8 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.MarkWelcomeShownUseCase
 
 class WelcomeViewModel(
-    private val markWelcomeShownUseCase: MarkWelcomeShownUseCase
+    private val markWelcomeShownUseCase: MarkWelcomeShownUseCase,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(WelcomeState())
     val state: StateFlow<WelcomeState> = _state.asStateFlow()
 

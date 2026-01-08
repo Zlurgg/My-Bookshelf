@@ -33,26 +33,27 @@ fun ShelfActionsCard(
     onShelf: Boolean,
     onAddToShelf: (Book) -> Unit,
     onRemoveFromShelf: (Book) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             if (onShelf) {
                 OutlinedButton(
                     onClick = { onRemoveFromShelf(book) },
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
+                    colors =
+                        ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = stringResource(R.string.cd_remove_from_shelf)
+                        contentDescription = stringResource(R.string.cd_remove_from_shelf),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(stringResource(R.string.shelf_actions_remove_from_shelf))
@@ -60,11 +61,11 @@ fun ShelfActionsCard(
             } else {
                 Button(
                     onClick = { onAddToShelf(book) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = stringResource(R.string.cd_add_to_shelf)
+                        contentDescription = stringResource(R.string.cd_add_to_shelf),
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(stringResource(R.string.shelf_actions_add_to_shelf))

@@ -10,7 +10,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * so they persist across devices for the same account.
  */
 interface UserPreferencesRepository {
-
     /**
      * Fetches welcome shown state from cloud and caches it locally.
      *
@@ -26,5 +25,8 @@ interface UserPreferencesRepository {
      * @param shown Whether the welcome screen has been shown
      * @return Success or error
      */
-    suspend fun setWelcomeShown(userId: String, shown: Boolean): Result<Unit, DataError.Sync>
+    suspend fun setWelcomeShown(
+        userId: String,
+        shown: Boolean,
+    ): Result<Unit, DataError.Sync>
 }

@@ -8,9 +8,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
 class MarkWelcomeShownUseCaseImpl(
     private val welcomePreferences: WelcomePreferences,
     private val currentUserProvider: CurrentUserProvider,
-    private val userPreferencesRepository: UserPreferencesRepository
+    private val userPreferencesRepository: UserPreferencesRepository,
 ) : MarkWelcomeShownUseCase {
-
     companion object {
         private const val TAG = "MarkWelcomeShown"
     }

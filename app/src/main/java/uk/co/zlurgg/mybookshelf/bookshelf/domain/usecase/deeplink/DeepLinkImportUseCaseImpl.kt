@@ -16,9 +16,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.map
 class DeepLinkImportUseCaseImpl(
     private val shareTokenService: ShareTokenService,
     private val checkImportConflictUseCase: CheckImportConflictUseCase,
-    private val importBookshelfUseCase: ImportBookshelfUseCase
+    private val importBookshelfUseCase: ImportBookshelfUseCase,
 ) : DeepLinkImportUseCase {
-
     companion object {
         private const val TAG = "DeepLinkImport"
     }
@@ -27,26 +26,27 @@ class DeepLinkImportUseCaseImpl(
         val tokenPreview = token.take(10) + "..."
         Timber.tag(TAG).d("Processing deep link import with token: %s", tokenPreview)
 
-        val result = shareTokenService.getShelfDataByToken(token)
-            .flatMap { jsonData ->
-                Timber.tag(TAG).d("Successfully fetched shelf data, checking for conflicts...")
-                checkImportConflictUseCase.execute(jsonData)
-                    .flatMap { conflictingName ->
-                        if (conflictingName != null) {
-                            // Name conflict exists, return conflict info
-                            Timber.tag(TAG).w("Name conflict detected: '%s'", conflictingName)
-                            Result.Success(ImportResult.NameConflict(conflictingName, jsonData))
-                        } else {
-                            // No conflict, proceed with import
-                            Timber.tag(TAG).d("No conflicts found, proceeding with import...")
-                            importBookshelfUseCase.execute(jsonData)
-                                .map {
-                                    Timber.tag(TAG).d("Import successful")
-                                    ImportResult.Success
-                                }
+        val result =
+            shareTokenService.getShelfDataByToken(token)
+                .flatMap { jsonData ->
+                    Timber.tag(TAG).d("Successfully fetched shelf data, checking for conflicts...")
+                    checkImportConflictUseCase.execute(jsonData)
+                        .flatMap { conflictingName ->
+                            if (conflictingName != null) {
+                                // Name conflict exists, return conflict info
+                                Timber.tag(TAG).w("Name conflict detected: '%s'", conflictingName)
+                                Result.Success(ImportResult.NameConflict(conflictingName, jsonData))
+                            } else {
+                                // No conflict, proceed with import
+                                Timber.tag(TAG).d("No conflicts found, proceeding with import...")
+                                importBookshelfUseCase.execute(jsonData)
+                                    .map {
+                                        Timber.tag(TAG).d("Import successful")
+                                        ImportResult.Success
+                                    }
+                            }
                         }
-                    }
-            }
+                }
 
         return when (result) {
             is Result.Success -> result
@@ -57,22 +57,26 @@ class DeepLinkImportUseCaseImpl(
         }
     }
 
-    override suspend fun importBookshelfWithCustomName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
+    override suspend fun importBookshelfWithCustomName(
+        jsonData: String,
+        customName: String,
+    ): Result<Unit, DataError.Local> {
         Timber.tag(TAG).d("Importing bookshelf with custom name: '%s'", customName)
 
         // First check if the custom name also conflicts
-        val result = checkImportConflictUseCase.checkShelfName(customName)
-            .flatMap { conflictingName ->
-                if (conflictingName != null) {
-                    // Custom name still conflicts - return error
-                    Timber.tag(TAG).w("Custom name '%s' still conflicts with existing shelf", customName)
-                    Result.Error(DataError.Local.NAME_CONFLICT)
-                } else {
-                    // No conflict - proceed with import
-                    Timber.tag(TAG).d("Custom name '%s' is available, proceeding with import...", customName)
-                    importBookshelfUseCase.execute(jsonData, customName)
+        val result =
+            checkImportConflictUseCase.checkShelfName(customName)
+                .flatMap { conflictingName ->
+                    if (conflictingName != null) {
+                        // Custom name still conflicts - return error
+                        Timber.tag(TAG).w("Custom name '%s' still conflicts with existing shelf", customName)
+                        Result.Error(DataError.Local.NAME_CONFLICT)
+                    } else {
+                        // No conflict - proceed with import
+                        Timber.tag(TAG).d("Custom name '%s' is available, proceeding with import...", customName)
+                        importBookshelfUseCase.execute(jsonData, customName)
+                    }
                 }
-            }
 
         return when (result) {
             is Result.Success -> {

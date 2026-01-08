@@ -6,8 +6,8 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookClubBookDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookEntity
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
@@ -17,8 +17,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
@@ -44,9 +44,8 @@ class BookClubRepositoryImpl(
     private val codeGenerator: BookClubCodeGenerator,
     private val authService: AuthService,
     private val idGenerator: IdGenerator,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
 ) : BookClubRepository {
-
     companion object {
         private const val TAG = "BookClubRepository"
     }
@@ -87,16 +86,17 @@ class BookClubRepositoryImpl(
         val now = timeProvider.currentTimeMillis()
 
         // Create Firestore metadata
-        val metadata = BookClubMetadataDto(
-            code = clubCode,
-            name = sourceShelf.name,
-            shelfStyle = sourceShelf.shelfMaterial,
-            createdBy = user.userId,
-            createdByName = user.username ?: "Unknown",
-            lastModifiedAt = now,
-            bookCount = 0, // Will be updated after adding books
-            memberCount = 1
-        )
+        val metadata =
+            BookClubMetadataDto(
+                code = clubCode,
+                name = sourceShelf.name,
+                shelfStyle = sourceShelf.shelfMaterial,
+                createdBy = user.userId,
+                createdByName = user.username ?: "Unknown",
+                lastModifiedAt = now,
+                bookCount = 0, // Will be updated after adding books
+                memberCount = 1,
+            )
 
         // Upload metadata to Firestore
         val createResult = remoteDataSource.createBookClub(clubCode, metadata)
@@ -106,10 +106,11 @@ class BookClubRepositoryImpl(
         }
 
         // Add current user as first member
-        val memberDto = BookClubMemberDto(
-            userId = user.userId,
-            displayName = user.username ?: "Unknown"
-        )
+        val memberDto =
+            BookClubMemberDto(
+                userId = user.userId,
+                displayName = user.username ?: "Unknown",
+            )
         val memberResult = remoteDataSource.addBookClubMember(clubCode, memberDto)
         if (memberResult is Result.Error) {
             Timber.tag(TAG).e("Failed to add member to club: %s", memberResult.error)
@@ -135,37 +136,40 @@ class BookClubRepositoryImpl(
         val clubShelfName = generateUniqueShelfName(sourceShelf.name)
         val clubShelfId = idGenerator.generateId()
 
-        val clubShelfEntity = Bookshelf(
-            id = clubShelfId,
-            name = clubShelfName,
-            books = emptyList(),
-            shelfStyle = sourceShelf.shelfMaterial.let { ShelfStyle.valueOf(it) },
-            position = 0, // Position at top
-            isBookClub = true,
-            clubCode = clubCode,
-            clubCreatorId = user.userId  // Creator is the current user
-        ).toEntity(user.userId)
+        val clubShelfEntity =
+            Bookshelf(
+                id = clubShelfId,
+                name = clubShelfName,
+                books = emptyList(),
+                shelfStyle = sourceShelf.shelfMaterial.let { ShelfStyle.valueOf(it) },
+                position = 0, // Position at top
+                isBookClub = true,
+                clubCode = clubCode,
+                clubCreatorId = user.userId, // Creator is the current user
+            ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(clubShelfEntity)
 
         // Copy books from source shelf to club shelf
         val sourceBookIds = bookClubDao.getBookIdsForShelf(shelfId)
         for (bookId in sourceBookIds) {
-            val crossRef = BookshelfBookCrossRef(
-                shelfId = clubShelfId,
-                bookId = bookId,
-                addedAt = now
-            )
+            val crossRef =
+                BookshelfBookCrossRef(
+                    shelfId = clubShelfId,
+                    bookId = bookId,
+                    addedAt = now,
+                )
             bookshelfDao.upsertCrossRef(crossRef)
         }
 
         // Create local membership record pointing to the new club shelf
-        val membershipEntity = BookClubMembership(
-            clubCode = clubCode,
-            localShelfId = clubShelfId,
-            joinedAt = now,
-            lastSyncedAt = now
-        ).toEntity(idGenerator.generateId())
+        val membershipEntity =
+            BookClubMembership(
+                clubCode = clubCode,
+                localShelfId = clubShelfId,
+                joinedAt = now,
+                lastSyncedAt = now,
+            ).toEntity(idGenerator.generateId())
 
         bookClubDao.upsertMembership(membershipEntity)
 
@@ -176,7 +180,9 @@ class BookClubRepositoryImpl(
             // Non-critical, continue - local state is saved
         }
 
-        Timber.tag(TAG).d("Book club created successfully: %s with %d books, local shelf: %s", clubCode, bookCount, clubShelfId)
+        Timber.tag(
+            TAG,
+        ).d("Book club created successfully: %s with %d books, local shelf: %s", clubCode, bookCount, clubShelfId)
         return Result.Success(clubCode)
     }
 
@@ -223,7 +229,9 @@ class BookClubRepositoryImpl(
 
         // 3. Permission check - only creator can delete
         if (club.createdBy != user.userId) {
-            Timber.tag(TAG).w("PERMISSION DENIED: User '%s' is not creator '%s' of club %s", user.userId, club.createdBy, code)
+            Timber.tag(
+                TAG,
+            ).w("PERMISSION DENIED: User '%s' is not creator '%s' of club %s", user.userId, club.createdBy, code)
             return Result.Error(DataError.Sync.PERMISSION_DENIED)
         }
 
@@ -250,17 +258,22 @@ class BookClubRepositoryImpl(
         return Result.Success(Unit)
     }
 
-    override suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync> {
+    override suspend fun renameBookClub(
+        code: String,
+        newName: String,
+    ): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Renaming book club %s to: %s", code, newName)
 
-        val user = authService.getSignedInUser()
-            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        val user =
+            authService.getSignedInUser()
+                ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         // Get club to verify creator
         val clubResult = getBookClub(code)
         if (clubResult is Result.Error) return clubResult
-        val club = (clubResult as Result.Success).data
-            ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+        val club =
+            (clubResult as Result.Success).data
+                ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
 
         // Only creator can rename
         if (club.createdBy != user.userId) {
@@ -269,9 +282,12 @@ class BookClubRepositoryImpl(
         }
 
         // Update Firestore
-        val updateResult = remoteDataSource.updateBookClubName(
-            code, newName, timeProvider.currentTimeMillis()
-        )
+        val updateResult =
+            remoteDataSource.updateBookClubName(
+                code,
+                newName,
+                timeProvider.currentTimeMillis(),
+            )
         if (updateResult is Result.Error) {
             Timber.tag(TAG).e("Failed to update club name in Firestore: %s", updateResult.error)
             return Result.Error(updateResult.error)
@@ -291,17 +307,22 @@ class BookClubRepositoryImpl(
         return Result.Success(Unit)
     }
 
-    override suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync> {
+    override suspend fun updateClubStyle(
+        code: String,
+        style: String,
+    ): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Updating book club %s style to: %s", code, style)
 
-        val user = authService.getSignedInUser()
-            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        val user =
+            authService.getSignedInUser()
+                ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         // Get club to verify creator
         val clubResult = getBookClub(code)
         if (clubResult is Result.Error) return clubResult
-        val club = (clubResult as Result.Success).data
-            ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+        val club =
+            (clubResult as Result.Success).data
+                ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
 
         // Only creator can update style
         if (club.createdBy != user.userId) {
@@ -310,9 +331,12 @@ class BookClubRepositoryImpl(
         }
 
         // Update Firestore
-        val updateResult = remoteDataSource.updateBookClubStyle(
-            code, style, timeProvider.currentTimeMillis()
-        )
+        val updateResult =
+            remoteDataSource.updateBookClubStyle(
+                code,
+                style,
+                timeProvider.currentTimeMillis(),
+            )
         if (updateResult is Result.Error) {
             Timber.tag(TAG).e("Failed to update club style in Firestore: %s", updateResult.error)
             return Result.Error(updateResult.error)
@@ -338,14 +362,15 @@ class BookClubRepositoryImpl(
 
         // 3. Get club metadata to check if it still exists and check creator
         val clubResult = getBookClub(code)
-        val club = when (clubResult) {
-            is Result.Success -> clubResult.data
-            is Result.Error -> {
-                // If we can't fetch club (network error), return error
-                Timber.tag(TAG).e("Failed to fetch club: %s", clubResult.error)
-                return Result.Error(clubResult.error)
+        val club =
+            when (clubResult) {
+                is Result.Success -> clubResult.data
+                is Result.Error -> {
+                    // If we can't fetch club (network error), return error
+                    Timber.tag(TAG).e("Failed to fetch club: %s", clubResult.error)
+                    return Result.Error(clubResult.error)
+                }
             }
-        }
 
         // 4. If club was deleted, just clean up locally
         if (club == null) {
@@ -400,7 +425,11 @@ class BookClubRepositoryImpl(
      * Cleans up local data for a book club (membership record, shelf, user preferences).
      * Hard deletes local data since Firestore is source of truth.
      */
-    private suspend fun cleanupLocalClubData(code: String, localShelfId: String?, userId: String) {
+    private suspend fun cleanupLocalClubData(
+        code: String,
+        localShelfId: String?,
+        userId: String,
+    ) {
         // Delete local membership record
         bookClubDao.deleteMembership(code)
 
@@ -439,12 +468,13 @@ class BookClubRepositoryImpl(
         // Get the local shelf and convert it to a personal shelf
         val shelfEntity = bookshelfDao.getShelfById(localShelfId)
         if (shelfEntity != null) {
-            val convertedShelf = shelfEntity.copy(
-                isBookClub = false,
-                clubCode = null,
-                clubCreatorId = null,
-                syncStatus = "PENDING" // Sync as personal shelf to user's Firestore
-            )
+            val convertedShelf =
+                shelfEntity.copy(
+                    isBookClub = false,
+                    clubCode = null,
+                    clubCreatorId = null,
+                    syncStatus = "PENDING", // Sync as personal shelf to user's Firestore
+                )
             bookshelfDao.upsertShelf(convertedShelf)
             Timber.tag(TAG).d("Converted shelf '%s' to personal shelf (will sync)", shelfEntity.name)
         }
@@ -514,24 +544,26 @@ class BookClubRepositoryImpl(
         val shelfId = idGenerator.generateId()
         val now = timeProvider.currentTimeMillis()
 
-        val shelfEntity = Bookshelf(
-            id = shelfId,
-            name = shelfName,
-            books = emptyList(),
-            shelfStyle = club.style,
-            position = 0, // Will be positioned at top
-            isBookClub = true,
-            clubCode = code,
-            clubCreatorId = club.createdBy  // Store creator ID from club metadata
-        ).toEntity(user.userId)
+        val shelfEntity =
+            Bookshelf(
+                id = shelfId,
+                name = shelfName,
+                books = emptyList(),
+                shelfStyle = club.style,
+                position = 0, // Will be positioned at top
+                isBookClub = true,
+                clubCode = code,
+                clubCreatorId = club.createdBy, // Store creator ID from club metadata
+            ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(shelfEntity)
 
         // Add user as member in Firestore
-        val memberDto = BookClubMemberDto(
-            userId = user.userId,
-            displayName = user.username ?: "Unknown"
-        )
+        val memberDto =
+            BookClubMemberDto(
+                userId = user.userId,
+                displayName = user.username ?: "Unknown",
+            )
         val memberResult = remoteDataSource.addBookClubMember(code, memberDto)
         if (memberResult is Result.Error) {
             Timber.tag(TAG).e("Failed to add member to club: %s", memberResult.error)
@@ -548,12 +580,13 @@ class BookClubRepositoryImpl(
         }
 
         // Create local membership record
-        val membershipEntity = BookClubMembership(
-            clubCode = code,
-            localShelfId = shelfId,
-            joinedAt = now,
-            lastSyncedAt = now
-        ).toEntity(idGenerator.generateId())
+        val membershipEntity =
+            BookClubMembership(
+                clubCode = code,
+                localShelfId = shelfId,
+                joinedAt = now,
+                lastSyncedAt = now,
+            ).toEntity(idGenerator.generateId())
 
         bookClubDao.upsertMembership(membershipEntity)
 
@@ -628,16 +661,17 @@ class BookClubRepositoryImpl(
         val shelfId = idGenerator.generateId()
         val now = timeProvider.currentTimeMillis()
 
-        val shelfEntity = Bookshelf(
-            id = shelfId,
-            name = shelfName,
-            books = emptyList(),
-            shelfStyle = club.style,
-            position = 0,
-            isBookClub = true,
-            clubCode = code,
-            clubCreatorId = club.createdBy  // Store creator ID from club metadata
-        ).toEntity(user.userId)
+        val shelfEntity =
+            Bookshelf(
+                id = shelfId,
+                name = shelfName,
+                books = emptyList(),
+                shelfStyle = club.style,
+                position = 0,
+                isBookClub = true,
+                clubCode = code,
+                clubCreatorId = club.createdBy, // Store creator ID from club metadata
+            ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(shelfEntity)
 
@@ -649,12 +683,13 @@ class BookClubRepositoryImpl(
         }
 
         // Create local membership record
-        val membershipEntity = BookClubMembership(
-            clubCode = code,
-            localShelfId = shelfId,
-            joinedAt = now,
-            lastSyncedAt = now
-        ).toEntity(idGenerator.generateId())
+        val membershipEntity =
+            BookClubMembership(
+                clubCode = code,
+                localShelfId = shelfId,
+                joinedAt = now,
+                lastSyncedAt = now,
+            ).toEntity(idGenerator.generateId())
 
         bookClubDao.upsertMembership(membershipEntity)
 
@@ -685,7 +720,7 @@ class BookClubRepositoryImpl(
         shelfId: String,
         clubCode: String,
         userId: String,
-        userName: String
+        userName: String,
     ): Result<Int, DataError.Sync> {
         // Get all books from the local shelf
         // We need to get books synchronously, not as a Flow
@@ -723,7 +758,7 @@ class BookClubRepositoryImpl(
     private suspend fun downloadClubBooksToShelf(
         clubCode: String,
         shelfId: String,
-        userId: String
+        userId: String,
     ): Result<Int, DataError.Sync> {
         val booksResult = remoteDataSource.getClubBooks(clubCode)
 
@@ -745,11 +780,12 @@ class BookClubRepositoryImpl(
                 bookshelfDao.upsert(bookEntity)
 
                 // Add to shelf via cross-reference
-                val crossRef = BookshelfBookCrossRef(
-                    shelfId = shelfId,
-                    bookId = book.id,
-                    addedAt = timeProvider.currentTimeMillis()
-                )
+                val crossRef =
+                    BookshelfBookCrossRef(
+                        shelfId = shelfId,
+                        bookId = book.id,
+                        addedAt = timeProvider.currentTimeMillis(),
+                    )
                 bookshelfDao.upsertCrossRef(crossRef)
                 addedCount++
             } catch (e: Exception) {
@@ -764,9 +800,13 @@ class BookClubRepositoryImpl(
 
     // ========== Book Sync Operations ==========
 
-    override suspend fun syncBookToClub(code: String, book: Book): Result<Unit, DataError.Sync> {
-        val user = authService.getSignedInUser()
-            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+    override suspend fun syncBookToClub(
+        code: String,
+        book: Book,
+    ): Result<Unit, DataError.Sync> {
+        val user =
+            authService.getSignedInUser()
+                ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         val userId = user.userId
         val userName = user.username ?: "Unknown"
@@ -790,7 +830,10 @@ class BookClubRepositoryImpl(
         }
     }
 
-    override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> {
+    override suspend fun removeBookFromClub(
+        code: String,
+        bookId: String,
+    ): Result<Unit, DataError.Sync> {
         authService.getSignedInUser()
             ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
@@ -828,7 +871,7 @@ class BookClubRepositoryImpl(
 
     override suspend fun syncBooksFromClub(
         code: String,
-        localShelfId: String
+        localShelfId: String,
     ): Result<SyncResult, DataError.Sync> {
         Timber.tag(TAG).d("Syncing books from club %s to shelf %s", code, localShelfId)
 
@@ -878,11 +921,12 @@ class BookClubRepositoryImpl(
                 val bookEntity = book.toBookEntity(user.userId)
                 bookshelfDao.upsert(bookEntity)
 
-                val crossRef = BookshelfBookCrossRef(
-                    shelfId = localShelfId,
-                    bookId = book.id,
-                    addedAt = timeProvider.currentTimeMillis()
-                )
+                val crossRef =
+                    BookshelfBookCrossRef(
+                        shelfId = localShelfId,
+                        bookId = book.id,
+                        addedAt = timeProvider.currentTimeMillis(),
+                    )
                 bookshelfDao.upsertCrossRef(crossRef)
                 booksAdded++
             } catch (e: Exception) {
@@ -923,7 +967,7 @@ class BookClubRepositoryImpl(
 
     override suspend fun getBookReviews(
         code: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubReview>, DataError.Sync> {
         authService.getSignedInUser()
             ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
@@ -932,18 +976,19 @@ class BookClubRepositoryImpl(
 
         return when (val result = remoteDataSource.getBookReviews(code, bookId)) {
             is Result.Success -> {
-                val reviews = result.data.map { dto ->
-                    BookClubReview(
-                        id = dto.id,
-                        bookId = dto.bookId,
-                        userId = dto.userId,
-                        displayName = dto.displayName,
-                        rating = dto.rating,
-                        reviewText = dto.reviewText,
-                        createdAt = dto.createdAt?.time ?: 0L,
-                        updatedAt = dto.updatedAt?.time ?: 0L
-                    )
-                }
+                val reviews =
+                    result.data.map { dto ->
+                        BookClubReview(
+                            id = dto.id,
+                            bookId = dto.bookId,
+                            userId = dto.userId,
+                            displayName = dto.displayName,
+                            rating = dto.rating,
+                            reviewText = dto.reviewText,
+                            createdAt = dto.createdAt?.time ?: 0L,
+                            updatedAt = dto.updatedAt?.time ?: 0L,
+                        )
+                    }
                 Timber.tag(TAG).d("Got %d reviews for book %s", reviews.size, bookId)
                 Result.Success(reviews)
             }
@@ -958,24 +1003,26 @@ class BookClubRepositoryImpl(
         code: String,
         bookId: String,
         rating: Float,
-        reviewText: String
+        reviewText: String,
     ): Result<Unit, DataError.Sync> {
-        val user = authService.getSignedInUser()
-            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        val user =
+            authService.getSignedInUser()
+                ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         Timber.tag(TAG).d("Upserting review for book %s in club %s", bookId, code)
 
         val now = java.util.Date(timeProvider.currentTimeMillis())
-        val reviewDto = BookClubReviewDto(
-            id = user.userId,
-            bookId = bookId,
-            userId = user.userId,
-            displayName = user.username ?: "Anonymous",
-            rating = rating,
-            reviewText = reviewText,
-            createdAt = now,
-            updatedAt = now
-        )
+        val reviewDto =
+            BookClubReviewDto(
+                id = user.userId,
+                bookId = bookId,
+                userId = user.userId,
+                displayName = user.username ?: "Anonymous",
+                rating = rating,
+                reviewText = reviewText,
+                createdAt = now,
+                updatedAt = now,
+            )
 
         return when (val result = remoteDataSource.upsertBookReview(code, bookId, reviewDto)) {
             is Result.Success -> {
@@ -991,10 +1038,11 @@ class BookClubRepositoryImpl(
 
     override suspend fun deleteBookReview(
         code: String,
-        bookId: String
+        bookId: String,
     ): Result<Unit, DataError.Sync> {
-        val user = authService.getSignedInUser()
-            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        val user =
+            authService.getSignedInUser()
+                ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         Timber.tag(TAG).d("Deleting review for book %s in club %s", bookId, code)
 
@@ -1014,7 +1062,7 @@ class BookClubRepositoryImpl(
 
     override suspend fun getBookComments(
         code: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubComment>, DataError.Sync> {
         authService.getSignedInUser()
             ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
@@ -1037,22 +1085,24 @@ class BookClubRepositoryImpl(
     override suspend fun addBookComment(
         code: String,
         bookId: String,
-        text: String
+        text: String,
     ): Result<String, DataError.Sync> {
-        val user = authService.getSignedInUser()
-            ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
+        val user =
+            authService.getSignedInUser()
+                ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         Timber.tag(TAG).d("Adding comment for book %s in club %s", bookId, code)
 
-        val commentDto = BookClubCommentDto(
-            id = "", // Will be auto-generated
-            bookId = bookId,
-            userId = user.userId,
-            displayName = user.username ?: "Anonymous",
-            text = text,
-            createdAt = java.util.Date(timeProvider.currentTimeMillis()),
-            updatedAt = java.util.Date(timeProvider.currentTimeMillis())
-        )
+        val commentDto =
+            BookClubCommentDto(
+                id = "", // Will be auto-generated
+                bookId = bookId,
+                userId = user.userId,
+                displayName = user.username ?: "Anonymous",
+                text = text,
+                createdAt = java.util.Date(timeProvider.currentTimeMillis()),
+                updatedAt = java.util.Date(timeProvider.currentTimeMillis()),
+            )
 
         return when (val result = remoteDataSource.addBookComment(code, bookId, commentDto)) {
             is Result.Success -> {
@@ -1070,7 +1120,7 @@ class BookClubRepositoryImpl(
         code: String,
         bookId: String,
         commentId: String,
-        newText: String
+        newText: String,
     ): Result<Unit, DataError.Sync> {
         authService.getSignedInUser()
             ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)
@@ -1092,7 +1142,7 @@ class BookClubRepositoryImpl(
     override suspend fun deleteBookComment(
         code: String,
         bookId: String,
-        commentId: String
+        commentId: String,
     ): Result<Unit, DataError.Sync> {
         authService.getSignedInUser()
             ?: return Result.Error(DataError.Sync.NOT_SIGNED_IN)

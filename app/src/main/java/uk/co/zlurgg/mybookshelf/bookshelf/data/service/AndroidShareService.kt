@@ -2,11 +2,11 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import android.content.Context
 import android.content.Intent
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ShareData
+import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import java.net.URLEncoder
 
 /**
@@ -15,13 +15,14 @@ import java.net.URLEncoder
  * Validates URL length to ensure compatibility with older browsers and messaging apps.
  */
 class AndroidShareService(
-    private val context: Context
+    private val context: Context,
 ) {
-
     companion object {
         private const val TAG = "ShareService"
+
         // Conservative limit for maximum browser compatibility (IE, older browsers)
         private const val MAX_URL_LENGTH = 2000
+
         // Absolute maximum - definitely too large
         private const val ABSOLUTE_MAX_URL_LENGTH = 10000
     }
@@ -46,21 +47,23 @@ class AndroidShareService(
                     // Log warning but allow (may work on modern browsers)
                     Timber.tag(TAG).w(
                         "Share URL length (%d) exceeds 2KB recommendation. May not work on older browsers.",
-                        shareUrl.length
+                        shareUrl.length,
                     )
                 }
             }
 
-            val shareIntent = Intent().apply {
-                action = Intent.ACTION_SEND
-                type = "text/plain"
-                putExtra(Intent.EXTRA_TEXT, shareUrl)
-                putExtra(Intent.EXTRA_SUBJECT, "Bookshelf: ${shareData.shelfName}")
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            }
+            val shareIntent =
+                Intent().apply {
+                    action = Intent.ACTION_SEND
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, shareUrl)
+                    putExtra(Intent.EXTRA_SUBJECT, "Bookshelf: ${shareData.shelfName}")
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                }
 
-            val chooserIntent = Intent.createChooser(shareIntent, "Share Bookshelf")
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            val chooserIntent =
+                Intent.createChooser(shareIntent, "Share Bookshelf")
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
             context.startActivity(chooserIntent)
             Result.Success(Unit)
@@ -68,5 +71,4 @@ class AndroidShareService(
             Result.Error(DataError.Local.SHARE_FAILED)
         }
     }
-
 }

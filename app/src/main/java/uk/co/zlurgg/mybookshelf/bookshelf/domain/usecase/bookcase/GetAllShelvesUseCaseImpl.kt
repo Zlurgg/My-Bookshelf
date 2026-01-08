@@ -11,9 +11,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GetAllShelvesUseCaseImpl(
-    private val repository: BookcaseRepository
+    private val repository: BookcaseRepository,
 ) : GetAllShelvesUseCase {
-
     override suspend fun execute(): Flow<Bookcase> {
         return repository.getAllShelves()
             .flatMapLatest { shelves ->
@@ -22,10 +21,11 @@ class GetAllShelvesUseCaseImpl(
                     flowOf(Bookcase(id = "default", bookshelves = emptyList(), bookCounts = emptyMap()))
                 } else {
                     // Create individual flows for each shelf's book count
-                    val countFlows = shelves.map { shelf ->
-                        repository.getBookCountForShelf(shelf.id)
-                            .map { count -> shelf.id to count }
-                    }
+                    val countFlows =
+                        shelves.map { shelf ->
+                            repository.getBookCountForShelf(shelf.id)
+                                .map { count -> shelf.id to count }
+                        }
 
                     // Combine all count flows together and return bookcase with counts
                     combine(countFlows) { countsArray ->
@@ -33,7 +33,7 @@ class GetAllShelvesUseCaseImpl(
                         Bookcase(
                             id = "default",
                             bookshelves = shelves,
-                            bookCounts = countMap
+                            bookCounts = countMap,
                         )
                     }
                 }

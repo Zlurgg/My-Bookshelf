@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
  * This is in the domain layer - implementations provide platform-specific behavior.
  */
 interface ConnectivityMonitor {
-
     /**
      * Checks if the device currently has network connectivity.
      *

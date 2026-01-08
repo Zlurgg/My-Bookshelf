@@ -14,7 +14,7 @@ interface DismissUpdateUseCase {
  * Implementation that stores the version so the user won't be prompted again.
  */
 class DismissUpdateUseCaseImpl(
-    private val updatePreferencesRepository: UpdatePreferencesRepository
+    private val updatePreferencesRepository: UpdatePreferencesRepository,
 ) : DismissUpdateUseCase {
     override suspend operator fun invoke(version: String) {
         Timber.i("User dismissed update version: $version")

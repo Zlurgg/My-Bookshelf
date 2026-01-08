@@ -11,19 +11,19 @@ import java.util.Date
  * Firestore document snapshots into SharedShelfDto objects.
  */
 class SharedShelfMapperTest {
-
     @Test
     fun `toSharedShelfDto from map parses correctly`() {
         // Given
         val createdDate = Date()
-        val map = mapOf<String, Any?>(
-            "owner_id" to "owner-456",
-            "shelf_id" to "shelf-xyz",
-            "shelf_name" to "Shared Books",
-            "subscriber_ids" to listOf("sub-1", "sub-2"),
-            "created_at" to createdDate,
-            "book_count" to 10
-        )
+        val map =
+            mapOf<String, Any?>(
+                "owner_id" to "owner-456",
+                "shelf_id" to "shelf-xyz",
+                "shelf_name" to "Shared Books",
+                "subscriber_ids" to listOf("sub-1", "sub-2"),
+                "created_at" to createdDate,
+                "book_count" to 10,
+            )
 
         // When
         val dto = map.toSharedShelfDto("share-code-123")
@@ -59,11 +59,12 @@ class SharedShelfMapperTest {
     @Test
     fun `toSharedShelfDto from map handles partial data`() {
         // Given
-        val partialMap = mapOf<String, Any?>(
-            "owner_id" to "partial-owner",
-            "shelf_name" to "Partial Shelf"
-            // missing other fields
-        )
+        val partialMap =
+            mapOf<String, Any?>(
+                "owner_id" to "partial-owner",
+                "shelf_name" to "Partial Shelf",
+                // missing other fields
+            )
 
         // When
         val dto = partialMap.toSharedShelfDto("partial-code")
@@ -80,12 +81,14 @@ class SharedShelfMapperTest {
     @Test
     fun `toSharedShelfDto from map handles number type variations`() {
         // Given - Firestore can return Long or Int for numbers
-        val map = mapOf<String, Any?>(
-            "owner_id" to "owner-123",
-            "shelf_id" to "shelf-abc",
-            "shelf_name" to "Test Shelf",
-            "book_count" to 42L // Long instead of Int
-        )
+        val map =
+            // book_count is Long instead of Int (Firestore returns Long)
+            mapOf<String, Any?>(
+                "owner_id" to "owner-123",
+                "shelf_id" to "shelf-abc",
+                "shelf_name" to "Test Shelf",
+                "book_count" to 42L,
+            )
 
         // When
         val dto = map.toSharedShelfDto("test-code")

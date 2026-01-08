@@ -53,30 +53,31 @@ fun BookcaseShelf(
     if (displayState.isReorderMode) {
         // Drag and drop mode - use fresh position from database for each drag
         var offsetY by remember { mutableFloatStateOf(0f) }
-        
+
         Box(
-            modifier = modifier
-                .fillMaxWidth()
-                .offset { IntOffset(0, offsetY.toInt()) }
-                .padding(horizontal = 16.dp, vertical = 4.dp)
-                .pointerInput(shelf.id, shelf.position) { // Reset on position change
-                    detectDragGestures(
-                        onDragEnd = {
-                            // Calculate movement from current database position
-                            val itemHeightPx = totalItemHeight.toPx()
-                            val positionsMoved = (offsetY / itemHeightPx).toInt()
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .offset { IntOffset(0, offsetY.toInt()) }
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .pointerInput(shelf.id, shelf.position) { // Reset on position change
+                        detectDragGestures(
+                            onDragEnd = {
+                                // Calculate movement from current database position
+                                val itemHeightPx = totalItemHeight.toPx()
+                                val positionsMoved = (offsetY / itemHeightPx).toInt()
 
-                            if (positionsMoved != 0) {
-                                val newPosition = (shelf.position + positionsMoved).coerceAtLeast(0)
-                                callbacks.onReorderShelf(shelf, newPosition)
-                            }
+                                if (positionsMoved != 0) {
+                                    val newPosition = (shelf.position + positionsMoved).coerceAtLeast(0)
+                                    callbacks.onReorderShelf(shelf, newPosition)
+                                }
 
-                            offsetY = 0f
+                                offsetY = 0f
+                            },
+                        ) { _, dragAmount ->
+                            offsetY += dragAmount.y
                         }
-                    ) { _, dragAmount ->
-                        offsetY += dragAmount.y
-                    }
-                }
+                    },
         ) {
             BookshelfCard(
                 shelf = shelf,
@@ -91,7 +92,7 @@ fun BookcaseShelf(
                 onCreateBookClub = callbacks::onCreateBookClub,
                 onInviteToClub = callbacks::onInviteToClub,
                 onDuplicateShelf = callbacks::onDuplicateShelf,
-                onLeaveBookClub = callbacks::onLeaveBookClub
+                onLeaveBookClub = callbacks::onLeaveBookClub,
             )
         }
     } else {
@@ -100,17 +101,18 @@ fun BookcaseShelf(
         var shouldRemoveOnRelease by remember { mutableStateOf(false) }
 
         @Suppress("DEPRECATION")
-        val swipeState = rememberSwipeToDismissBoxState(
-            confirmValueChange = { _ ->
-                if (shouldRemoveOnRelease) {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    callbacks.onRemoveBookshelf(shelf)
-                    true
-                } else {
-                    false
-                }
-            },
-        )
+        val swipeState =
+            rememberSwipeToDismissBoxState(
+                confirmValueChange = { _ ->
+                    if (shouldRemoveOnRelease) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        callbacks.onRemoveBookshelf(shelf)
+                        true
+                    } else {
+                        false
+                    }
+                },
+            )
 
         val swipeProgress by remember(swipeState) {
             derivedStateOf {
@@ -135,27 +137,29 @@ fun BookcaseShelf(
 
         SwipeToDismissBox(
             state = swipeState,
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
+            modifier =
+                modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
             enableDismissFromStartToEnd = false,
             backgroundContent = {
                 if (swipeState.dismissDirection == SwipeToDismissBoxValue.EndToStart) {
                     Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(blendedColor, RoundedCornerShape(12.dp))
-                            .padding(end = 16.dp),
-                        contentAlignment = Alignment.CenterEnd
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .background(blendedColor, RoundedCornerShape(12.dp))
+                                .padding(end = 16.dp),
+                        contentAlignment = Alignment.CenterEnd,
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
                             contentDescription = stringResource(id = R.string.cd_delete_shelf),
-                            tint = MaterialTheme.colorScheme.onErrorContainer
+                            tint = MaterialTheme.colorScheme.onErrorContainer,
                         )
                     }
                 }
-            }
+            },
         ) {
             BookshelfCard(
                 shelf = shelf,
@@ -170,40 +174,52 @@ fun BookcaseShelf(
                 onCreateBookClub = callbacks::onCreateBookClub,
                 onInviteToClub = callbacks::onInviteToClub,
                 onDuplicateShelf = callbacks::onDuplicateShelf,
-                onLeaveBookClub = callbacks::onLeaveBookClub
+                onLeaveBookClub = callbacks::onLeaveBookClub,
             )
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun BookcaseShelfPreview() {
-    val previewCallbacks = object : ShelfCallbacks {
-        override fun onRemoveBookshelf(shelf: Bookshelf) {}
-        override fun onBookshelfClick(shelf: Bookshelf) {}
-        override fun onLongClick(shelf: Bookshelf) {}
-        override fun onChangeStyle(shelf: Bookshelf) {}
-        override fun onDelete(shelf: Bookshelf) {}
-        override fun onCreateBookClub(shelf: Bookshelf) {}
-        override fun onInviteToClub(shelf: Bookshelf) {}
-        override fun onDuplicateShelf(shelf: Bookshelf) {}
-        override fun onReorderShelf(shelf: Bookshelf, position: Int) {}
-        override fun onLeaveBookClub(shelf: Bookshelf) {}
-    }
+    val previewCallbacks =
+        object : ShelfCallbacks {
+            override fun onRemoveBookshelf(shelf: Bookshelf) {}
+
+            override fun onBookshelfClick(shelf: Bookshelf) {}
+
+            override fun onLongClick(shelf: Bookshelf) {}
+
+            override fun onChangeStyle(shelf: Bookshelf) {}
+
+            override fun onDelete(shelf: Bookshelf) {}
+
+            override fun onCreateBookClub(shelf: Bookshelf) {}
+
+            override fun onInviteToClub(shelf: Bookshelf) {}
+
+            override fun onDuplicateShelf(shelf: Bookshelf) {}
+
+            override fun onReorderShelf(
+                shelf: Bookshelf,
+                position: Int,
+            ) {}
+
+            override fun onLeaveBookClub(shelf: Bookshelf) {}
+        }
 
     MyBookshelfTheme {
         Column {
             BookcaseShelf(
                 shelf = bookshelf,
                 callbacks = previewCallbacks,
-                displayState = ShelfDisplayState(isReorderMode = false)
+                displayState = ShelfDisplayState(isReorderMode = false),
             )
             BookcaseShelf(
                 shelf = bookshelf.copy(name = "My Reading List"),
                 callbacks = previewCallbacks,
-                displayState = ShelfDisplayState(isReorderMode = true)
+                displayState = ShelfDisplayState(isReorderMode = true),
             )
         }
     }

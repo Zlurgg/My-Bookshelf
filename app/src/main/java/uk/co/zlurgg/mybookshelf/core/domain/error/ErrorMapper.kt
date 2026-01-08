@@ -14,13 +14,12 @@ import java.net.UnknownHostException
 import kotlin.coroutines.coroutineContext
 
 object ErrorMapper {
-
     fun mapExceptionToDataError(exception: Exception): DataError {
         return when (exception) {
             // Network-related exceptions (UnresolvedAddressException and SocketTimeoutException are Ktor-specific)
             is UnresolvedAddressException -> DataError.Remote.NO_INTERNET
             is UnknownHostException -> DataError.Remote.NO_INTERNET
-            is SocketTimeoutException -> DataError.Remote.REQUEST_TIMEOUT  // Handles both Java and Ktor variants
+            is SocketTimeoutException -> DataError.Remote.REQUEST_TIMEOUT // Handles both Java and Ktor variants
             is IOException -> DataError.Remote.UNKNOWN
 
             // Serialization exceptions (check specific types first)
@@ -63,20 +62,19 @@ object ErrorMapper {
      * HTTP-specific network call that handles Ktor HTTP operations.
      * Combines exception handling with HTTP status code analysis.
      */
-    suspend inline fun <reified T> httpNetworkCall(
-        execute: () -> HttpResponse
-    ): Result<T, DataError.Remote> {
-        val response = try {
-            execute()
-        } catch (e: Exception) {
-            coroutineContext.ensureActive()
+    suspend inline fun <reified T> httpNetworkCall(execute: () -> HttpResponse): Result<T, DataError.Remote> {
+        val response =
+            try {
+                execute()
+            } catch (e: Exception) {
+                coroutineContext.ensureActive()
 
-            // Log the actual exception for debugging
-            val mappedError = mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN
-            Timber.tag("ErrorMapper").e(e, "HTTP call failed - Mapped to: %s", mappedError)
+                // Log the actual exception for debugging
+                val mappedError = mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN
+                Timber.tag("ErrorMapper").e(e, "HTTP call failed - Mapped to: %s", mappedError)
 
-            return Result.Error(mappedError)
-        }
+                return Result.Error(mappedError)
+            }
 
         return responseToResult(response)
     }
@@ -85,9 +83,7 @@ object ErrorMapper {
      * Converts HTTP response to Result based on status code and response body.
      * Integrates with mapHttpStatusToDataError for comprehensive status handling.
      */
-    suspend inline fun <reified T> responseToResult(
-        response: HttpResponse
-    ): Result<T, DataError.Remote> {
+    suspend inline fun <reified T> responseToResult(response: HttpResponse): Result<T, DataError.Remote> {
         return when (response.status.value) {
             in 200..299 -> {
                 try {

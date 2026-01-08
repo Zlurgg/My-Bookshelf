@@ -35,56 +35,60 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
  */
 @RunWith(AndroidJUnit4::class)
 class DataOrchestratorIntegrationTest {
-
     private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var orchestrator: DatabaseBookshelfDataOrchestrator
     private lateinit var bookcaseRepository: BookcaseRepositoryImpl
     private lateinit var bookshelfRepository: BookshelfRepositoryImpl
     private lateinit var bookRepository: BookRepositoryImpl
 
-    private val testTimeProvider = object : TimeProvider {
-        override fun currentTimeMillis(): Long = 1000L
-    }
+    private val testTimeProvider =
+        object : TimeProvider {
+            override fun currentTimeMillis(): Long = 1000L
+        }
 
     // Stub CurrentUserProvider - returns null (guest mode)
-    private val stubCurrentUserProvider = object : CurrentUserProvider {
-        override fun getCurrentUserId(): String? = null
-    }
+    private val stubCurrentUserProvider =
+        object : CurrentUserProvider {
+            override fun getCurrentUserId(): String? = null
+        }
 
     // Stub RemoteBookDataSource - not used in these tests
-    private val stubRemoteDataSource = object : RemoteBookDataSource {
-        override suspend fun searchBooks(
-            query: String,
-            resultLimit: Int?,
-            language: String?,
-            authorFilter: String?,
-            titleFilter: String?,
-            sort: String?
-        ): Result<SearchResponseDto, DataError.Remote> {
-            throw NotImplementedError("Not used in integration tests")
-        }
+    private val stubRemoteDataSource =
+        object : RemoteBookDataSource {
+            override suspend fun searchBooks(
+                query: String,
+                resultLimit: Int?,
+                language: String?,
+                authorFilter: String?,
+                titleFilter: String?,
+                sort: String?,
+            ): Result<SearchResponseDto, DataError.Remote> {
+                throw NotImplementedError("Not used in integration tests")
+            }
 
-        override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
-            throw NotImplementedError("Not used in integration tests")
+            override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
+                throw NotImplementedError("Not used in integration tests")
+            }
         }
-    }
 
     @Before
     fun setup() {
-        database = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            MyBookshelfRoomDatabase::class.java
-        ).build()
+        database =
+            Room.inMemoryDatabaseBuilder(
+                ApplicationProvider.getApplicationContext(),
+                MyBookshelfRoomDatabase::class.java,
+            ).build()
 
         bookcaseRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider, testTimeProvider)
         bookshelfRepository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
         bookRepository = BookRepositoryImpl(stubRemoteDataSource, database.bookshelfDao, stubCurrentUserProvider, testTimeProvider)
 
-        orchestrator = DatabaseBookshelfDataOrchestrator(
-            bookcaseRepository,
-            bookshelfRepository,
-            bookRepository
-        )
+        orchestrator =
+            DatabaseBookshelfDataOrchestrator(
+                bookcaseRepository,
+                bookshelfRepository,
+                bookRepository,
+            )
     }
 
     @After
@@ -93,155 +97,167 @@ class DataOrchestratorIntegrationTest {
     }
 
     @Test
-    fun loadShelfForExportWithBooks() = runTest {
-        // Given - Shelf with books in database
-        val shelfId = "shelf-1"
-        val book1 = createTestBook("book-1", "Book One")
-        val book2 = createTestBook("book-2", "Book Two")
+    fun loadShelfForExportWithBooks() =
+        runTest {
+            // Given - Shelf with books in database
+            val shelfId = "shelf-1"
+            val book1 = createTestBook("book-1", "Book One")
+            val book2 = createTestBook("book-2", "Book Two")
 
-        // Add shelf
-        val shelf = Bookshelf(
-            id = shelfId,
-            name = "Test Shelf",
-            books = emptyList(),
-            shelfStyle = ShelfStyle.DarkWood,
-            position = 0
-        )
-        bookcaseRepository.addShelf(shelf)
+            // Add shelf
+            val shelf =
+                Bookshelf(
+                    id = shelfId,
+                    name = "Test Shelf",
+                    books = emptyList(),
+                    shelfStyle = ShelfStyle.DarkWood,
+                    position = 0,
+                )
+            bookcaseRepository.addShelf(shelf)
 
-        // Add books and link to shelf
-        bookRepository.upsertBook(book1)
-        bookRepository.upsertBook(book2)
-        bookshelfRepository.addBookToShelf(shelfId, book1.id)
-        bookshelfRepository.addBookToShelf(shelfId, book2.id)
+            // Add books and link to shelf
+            bookRepository.upsertBook(book1)
+            bookRepository.upsertBook(book2)
+            bookshelfRepository.addBookToShelf(shelfId, book1.id)
+            bookshelfRepository.addBookToShelf(shelfId, book2.id)
 
-        // When - Load for export
-        val result = orchestrator.loadShelfForExport(shelfId)
+            // When - Load for export
+            val result = orchestrator.loadShelfForExport(shelfId)
 
-        // Then - Should succeed with shelf and books
-        assertTrue("Load should succeed", result is Result.Success)
-        val loadedShelf = (result as Result.Success).data
-        assertEquals("Test Shelf", loadedShelf.name)
-        assertEquals(2, loadedShelf.books.size)
-        assertEquals("Book One", loadedShelf.books[0].title)
-        assertEquals("Book Two", loadedShelf.books[1].title)
-    }
-
-    @Test
-    fun loadNonExistentShelfReturnsError() = runTest {
-        // Given - Non-existent shelf ID
-        val shelfId = "nonexistent"
-
-        // When - Load for export
-        val result = orchestrator.loadShelfForExport(shelfId)
-
-        // Then - Should return error
-        assertTrue("Load should fail for nonexistent shelf", result is Result.Error)
-        assertEquals(DataError.Local.NOT_FOUND, (result as Result.Error).error)
-    }
+            // Then - Should succeed with shelf and books
+            assertTrue("Load should succeed", result is Result.Success)
+            val loadedShelf = (result as Result.Success).data
+            assertEquals("Test Shelf", loadedShelf.name)
+            assertEquals(2, loadedShelf.books.size)
+            assertEquals("Book One", loadedShelf.books[0].title)
+            assertEquals("Book Two", loadedShelf.books[1].title)
+        }
 
     @Test
-    fun importShelfToDatabaseWithBooks() = runTest {
-        // Given - Shelf to import
-        val book1 = createTestBook("book-1", "Import Book One")
-        val book2 = createTestBook("book-2", "Import Book Two")
+    fun loadNonExistentShelfReturnsError() =
+        runTest {
+            // Given - Non-existent shelf ID
+            val shelfId = "nonexistent"
 
-        val shelf = Bookshelf(
-            id = "imported-shelf-1",
-            name = "Imported Shelf",
-            books = listOf(book1, book2),
-            shelfStyle = ShelfStyle.SilverMetal,
-            position = 0
-        )
+            // When - Load for export
+            val result = orchestrator.loadShelfForExport(shelfId)
 
-        // When - Import to database
-        val result = orchestrator.importShelfToDatabase(shelf)
-
-        // Then - Should succeed
-        assertTrue("Import should succeed", result is Result.Success)
-
-        // Verify shelf exists
-        val retrievedShelf = bookcaseRepository.getShelfById("imported-shelf-1")
-        assertNotNull("Shelf should exist", retrievedShelf)
-        assertEquals("Imported Shelf", retrievedShelf?.name)
-
-        // Verify books exist
-        val retrievedBook1 = bookRepository.getBookById("book-1")
-        assertNotNull("Book 1 should exist", retrievedBook1)
-        assertEquals("Import Book One", retrievedBook1?.title)
-
-        // Verify books are linked to shelf
-        val booksInShelf = bookshelfRepository.getBooksForShelf("imported-shelf-1").first()
-        assertEquals(2, booksInShelf.size)
-    }
+            // Then - Should return error
+            assertTrue("Load should fail for nonexistent shelf", result is Result.Error)
+            assertEquals(DataError.Local.NOT_FOUND, (result as Result.Error).error)
+        }
 
     @Test
-    fun importEmptyShelfSucceeds() = runTest {
-        // Given - Empty shelf to import
-        val shelf = Bookshelf(
-            id = "empty-shelf-1",
-            name = "Empty Imported Shelf",
-            books = emptyList(),
-            shelfStyle = ShelfStyle.WhiteMetal,
-            position = 0
-        )
+    fun importShelfToDatabaseWithBooks() =
+        runTest {
+            // Given - Shelf to import
+            val book1 = createTestBook("book-1", "Import Book One")
+            val book2 = createTestBook("book-2", "Import Book Two")
 
-        // When - Import to database
-        val result = orchestrator.importShelfToDatabase(shelf)
+            val shelf =
+                Bookshelf(
+                    id = "imported-shelf-1",
+                    name = "Imported Shelf",
+                    books = listOf(book1, book2),
+                    shelfStyle = ShelfStyle.SilverMetal,
+                    position = 0,
+                )
 
-        // Then - Should succeed
-        assertTrue("Import should succeed", result is Result.Success)
+            // When - Import to database
+            val result = orchestrator.importShelfToDatabase(shelf)
 
-        // Verify shelf exists
-        val retrievedShelf = bookcaseRepository.getShelfById("empty-shelf-1")
-        assertNotNull("Shelf should exist", retrievedShelf)
-        assertEquals("Empty Imported Shelf", retrievedShelf?.name)
+            // Then - Should succeed
+            assertTrue("Import should succeed", result is Result.Success)
 
-        // Verify no books linked
-        val booksInShelf = bookshelfRepository.getBooksForShelf("empty-shelf-1").first()
-        assertEquals(0, booksInShelf.size)
-    }
+            // Verify shelf exists
+            val retrievedShelf = bookcaseRepository.getShelfById("imported-shelf-1")
+            assertNotNull("Shelf should exist", retrievedShelf)
+            assertEquals("Imported Shelf", retrievedShelf?.name)
+
+            // Verify books exist
+            val retrievedBook1 = bookRepository.getBookById("book-1")
+            assertNotNull("Book 1 should exist", retrievedBook1)
+            assertEquals("Import Book One", retrievedBook1?.title)
+
+            // Verify books are linked to shelf
+            val booksInShelf = bookshelfRepository.getBooksForShelf("imported-shelf-1").first()
+            assertEquals(2, booksInShelf.size)
+        }
 
     @Test
-    fun loadShelfPreservesBookOrder() = runTest {
-        // Given - Shelf with books added in specific order
-        val shelfId = "shelf-1"
-        val book1 = createTestBook("book-1", "First")
-        val book2 = createTestBook("book-2", "Second")
-        val book3 = createTestBook("book-3", "Third")
+    fun importEmptyShelfSucceeds() =
+        runTest {
+            // Given - Empty shelf to import
+            val shelf =
+                Bookshelf(
+                    id = "empty-shelf-1",
+                    name = "Empty Imported Shelf",
+                    books = emptyList(),
+                    shelfStyle = ShelfStyle.WhiteMetal,
+                    position = 0,
+                )
 
-        val shelf = Bookshelf(
-            id = shelfId,
-            name = "Ordered Shelf",
-            books = emptyList(),
-            shelfStyle = ShelfStyle.GreyMetal,
-            position = 0
-        )
-        bookcaseRepository.addShelf(shelf)
+            // When - Import to database
+            val result = orchestrator.importShelfToDatabase(shelf)
 
-        // Add books in specific order (cross-refs use addedAt timestamp)
-        bookRepository.upsertBook(book1)
-        bookRepository.upsertBook(book2)
-        bookRepository.upsertBook(book3)
-        bookshelfRepository.addBookToShelf(shelfId, book1.id)
-        bookshelfRepository.addBookToShelf(shelfId, book2.id)
-        bookshelfRepository.addBookToShelf(shelfId, book3.id)
+            // Then - Should succeed
+            assertTrue("Import should succeed", result is Result.Success)
 
-        // When - Load for export
-        val result = orchestrator.loadShelfForExport(shelfId)
+            // Verify shelf exists
+            val retrievedShelf = bookcaseRepository.getShelfById("empty-shelf-1")
+            assertNotNull("Shelf should exist", retrievedShelf)
+            assertEquals("Empty Imported Shelf", retrievedShelf?.name)
 
-        // Then - Books should be in order (DESC by addedAt, so newest first)
-        val loadedShelf = (result as Result.Success).data
-        assertEquals(3, loadedShelf.books.size)
-        // Cross-refs use same timestamp in test, so order may vary
-        // Just verify all books are present
-        val titles = loadedShelf.books.map { it.title }.toSet()
-        assertTrue(titles.contains("First"))
-        assertTrue(titles.contains("Second"))
-        assertTrue(titles.contains("Third"))
-    }
+            // Verify no books linked
+            val booksInShelf = bookshelfRepository.getBooksForShelf("empty-shelf-1").first()
+            assertEquals(0, booksInShelf.size)
+        }
 
-    private fun createTestBook(id: String, title: String): Book {
+    @Test
+    fun loadShelfPreservesBookOrder() =
+        runTest {
+            // Given - Shelf with books added in specific order
+            val shelfId = "shelf-1"
+            val book1 = createTestBook("book-1", "First")
+            val book2 = createTestBook("book-2", "Second")
+            val book3 = createTestBook("book-3", "Third")
+
+            val shelf =
+                Bookshelf(
+                    id = shelfId,
+                    name = "Ordered Shelf",
+                    books = emptyList(),
+                    shelfStyle = ShelfStyle.GreyMetal,
+                    position = 0,
+                )
+            bookcaseRepository.addShelf(shelf)
+
+            // Add books in specific order (cross-refs use addedAt timestamp)
+            bookRepository.upsertBook(book1)
+            bookRepository.upsertBook(book2)
+            bookRepository.upsertBook(book3)
+            bookshelfRepository.addBookToShelf(shelfId, book1.id)
+            bookshelfRepository.addBookToShelf(shelfId, book2.id)
+            bookshelfRepository.addBookToShelf(shelfId, book3.id)
+
+            // When - Load for export
+            val result = orchestrator.loadShelfForExport(shelfId)
+
+            // Then - Books should be in order (DESC by addedAt, so newest first)
+            val loadedShelf = (result as Result.Success).data
+            assertEquals(3, loadedShelf.books.size)
+            // Cross-refs use same timestamp in test, so order may vary
+            // Just verify all books are present
+            val titles = loadedShelf.books.map { it.title }.toSet()
+            assertTrue(titles.contains("First"))
+            assertTrue(titles.contains("Second"))
+            assertTrue(titles.contains("Third"))
+        }
+
+    private fun createTestBook(
+        id: String,
+        title: String,
+    ): Book {
         return Book(
             id = id,
             title = title,
@@ -255,7 +271,7 @@ class DataOrchestratorIntegrationTest {
             numPages = 300,
             numEditions = 5,
             purchased = false,
-            spineColor = 0xFF8B4513.toInt()
+            spineColor = 0xFF8B4513.toInt(),
         )
     }
 }

@@ -29,20 +29,20 @@ fun SearchFilters(
     searchByAuthor: Boolean,
     onToggleTitle: () -> Unit,
     onToggleAuthor: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Title checkbox
         Checkbox(
             checked = searchByTitle,
-            onCheckedChange = { onToggleTitle() }
+            onCheckedChange = { onToggleTitle() },
         )
         Text(
             text = stringResource(id = R.string.search_by_title),
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -50,11 +50,11 @@ fun SearchFilters(
         // Author checkbox
         Checkbox(
             checked = searchByAuthor,
-            onCheckedChange = { onToggleAuthor() }
+            onCheckedChange = { onToggleAuthor() },
         )
         Text(
             text = stringResource(id = R.string.search_by_author),
-            style = MaterialTheme.typography.bodySmall
+            style = MaterialTheme.typography.bodySmall,
         )
     }
 }
@@ -66,6 +66,6 @@ private fun SearchFiltersPreview() {
         searchByTitle = true,
         searchByAuthor = true,
         onToggleTitle = {},
-        onToggleAuthor = {}
+        onToggleAuthor = {},
     )
 }

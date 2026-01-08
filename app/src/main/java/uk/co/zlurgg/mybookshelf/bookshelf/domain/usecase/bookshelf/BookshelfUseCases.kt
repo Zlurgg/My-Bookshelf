@@ -15,5 +15,5 @@ class BookshelfUseCases(
     val removeBookFromShelf: RemoveBookFromShelfUseCase,
     val upsertBook: UpsertBookUseCase,
     val shareBookshelf: ShareBookshelfUseCase,
-    val updateShelfTidyMode: UpdateShelfTidyModeUseCase
+    val updateShelfTidyMode: UpdateShelfTidyModeUseCase,
 )

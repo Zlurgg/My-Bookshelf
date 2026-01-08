@@ -19,7 +19,6 @@ import uk.co.zlurgg.mybookshelf.core.util.Base64Encoder
  * The "token" is actually the GZip-compressed and Base64-encoded shelf data itself.
  */
 class UrlEncodedShareTokenService : ShareTokenService {
-
     /**
      * Generates a "token" by encoding the shelf JSON data with GZip compression and Base64.
      *
@@ -33,7 +32,7 @@ class UrlEncodedShareTokenService : ShareTokenService {
         } catch (e: Exception) {
             Result.Error(
                 ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
+                    ?: DataError.Local.UNKNOWN,
             )
         }
     }
@@ -51,7 +50,7 @@ class UrlEncodedShareTokenService : ShareTokenService {
         } catch (e: Exception) {
             Result.Error(
                 ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
+                    ?: DataError.Local.UNKNOWN,
             )
         }
     }

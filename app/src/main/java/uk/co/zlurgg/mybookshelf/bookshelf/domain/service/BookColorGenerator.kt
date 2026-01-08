@@ -7,7 +7,6 @@ import uk.co.zlurgg.mybookshelf.core.presentation.util.MaterialColorGenerator
  * This is a wrapper around the generic MaterialColorGenerator for book-specific use cases.
  */
 object BookColorGenerator {
-
     /**
      * Generates a matte, realistic color suitable for book spines.
      * Returns an ARGB color as Int that mimics real book materials.

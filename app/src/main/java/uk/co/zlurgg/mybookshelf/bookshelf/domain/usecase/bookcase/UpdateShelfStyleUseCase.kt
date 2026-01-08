@@ -16,5 +16,8 @@ interface UpdateShelfStyleUseCase {
      * @param newStyle New style for the shelf
      * @return Result.Success if updated, Result.Error if shelf not found
      */
-    suspend fun execute(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local>
+    suspend fun execute(
+        shelfId: String,
+        newStyle: ShelfStyle,
+    ): Result<Unit, DataError.Local>
 }

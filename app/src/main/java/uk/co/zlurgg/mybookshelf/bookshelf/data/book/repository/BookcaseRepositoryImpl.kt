@@ -14,25 +14,22 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 class BookcaseRepositoryImpl(
     private val dao: BookshelfDao,
     private val currentUserProvider: CurrentUserProvider,
-    private val timeProvider: TimeProvider
-): BookcaseRepository {
-
+    private val timeProvider: TimeProvider,
+) : BookcaseRepository {
     override fun getAllShelves(): Flow<List<Bookshelf>> {
         val userId = currentUserProvider.getCurrentUserId()
         return dao.getShelvesForUser(userId).map { list -> list.map { it.toDomain() } }
     }
 
-    override fun getBookCountForShelf(shelfId: String): Flow<Int> =
-        dao.getBookCountForShelf(shelfId)
+    override fun getBookCountForShelf(shelfId: String): Flow<Int> = dao.getBookCountForShelf(shelfId)
 
-    override suspend fun getShelfById(shelfId: String): Bookshelf? =
-        dao.getShelfById(shelfId)?.toDomain()
+    override suspend fun getShelfById(shelfId: String): Bookshelf? = dao.getShelfById(shelfId)?.toDomain()
 
     override suspend fun addShelf(shelf: Bookshelf) {
         val ownerId = currentUserProvider.getCurrentUserId()
         dao.upsertShelfWithSyncInit(
             shelf.toEntity(ownerId),
-            timeProvider.currentTimeMillis()
+            timeProvider.currentTimeMillis(),
         )
     }
 
@@ -55,14 +52,15 @@ class BookcaseRepositoryImpl(
         val ownerId = currentUserProvider.getCurrentUserId()
         dao.upsertShelfWithSyncInit(
             shelf.toEntity(ownerId),
-            timeProvider.currentTimeMillis()
+            timeProvider.currentTimeMillis(),
         )
     }
 
     override suspend fun addSystemShelf(shelf: Bookshelf) {
         // System shelves are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
-        val entity = shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL)
-            .copy(syncStatus = "SYNCED")
+        val entity =
+            shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL)
+                .copy(syncStatus = "SYNCED")
         dao.upsertShelf(entity)
     }
 }

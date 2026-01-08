@@ -10,7 +10,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
  * This is in the domain layer - implementations should not have Android dependencies.
  */
 interface ConflictResolver {
-
     /**
      * The current conflict resolution strategy.
      */

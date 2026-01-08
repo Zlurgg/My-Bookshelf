@@ -50,7 +50,7 @@ fun JoinBookClubDialog(
             Text(
                 text = stringResource(R.string.join_book_club_title),
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         },
         text = {
@@ -60,11 +60,12 @@ fun JoinBookClubDialog(
                     onValueChange = { codeOrUrl = it },
                     label = { Text(stringResource(R.string.join_book_club_hint)) },
                     enabled = !isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
                     singleLine = true,
-                    isError = errorMessage != null
+                    isError = errorMessage != null,
                 )
 
                 if (errorMessage != null) {
@@ -72,7 +73,7 @@ fun JoinBookClubDialog(
                     Text(
                         text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -88,7 +89,7 @@ fun JoinBookClubDialog(
             } else {
                 Button(
                     enabled = codeOrUrl.isNotBlank(),
-                    onClick = { onLookup(codeOrUrl.trim()) }
+                    onClick = { onLookup(codeOrUrl.trim()) },
                 ) {
                     Text(stringResource(R.string.join_book_club_lookup))
                 }
@@ -97,13 +98,13 @@ fun JoinBookClubDialog(
         dismissButton = {
             TextButton(
                 onClick = onDismiss,
-                enabled = !isLoading
+                enabled = !isLoading,
             ) {
                 Text(stringResource(R.string.action_cancel))
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = modifier
+        modifier = modifier,
     )
 
     LaunchedEffect(Unit) {

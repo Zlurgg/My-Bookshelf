@@ -7,6 +7,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfU
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.flatMap
+
 /**
  * Refactored Android export service that delegates to use cases.
  * Maintains compatibility with existing interface while following Clean Architecture.
@@ -15,10 +16,8 @@ class AndroidBookshelfExportService(
     private val exportBookshelfUseCase: ExportBookshelfUseCase,
     private val importBookshelfUseCase: ImportBookshelfUseCase,
     private val checkImportConflictUseCase: CheckImportConflictUseCase,
-    private val androidShareService: AndroidShareService
+    private val androidShareService: AndroidShareService,
 ) : BookshelfExportService {
-
-
     override suspend fun shareBookshelf(shelfId: String): Result<Unit, DataError.Local> {
         return exportBookshelfUseCase.execute(shelfId)
             .flatMap { shareData ->
@@ -34,8 +33,10 @@ class AndroidBookshelfExportService(
         return checkImportConflictUseCase.execute(jsonData)
     }
 
-    override suspend fun importBookshelfWithName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
+    override suspend fun importBookshelfWithName(
+        jsonData: String,
+        customName: String,
+    ): Result<Unit, DataError.Local> {
         return importBookshelfUseCase.execute(jsonData, customName)
     }
-
 }

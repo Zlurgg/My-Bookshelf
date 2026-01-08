@@ -43,7 +43,7 @@ fun InviteLinkDialog(
     clubName: String,
     isNewClub: Boolean = true,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
 
@@ -53,42 +53,45 @@ fun InviteLinkDialog(
             Text(
                 text = if (isNewClub) "Book Club Created!" else "Share Book Club",
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "Share this code with friends to let them join \"$clubName\"",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Club code display
                 Card(
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                    colors =
+                        CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        ),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
                         text = clubCode,
-                        style = MaterialTheme.typography.headlineMedium.copy(
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = androidx.compose.ui.unit.TextUnit.Unspecified
-                        ),
+                        style =
+                            MaterialTheme.typography.headlineMedium.copy(
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = androidx.compose.ui.unit.TextUnit.Unspecified,
+                            ),
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        textAlign = TextAlign.Center
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                        textAlign = TextAlign.Center,
                     )
                 }
 
@@ -97,25 +100,25 @@ fun InviteLinkDialog(
                 // Action buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     IconButton(
                         onClick = {
                             copyToClipboard(context, inviteLink)
                             Toast.makeText(context, "Link copied!", Toast.LENGTH_SHORT).show()
-                        }
+                        },
                     ) {
                         Icon(
                             imageVector = Icons.Filled.ContentCopy,
                             contentDescription = "Copy link",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     }
 
                     Text(
                         text = "Copy Link",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
 
                     Spacer(modifier = Modifier.width(16.dp))
@@ -123,19 +126,19 @@ fun InviteLinkDialog(
                     IconButton(
                         onClick = {
                             shareLink(context, inviteLink, clubName)
-                        }
+                        },
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Share,
                             contentDescription = "Share link",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.primary,
                         )
                     }
 
                     Text(
                         text = "Share",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
                 }
             }
@@ -146,22 +149,30 @@ fun InviteLinkDialog(
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = modifier.padding(16.dp)
+        modifier = modifier.padding(16.dp),
     )
 }
 
-private fun copyToClipboard(context: Context, text: String) {
+private fun copyToClipboard(
+    context: Context,
+    text: String,
+) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     val clip = ClipData.newPlainText("Book Club Invite Link", text)
     clipboard.setPrimaryClip(clip)
 }
 
-private fun shareLink(context: Context, link: String, clubName: String) {
-    val sendIntent = Intent().apply {
-        action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, "Join my book club \"$clubName\"!\n\n$link")
-        type = "text/plain"
-    }
+private fun shareLink(
+    context: Context,
+    link: String,
+    clubName: String,
+) {
+    val sendIntent =
+        Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "Join my book club \"$clubName\"!\n\n$link")
+            type = "text/plain"
+        }
     val shareIntent = Intent.createChooser(sendIntent, "Share Book Club Invite")
     context.startActivity(shareIntent)
 }

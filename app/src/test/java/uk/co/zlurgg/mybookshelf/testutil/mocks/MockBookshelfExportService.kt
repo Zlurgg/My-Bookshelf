@@ -11,7 +11,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Following the pattern established in MockBookcaseRepository and MockUseCases.
  */
 class MockBookshelfExportService : BookshelfExportService {
-
     // Tracking properties
     var shareBookshelfCalled = false
     var importBookshelfCalled = false
@@ -50,7 +49,7 @@ class MockBookshelfExportService : BookshelfExportService {
 
     override suspend fun importBookshelfWithName(
         jsonData: String,
-        customName: String
+        customName: String,
     ): Result<Unit, DataError.Local> {
         importBookshelfWithNameCalled = true
         lastImportWithNameJsonData = jsonData

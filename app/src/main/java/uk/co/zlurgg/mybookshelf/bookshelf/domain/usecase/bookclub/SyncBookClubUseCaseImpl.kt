@@ -10,12 +10,11 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Delegates to BookClubRepository for the actual sync operation.
  */
 class SyncBookClubUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : SyncBookClubUseCase {
-
     override suspend fun execute(
         clubCode: String,
-        localShelfId: String
+        localShelfId: String,
     ): Result<SyncResult, DataError.Sync> {
         return bookClubRepository.syncBooksFromClub(clubCode, localShelfId)
     }

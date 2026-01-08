@@ -10,14 +10,14 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
  * Unit tests for SyncMetadataEntity field validation.
  */
 class SyncMetadataEntityTest {
-
     @Test
     fun `entity creates with all required fields`() {
         // Given/When
-        val entity = SyncMetadataEntity(
-            userId = "user-123",
-            lastSyncTimestamp = 1234567890L
-        )
+        val entity =
+            SyncMetadataEntity(
+                userId = "user-123",
+                lastSyncTimestamp = 1234567890L,
+            )
 
         // Then
         assertEquals("user-123", entity.userId)
@@ -30,13 +30,14 @@ class SyncMetadataEntityTest {
     @Test
     fun `entity creates with all fields including optionals`() {
         // Given/When
-        val entity = SyncMetadataEntity(
-            userId = "user-456",
-            lastSyncTimestamp = 9876543210L,
-            syncInProgress = true,
-            lastSyncError = "Network timeout",
-            pendingOperationsCount = 5
-        )
+        val entity =
+            SyncMetadataEntity(
+                userId = "user-456",
+                lastSyncTimestamp = 9876543210L,
+                syncInProgress = true,
+                lastSyncError = "Network timeout",
+                pendingOperationsCount = 5,
+            )
 
         // Then
         assertEquals("user-456", entity.userId)
@@ -49,14 +50,16 @@ class SyncMetadataEntityTest {
     @Test
     fun `userId is primary key`() {
         // Given
-        val entity1 = SyncMetadataEntity(
-            userId = "user-123",
-            lastSyncTimestamp = 1000L
-        )
-        val entity2 = SyncMetadataEntity(
-            userId = "user-123",
-            lastSyncTimestamp = 2000L
-        )
+        val entity1 =
+            SyncMetadataEntity(
+                userId = "user-123",
+                lastSyncTimestamp = 1000L,
+            )
+        val entity2 =
+            SyncMetadataEntity(
+                userId = "user-123",
+                lastSyncTimestamp = 2000L,
+            )
 
         // Then - Same userId means same identity
         assertEquals(entity1.userId, entity2.userId)
@@ -65,10 +68,11 @@ class SyncMetadataEntityTest {
     @Test
     fun `default values are correct`() {
         // Given
-        val entity = SyncMetadataEntity(
-            userId = "test-user",
-            lastSyncTimestamp = 0L
-        )
+        val entity =
+            SyncMetadataEntity(
+                userId = "test-user",
+                lastSyncTimestamp = 0L,
+            )
 
         // Then
         assertFalse("syncInProgress should default to false", entity.syncInProgress)
@@ -79,20 +83,22 @@ class SyncMetadataEntityTest {
     @Test
     fun `copy preserves and updates fields correctly`() {
         // Given
-        val original = SyncMetadataEntity(
-            userId = "user-123",
-            lastSyncTimestamp = 1000L,
-            syncInProgress = false,
-            lastSyncError = null,
-            pendingOperationsCount = 0
-        )
+        val original =
+            SyncMetadataEntity(
+                userId = "user-123",
+                lastSyncTimestamp = 1000L,
+                syncInProgress = false,
+                lastSyncError = null,
+                pendingOperationsCount = 0,
+            )
 
         // When
-        val updated = original.copy(
-            lastSyncTimestamp = 2000L,
-            syncInProgress = true,
-            pendingOperationsCount = 3
-        )
+        val updated =
+            original.copy(
+                lastSyncTimestamp = 2000L,
+                syncInProgress = true,
+                pendingOperationsCount = 3,
+            )
 
         // Then
         assertEquals("userId should remain unchanged", "user-123", updated.userId)

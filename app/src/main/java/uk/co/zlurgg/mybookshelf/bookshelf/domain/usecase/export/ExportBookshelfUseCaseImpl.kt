@@ -17,9 +17,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.map
 class ExportBookshelfUseCaseImpl(
     private val dataOrchestrator: BookshelfDataOrchestrator,
     private val serializer: BookshelfSerializer,
-    private val shareTokenService: ShareTokenService
+    private val shareTokenService: ShareTokenService,
 ) : ExportBookshelfUseCase {
-
     companion object {
         private const val TAG = "BookshelfExport"
     }
@@ -27,19 +26,22 @@ class ExportBookshelfUseCaseImpl(
     override suspend fun execute(shelfId: String): Result<ShareData, DataError.Local> {
         Timber.tag(TAG).d("Starting bookshelf export for shelf: %s", shelfId)
 
-        val result = dataOrchestrator.loadShelfForExport(shelfId)
-            .flatMap { shelf ->
-                Timber.tag(TAG).d("Loaded shelf '%s' with %d books, serializing...", shelf.name, shelf.books.size)
-                serializer.serialize(shelf).map { jsonString -> shelf to jsonString }
-            }
-            .flatMap { (shelf, jsonString) ->
-                Timber.tag(TAG).d("Serialization successful (%d chars), generating share token...", jsonString.length)
-                shareTokenService.generateToken(jsonString)
-                    .map { token ->
-                        Timber.tag(TAG).d("Token generated successfully")
-                        ShareData(token, shelf.name)
-                    }
-            }
+        val result =
+            dataOrchestrator.loadShelfForExport(shelfId)
+                .flatMap { shelf ->
+                    Timber.tag(TAG).d("Loaded shelf '%s' with %d books, serializing...", shelf.name, shelf.books.size)
+                    serializer.serialize(shelf).map { jsonString -> shelf to jsonString }
+                }
+                .flatMap { (shelf, jsonString) ->
+                    Timber.tag(
+                        TAG,
+                    ).d("Serialization successful (%d chars), generating share token...", jsonString.length)
+                    shareTokenService.generateToken(jsonString)
+                        .map { token ->
+                            Timber.tag(TAG).d("Token generated successfully")
+                            ShareData(token, shelf.name)
+                        }
+                }
 
         return when (result) {
             is Result.Success -> {

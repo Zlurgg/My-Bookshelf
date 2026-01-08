@@ -15,13 +15,13 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles pure serialization logic with proper error handling.
  */
 class JsonBookshelfSerializer(
-    private val exportMapper: BookshelfExportMapper
+    private val exportMapper: BookshelfExportMapper,
 ) : BookshelfSerializer {
-
-    private val json = Json {
-        prettyPrint = false  // Minified JSON for smaller URL size with GZip compression
-        ignoreUnknownKeys = true
-    }
+    private val json =
+        Json {
+            prettyPrint = false // Minified JSON for smaller URL size with GZip compression
+            ignoreUnknownKeys = true
+        }
 
     override fun serialize(shelf: Bookshelf): Result<String, DataError.Local> {
         return try {

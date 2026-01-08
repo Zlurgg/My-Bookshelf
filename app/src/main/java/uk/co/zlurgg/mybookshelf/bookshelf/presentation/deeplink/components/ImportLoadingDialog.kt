@@ -25,15 +25,15 @@ fun ImportLoadingDialog() {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(16.dp),
             ) {
                 CircularProgressIndicator(
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(48.dp),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(stringResource(id = R.string.importing_shelf))
             }
         },
-        confirmButton = { /* No buttons during loading */ }
+        confirmButton = { /* No buttons during loading */ },
     )
 }

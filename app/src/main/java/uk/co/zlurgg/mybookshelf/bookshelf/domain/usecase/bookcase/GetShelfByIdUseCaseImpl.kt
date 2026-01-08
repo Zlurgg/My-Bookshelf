@@ -7,9 +7,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class GetShelfByIdUseCaseImpl(
-    private val bookcaseRepository: BookcaseRepository
+    private val bookcaseRepository: BookcaseRepository,
 ) : GetShelfByIdUseCase {
-
     override suspend fun execute(shelfId: String): Result<Bookshelf?, DataError.Local> {
         return try {
             val shelf = bookcaseRepository.getShelfById(shelfId)

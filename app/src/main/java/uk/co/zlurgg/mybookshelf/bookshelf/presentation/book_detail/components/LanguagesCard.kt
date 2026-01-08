@@ -26,33 +26,33 @@ import uk.co.zlurgg.mybookshelf.R
 @Composable
 fun LanguagesCard(
     languages: List<String>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     if (languages.isEmpty()) return
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.languages_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             FlowRow(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 languages.forEach { language ->
                     AssistChip(
                         onClick = { /* No action */ },
                         label = { Text(language.uppercase()) },
-                        modifier = Modifier.padding(end = 8.dp, bottom = 8.dp)
+                        modifier = Modifier.padding(end = 8.dp, bottom = 8.dp),
                     )
                 }
             }

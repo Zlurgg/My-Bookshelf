@@ -13,6 +13,6 @@ interface DeleteBookClubCommentUseCase {
     suspend operator fun invoke(
         clubCode: String,
         bookId: String,
-        commentId: String
+        commentId: String,
     ): Result<Unit, DataError.Sync>
 }

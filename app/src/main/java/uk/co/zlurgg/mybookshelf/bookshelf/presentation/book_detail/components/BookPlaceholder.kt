@@ -26,20 +26,19 @@ import uk.co.zlurgg.mybookshelf.R
  * Uses 64dp icon size for detail view prominence.
  */
 @Composable
-fun BookPlaceholder(
-    modifier: Modifier = Modifier
-) {
+fun BookPlaceholder(modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant),
-        contentAlignment = Alignment.Center
+        modifier =
+            modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+        contentAlignment = Alignment.Center,
     ) {
         Icon(
             imageVector = Icons.Default.Book,
             contentDescription = stringResource(R.string.book_cover_placeholder),
             modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

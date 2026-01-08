@@ -19,10 +19,12 @@ class RemoveBookFromShelfUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
     private val bookClubRepository: BookClubRepository,
-    private val syncSchedulerService: SyncSchedulerService
+    private val syncSchedulerService: SyncSchedulerService,
 ) : RemoveBookFromShelfUseCase {
-
-    override suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local> {
+    override suspend fun execute(
+        bookId: String,
+        shelfId: String,
+    ): Result<Unit, DataError.Local> {
         return try {
             // Check if this is a book club shelf BEFORE removing
             val shelf = bookcaseRepository.getShelfById(shelfId)
@@ -50,7 +52,7 @@ class RemoveBookFromShelfUseCaseImpl(
         } catch (e: Exception) {
             Result.Error(
                 ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
+                    ?: DataError.Local.UNKNOWN,
             )
         }
     }

@@ -7,7 +7,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class ParseClubCodeUseCaseImplTest {
-
     private val useCase = ParseClubCodeUseCaseImpl()
 
     // ========== Raw Code Tests ==========

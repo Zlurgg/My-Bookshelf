@@ -12,9 +12,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.ConflictResolver
  * Default strategy is LAST_WRITE_WINS.
  */
 class DefaultConflictResolver(
-    override val strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS
+    override val strategy: ConflictStrategy = ConflictStrategy.LAST_WRITE_WINS,
 ) : ConflictResolver {
-
     override fun resolve(conflict: SyncConflict): ConflictResolution? {
         return when (strategy) {
             ConflictStrategy.LOCAL_WINS -> ConflictResolution.KeepLocal
@@ -45,25 +44,21 @@ class DefaultConflictResolver(
         /**
          * Creates a resolver that always keeps local changes.
          */
-        fun localWins(): DefaultConflictResolver =
-            DefaultConflictResolver(ConflictStrategy.LOCAL_WINS)
+        fun localWins(): DefaultConflictResolver = DefaultConflictResolver(ConflictStrategy.LOCAL_WINS)
 
         /**
          * Creates a resolver that always keeps remote changes.
          */
-        fun remoteWins(): DefaultConflictResolver =
-            DefaultConflictResolver(ConflictStrategy.REMOTE_WINS)
+        fun remoteWins(): DefaultConflictResolver = DefaultConflictResolver(ConflictStrategy.REMOTE_WINS)
 
         /**
          * Creates a resolver that uses last-write-wins (default).
          */
-        fun lastWriteWins(): DefaultConflictResolver =
-            DefaultConflictResolver(ConflictStrategy.LAST_WRITE_WINS)
+        fun lastWriteWins(): DefaultConflictResolver = DefaultConflictResolver(ConflictStrategy.LAST_WRITE_WINS)
 
         /**
          * Creates a resolver that requires manual resolution.
          */
-        fun askUser(): DefaultConflictResolver =
-            DefaultConflictResolver(ConflictStrategy.ASK_USER)
+        fun askUser(): DefaultConflictResolver = DefaultConflictResolver(ConflictStrategy.ASK_USER)
     }
 }

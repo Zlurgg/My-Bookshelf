@@ -17,29 +17,23 @@ import java.util.Date
 data class SharedShelfDto(
     @DocumentId
     val shareCode: String = "",
-
     @get:PropertyName("owner_id")
     @set:PropertyName("owner_id")
     var ownerId: String = "",
-
     @get:PropertyName("shelf_id")
     @set:PropertyName("shelf_id")
     var shelfId: String = "",
-
     @get:PropertyName("shelf_name")
     @set:PropertyName("shelf_name")
     var shelfName: String = "",
-
     @get:PropertyName("subscriber_ids")
     @set:PropertyName("subscriber_ids")
     var subscriberIds: List<String> = emptyList(),
-
     @ServerTimestamp
     @get:PropertyName("created_at")
     @set:PropertyName("created_at")
     var createdAt: Date? = null,
-
     @get:PropertyName("book_count")
     @set:PropertyName("book_count")
-    var bookCount: Int = 0
+    var bookCount: Int = 0,
 )

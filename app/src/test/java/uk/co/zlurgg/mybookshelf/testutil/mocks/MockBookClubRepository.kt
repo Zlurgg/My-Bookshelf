@@ -19,7 +19,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Provides configurable behavior for testing different book club scenarios.
  */
 class MockBookClubRepository : BookClubRepository {
-
     // Configuration properties
     var createBookClubResult: Result<String, DataError.Sync> = Result.Success("TEST1234")
     var getBookClubResult: Result<BookClub?, DataError.Sync> = Result.Success(null)
@@ -28,7 +27,7 @@ class MockBookClubRepository : BookClubRepository {
     var joinBookClubResult: Result<String, DataError.Sync> = Result.Success("local-shelf-id")
     var getClubBooksResult: Result<List<Book>, DataError.Sync> = Result.Success(emptyList())
     var localShelfForClub: Bookshelf? = null
-    var localShelfForClubAfterJoin: Bookshelf? = null  // Used to simulate shelf creation after join
+    var localShelfForClubAfterJoin: Bookshelf? = null // Used to simulate shelf creation after join
     var myBookClubs: List<BookClubMembership> = emptyList()
     var getRemoteClubMembershipsResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
     var restoreClubMembershipResult: Result<String, DataError.Sync> = Result.Success("restored-shelf-id")
@@ -127,14 +126,20 @@ class MockBookClubRepository : BookClubRepository {
     var lastRemoveBookCode: String? = null
     var lastRemoveBookId: String? = null
 
-    override suspend fun syncBookToClub(code: String, book: Book): Result<Unit, DataError.Sync> {
+    override suspend fun syncBookToClub(
+        code: String,
+        book: Book,
+    ): Result<Unit, DataError.Sync> {
         syncBookToClubCalled = true
         lastSyncBookCode = code
         lastSyncBook = book
         return syncBookToClubResult
     }
 
-    override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> {
+    override suspend fun removeBookFromClub(
+        code: String,
+        bookId: String,
+    ): Result<Unit, DataError.Sync> {
         removeBookFromClubCalled = true
         lastRemoveBookCode = code
         lastRemoveBookId = bookId
@@ -151,14 +156,20 @@ class MockBookClubRepository : BookClubRepository {
     var lastRenameClubCode: String? = null
     var lastRenameNewName: String? = null
 
-    override suspend fun syncBooksFromClub(code: String, localShelfId: String): Result<SyncResult, DataError.Sync> {
+    override suspend fun syncBooksFromClub(
+        code: String,
+        localShelfId: String,
+    ): Result<SyncResult, DataError.Sync> {
         syncBooksFromClubCalled = true
         lastSyncFromClubCode = code
         lastSyncFromClubShelfId = localShelfId
         return syncBooksFromClubResult
     }
 
-    override suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync> {
+    override suspend fun renameBookClub(
+        code: String,
+        newName: String,
+    ): Result<Unit, DataError.Sync> {
         renameBookClubCalled = true
         lastRenameClubCode = code
         lastRenameNewName = newName
@@ -193,7 +204,10 @@ class MockBookClubRepository : BookClubRepository {
     var lastUpdateStyleCode: String? = null
     var lastUpdateStyleValue: String? = null
 
-    override suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync> {
+    override suspend fun updateClubStyle(
+        code: String,
+        style: String,
+    ): Result<Unit, DataError.Sync> {
         updateClubStyleCalled = true
         lastUpdateStyleCode = code
         lastUpdateStyleValue = style
@@ -205,7 +219,10 @@ class MockBookClubRepository : BookClubRepository {
     var upsertBookReviewResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
     var deleteBookReviewResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
 
-    override suspend fun getBookReviews(code: String, bookId: String): Result<List<BookClubReview>, DataError.Sync> {
+    override suspend fun getBookReviews(
+        code: String,
+        bookId: String,
+    ): Result<List<BookClubReview>, DataError.Sync> {
         return getBookReviewsResult
     }
 
@@ -213,12 +230,15 @@ class MockBookClubRepository : BookClubRepository {
         code: String,
         bookId: String,
         rating: Float,
-        reviewText: String
+        reviewText: String,
     ): Result<Unit, DataError.Sync> {
         return upsertBookReviewResult
     }
 
-    override suspend fun deleteBookReview(code: String, bookId: String): Result<Unit, DataError.Sync> {
+    override suspend fun deleteBookReview(
+        code: String,
+        bookId: String,
+    ): Result<Unit, DataError.Sync> {
         return deleteBookReviewResult
     }
 
@@ -246,14 +266,21 @@ class MockBookClubRepository : BookClubRepository {
     var lastDeleteCommentBookId: String? = null
     var lastDeleteCommentId: String? = null
 
-    override suspend fun getBookComments(code: String, bookId: String): Result<List<BookClubComment>, DataError.Sync> {
+    override suspend fun getBookComments(
+        code: String,
+        bookId: String,
+    ): Result<List<BookClubComment>, DataError.Sync> {
         getBookCommentsCalled = true
         lastGetCommentsCode = code
         lastGetCommentsBookId = bookId
         return getBookCommentsResult
     }
 
-    override suspend fun addBookComment(code: String, bookId: String, text: String): Result<String, DataError.Sync> {
+    override suspend fun addBookComment(
+        code: String,
+        bookId: String,
+        text: String,
+    ): Result<String, DataError.Sync> {
         addBookCommentCalled = true
         lastAddCommentCode = code
         lastAddCommentBookId = bookId
@@ -261,7 +288,12 @@ class MockBookClubRepository : BookClubRepository {
         return addBookCommentResult
     }
 
-    override suspend fun editBookComment(code: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> {
+    override suspend fun editBookComment(
+        code: String,
+        bookId: String,
+        commentId: String,
+        newText: String,
+    ): Result<Unit, DataError.Sync> {
         editBookCommentCalled = true
         lastEditCommentCode = code
         lastEditCommentBookId = bookId
@@ -270,7 +302,11 @@ class MockBookClubRepository : BookClubRepository {
         return editBookCommentResult
     }
 
-    override suspend fun deleteBookComment(code: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> {
+    override suspend fun deleteBookComment(
+        code: String,
+        bookId: String,
+        commentId: String,
+    ): Result<Unit, DataError.Sync> {
         deleteBookCommentCalled = true
         lastDeleteCommentCode = code
         lastDeleteCommentBookId = bookId
@@ -370,14 +406,15 @@ class MockBookClubRepository : BookClubRepository {
 
     fun configureAlreadyMember(localShelfId: String) {
         isMemberResult = Result.Success(true)
-        localShelfForClub = Bookshelf(
-            id = localShelfId,
-            name = "Test Club (Book Club)",
-            books = emptyList(),
-            shelfStyle = ShelfStyle.DarkWood,
-            isBookClub = true,
-            clubCode = "TEST1234"
-        )
+        localShelfForClub =
+            Bookshelf(
+                id = localShelfId,
+                name = "Test Club (Book Club)",
+                books = emptyList(),
+                shelfStyle = ShelfStyle.DarkWood,
+                isBookClub = true,
+                clubCode = "TEST1234",
+            )
     }
 
     fun configureNotMember() {
@@ -385,17 +422,21 @@ class MockBookClubRepository : BookClubRepository {
         localShelfForClub = null
     }
 
-    fun configureJoinSuccess(localShelfId: String, shelfName: String) {
+    fun configureJoinSuccess(
+        localShelfId: String,
+        shelfName: String,
+    ) {
         joinBookClubResult = Result.Success(localShelfId)
         // Set localShelfForClubAfterJoin so getLocalShelfForClub returns the shelf after join
-        localShelfForClubAfterJoin = Bookshelf(
-            id = localShelfId,
-            name = shelfName,
-            books = emptyList(),
-            shelfStyle = ShelfStyle.DarkWood,
-            isBookClub = true,
-            clubCode = "TEST1234"
-        )
+        localShelfForClubAfterJoin =
+            Bookshelf(
+                id = localShelfId,
+                name = shelfName,
+                books = emptyList(),
+                shelfStyle = ShelfStyle.DarkWood,
+                isBookClub = true,
+                clubCode = "TEST1234",
+            )
     }
 
     fun configureJoinError(error: DataError.Sync) {

@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
@@ -28,20 +28,22 @@ class BookshelfViewModel(
     private val bookshelfUseCases: BookshelfUseCases,
     private val bookcaseUseCases: BookcaseUseCases,
     private val bookClubOperations: BookClubOperationsHandler,
-    private val shelfId: String
+    private val shelfId: String,
 ) : ViewModel() {
-
     companion object {
         private const val TAG = "BookshelfViewModel"
-        private const val SEARCH_DEBOUNCE_MS = 250L  // Reduced from 450ms for faster perceived response
+        private const val SEARCH_DEBOUNCE_MS = 250L // Reduced from 450ms for faster perceived response
         private const val MIN_SEARCH_QUERY_LENGTH = 2
     }
 
     // Initialize state flow with default value
-    private val _state = MutableStateFlow(BookshelfState(
-        shelfId = shelfId,
-        isTutorialShelf = shelfId == SystemOwnerIds.TUTORIAL_SHELF_ID
-    ))
+    private val _state =
+        MutableStateFlow(
+            BookshelfState(
+                shelfId = shelfId,
+                isTutorialShelf = shelfId == SystemOwnerIds.TUTORIAL_SHELF_ID,
+            ),
+        )
     val state: StateFlow<BookshelfState> = _state.asStateFlow()
 
     // Debounced query flow
@@ -99,10 +101,12 @@ class BookshelfViewModel(
             }
             is BookshelfAction.OnSearchQueryChange -> {
                 // Update UI immediately with typing indicator; defer actual search via debounce
-                _state.update { it.copy(
-                    searchQuery = action.query,
-                    isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
-                ) }
+                _state.update {
+                    it.copy(
+                        searchQuery = action.query,
+                        isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH,
+                    )
+                }
                 queryFlow.value = action.query
             }
             BookshelfAction.OnToggleTidyMode -> {
@@ -119,7 +123,7 @@ class BookshelfViewModel(
                 // Re-trigger search via debounced flow for consistency
                 val currentQuery = _state.value.searchQuery
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery  // Triggers debounced search
+                    queryFlow.value = currentQuery // Triggers debounced search
                 }
             }
             BookshelfAction.OnToggleSearchByAuthor -> {
@@ -128,7 +132,7 @@ class BookshelfViewModel(
                 // Re-trigger search via debounced flow for consistency
                 val currentQuery = _state.value.searchQuery
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery  // Triggers debounced search
+                    queryFlow.value = currentQuery // Triggers debounced search
                 }
             }
             else -> Unit
@@ -149,15 +153,19 @@ class BookshelfViewModel(
             when (val result = bookcaseUseCases.getShelfById.execute(shelfId)) {
                 is Result.Success -> {
                     result.data?.let { shelf ->
-                        Timber.tag(TAG).d("Shelf loaded: name=%s, isBookClub=%s, clubCode=%s",
-                            shelf.name, shelf.isBookClub, shelf.clubCode)
+                        Timber.tag(TAG).d(
+                            "Shelf loaded: name=%s, isBookClub=%s, clubCode=%s",
+                            shelf.name,
+                            shelf.isBookClub,
+                            shelf.clubCode,
+                        )
                         _state.update {
                             it.copy(
                                 shelfName = shelf.name,
                                 shelfMaterial = ShelfMaterial.fromShelfStyle(shelf.shelfStyle),
                                 isTidyMode = shelf.isTidyMode,
                                 isBookClub = shelf.isBookClub,
-                                clubCode = shelf.clubCode
+                                clubCode = shelf.clubCode,
                             )
                         }
                         // If this is a book club, sync books from Firestore
@@ -177,24 +185,34 @@ class BookshelfViewModel(
         }
     }
 
-    private fun syncBookClubBooks(clubCode: String, shelfId: String) {
+    private fun syncBookClubBooks(
+        clubCode: String,
+        shelfId: String,
+    ) {
         viewModelScope.launch {
             _state.update { it.copy(isSyncing = true) }
             when (val syncResult = bookClubOperations.syncBooksFromClub(clubCode, shelfId)) {
                 is Result.Success -> {
                     val result = syncResult.data
-                    _state.update { it.copy(
-                        isSyncing = false,
-                        syncMessage = if (result.booksAdded > 0 || result.booksRemoved > 0) {
-                            "Synced: +${result.booksAdded} / -${result.booksRemoved} books"
-                        } else null
-                    ) }
+                    _state.update {
+                        it.copy(
+                            isSyncing = false,
+                            syncMessage =
+                                if (result.booksAdded > 0 || result.booksRemoved > 0) {
+                                    "Synced: +${result.booksAdded} / -${result.booksRemoved} books"
+                                } else {
+                                    null
+                                },
+                        )
+                    }
                 }
                 is Result.Error -> {
-                    _state.update { it.copy(
-                        isSyncing = false,
-                        errorMessage = ErrorFormatter.formatDataErrorMessage(syncResult.error, "sync book club")
-                    ) }
+                    _state.update {
+                        it.copy(
+                            isSyncing = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(syncResult.error, "sync book club"),
+                        )
+                    }
                 }
             }
         }
@@ -221,7 +239,7 @@ class BookshelfViewModel(
                                 isSearchLoading = false,
                                 isTyping = false,
                                 errorMessage = null,
-                                searchResults = if (query.isEmpty()) emptyList() else it.searchResults
+                                searchResults = if (query.isEmpty()) emptyList() else it.searchResults,
                             )
                         }
                         return@collectLatest
@@ -249,11 +267,13 @@ class BookshelfViewModel(
     private suspend fun performSearch(query: String) {
         // Execute search directly (not in a new coroutine)
         // This allows collectLatest to cancel in-flight searches
-        _state.update { it.copy(
-            isSearchLoading = true,
-            isTyping = false,  // Debounce period complete, now actively searching
-            errorMessage = null
-        ) }
+        _state.update {
+            it.copy(
+                isSearchLoading = true,
+                isTyping = false, // Debounce period complete, now actively searching
+                errorMessage = null,
+            )
+        }
 
         val currentState = _state.value
 
@@ -261,21 +281,22 @@ class BookshelfViewModel(
         // - Both checked OR both unchecked → use general q= parameter (smart search)
         // - Only title checked → use title= parameter
         // - Only author checked → use author= parameter
-        val (generalQuery, titleQuery, authorQuery) = when {
-            currentState.searchByTitle && currentState.searchByAuthor -> Triple(query, null, null)
-            !currentState.searchByTitle && !currentState.searchByAuthor -> Triple(query, null, null)
-            currentState.searchByTitle && !currentState.searchByAuthor -> Triple(null, query, null)
-            // Fallback (should never happen)
-            else -> Triple(null, null, query)
-        }
+        val (generalQuery, titleQuery, authorQuery) =
+            when {
+                currentState.searchByTitle && currentState.searchByAuthor -> Triple(query, null, null)
+                !currentState.searchByTitle && !currentState.searchByAuthor -> Triple(query, null, null)
+                currentState.searchByTitle && !currentState.searchByAuthor -> Triple(null, query, null)
+                // Fallback (should never happen)
+                else -> Triple(null, null, query)
+            }
 
         bookshelfUseCases.searchBooks
             .execute(
                 query = generalQuery ?: "",
-                resultLimit = 15,  // First 15 results for performance
+                resultLimit = 15, // First 15 results for performance
                 language = null,
                 authorFilter = authorQuery,
-                titleFilter = titleQuery
+                titleFilter = titleQuery,
             )
             .onSuccess { searchResults ->
                 _state.update { it.withSearchResults(searchResults) }
@@ -298,7 +319,7 @@ class BookshelfViewModel(
                     _state.update {
                         it.copy(
                             isShareLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(shareResult.error, "share bookshelf")
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(shareResult.error, "share bookshelf"),
                         )
                     }
                 }
@@ -310,11 +331,14 @@ class BookshelfViewModel(
     // State Update Helpers (Private Extensions)
     // ============================================================================
 
-    private fun BookshelfState.withError(error: DataError, operation: String): BookshelfState {
+    private fun BookshelfState.withError(
+        error: DataError,
+        operation: String,
+    ): BookshelfState {
         return copy(
             isLoading = false,
             isSearchLoading = false,
-            errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation)
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation),
         )
     }
 
@@ -323,7 +347,7 @@ class BookshelfViewModel(
             isSearchLoading = false,
             hasSearched = true,
             errorMessage = null,
-            searchResults = results
+            searchResults = results,
         )
     }
 
@@ -332,14 +356,14 @@ class BookshelfViewModel(
             searchResults = emptyList(),
             isSearchLoading = false,
             hasSearched = true,
-            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search"),
         )
     }
 
     private fun BookshelfState.withBookRemoved(book: Book): BookshelfState {
         return copy(
             books = books.filterNot { it.id == book.id },
-            recentlyDeleted = book
+            recentlyDeleted = book,
         )
     }
 
@@ -358,7 +382,7 @@ class BookshelfViewModel(
             isTyping = false,
             hasSearched = false,
             searchByTitle = true,
-            searchByAuthor = true
+            searchByAuthor = true,
         )
     }
 }

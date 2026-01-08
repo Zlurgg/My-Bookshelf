@@ -11,14 +11,20 @@ import uk.co.zlurgg.mybookshelf.update.data.remote.dto.GitHubReleaseDto
  */
 class GitHubApiService(
     private val httpClient: HttpClient,
-    private val baseUrl: String = "https://api.github.com"
+    private val baseUrl: String = "https://api.github.com",
 ) {
-
-    suspend fun getLatestRelease(owner: String, repo: String): GitHubReleaseDto {
+    suspend fun getLatestRelease(
+        owner: String,
+        repo: String,
+    ): GitHubReleaseDto {
         return httpClient.get("$baseUrl/repos/$owner/$repo/releases/latest").body()
     }
 
-    suspend fun getReleaseByTag(owner: String, repo: String, tag: String): GitHubReleaseDto {
+    suspend fun getReleaseByTag(
+        owner: String,
+        repo: String,
+        tag: String,
+    ): GitHubReleaseDto {
         return httpClient.get("$baseUrl/repos/$owner/$repo/releases/tags/$tag").body()
     }
 }

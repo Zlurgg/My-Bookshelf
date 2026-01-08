@@ -13,9 +13,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.map
  */
 class CheckImportConflictUseCaseImpl(
     private val serializer: BookshelfSerializer,
-    private val validator: BookshelfImportValidator
+    private val validator: BookshelfImportValidator,
 ) : CheckImportConflictUseCase {
-
     override suspend fun execute(jsonData: String): Result<String?, DataError.Local> {
         return serializer.deserialize(jsonData)
             .flatMap { exportData ->

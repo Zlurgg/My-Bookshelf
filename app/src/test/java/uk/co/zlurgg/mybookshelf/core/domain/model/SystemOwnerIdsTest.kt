@@ -6,7 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SystemOwnerIdsTest {
-
     @Test
     fun `TUTORIAL constant has expected value`() {
         assertEquals("__system_tutorial__", SystemOwnerIds.TUTORIAL)
@@ -44,8 +43,8 @@ class SystemOwnerIdsTest {
 
     @Test
     fun `isSystemOwner returns false for similar but different string`() {
-        assertFalse(SystemOwnerIds.isSystemOwner("__system_tutorial"))  // Missing trailing underscore
-        assertFalse(SystemOwnerIds.isSystemOwner("system_tutorial"))    // Missing double underscores
+        assertFalse(SystemOwnerIds.isSystemOwner("__system_tutorial")) // Missing trailing underscore
+        assertFalse(SystemOwnerIds.isSystemOwner("system_tutorial")) // Missing double underscores
         assertFalse(SystemOwnerIds.isSystemOwner("__SYSTEM_TUTORIAL__")) // Wrong case
     }
 }

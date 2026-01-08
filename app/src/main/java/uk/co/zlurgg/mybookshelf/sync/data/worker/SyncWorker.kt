@@ -8,8 +8,8 @@ import org.koin.core.component.inject
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result as SyncResult
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result as SyncResult
 
 /**
  * WorkManager worker that performs background sync operations.
@@ -22,9 +22,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
  */
 class SyncWorker(
     context: Context,
-    workerParams: WorkerParameters
+    workerParams: WorkerParameters,
 ) : CoroutineWorker(context, workerParams), KoinComponent {
-
     private val authService: AuthService by inject()
     private val syncRepository: SyncRepository by inject()
 
@@ -48,7 +47,7 @@ class SyncWorker(
                     "=== SYNC WORKER COMPLETE === Pushed: %d, Pulled: %d, Conflicts: %d",
                     data.pushedCount,
                     data.pulledCount,
-                    data.conflictCount
+                    data.conflictCount,
                 )
                 Result.success()
             }
@@ -65,7 +64,8 @@ class SyncWorker(
         return when (error) {
             // Transient errors - retry with backoff
             DataError.Sync.NETWORK_ERROR,
-            DataError.Sync.SYNC_IN_PROGRESS -> {
+            DataError.Sync.SYNC_IN_PROGRESS,
+            -> {
                 if (runAttemptCount < MAX_RETRY_ATTEMPTS) {
                     Timber.tag(TAG).d("Will retry sync (attempt %d of %d)", runAttemptCount + 1, MAX_RETRY_ATTEMPTS)
                     Result.retry()
@@ -86,7 +86,8 @@ class SyncWorker(
             DataError.Sync.NOT_MEMBER,
             DataError.Sync.CREATOR_CANNOT_LEAVE,
             DataError.Sync.MAX_BOOK_CLUBS_REACHED,
-            DataError.Sync.INVALID_INPUT -> {
+            DataError.Sync.INVALID_INPUT,
+            -> {
                 Timber.tag(TAG).e("Permanent sync error, not retrying: %s", error)
                 Result.failure()
             }
@@ -95,7 +96,8 @@ class SyncWorker(
             DataError.Sync.CONFLICT_UNRESOLVED,
             DataError.Sync.MIGRATION_FAILED,
             DataError.Sync.DOCUMENT_NOT_FOUND,
-            DataError.Sync.UNKNOWN -> {
+            DataError.Sync.UNKNOWN,
+            -> {
                 if (runAttemptCount < MAX_RETRY_ATTEMPTS) {
                     Result.retry()
                 } else {

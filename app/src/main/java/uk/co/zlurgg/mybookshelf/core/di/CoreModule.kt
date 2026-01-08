@@ -22,26 +22,27 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdatePreferencesRepository
 
-val coreModule = module {
-    // HTTP & Network
-    single<HttpClientEngine> { Android.create() }
-    single { HttpClientFactory.create(get(), enableLogging = BuildConfig.DEBUG) }
-    single<ImageLoader> { ImageLoaderFactory.create(get<Context>()) }
+val coreModule =
+    module {
+        // HTTP & Network
+        single<HttpClientEngine> { Android.create() }
+        single { HttpClientFactory.create(get(), enableLogging = BuildConfig.DEBUG) }
+        single<ImageLoader> { ImageLoaderFactory.create(get<Context>()) }
 
-    // Core Services
-    singleOf(::UuidIdGenerator).bind<IdGenerator>()
-    singleOf(::SystemTimeProvider).bind<TimeProvider>()
-    singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
+        // Core Services
+        singleOf(::UuidIdGenerator).bind<IdGenerator>()
+        singleOf(::SystemTimeProvider).bind<TimeProvider>()
+        singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
 
-    // Database
-    single<DatabaseFactory> { DatabaseFactory(get()) }
-    single { get<DatabaseFactory>().create() }
-    single { get<MyBookshelfRoomDatabase>().bookshelfDao }
-    single { get<MyBookshelfRoomDatabase>().syncDao }
-    single { get<MyBookshelfRoomDatabase>().bookClubDao }
+        // Database
+        single<DatabaseFactory> { DatabaseFactory(get()) }
+        single { get<DatabaseFactory>().create() }
+        single { get<MyBookshelfRoomDatabase>().bookshelfDao }
+        single { get<MyBookshelfRoomDatabase>().syncDao }
+        single { get<MyBookshelfRoomDatabase>().bookClubDao }
 
-    // Preferences (shared between welcome and update features)
-    single { WelcomePreferencesImpl(get()) }
-    single<WelcomePreferences> { get<WelcomePreferencesImpl>() }
-    single<UpdatePreferencesRepository> { get<WelcomePreferencesImpl>() }
-}
+        // Preferences (shared between welcome and update features)
+        single { WelcomePreferencesImpl(get()) }
+        single<WelcomePreferences> { get<WelcomePreferencesImpl>() }
+        single<UpdatePreferencesRepository> { get<WelcomePreferencesImpl>() }
+    }

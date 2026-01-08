@@ -7,7 +7,6 @@ package uk.co.zlurgg.mybookshelf.sync.domain.service
  * without depending on Android-specific WorkManager implementation.
  */
 interface SyncSchedulerService {
-
     /**
      * Schedules periodic background sync.
      * Call this after successful sign-in.

@@ -34,7 +34,7 @@ import uk.co.zlurgg.mybookshelf.R
 fun SignInButton(
     onClick: () -> Unit,
     isLoading: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var isVisible by remember { mutableStateOf(false) }
 
@@ -45,38 +45,41 @@ fun SignInButton(
 
     AnimatedVisibility(
         visible = isVisible,
-        enter = fadeIn(tween(500)) + slideInVertically(
-            initialOffsetY = { it / 2 },
-            animationSpec = tween(500)
-        )
+        enter =
+            fadeIn(tween(500)) +
+                slideInVertically(
+                    initialOffsetY = { it / 2 },
+                    animationSpec = tween(500),
+                ),
     ) {
         ElevatedCard(
             onClick = onClick,
             enabled = !isLoading,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier.fillMaxWidth(),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp
+                        strokeWidth = 2.dp,
                     )
                 } else {
                     Image(
                         painter = painterResource(R.drawable.ic_google),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(24.dp),
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
                         text = stringResource(R.string.sign_in_with_google),
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
                     )
                 }
             }

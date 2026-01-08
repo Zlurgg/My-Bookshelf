@@ -14,9 +14,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 class RestoreBookClubMembershipsUseCaseImpl(
     private val bookClubRepository: BookClubRepository,
-    private val authService: AuthService
+    private val authService: AuthService,
 ) : RestoreBookClubMembershipsUseCase {
-
     override suspend fun invoke(): Result<RestoreResult, DataError.Sync> {
         Timber.tag(TAG).d("=== RESTORING BOOK CLUB MEMBERSHIPS ===")
 

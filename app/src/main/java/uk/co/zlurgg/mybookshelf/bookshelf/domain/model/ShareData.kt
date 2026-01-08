@@ -5,5 +5,5 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.model
  */
 data class ShareData(
     val token: String,
-    val shelfName: String
+    val shelfName: String,
 )

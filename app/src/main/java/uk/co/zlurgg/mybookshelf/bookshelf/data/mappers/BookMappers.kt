@@ -1,11 +1,10 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
-
 
 /**
  * Converts search result DTO to Book domain model.
@@ -16,10 +15,11 @@ import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 fun SearchedBookDto.toBook(): Book {
     // Determine which cover identifier to use (prioritize coverKey over coverAlternativeKey)
     val coverIdentifier = coverKey ?: coverAlternativeKey?.toString()
-    val generatedImageUrl = ApiConfig.OpenLibrary.CoverUrls.buildCoverUrl(
-        coverKey = coverIdentifier,
-        size = ApiConfig.OpenLibrary.CoverUrls.CoverSize.SMALL
-    )
+    val generatedImageUrl =
+        ApiConfig.OpenLibrary.CoverUrls.buildCoverUrl(
+            coverKey = coverIdentifier,
+            size = ApiConfig.OpenLibrary.CoverUrls.CoverSize.SMALL,
+        )
 
     return Book(
         id = id.substringAfterLast("/"),
@@ -39,7 +39,7 @@ fun SearchedBookDto.toBook(): Book {
         isbn = isbns?.firstOrNull(),
         publisher = publishers?.firstOrNull(),
         publishDate = publishDates?.firstOrNull(),
-        internetArchiveId = internetArchiveIds?.firstOrNull()
+        internetArchiveId = internetArchiveIds?.firstOrNull(),
     )
 }
 
@@ -71,7 +71,7 @@ fun Book.toBookEntity(): BookEntity {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId
+        internetArchiveId = internetArchiveId,
     )
 }
 
@@ -108,7 +108,7 @@ fun Book.toBookEntity(ownerId: String?): BookEntity {
         publishDate = publishDate,
         internetArchiveId = internetArchiveId,
         // Sync metadata
-        ownerId = ownerId
+        ownerId = ownerId,
     )
 }
 
@@ -137,6 +137,6 @@ fun BookEntity.toBook(): Book {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId
+        internetArchiveId = internetArchiveId,
     )
 }

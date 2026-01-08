@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.sync.data.repository
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
@@ -15,9 +15,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
 class UserPreferencesRepositoryImpl(
     private val remoteDataSource: RemoteSyncDataSource,
     private val welcomePreferences: WelcomePreferences,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
 ) : UserPreferencesRepository {
-
     override suspend fun fetchAndCacheWelcomeShown(userId: String): Result<Boolean, DataError.Sync> {
         Timber.tag(TAG).d("Fetching user preferences from cloud for user: %s", userId)
 
@@ -43,7 +42,10 @@ class UserPreferencesRepositoryImpl(
         }
     }
 
-    override suspend fun setWelcomeShown(userId: String, shown: Boolean): Result<Unit, DataError.Sync> {
+    override suspend fun setWelcomeShown(
+        userId: String,
+        shown: Boolean,
+    ): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Setting welcomeShown=%s for user: %s", shown, userId)
 
         // Always write to local first (immediate UX)
@@ -53,11 +55,12 @@ class UserPreferencesRepositoryImpl(
         }
 
         // Then write to cloud
-        val dto = UserPreferencesFirestoreDto(
-            id = PREFERENCES_DOC_ID,
-            welcomeShown = shown,
-            lastModifiedAt = timeProvider.currentTimeMillis()
-        )
+        val dto =
+            UserPreferencesFirestoreDto(
+                id = PREFERENCES_DOC_ID,
+                welcomeShown = shown,
+                lastModifiedAt = timeProvider.currentTimeMillis(),
+            )
 
         return when (val result = remoteDataSource.setUserPreferences(userId, dto)) {
             is Result.Success -> {

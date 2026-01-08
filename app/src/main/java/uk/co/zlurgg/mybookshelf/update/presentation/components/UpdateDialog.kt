@@ -31,7 +31,7 @@ fun UpdateDialog(
     updateInfo: UpdateInfo,
     onDownload: () -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -39,27 +39,28 @@ fun UpdateDialog(
             Text(
                 text = stringResource(R.string.update_available_title),
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         },
         text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
             ) {
                 // Version section
                 Text(
                     text = stringResource(R.string.update_version_label),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = updateInfo.versionName,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 // File size (if available)
@@ -67,7 +68,7 @@ fun UpdateDialog(
                     Text(
                         text = formatFileSize(size),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
 
@@ -79,7 +80,7 @@ fun UpdateDialog(
                         Text(
                             text = stringResource(R.string.update_whats_new_label),
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
 
@@ -100,7 +101,7 @@ fun UpdateDialog(
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -124,7 +125,7 @@ internal fun ChangelogContent(changelog: String) {
                 Text(
                     text = "• $content",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             } else if (trimmedLine.startsWith("##")) {
                 // Handle markdown headers (e.g., "## Features")
@@ -134,14 +135,14 @@ internal fun ChangelogContent(changelog: String) {
                     text = headerText,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             } else {
                 // Regular text
                 Text(
                     text = trimmedLine,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
             }
         }
@@ -162,23 +163,25 @@ private fun formatFileSize(bytes: Long): String {
 private fun UpdateDialogPreview() {
     MyBookshelfTheme {
         UpdateDialog(
-            updateInfo = UpdateInfo(
-                versionName = "1.0.5",
-                releaseUrl = "https://github.com/example/releases/v1.0.5",
-                apkDownloadUrl = "https://example.com/app.apk",
-                apkSize = 3_500_000,
-                changelog = """
-                    ## Features
-                    - In-app update checker
-                    - New bookshelf styles
+            updateInfo =
+                UpdateInfo(
+                    versionName = "1.0.5",
+                    releaseUrl = "https://github.com/example/releases/v1.0.5",
+                    apkDownloadUrl = "https://example.com/app.apk",
+                    apkSize = 3_500_000,
+                    changelog =
+                        """
+                        ## Features
+                        - In-app update checker
+                        - New bookshelf styles
 
-                    ## Improvements
-                    - Better accessibility support
-                    - Performance improvements
-                """.trimIndent()
-            ),
+                        ## Improvements
+                        - Better accessibility support
+                        - Performance improvements
+                        """.trimIndent(),
+                ),
             onDownload = {},
-            onDismiss = {}
+            onDismiss = {},
         )
     }
 }
@@ -188,15 +191,16 @@ private fun UpdateDialogPreview() {
 private fun UpdateDialogNoChangelogPreview() {
     MyBookshelfTheme {
         UpdateDialog(
-            updateInfo = UpdateInfo(
-                versionName = "1.0.5",
-                releaseUrl = "https://github.com/example/releases/v1.0.5",
-                apkDownloadUrl = "https://example.com/app.apk",
-                apkSize = null,
-                changelog = null
-            ),
+            updateInfo =
+                UpdateInfo(
+                    versionName = "1.0.5",
+                    releaseUrl = "https://github.com/example/releases/v1.0.5",
+                    apkDownloadUrl = "https://example.com/app.apk",
+                    apkSize = null,
+                    changelog = null,
+                ),
             onDownload = {},
-            onDismiss = {}
+            onDismiss = {},
         )
     }
 }

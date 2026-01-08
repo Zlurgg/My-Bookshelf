@@ -14,7 +14,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
  * Unit tests for DefaultConflictResolver.
  */
 class DefaultConflictResolverTest {
-
     // ==================== Strategy: LAST_WRITE_WINS ====================
 
     @Test
@@ -213,11 +212,12 @@ class DefaultConflictResolverTest {
     fun `resolve works for BOOK entity type`() {
         // Given
         val resolver = DefaultConflictResolver.lastWriteWins()
-        val conflict = createConflict(
-            entityType = EntityType.BOOK,
-            localTimestamp = 2000L,
-            remoteTimestamp = 1000L
-        )
+        val conflict =
+            createConflict(
+                entityType = EntityType.BOOK,
+                localTimestamp = 2000L,
+                remoteTimestamp = 1000L,
+            )
 
         // When
         val resolution = resolver.resolve(conflict)
@@ -230,11 +230,12 @@ class DefaultConflictResolverTest {
     fun `resolve works for BOOKSHELF entity type`() {
         // Given
         val resolver = DefaultConflictResolver.lastWriteWins()
-        val conflict = createConflict(
-            entityType = EntityType.BOOKSHELF,
-            localTimestamp = 1000L,
-            remoteTimestamp = 2000L
-        )
+        val conflict =
+            createConflict(
+                entityType = EntityType.BOOKSHELF,
+                localTimestamp = 1000L,
+                remoteTimestamp = 2000L,
+            )
 
         // When
         val resolution = resolver.resolve(conflict)
@@ -247,11 +248,12 @@ class DefaultConflictResolverTest {
     fun `resolve works for CROSS_REF entity type`() {
         // Given
         val resolver = DefaultConflictResolver.localWins()
-        val conflict = createConflict(
-            entityType = EntityType.CROSS_REF,
-            localTimestamp = 1000L,
-            remoteTimestamp = 2000L
-        )
+        val conflict =
+            createConflict(
+                entityType = EntityType.CROSS_REF,
+                localTimestamp = 1000L,
+                remoteTimestamp = 2000L,
+            )
 
         // When
         val resolution = resolver.resolve(conflict)
@@ -306,13 +308,13 @@ class DefaultConflictResolverTest {
         localTimestamp: Long = 1000L,
         remoteTimestamp: Long = 2000L,
         localVersion: Long = 1L,
-        remoteVersion: Long = 2L
+        remoteVersion: Long = 2L,
     ) = SyncConflict(
         entityId = entityId,
         entityType = entityType,
         localTimestamp = localTimestamp,
         remoteTimestamp = remoteTimestamp,
         localVersion = localVersion,
-        remoteVersion = remoteVersion
+        remoteVersion = remoteVersion,
     )
 }

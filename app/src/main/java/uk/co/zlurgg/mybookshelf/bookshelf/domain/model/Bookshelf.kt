@@ -1,7 +1,9 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.model
 
+import androidx.compose.runtime.Stable
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
+@Stable
 data class Bookshelf(
     val id: String,
     val name: String,
@@ -11,5 +13,5 @@ data class Bookshelf(
     val isTidyMode: Boolean = false,
     val isBookClub: Boolean = false,
     val clubCode: String? = null,
-    val clubCreatorId: String? = null
+    val clubCreatorId: String? = null,
 )

@@ -7,7 +7,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 interface BookRepository {
     // Book CRUD operations
     suspend fun getBookById(bookId: String): Book?
+
     suspend fun upsertBook(book: Book)
+
     suspend fun deleteBook(bookId: String)
 
     // Book metadata operations

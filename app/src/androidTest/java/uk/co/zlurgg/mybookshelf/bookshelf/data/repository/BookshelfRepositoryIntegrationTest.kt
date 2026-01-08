@@ -26,19 +26,20 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
  */
 @RunWith(AndroidJUnit4::class)
 class BookshelfRepositoryIntegrationTest {
-
     private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var repository: BookshelfRepositoryImpl
-    private val testTimeProvider = object : TimeProvider {
-        override fun currentTimeMillis(): Long = 1000L
-    }
+    private val testTimeProvider =
+        object : TimeProvider {
+            override fun currentTimeMillis(): Long = 1000L
+        }
 
     @Before
     fun setup() {
-        database = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            MyBookshelfRoomDatabase::class.java
-        ).build()
+        database =
+            Room.inMemoryDatabaseBuilder(
+                ApplicationProvider.getApplicationContext(),
+                MyBookshelfRoomDatabase::class.java,
+            ).build()
 
         repository = BookshelfRepositoryImpl(database.bookshelfDao, testTimeProvider)
     }
@@ -49,132 +50,140 @@ class BookshelfRepositoryIntegrationTest {
     }
 
     @Test
-    fun addBookToShelfCreatesRealCrossReference() = runTest {
-        // Given - Shelf and book exist in database
-        val shelfId = "shelf-1"
-        val bookId = "book-1"
+    fun addBookToShelfCreatesRealCrossReference() =
+        runTest {
+            // Given - Shelf and book exist in database
+            val shelfId = "shelf-1"
+            val bookId = "book-1"
 
-        database.bookshelfDao.upsertShelf(
-            BookshelfEntity(
-                id = shelfId,
-                name = "Test Shelf",
-                shelfMaterial = "DARK_WOOD",
-                position = 0
+            database.bookshelfDao.upsertShelf(
+                BookshelfEntity(
+                    id = shelfId,
+                    name = "Test Shelf",
+                    shelfMaterial = "DARK_WOOD",
+                    position = 0,
+                ),
             )
-        )
-        database.bookshelfDao.upsert(
-            createTestBookEntity(bookId, "Test Book")
-        )
-
-        // When - Add book to shelf through repository
-        repository.addBookToShelf(shelfId, bookId)
-
-        // Then - Book should appear in shelf's book list
-        val booksInShelf = repository.getBooksForShelf(shelfId).first()
-        assertEquals(1, booksInShelf.size)
-        assertEquals(bookId, booksInShelf[0].id)
-        assertEquals("Test Book", booksInShelf[0].title)
-    }
-
-    @Test
-    fun removeBookFromShelfDeletesCrossReference() = runTest {
-        // Given - Book is in shelf
-        val shelfId = "shelf-1"
-        val bookId = "book-1"
-
-        // Setup database
-        database.bookshelfDao.upsertShelf(
-            BookshelfEntity(
-                id = shelfId,
-                name = "Test Shelf",
-                shelfMaterial = "DARK_WOOD",
-                position = 0
+            database.bookshelfDao.upsert(
+                createTestBookEntity(bookId, "Test Book"),
             )
-        )
-        database.bookshelfDao.upsert(
-            createTestBookEntity(bookId, "Test Book")
-        )
-        repository.addBookToShelf(shelfId, bookId)
 
-        // When - Remove book from shelf
-        repository.removeBookFromShelf(shelfId, bookId)
+            // When - Add book to shelf through repository
+            repository.addBookToShelf(shelfId, bookId)
 
-        // Then - Shelf should be empty
-        val booksInShelf = repository.getBooksForShelf(shelfId).first()
-        assertTrue("Shelf should be empty after removal", booksInShelf.isEmpty())
-    }
-
-    @Test
-    fun isBookInAnyShelfReturnsTrueWhenBookPresent() = runTest {
-        // Given - Book is in shelf
-        val shelfId = "shelf-1"
-        val bookId = "book-1"
-
-        database.bookshelfDao.upsertShelf(
-            BookshelfEntity(
-                id = shelfId,
-                name = "Test Shelf",
-                shelfMaterial = "DARK_WOOD",
-                position = 0
-            )
-        )
-        database.bookshelfDao.upsert(
-            createTestBookEntity(bookId, "Test Book")
-        )
-        repository.addBookToShelf(shelfId, bookId)
-
-        // When - Check if book is in any shelf
-        val isInShelf = repository.isBookInAnyShelf(bookId).first()
-
-        // Then - Should return true
-        assertTrue("Book should be detected in shelf", isInShelf)
-    }
-
-    @Test
-    fun isBookInAnyShelfReturnsFalseWhenBookNotPresent() = runTest {
-        // Given - Book exists but not in any shelf
-        val bookId = "book-1"
-        database.bookshelfDao.upsert(
-            createTestBookEntity(bookId, "Test Book")
-        )
-
-        // When - Check if book is in any shelf
-        val isInShelf = repository.isBookInAnyShelf(bookId).first()
-
-        // Then - Should return false
-        assertFalse("Book should not be detected in any shelf", isInShelf)
-    }
-
-    @Test
-    fun getBooksForShelfReturnsCorrectBooks() = runTest {
-        // Given - Shelf with multiple books
-        val shelfId = "shelf-1"
-        val book1 = createTestBookEntity("book-1", "Book 1")
-        val book2 = createTestBookEntity("book-2", "Book 2")
-        val book3 = createTestBookEntity("book-3", "Book 3")
-
-        database.bookshelfDao.upsertShelf(
-            BookshelfEntity(
-                id = shelfId,
-                name = "Test Shelf",
-                shelfMaterial = "DARK_WOOD",
-                position = 0
-            )
-        )
-
-        listOf(book1, book2, book3).forEach { book ->
-            database.bookshelfDao.upsert(book)
-            repository.addBookToShelf(shelfId, book.id)
+            // Then - Book should appear in shelf's book list
+            val booksInShelf = repository.getBooksForShelf(shelfId).first()
+            assertEquals(1, booksInShelf.size)
+            assertEquals(bookId, booksInShelf[0].id)
+            assertEquals("Test Book", booksInShelf[0].title)
         }
 
-        // When - Get books for shelf
-        val booksInShelf = repository.getBooksForShelf(shelfId).first()
+    @Test
+    fun removeBookFromShelfDeletesCrossReference() =
+        runTest {
+            // Given - Book is in shelf
+            val shelfId = "shelf-1"
+            val bookId = "book-1"
 
-        // Then - Should return 3 books
-        assertEquals(3, booksInShelf.size)
-    }
+            // Setup database
+            database.bookshelfDao.upsertShelf(
+                BookshelfEntity(
+                    id = shelfId,
+                    name = "Test Shelf",
+                    shelfMaterial = "DARK_WOOD",
+                    position = 0,
+                ),
+            )
+            database.bookshelfDao.upsert(
+                createTestBookEntity(bookId, "Test Book"),
+            )
+            repository.addBookToShelf(shelfId, bookId)
 
-    private fun createTestBookEntity(id: String, title: String): BookEntity {
+            // When - Remove book from shelf
+            repository.removeBookFromShelf(shelfId, bookId)
+
+            // Then - Shelf should be empty
+            val booksInShelf = repository.getBooksForShelf(shelfId).first()
+            assertTrue("Shelf should be empty after removal", booksInShelf.isEmpty())
+        }
+
+    @Test
+    fun isBookInAnyShelfReturnsTrueWhenBookPresent() =
+        runTest {
+            // Given - Book is in shelf
+            val shelfId = "shelf-1"
+            val bookId = "book-1"
+
+            database.bookshelfDao.upsertShelf(
+                BookshelfEntity(
+                    id = shelfId,
+                    name = "Test Shelf",
+                    shelfMaterial = "DARK_WOOD",
+                    position = 0,
+                ),
+            )
+            database.bookshelfDao.upsert(
+                createTestBookEntity(bookId, "Test Book"),
+            )
+            repository.addBookToShelf(shelfId, bookId)
+
+            // When - Check if book is in any shelf
+            val isInShelf = repository.isBookInAnyShelf(bookId).first()
+
+            // Then - Should return true
+            assertTrue("Book should be detected in shelf", isInShelf)
+        }
+
+    @Test
+    fun isBookInAnyShelfReturnsFalseWhenBookNotPresent() =
+        runTest {
+            // Given - Book exists but not in any shelf
+            val bookId = "book-1"
+            database.bookshelfDao.upsert(
+                createTestBookEntity(bookId, "Test Book"),
+            )
+
+            // When - Check if book is in any shelf
+            val isInShelf = repository.isBookInAnyShelf(bookId).first()
+
+            // Then - Should return false
+            assertFalse("Book should not be detected in any shelf", isInShelf)
+        }
+
+    @Test
+    fun getBooksForShelfReturnsCorrectBooks() =
+        runTest {
+            // Given - Shelf with multiple books
+            val shelfId = "shelf-1"
+            val book1 = createTestBookEntity("book-1", "Book 1")
+            val book2 = createTestBookEntity("book-2", "Book 2")
+            val book3 = createTestBookEntity("book-3", "Book 3")
+
+            database.bookshelfDao.upsertShelf(
+                BookshelfEntity(
+                    id = shelfId,
+                    name = "Test Shelf",
+                    shelfMaterial = "DARK_WOOD",
+                    position = 0,
+                ),
+            )
+
+            listOf(book1, book2, book3).forEach { book ->
+                database.bookshelfDao.upsert(book)
+                repository.addBookToShelf(shelfId, book.id)
+            }
+
+            // When - Get books for shelf
+            val booksInShelf = repository.getBooksForShelf(shelfId).first()
+
+            // Then - Should return 3 books
+            assertEquals(3, booksInShelf.size)
+        }
+
+    private fun createTestBookEntity(
+        id: String,
+        title: String,
+    ): BookEntity {
         return BookEntity(
             id = id,
             title = title,
@@ -188,7 +197,7 @@ class BookshelfRepositoryIntegrationTest {
             numPagesMedian = 300,
             numEditions = 5,
             purchased = false,
-            spineColor = 0xFF8B4513.toInt()
+            spineColor = 0xFF8B4513.toInt(),
         )
     }
 }

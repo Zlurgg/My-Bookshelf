@@ -7,7 +7,6 @@ import io.ktor.client.statement.HttpResponse
  * Provides a contract for book API providers.
  */
 interface BookApiService {
-
     /**
      * Search for books across the API provider.
      * @param query The search query
@@ -20,7 +19,7 @@ interface BookApiService {
         query: String,
         resultLimit: Int? = null,
         language: String? = null,
-        sort: String? = null
+        sort: String? = null,
     ): HttpResponse
 
     /**

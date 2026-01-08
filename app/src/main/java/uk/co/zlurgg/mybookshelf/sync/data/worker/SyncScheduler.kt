@@ -26,9 +26,8 @@ import java.util.concurrent.TimeUnit
  * - Sync status observation
  */
 class SyncScheduler(
-    private val context: Context
+    private val context: Context,
 ) : SyncSchedulerService {
-
     private val workManager = WorkManager.getInstance(context)
 
     /**
@@ -38,29 +37,31 @@ class SyncScheduler(
     override fun schedulePeriodicSync() {
         Timber.tag(TAG).d("Scheduling periodic sync (every %d minutes)", SYNC_INTERVAL_MINUTES)
 
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
+        val constraints =
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
 
-        val periodicSyncRequest = PeriodicWorkRequestBuilder<SyncWorker>(
-            SYNC_INTERVAL_MINUTES,
-            TimeUnit.MINUTES,
-            FLEX_INTERVAL_MINUTES,
-            TimeUnit.MINUTES
-        )
-            .setConstraints(constraints)
-            .setBackoffCriteria(
-                BackoffPolicy.EXPONENTIAL,
-                BACKOFF_DELAY_SECONDS,
-                TimeUnit.SECONDS
+        val periodicSyncRequest =
+            PeriodicWorkRequestBuilder<SyncWorker>(
+                SYNC_INTERVAL_MINUTES,
+                TimeUnit.MINUTES,
+                FLEX_INTERVAL_MINUTES,
+                TimeUnit.MINUTES,
             )
-            .addTag(TAG_PERIODIC)
-            .build()
+                .setConstraints(constraints)
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    BACKOFF_DELAY_SECONDS,
+                    TimeUnit.SECONDS,
+                )
+                .addTag(TAG_PERIODIC)
+                .build()
 
         workManager.enqueueUniquePeriodicWork(
             SyncWorker.WORK_NAME_PERIODIC,
             ExistingPeriodicWorkPolicy.KEEP,
-            periodicSyncRequest
+            periodicSyncRequest,
         )
 
         Timber.tag(TAG).d("Periodic sync scheduled")
@@ -76,24 +77,26 @@ class SyncScheduler(
     override fun triggerImmediateSync() {
         Timber.tag(TAG).d("Triggering immediate sync")
 
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
+        val constraints =
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
 
-        val oneTimeSyncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
-            .setConstraints(constraints)
-            .setBackoffCriteria(
-                BackoffPolicy.EXPONENTIAL,
-                BACKOFF_DELAY_SECONDS,
-                TimeUnit.SECONDS
-            )
-            .addTag(TAG_IMMEDIATE)
-            .build()
+        val oneTimeSyncRequest =
+            OneTimeWorkRequestBuilder<SyncWorker>()
+                .setConstraints(constraints)
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    BACKOFF_DELAY_SECONDS,
+                    TimeUnit.SECONDS,
+                )
+                .addTag(TAG_IMMEDIATE)
+                .build()
 
         workManager.enqueueUniqueWork(
             SyncWorker.WORK_NAME,
             ExistingWorkPolicy.REPLACE,
-            oneTimeSyncRequest
+            oneTimeSyncRequest,
         )
 
         Timber.tag(TAG).d("Immediate sync enqueued")
@@ -138,7 +141,7 @@ class SyncScheduler(
             .map { workInfos ->
                 workInfos.any {
                     it.state == WorkInfo.State.ENQUEUED ||
-                            it.state == WorkInfo.State.RUNNING
+                        it.state == WorkInfo.State.RUNNING
                 }
             }
     }

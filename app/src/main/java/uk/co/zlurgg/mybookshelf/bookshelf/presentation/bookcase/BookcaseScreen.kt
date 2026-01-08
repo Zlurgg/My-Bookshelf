@@ -35,11 +35,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose
 import uk.co.zlurgg.mybookshelf.BuildConfig
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
@@ -53,18 +52,19 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.Shelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfLimitDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.createShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
-import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
-import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
-import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
-import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
-import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
-import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.BookClubPreviewDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.DeleteBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.JoinBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.LeaveBookClubDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
+import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
+import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
+import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
+import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
+import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose
 
 @Composable
 fun BookcaseScreenRoot(
@@ -74,7 +74,7 @@ fun BookcaseScreenRoot(
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
     onSignIn: () -> Unit = {},
     onSignOut: () -> Unit = {},
-    switchToBookClubs: Boolean = false
+    switchToBookClubs: Boolean = false,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
@@ -155,7 +155,7 @@ fun BookcaseScreenRoot(
     if (state.showSignOutDialog) {
         SignOutDialog(
             onConfirm = { viewModel.onAction(BookcaseAction.ConfirmSignOut) },
-            onDismiss = { viewModel.onAction(BookcaseAction.DismissSignOutDialog) }
+            onDismiss = { viewModel.onAction(BookcaseAction.DismissSignOutDialog) },
         )
     }
 
@@ -168,7 +168,7 @@ fun BookcaseScreenRoot(
                 showSignInRequiredDialog = false
                 onSignIn()
             },
-            onDismiss = { showSignInRequiredDialog = false }
+            onDismiss = { showSignInRequiredDialog = false },
         )
     }
 
@@ -204,7 +204,7 @@ fun BookcaseScreenRoot(
                 }
                 else -> viewModel.onAction(action)
             }
-        }
+        },
     )
 }
 
@@ -216,7 +216,7 @@ fun BookcaseScreen(
     onTabSelected: (BookcaseTab) -> Unit,
     showAddBookshelfDialog: Boolean,
     onShowAddBookshelfDialogChange: (Boolean) -> Unit,
-    onAction: (BookcaseAction) -> Unit
+    onAction: (BookcaseAction) -> Unit,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -233,11 +233,12 @@ fun BookcaseScreen(
     // Show converted book clubs notification (clubs deleted by owner, converted to personal shelves)
     if (state.deletedBookClubNames.isNotEmpty()) {
         LaunchedEffect(state.deletedBookClubNames) {
-            val message = if (state.deletedBookClubNames.size == 1) {
-                "'${state.deletedBookClubNames.first()}' was deleted by owner - converted to personal shelf"
-            } else {
-                "${state.deletedBookClubNames.size} book clubs were deleted - converted to personal shelves"
-            }
+            val message =
+                if (state.deletedBookClubNames.size == 1) {
+                    "'${state.deletedBookClubNames.first()}' was deleted by owner - converted to personal shelf"
+                } else {
+                    "${state.deletedBookClubNames.size} book clubs were deleted - converted to personal shelves"
+                }
             snackbarHostState.showSnackbar(message)
             onAction(BookcaseAction.DismissDeletedBookClubsNotification)
         }
@@ -252,22 +253,24 @@ fun BookcaseScreen(
     }
 
     // Filter shelves based on selected tab
-    val displayedShelves = remember(state.bookshelves, selectedTab) {
-        state.bookshelves.filter { shelf ->
-            shelf.isBookClub == (selectedTab == BookcaseTab.BOOK_CLUBS)
+    val displayedShelves =
+        remember(state.bookshelves, selectedTab) {
+            state.bookshelves.filter { shelf ->
+                shelf.isBookClub == (selectedTab == BookcaseTab.BOOK_CLUBS)
+            }
         }
-    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = when {
-                            state.isReorderMode -> stringResource(id = R.string.reorder_shelves_title)
-                            else -> stringResource(id = selectedTab.labelResId)
-                        },
-                        style = MaterialTheme.typography.titleLarge
+                        text =
+                            when {
+                                state.isReorderMode -> stringResource(id = R.string.reorder_shelves_title)
+                                else -> stringResource(id = selectedTab.labelResId)
+                            },
+                        style = MaterialTheme.typography.titleLarge,
                     )
                 },
                 actions = {
@@ -276,10 +279,14 @@ fun BookcaseScreen(
                         IconButton(onClick = { onAction(BookcaseAction.ToggleReorderMode) }) {
                             Icon(
                                 imageVector = if (state.isReorderMode) Icons.Default.LockOpen else Icons.Default.Lock,
-                                contentDescription = stringResource(
-                                    if (state.isReorderMode) R.string.menu_lock_shelves
-                                    else R.string.menu_reorder_shelves
-                                )
+                                contentDescription =
+                                    stringResource(
+                                        if (state.isReorderMode) {
+                                            R.string.menu_lock_shelves
+                                        } else {
+                                            R.string.menu_reorder_shelves
+                                        },
+                                    ),
                             )
                         }
                     }
@@ -290,15 +297,15 @@ fun BookcaseScreen(
                         onShowAbout = { showAboutDialog = true },
                         onJoinBookClub = { onAction(BookcaseAction.ShowJoinBookClubDialog) },
                         onSignIn = { onAction(BookcaseAction.OnSignInClick) },
-                        onSignOut = { onAction(BookcaseAction.ShowSignOutDialog) }
+                        onSignOut = { onAction(BookcaseAction.ShowSignOutDialog) },
                     )
-                }
+                },
             )
         },
         bottomBar = {
             BookcaseBottomBar(
                 selectedTab = selectedTab,
-                onTabSelected = onTabSelected
+                onTabSelected = onTabSelected,
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -310,23 +317,28 @@ fun BookcaseScreen(
                     } else {
                         onShowAddBookshelfDialogChange(true)
                     }
-                }
+                },
             ) {
                 Icon(
-                    imageVector = if (selectedTab == BookcaseTab.BOOK_CLUBS)
-                        Icons.Default.PersonAdd
-                    else
-                        Icons.Default.Add,
-                    contentDescription = stringResource(
-                        id = if (selectedTab == BookcaseTab.BOOK_CLUBS)
-                            R.string.fab_join_book_club
-                        else
-                            R.string.fab_add_shelf
-                    )
+                    imageVector =
+                        if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+                            Icons.Default.PersonAdd
+                        } else {
+                            Icons.Default.Add
+                        },
+                    contentDescription =
+                        stringResource(
+                            id =
+                                if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+                                    R.string.fab_join_book_club
+                                } else {
+                                    R.string.fab_add_shelf
+                                },
+                        ),
                 )
             }
         },
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) { padding ->
         // Counter showing current/max shelves
         val maxCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) 5 else ShelfOperationsHandler.MAX_PERSONAL_SHELVES
@@ -336,27 +348,31 @@ fun BookcaseScreen(
             LazyColumn(contentPadding = padding) {
                 item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.End,
                     ) {
                         Text(
                             text = stringResource(R.string.shelf_limit_counter, currentCount, maxCount),
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
                 item {
                     Text(
-                        text = stringResource(
-                            id = if (selectedTab == BookcaseTab.BOOK_CLUBS)
-                                R.string.bookcase_empty_book_clubs
-                            else
-                                R.string.bookcase_empty_personal
-                        ),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                        text =
+                            stringResource(
+                                id =
+                                    if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+                                        R.string.bookcase_empty_book_clubs
+                                    } else {
+                                        R.string.bookcase_empty_personal
+                                    },
+                            ),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     )
                 }
             }
@@ -364,38 +380,41 @@ fun BookcaseScreen(
             LazyColumn(contentPadding = padding) {
                 item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.End,
                     ) {
                         Text(
                             text = stringResource(R.string.shelf_limit_counter, currentCount, maxCount),
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
                 items(
                     items = displayedShelves,
-                    key = { it.id }
+                    key = { it.id },
                 ) { shelf ->
                     val isTutorialShelf = shelf.name == BookshelfConstants.TUTORIAL_SHELF_NAME
 
-                    val shelfCallbacks = remember(onAction, isTutorialShelf, state.currentUserId) {
-                        createShelfCallbacks(onAction, isTutorialShelf, state.currentUserId)
-                    }
+                    val shelfCallbacks =
+                        remember(onAction, isTutorialShelf, state.currentUserId) {
+                            createShelfCallbacks(onAction, isTutorialShelf, state.currentUserId)
+                        }
 
                     BookcaseShelf(
                         shelf = shelf,
                         callbacks = shelfCallbacks,
-                        displayState = ShelfDisplayState(
-                            isReorderMode = state.isReorderMode,
-                            isTutorialShelf = isTutorialShelf,
-                            bookCountOverride = state.bookCounts[shelf.id] ?: 0,
-                            currentUserId = state.currentUserId
-                        ),
-                        modifier = Modifier.animateItem()
+                        displayState =
+                            ShelfDisplayState(
+                                isReorderMode = state.isReorderMode,
+                                isTutorialShelf = isTutorialShelf,
+                                bookCountOverride = state.bookCounts[shelf.id] ?: 0,
+                                currentUserId = state.currentUserId,
+                            ),
+                        modifier = Modifier.animateItem(),
                     )
                 }
             }
@@ -411,7 +430,7 @@ fun BookcaseScreen(
                 onAction(BookcaseAction.OnAddBookshelfClick(shelfName, style))
             },
             isLoading = state.isLoading,
-            defaultName = state.defaultShelfName
+            defaultName = state.defaultShelfName,
         )
     }
 
@@ -424,7 +443,7 @@ fun BookcaseScreen(
             },
             onRename = { newName ->
                 onAction(BookcaseAction.OnRenameShelf(state.shelfToRename.id, newName))
-            }
+            },
         )
     }
 
@@ -436,7 +455,7 @@ fun BookcaseScreen(
             },
             onChangeStyle = { newStyle ->
                 onAction(BookcaseAction.OnChangeStyle(state.shelfToChangeStyle.id, newStyle))
-            }
+            },
         )
     }
 
@@ -444,7 +463,7 @@ fun BookcaseScreen(
     if (showAboutDialog) {
         AboutDialog(
             versionName = BuildConfig.VERSION_NAME,
-            onDismiss = { showAboutDialog = false }
+            onDismiss = { showAboutDialog = false },
         )
     }
 
@@ -453,7 +472,7 @@ fun BookcaseScreen(
         UpdateDialog(
             updateInfo = state.availableUpdate,
             onDownload = { onAction(BookcaseAction.DownloadUpdate) },
-            onDismiss = { onAction(BookcaseAction.DismissUpdate) }
+            onDismiss = { onAction(BookcaseAction.DismissUpdate) },
         )
     }
 
@@ -462,7 +481,7 @@ fun BookcaseScreen(
         UpToDateDialog(
             currentVersionInfo = state.currentVersionInfo,
             currentVersionName = BuildConfig.VERSION_NAME,
-            onDismiss = { onAction(BookcaseAction.DismissUpToDate) }
+            onDismiss = { onAction(BookcaseAction.DismissUpToDate) },
         )
     }
 
@@ -473,7 +492,7 @@ fun BookcaseScreen(
             inviteLink = inviteLink,
             clubName = state.bookClubName ?: "",
             isNewClub = state.isNewlyCreatedBookClub,
-            onDismiss = { onAction(BookcaseAction.DismissInviteLink) }
+            onDismiss = { onAction(BookcaseAction.DismissInviteLink) },
         )
     }
 
@@ -484,7 +503,7 @@ fun BookcaseScreen(
             onLookup = { codeOrUrl -> onAction(BookcaseAction.OnLookupBookClub(codeOrUrl)) },
             isLoading = state.joinLookupLoading,
             errorMessage = state.joinLookupError,
-            initialCode = state.pendingInviteCode ?: ""
+            initialCode = state.pendingInviteCode ?: "",
         )
     }
 
@@ -494,7 +513,7 @@ fun BookcaseScreen(
             bookClub = bookClub,
             onDismiss = { onAction(BookcaseAction.DismissBookClubPreview) },
             onJoin = { onAction(BookcaseAction.OnConfirmJoinBookClub) },
-            isJoining = state.joinInProgress
+            isJoining = state.joinInProgress,
         )
     }
 
@@ -503,7 +522,7 @@ fun BookcaseScreen(
         DeleteBookClubDialog(
             clubName = state.shelfToDelete.name,
             onConfirm = { onAction(BookcaseAction.ConfirmDeleteBookClub) },
-            onDismiss = { onAction(BookcaseAction.DismissDeleteBookClubDialog) }
+            onDismiss = { onAction(BookcaseAction.DismissDeleteBookClubDialog) },
         )
     }
 
@@ -512,7 +531,7 @@ fun BookcaseScreen(
         LeaveBookClubDialog(
             clubName = state.shelfToLeave.name,
             onConfirm = { onAction(BookcaseAction.ConfirmLeaveBookClub) },
-            onDismiss = { onAction(BookcaseAction.DismissLeaveBookClubDialog) }
+            onDismiss = { onAction(BookcaseAction.DismissLeaveBookClubDialog) },
         )
     }
 
@@ -521,7 +540,7 @@ fun BookcaseScreen(
         ShelfLimitDialog(
             title = stringResource(R.string.shelf_limit_reached_title),
             message = stringResource(R.string.shelf_limit_reached_message, ShelfOperationsHandler.MAX_PERSONAL_SHELVES),
-            onDismiss = { onAction(BookcaseAction.DismissShelfLimitDialog) }
+            onDismiss = { onAction(BookcaseAction.DismissShelfLimitDialog) },
         )
     }
 
@@ -530,7 +549,7 @@ fun BookcaseScreen(
         ShelfLimitDialog(
             title = stringResource(R.string.book_club_limit_reached_title),
             message = stringResource(R.string.book_club_limit_reached_message, 5),
-            onDismiss = { onAction(BookcaseAction.DismissBookClubLimitDialog) }
+            onDismiss = { onAction(BookcaseAction.DismissBookClubLimitDialog) },
         )
     }
 
@@ -539,27 +558,27 @@ fun BookcaseScreen(
         val successMessage = stringResource(R.string.join_book_club_success, shelfName)
         LaunchedEffect(shelfName) {
             snackbarHostState.showSnackbar(
-                message = successMessage
+                message = successMessage,
             )
             onAction(BookcaseAction.DismissJoinSuccess)
         }
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun BookcaseScreenPreview() {
     MyBookshelfTheme {
         BookcaseScreen(
-            state = BookcaseState(
-                bookshelves = bookshelves,
-            ),
+            state =
+                BookcaseState(
+                    bookshelves = bookshelves,
+                ),
             selectedTab = BookcaseTab.MY_SHELVES,
             onTabSelected = {},
             onAction = {},
             showAddBookshelfDialog = false,
-            onShowAddBookshelfDialogChange = {}
+            onShowAddBookshelfDialogChange = {},
         )
     }
 }

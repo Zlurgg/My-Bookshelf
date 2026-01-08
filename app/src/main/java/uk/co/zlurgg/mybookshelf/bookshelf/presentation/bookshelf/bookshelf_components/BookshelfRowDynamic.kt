@@ -17,8 +17,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 
 @Composable
 fun BookshelfRowDynamic(
@@ -26,47 +26,51 @@ fun BookshelfRowDynamic(
     onBookClick: (Book) -> Unit,
     bookshelfMaterial: ShelfMaterial,
     modifier: Modifier = Modifier,
-    config: BookshelfRowConfig = BookshelfRowConfig()
+    config: BookshelfRowConfig = BookshelfRowConfig(),
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-            .clip(RoundedCornerShape(12.dp))
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .clip(RoundedCornerShape(12.dp)),
     ) {
         Image(
             painter = bookshelfMaterial.painterLarge(),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.matchParentSize()
+            modifier = Modifier.matchParentSize(),
         )
-        
+
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 8.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .padding(8.dp)
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .padding(8.dp),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(170.dp) // Ensure minimum height even when empty
-                    .background(bookshelfMaterial.shelfBackground)
-                    .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 0.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(170.dp) // Ensure minimum height even when empty
+                        .background(bookshelfMaterial.shelfBackground)
+                        .padding(top = 8.dp, start = 8.dp, end = 8.dp, bottom = 0.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.Bottom,
             ) {
                 // Render each book with appropriate style based on mode
                 books.forEachIndexed { index, book ->
-                    val bookStyle = config.bookStyles?.getOrNull(index)
-                        ?: if (config.isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
+                    val bookStyle =
+                        config.bookStyles?.getOrNull(index)
+                            ?: if (config.isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
                     when (bookStyle) {
                         BookDisplayStyle.VERTICAL -> {
                             BookVertical(
                                 book = book,
                                 onClick = { onBookClick(book) },
-                                height = 150
+                                height = 150,
                             )
                         }
                         BookDisplayStyle.LEANING_LEFT -> {
@@ -74,7 +78,7 @@ fun BookshelfRowDynamic(
                                 book = book,
                                 onClick = { onBookClick(book) },
                                 leanAngle = -5f,
-                                height = 145
+                                height = 145,
                             )
                         }
                         BookDisplayStyle.LEANING_RIGHT -> {
@@ -82,18 +86,18 @@ fun BookshelfRowDynamic(
                                 book = book,
                                 onClick = { onBookClick(book) },
                                 leanAngle = 5f,
-                                height = 145
+                                height = 145,
                             )
                         }
                         BookDisplayStyle.HORIZONTAL_STACK -> {
                             BookHorizontal(
                                 book = book,
-                                onClick = { onBookClick(book) }
+                                onClick = { onBookClick(book) },
                             )
                         }
                     }
                 }
-                
+
                 if (config.showAddSlot && config.onAddClick != null) {
                     AddBookSpine(onClick = config.onAddClick)
                 }
@@ -101,4 +105,3 @@ fun BookshelfRowDynamic(
         }
     }
 }
-

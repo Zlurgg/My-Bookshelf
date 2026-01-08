@@ -12,6 +12,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 interface GetBookClubReviewsUseCase {
     suspend operator fun invoke(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubReview>, DataError.Sync>
 }

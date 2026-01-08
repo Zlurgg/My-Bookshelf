@@ -6,7 +6,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 
 class MockBookshelfRepository : BookshelfRepository {
-
     private val shelfBookRelations = mutableMapOf<String, MutableSet<String>>() // shelfId -> bookIds
     private val configuredBooks = mutableMapOf<String, Book>() // bookId -> Book
 
@@ -34,11 +33,17 @@ class MockBookshelfRepository : BookshelfRepository {
         configuredBooks[book.id] = book
     }
 
-    fun configureShelfWithBooks(shelfId: String, bookIds: List<String>) {
+    fun configureShelfWithBooks(
+        shelfId: String,
+        bookIds: List<String>,
+    ) {
         shelfBookRelations[shelfId] = bookIds.toMutableSet()
     }
 
-    fun configureBooksForShelf(shelfId: String, books: List<Book>) {
+    fun configureBooksForShelf(
+        shelfId: String,
+        books: List<Book>,
+    ) {
         books.forEach { configureBook(it) }
         configureShelfWithBooks(shelfId, books.map { it.id })
     }
@@ -47,7 +52,10 @@ class MockBookshelfRepository : BookshelfRepository {
         return shelfBookRelations.mapValues { it.value.toSet() }
     }
 
-    override suspend fun addBookToShelf(shelfId: String, bookId: String) {
+    override suspend fun addBookToShelf(
+        shelfId: String,
+        bookId: String,
+    ) {
         addBookToShelfCallCount++
         lastAddedShelfId = shelfId
         lastAddedBookId = bookId
@@ -59,7 +67,10 @@ class MockBookshelfRepository : BookshelfRepository {
         shelfBookRelations.getOrPut(shelfId) { mutableSetOf() }.add(bookId)
     }
 
-    override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
+    override suspend fun removeBookFromShelf(
+        shelfId: String,
+        bookId: String,
+    ) {
         removeBookFromShelfCallCount++
         lastRemovedShelfId = shelfId
         lastRemovedBookId = bookId
@@ -82,16 +93,20 @@ class MockBookshelfRepository : BookshelfRepository {
         return flowOf(isInAnyShelf)
     }
 
-    override fun isBookOnShelf(bookId: String, shelfId: String): Flow<Boolean> {
+    override fun isBookOnShelf(
+        bookId: String,
+        shelfId: String,
+    ): Flow<Boolean> {
         val isOnShelf = shelfBookRelations[shelfId]?.contains(bookId) == true
         return flowOf(isOnShelf)
     }
 
     override fun getShelvesForBook(bookId: String): Flow<List<String>> {
-        val shelfIds = shelfBookRelations
-            .filterValues { it.contains(bookId) }
-            .keys
-            .toList()
+        val shelfIds =
+            shelfBookRelations
+                .filterValues { it.contains(bookId) }
+                .keys
+                .toList()
         return flowOf(shelfIds)
     }
 }

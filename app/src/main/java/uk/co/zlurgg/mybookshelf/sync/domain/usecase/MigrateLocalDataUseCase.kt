@@ -12,7 +12,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
  * with no owner) to the current signed-in user and triggers an initial sync.
  */
 interface MigrateLocalDataUseCase {
-
     /**
      * Migrates local data to the current user's account.
      *

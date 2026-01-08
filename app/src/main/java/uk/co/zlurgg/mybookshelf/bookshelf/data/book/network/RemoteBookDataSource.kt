@@ -12,7 +12,7 @@ interface RemoteBookDataSource {
         language: String? = null,
         authorFilter: String? = null,
         titleFilter: String? = null,
-        sort: String? = null
+        sort: String? = null,
     ): Result<SearchResponseDto, DataError.Remote>
 
     suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote>

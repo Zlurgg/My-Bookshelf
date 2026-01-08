@@ -19,17 +19,18 @@ interface CheckForUpdateUseCase {
 class CheckForUpdateUseCaseImpl(
     private val updateRepository: UpdateRepository,
     private val updatePreferencesRepository: UpdatePreferencesRepository,
-    private val currentVersion: String
+    private val currentVersion: String,
 ) : CheckForUpdateUseCase {
     override suspend operator fun invoke(forceCheck: Boolean): UpdateInfo? {
         return try {
             Timber.d("Checking for updates (current: $currentVersion, force: $forceCheck)")
 
             val result = updateRepository.getLatestRelease()
-            val updateInfo = result.getOrNull() ?: run {
-                Timber.d("Failed to get release info")
-                return null
-            }
+            val updateInfo =
+                result.getOrNull() ?: run {
+                    Timber.d("Failed to get release info")
+                    return null
+                }
 
             // Check if newer version
             if (!isNewerVersion(updateInfo.versionName, currentVersion)) {
@@ -64,7 +65,10 @@ class CheckForUpdateUseCaseImpl(
      * Compares semantic versions (e.g., 1.0.4 vs 1.0.3).
      * Returns true if remote version is newer than current.
      */
-    internal fun isNewerVersion(remote: String, current: String): Boolean {
+    internal fun isNewerVersion(
+        remote: String,
+        current: String,
+    ): Boolean {
         val remoteParts = remote.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
         val currentParts = current.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
 

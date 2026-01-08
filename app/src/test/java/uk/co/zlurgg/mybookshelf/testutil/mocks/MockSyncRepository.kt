@@ -17,8 +17,7 @@ class MockSyncRepository : SyncRepository {
     var clearedSyncDataForUserId: String? = null
         private set
 
-    override suspend fun performSync(userId: String): Result<SyncResult, DataError.Sync> =
-        Result.Success(SyncResult())
+    override suspend fun performSync(userId: String): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult())
 
     override suspend fun pushLocalChanges(userId: String): Result<SyncResult, DataError.Sync> =
         Result.Success(SyncResult())
@@ -28,7 +27,7 @@ class MockSyncRepository : SyncRepository {
 
     override suspend fun resolveConflict(
         conflict: SyncConflict,
-        resolution: ConflictResolution
+        resolution: ConflictResolution,
     ): Result<Unit, DataError.Sync> = Result.Success(Unit)
 
     override suspend fun getUnresolvedConflicts(userId: String): List<SyncConflict> = emptyList()

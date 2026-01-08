@@ -7,5 +7,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Use case for importing a bookshelf from JSON data.
  */
 interface ImportBookshelfUseCase {
-    suspend fun execute(jsonData: String, customName: String? = null): Result<Unit, DataError.Local>
+    suspend fun execute(
+        jsonData: String,
+        customName: String? = null,
+    ): Result<Unit, DataError.Local>
 }

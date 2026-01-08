@@ -7,7 +7,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
  * Tracks method calls for verification in tests.
  */
 class MockSyncSchedulerService : SyncSchedulerService {
-
     var schedulePeriodicSyncCallCount = 0
         private set
 

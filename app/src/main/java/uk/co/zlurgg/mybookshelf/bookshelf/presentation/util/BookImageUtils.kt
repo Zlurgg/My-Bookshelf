@@ -14,7 +14,7 @@ import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 fun Book.withSmallImage(): String {
     return imageUrl.replace(
         Regex("-[SML]\\.jpg$"),
-        ApiConfig.OpenLibrary.CoverUrls.CoverSize.SMALL.suffix
+        ApiConfig.OpenLibrary.CoverUrls.CoverSize.SMALL.suffix,
     )
 }
 
@@ -29,7 +29,7 @@ fun Book.withSmallImage(): String {
 fun Book.withMediumImage(): String {
     return imageUrl.replace(
         Regex("-[SML]\\.jpg$"),
-        ApiConfig.OpenLibrary.CoverUrls.CoverSize.MEDIUM.suffix
+        ApiConfig.OpenLibrary.CoverUrls.CoverSize.MEDIUM.suffix,
     )
 }
 
@@ -43,6 +43,6 @@ fun Book.withMediumImage(): String {
 fun Book.withLargeImage(): String {
     return imageUrl.replace(
         Regex("-[SML]\\.jpg$"),
-        ApiConfig.OpenLibrary.CoverUrls.CoverSize.LARGE.suffix
+        ApiConfig.OpenLibrary.CoverUrls.CoverSize.LARGE.suffix,
     )
 }

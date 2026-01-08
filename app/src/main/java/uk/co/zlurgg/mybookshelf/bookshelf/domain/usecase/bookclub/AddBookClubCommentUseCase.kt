@@ -13,6 +13,6 @@ interface AddBookClubCommentUseCase {
     suspend operator fun invoke(
         clubCode: String,
         bookId: String,
-        text: String
+        text: String,
     ): Result<String, DataError.Sync>
 }

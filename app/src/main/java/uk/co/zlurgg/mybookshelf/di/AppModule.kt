@@ -19,13 +19,14 @@ import uk.co.zlurgg.mybookshelf.update.di.updateModule
  * - bookClubModule: Book club feature (16 use cases, handler)
  * - bookshelfModule: Main bookshelf feature (repositories, use cases, ViewModels)
  */
-val appModule = module {
-    includes(
-        coreModule,
-        authModule,
-        syncModule,
-        updateModule,
-        bookClubModule,
-        bookshelfModule
-    )
-}
+val appModule =
+    module {
+        includes(
+            coreModule,
+            authModule,
+            syncModule,
+            updateModule,
+            bookClubModule,
+            bookshelfModule,
+        )
+    }

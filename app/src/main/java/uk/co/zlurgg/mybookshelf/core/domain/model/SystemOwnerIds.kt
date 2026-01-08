@@ -11,7 +11,6 @@ package uk.co.zlurgg.mybookshelf.core.domain.model
  * - Never be deleted on sign-out
  */
 object SystemOwnerIds {
-
     /**
      * Owner ID for the tutorial shelf and book.
      * Entities with this ownerId are always visible to all users.

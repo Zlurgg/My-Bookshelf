@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
@@ -50,8 +50,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
@@ -69,7 +69,7 @@ fun BookshelfCard(
     onInviteToClub: (Bookshelf) -> Unit,
     onDuplicateShelf: (Bookshelf) -> Unit,
     onLeaveBookClub: (Bookshelf) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -79,49 +79,53 @@ fun BookshelfCard(
         Image(
             painter = ShelfMaterial.fromShelfStyle(shelf.shelfStyle).painterMedium(),
             contentDescription = null,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .clip(RoundedCornerShape(12.dp)),
-            contentScale = ContentScale.Crop
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+            contentScale = ContentScale.Crop,
         )
 
         // Inner card with content (creates border effect)
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(80.dp)
-                .padding(8.dp)
-                .combinedClickable(
-                    onClick = { onBookshelfClick(shelf) },
-                    onLongClick = { onLongClick(shelf) }
-                ),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .height(80.dp)
+                    .padding(8.dp)
+                    .combinedClickable(
+                        onClick = { onBookshelfClick(shelf) },
+                        onLongClick = { onLongClick(shelf) },
+                    ),
             shape = RoundedCornerShape(8.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            colors =
+                CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(
                     modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = shelf.name,
                             style = MaterialTheme.typography.titleMedium,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f, fill = false)
+                            modifier = Modifier.weight(1f, fill = false),
                         )
                         if (shelf.isBookClub) {
                             Spacer(modifier = Modifier.width(4.dp))
@@ -129,7 +133,7 @@ fun BookshelfCard(
                                 text = "[BC]",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
                             )
                             // Show crown icon for book club creator
                             if (shelf.clubCreatorId == currentUserId) {
@@ -138,19 +142,20 @@ fun BookshelfCard(
                                     imageVector = Icons.Filled.WorkspacePremium,
                                     contentDescription = stringResource(R.string.cd_book_club_owner),
                                     modifier = Modifier.size(16.dp),
-                                    tint = MaterialTheme.colorScheme.tertiary
+                                    tint = MaterialTheme.colorScheme.tertiary,
                                 )
                             }
                         }
                     }
                     Text(
-                        text = pluralStringResource(
-                            id = R.plurals.bookcount_books,
-                            count = bookCount,
-                            bookCount
-                        ),
+                        text =
+                            pluralStringResource(
+                                id = R.plurals.bookcount_books,
+                                count = bookCount,
+                                bookCount,
+                            ),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
 
@@ -159,23 +164,24 @@ fun BookshelfCard(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = stringResource(id = R.string.cd_unlock_reorder_mode),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     Box {
                         IconButton(onClick = { menuExpanded = true }) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
-                                contentDescription = stringResource(id = R.string.cd_shelf_options)
+                                contentDescription = stringResource(id = R.string.cd_shelf_options),
                             )
                         }
                         DropdownMenu(
                             expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
+                            onDismissRequest = { menuExpanded = false },
                         ) {
                             // Show rename for non-tutorial shelves, but for book clubs only show to creator
-                            val canRename = !isTutorialShelf &&
-                                (!shelf.isBookClub || shelf.clubCreatorId == currentUserId)
+                            val canRename =
+                                !isTutorialShelf &&
+                                    (!shelf.isBookClub || shelf.clubCreatorId == currentUserId)
                             if (canRename) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(id = R.string.menu_rename_shelf)) },
@@ -185,7 +191,7 @@ fun BookshelfCard(
                                     },
                                     leadingIcon = {
                                         Icon(Icons.Default.Edit, contentDescription = null)
-                                    }
+                                    },
                                 )
                             }
                             // For book clubs, only show change style to creator
@@ -199,7 +205,7 @@ fun BookshelfCard(
                                     },
                                     leadingIcon = {
                                         Icon(Icons.Default.Palette, contentDescription = null)
-                                    }
+                                    },
                                 )
                             }
                             // For book clubs: show delete for creator, leave for non-creator
@@ -214,7 +220,7 @@ fun BookshelfCard(
                                         },
                                         leadingIcon = {
                                             Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
-                                        }
+                                        },
                                     )
                                 } else {
                                     // Creator or personal shelf: show "Delete"
@@ -226,7 +232,7 @@ fun BookshelfCard(
                                         },
                                         leadingIcon = {
                                             Icon(Icons.Default.Delete, contentDescription = null)
-                                        }
+                                        },
                                     )
                                 }
                             }
@@ -242,7 +248,7 @@ fun BookshelfCard(
                                         },
                                         leadingIcon = {
                                             Icon(Icons.Default.Share, contentDescription = null)
-                                        }
+                                        },
                                     )
                                 } else {
                                     // Personal shelf: Show "Create Book Club"
@@ -254,7 +260,7 @@ fun BookshelfCard(
                                         },
                                         leadingIcon = {
                                             Icon(Icons.Default.Groups, contentDescription = null)
-                                        }
+                                        },
                                     )
                                 }
                             }
@@ -262,12 +268,16 @@ fun BookshelfCard(
                             if (!isTutorialShelf) {
                                 DropdownMenuItem(
                                     text = {
-                                        Text(stringResource(
-                                            id = if (shelf.isBookClub)
-                                                R.string.menu_save_personal_copy
-                                            else
-                                                R.string.menu_duplicate_shelf
-                                        ))
+                                        Text(
+                                            stringResource(
+                                                id =
+                                                    if (shelf.isBookClub) {
+                                                        R.string.menu_save_personal_copy
+                                                    } else {
+                                                        R.string.menu_duplicate_shelf
+                                                    },
+                                            ),
+                                        )
                                     },
                                     onClick = {
                                         menuExpanded = false
@@ -275,7 +285,7 @@ fun BookshelfCard(
                                     },
                                     leadingIcon = {
                                         Icon(Icons.Default.ContentCopy, contentDescription = null)
-                                    }
+                                    },
                                 )
                             }
                         }
@@ -304,7 +314,7 @@ fun BookshelfCardPreview() {
                 onCreateBookClub = {},
                 onInviteToClub = {},
                 onDuplicateShelf = {},
-                onLeaveBookClub = {}
+                onLeaveBookClub = {},
             )
             BookshelfCard(
                 shelf = bookshelf.copy(name = "My Reading List"),
@@ -319,7 +329,7 @@ fun BookshelfCardPreview() {
                 onCreateBookClub = {},
                 onInviteToClub = {},
                 onDuplicateShelf = {},
-                onLeaveBookClub = {}
+                onLeaveBookClub = {},
             )
         }
     }

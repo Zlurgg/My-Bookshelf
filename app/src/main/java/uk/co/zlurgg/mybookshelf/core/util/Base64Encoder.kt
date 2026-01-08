@@ -17,7 +17,6 @@ import java.util.zip.GZIPOutputStream
  * Security: Decompression has a 10MB size limit to prevent ZIP bomb attacks.
  */
 object Base64Encoder {
-
     private const val MAX_DECOMPRESSED_SIZE = 10 * 1024 * 1024 // 10MB
 
     /**
@@ -29,17 +28,18 @@ object Base64Encoder {
      */
     fun encode(data: String): String {
         // Step 1: GZip compression (70-80% size reduction)
-        val compressed = ByteArrayOutputStream().use { bos ->
-            GZIPOutputStream(bos).use { gzip ->
-                gzip.write(data.toByteArray(Charsets.UTF_8))
+        val compressed =
+            ByteArrayOutputStream().use { bos ->
+                GZIPOutputStream(bos).use { gzip ->
+                    gzip.write(data.toByteArray(Charsets.UTF_8))
+                }
+                bos.toByteArray()
             }
-            bos.toByteArray()
-        }
 
         // Step 2: URL-safe Base64 encoding
         return android.util.Base64.encodeToString(
             compressed,
-            android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP
+            android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP,
         )
     }
 
@@ -55,10 +55,11 @@ object Base64Encoder {
      */
     fun decode(encoded: String): String {
         // Step 1: Base64 decode
-        val compressed = android.util.Base64.decode(
-            encoded,
-            android.util.Base64.URL_SAFE
-        )
+        val compressed =
+            android.util.Base64.decode(
+                encoded,
+                android.util.Base64.URL_SAFE,
+            )
 
         // Step 2: GZip decompression with size limit (ZIP bomb protection)
         return GZIPInputStream(compressed.inputStream()).use { gzip ->
@@ -73,7 +74,7 @@ object Base64Encoder {
                 // Check size limit before writing
                 if (totalRead > MAX_DECOMPRESSED_SIZE) {
                     throw IllegalArgumentException(
-                        "Decompressed data exceeds $MAX_DECOMPRESSED_SIZE byte limit (potential ZIP bomb)"
+                        "Decompressed data exceeds $MAX_DECOMPRESSED_SIZE byte limit (potential ZIP bomb)",
                     )
                 }
 

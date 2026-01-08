@@ -38,7 +38,9 @@ interface BookshelfDao {
      * Note: The system ownerId is hardcoded here because Room requires compile-time constants.
      * See SystemOwnerIds.TUTORIAL for the canonical constant.
      */
-    @Query("SELECT * FROM BookshelfEntity WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__') AND syncStatus != 'DELETED' ORDER BY position ASC")
+    @Query(
+        "SELECT * FROM BookshelfEntity WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__') AND syncStatus != 'DELETED' ORDER BY position ASC",
+    )
     fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>>
 
     @Query("SELECT * FROM BookshelfEntity WHERE id = :id")
@@ -55,14 +57,17 @@ interface BookshelfDao {
     suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef)
 
     @Query("DELETE FROM BookshelfBookCrossRef WHERE shelfId = :shelfId AND bookId = :bookId")
-    suspend fun deleteCrossRef(shelfId: String, bookId: String)
+    suspend fun deleteCrossRef(
+        shelfId: String,
+        bookId: String,
+    )
 
     @Query("DELETE FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
     suspend fun deleteAllCrossRefsForShelf(shelfId: String)
 
     // Queries
     @Query(
-        "SELECT b.* FROM BookEntity b INNER JOIN BookshelfBookCrossRef s ON b.id = s.bookId WHERE s.shelfId = :shelfId AND s.syncStatus != 'DELETED' ORDER BY s.addedAt DESC"
+        "SELECT b.* FROM BookEntity b INNER JOIN BookshelfBookCrossRef s ON b.id = s.bookId WHERE s.shelfId = :shelfId AND s.syncStatus != 'DELETED' ORDER BY s.addedAt DESC",
     )
     fun getBooksForShelf(shelfId: String): Flow<List<BookEntity>>
 
@@ -90,23 +95,48 @@ interface BookshelfDao {
 
     // Update sync status
     @Query("UPDATE BookEntity SET syncStatus = :status, lastModifiedAt = :timestamp WHERE id = :id")
-    suspend fun updateBookSyncStatus(id: String, status: String, timestamp: Long)
+    suspend fun updateBookSyncStatus(
+        id: String,
+        status: String,
+        timestamp: Long,
+    )
 
     @Query("UPDATE BookshelfEntity SET syncStatus = :status, lastModifiedAt = :timestamp WHERE id = :id")
-    suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long)
+    suspend fun updateShelfSyncStatus(
+        id: String,
+        status: String,
+        timestamp: Long,
+    )
 
-    @Query("UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId AND bookId = :bookId")
-    suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long)
+    @Query(
+        "UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId AND bookId = :bookId",
+    )
+    suspend fun updateCrossRefSyncStatus(
+        shelfId: String,
+        bookId: String,
+        status: String,
+        timestamp: Long,
+    )
 
-    @Query("UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId")
-    suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long)
+    @Query(
+        "UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId",
+    )
+    suspend fun markAllCrossRefsForShelfAs(
+        shelfId: String,
+        status: String,
+        timestamp: Long,
+    )
 
     // Sharing queries
     @Query("SELECT * FROM BookshelfEntity WHERE shareCode = :shareCode LIMIT 1")
     suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity?
 
     @Query("UPDATE BookshelfEntity SET isShared = :isShared, shareCode = :shareCode WHERE id = :id")
-    suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?)
+    suspend fun updateShelfSharingStatus(
+        id: String,
+        isShared: Boolean,
+        shareCode: String?,
+    )
 
     // Migration queries - assign owner to orphan entities (used when user signs in)
     // Note: System entities have ownerId = '__system_tutorial__', so they're not counted as orphans
@@ -150,18 +180,23 @@ interface BookshelfDao {
      * be filtered out by Firestore's whereGreaterThan(0) query on pull.
      */
     @Transaction
-    suspend fun upsertBookWithSyncInit(book: BookEntity, initialTimestamp: Long) {
+    suspend fun upsertBookWithSyncInit(
+        book: BookEntity,
+        initialTimestamp: Long,
+    ) {
         val existing = getBookById(book.id)
         if (existing == null) {
             // New book - set lastModifiedAt to initialTimestamp
             upsert(book.copy(lastModifiedAt = initialTimestamp))
         } else {
             // Existing book - preserve sync metadata, update lastModifiedAt
-            upsert(book.copy(
-                lastModifiedAt = initialTimestamp,
-                cloudId = existing.cloudId,
-                version = existing.version + 1
-            ))
+            upsert(
+                book.copy(
+                    lastModifiedAt = initialTimestamp,
+                    cloudId = existing.cloudId,
+                    version = existing.version + 1,
+                ),
+            )
         }
     }
 
@@ -172,29 +207,36 @@ interface BookshelfDao {
      * For existing shelves: Preserves cloudId, sharing status, increments version, updates lastModifiedAt
      */
     @Transaction
-    suspend fun upsertShelfWithSyncInit(shelf: BookshelfEntity, initialTimestamp: Long) {
+    suspend fun upsertShelfWithSyncInit(
+        shelf: BookshelfEntity,
+        initialTimestamp: Long,
+    ) {
         val existing = getShelfById(shelf.id)
         if (existing == null) {
             // New shelf - set lastModifiedAt to initialTimestamp
             upsertShelf(shelf.copy(lastModifiedAt = initialTimestamp))
         } else {
             // Existing shelf - preserve sync metadata and local-only fields, update lastModifiedAt
-            upsertShelf(shelf.copy(
-                lastModifiedAt = initialTimestamp,
-                cloudId = existing.cloudId,
-                version = existing.version + 1,
-                isShared = existing.isShared,
-                shareCode = existing.shareCode,
-                isBookClub = existing.isBookClub,
-                clubCode = existing.clubCode
-            ))
+            upsertShelf(
+                shelf.copy(
+                    lastModifiedAt = initialTimestamp,
+                    cloudId = existing.cloudId,
+                    version = existing.version + 1,
+                    isShared = existing.isShared,
+                    shareCode = existing.shareCode,
+                    isBookClub = existing.isBookClub,
+                    clubCode = existing.clubCode,
+                ),
+            )
         }
     }
 
     // ========== Sign-out cleanup queries ==========
     // Delete all user's data when signing out to prevent data leakage to other accounts
 
-    @Query("DELETE FROM BookshelfBookCrossRef WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :ownerId)")
+    @Query(
+        "DELETE FROM BookshelfBookCrossRef WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :ownerId)",
+    )
     suspend fun deleteAllCrossRefsForOwner(ownerId: String)
 
     @Query("DELETE FROM BookEntity WHERE ownerId = :ownerId")

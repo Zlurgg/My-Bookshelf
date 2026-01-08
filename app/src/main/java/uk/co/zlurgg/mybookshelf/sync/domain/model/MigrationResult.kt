@@ -10,15 +10,12 @@ package uk.co.zlurgg.mybookshelf.sync.domain.model
 data class MigrationResult(
     /** Number of books that were assigned to the user */
     val booksAssigned: Int = 0,
-
     /** Number of shelves that were assigned to the user */
     val shelvesAssigned: Int = 0,
-
     /** Whether any data was migrated */
     val hadDataToMigrate: Boolean = false,
-
     /** Whether initial sync was triggered */
-    val syncTriggered: Boolean = false
+    val syncTriggered: Boolean = false,
 ) {
     /** Total number of entities migrated */
     val totalMigrated: Int
@@ -26,11 +23,12 @@ data class MigrationResult(
 
     companion object {
         /** Result when no migration was needed */
-        val NO_MIGRATION_NEEDED = MigrationResult(
-            booksAssigned = 0,
-            shelvesAssigned = 0,
-            hadDataToMigrate = false,
-            syncTriggered = false
-        )
+        val NO_MIGRATION_NEEDED =
+            MigrationResult(
+                booksAssigned = 0,
+                shelvesAssigned = 0,
+                hadDataToMigrate = false,
+                syncTriggered = false,
+            )
     }
 }

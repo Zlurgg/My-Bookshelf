@@ -15,9 +15,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
  */
 class SyncUserPreferencesUseCaseImpl(
     private val userPreferencesRepository: UserPreferencesRepository,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
 ) : SyncUserPreferencesUseCase {
-
     override suspend fun execute(): Result<Unit, DataError.Sync> {
         val userId = currentUserProvider.getCurrentUserId()
 
@@ -38,7 +37,8 @@ class SyncUserPreferencesUseCaseImpl(
                 // This handles offline scenarios gracefully
                 when (result.error) {
                     DataError.Sync.NETWORK_ERROR,
-                    DataError.Sync.UNKNOWN -> {
+                    DataError.Sync.UNKNOWN,
+                    -> {
                         Timber.tag(TAG).w("Preferences sync failed (offline?), using local cache: %s", result.error)
                         Result.Success(Unit)
                     }

@@ -18,46 +18,46 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 fun AboutDialog(
     versionName: String,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     BaseInfoDialog(
         title = stringResource(R.string.about_title),
         buttonText = stringResource(R.string.action_ok),
         onDismiss = onDismiss,
         scrollable = true,
-        modifier = modifier
+        modifier = modifier,
     ) {
         DialogContentSection(
             title = stringResource(R.string.about_version_title),
-            content = versionName
+            content = versionName,
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         DialogContentSection(
             title = stringResource(R.string.about_description_title),
-            content = stringResource(R.string.about_description_content)
+            content = stringResource(R.string.about_description_content),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         DialogContentSection(
             title = stringResource(R.string.about_privacy_title),
-            content = stringResource(R.string.about_privacy_content)
+            content = stringResource(R.string.about_privacy_content),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         DialogContentSection(
             title = stringResource(R.string.about_open_source_title),
-            content = stringResource(R.string.about_open_source_content)
+            content = stringResource(R.string.about_open_source_content),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         DialogContentSection(
             title = stringResource(R.string.about_credits_title),
-            content = stringResource(R.string.about_credits_content)
+            content = stringResource(R.string.about_credits_content),
         )
     }
 }
@@ -69,7 +69,7 @@ private fun AboutDialogPreview() {
     MyBookshelfTheme {
         AboutDialog(
             versionName = "1.0.5",
-            onDismiss = {}
+            onDismiss = {},
         )
     }
 }

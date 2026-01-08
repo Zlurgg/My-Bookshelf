@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -17,18 +17,21 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class UpdateShelfStyleUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
     private val bookClubRepository: BookClubRepository,
-    private val authService: AuthService
+    private val authService: AuthService,
 ) : UpdateShelfStyleUseCase {
-
     companion object {
         private const val TAG = "UpdateShelfStyle"
     }
 
-    override suspend fun execute(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
+    override suspend fun execute(
+        shelfId: String,
+        newStyle: ShelfStyle,
+    ): Result<Unit, DataError.Local> {
         return try {
             // Get the shelf to update
-            val shelfToUpdate = bookcaseRepository.getShelfById(shelfId)
-                ?: return Result.Error(DataError.Local.NOT_FOUND)
+            val shelfToUpdate =
+                bookcaseRepository.getShelfById(shelfId)
+                    ?: return Result.Error(DataError.Local.NOT_FOUND)
 
             // Permission check for book clubs - only creator can change style
             if (shelfToUpdate.isBookClub) {

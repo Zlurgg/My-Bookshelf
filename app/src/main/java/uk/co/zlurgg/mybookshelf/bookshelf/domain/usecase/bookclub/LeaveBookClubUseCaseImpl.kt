@@ -15,9 +15,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 class LeaveBookClubUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : LeaveBookClubUseCase {
-
     override suspend fun invoke(shelfId: String): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Attempting to leave book club for shelf: %s", shelfId)
 

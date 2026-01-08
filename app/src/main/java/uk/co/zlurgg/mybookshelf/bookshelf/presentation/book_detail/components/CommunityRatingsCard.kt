@@ -29,31 +29,31 @@ import uk.co.zlurgg.mybookshelf.R
 fun CommunityRatingsCard(
     averageRating: Double?,
     ratingCount: Int?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.community_ratings_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             if (averageRating != null && averageRating > 0) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
                         imageVector = Icons.Filled.Star,
                         contentDescription = stringResource(R.string.cd_community_rating),
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.primary,
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -61,7 +61,7 @@ fun CommunityRatingsCard(
                     Text(
                         text = String.format("%.1f", averageRating),
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = MaterialTheme.colorScheme.onSurface,
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -69,14 +69,14 @@ fun CommunityRatingsCard(
                     Text(
                         text = "(" + stringResource(R.string.community_ratings_count, ratingCount ?: 0) + ")",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
                 Text(
                     text = stringResource(R.string.community_ratings_not_available),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

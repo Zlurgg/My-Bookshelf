@@ -6,27 +6,20 @@ package uk.co.zlurgg.mybookshelf.sync.domain.model
 data class SyncConflict(
     /** ID of the conflicting entity */
     val entityId: String,
-
     /** Type of entity (book or shelf) */
     val entityType: EntityType,
-
     /** Local version timestamp */
     val localTimestamp: Long,
-
     /** Remote version timestamp */
     val remoteTimestamp: Long,
-
     /** Local version number */
     val localVersion: Long,
-
     /** Remote version number */
     val remoteVersion: Long,
-
     /** Human-readable description of local changes */
     val localChangeDescription: String? = null,
-
     /** Human-readable description of remote changes */
-    val remoteChangeDescription: String? = null
+    val remoteChangeDescription: String? = null,
 )
 
 /**
@@ -35,7 +28,7 @@ data class SyncConflict(
 enum class EntityType {
     BOOK,
     BOOKSHELF,
-    CROSS_REF
+    CROSS_REF,
 }
 
 /**
@@ -72,5 +65,5 @@ enum class ConflictStrategy {
     LAST_WRITE_WINS,
 
     /** Ask user for each conflict */
-    ASK_USER
+    ASK_USER,
 }

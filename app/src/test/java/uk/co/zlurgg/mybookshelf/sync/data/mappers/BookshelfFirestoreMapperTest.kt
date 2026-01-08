@@ -10,7 +10,6 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
  * Unit tests for BookshelfFirestoreMapper extension functions.
  */
 class BookshelfFirestoreMapperTest {
-
     @Test
     fun `toFirestoreDto maps all fields correctly`() {
         // Given
@@ -106,18 +105,19 @@ class BookshelfFirestoreMapperTest {
     @Test
     fun `toEntity handles non-shared shelf`() {
         // Given
-        val dto = BookshelfFirestoreDto(
-            id = "shelf-private",
-            name = "Private Shelf",
-            shelfMaterial = "LIGHT_WOOD",
-            position = 0,
-            isTidyMode = false,
-            bookIds = listOf("book-1"),
-            isShared = false,
-            shareCode = null,
-            version = 1L,
-            lastModifiedAt = 0L
-        )
+        val dto =
+            BookshelfFirestoreDto(
+                id = "shelf-private",
+                name = "Private Shelf",
+                shelfMaterial = "LIGHT_WOOD",
+                position = 0,
+                isTidyMode = false,
+                bookIds = listOf("book-1"),
+                isShared = false,
+                shareCode = null,
+                version = 1L,
+                lastModifiedAt = 0L,
+            )
 
         // When
         val entity = dto.toEntity("user-123")
@@ -130,17 +130,18 @@ class BookshelfFirestoreMapperTest {
     @Test
     fun `toBookshelfFirestoreDto from map parses correctly`() {
         // Given
-        val map = mapOf<String, Any?>(
-            "name" to "Map Shelf",
-            "shelf_material" to "SILVER_METAL",
-            "position" to 5,
-            "is_tidy_mode" to true,
-            "book_ids" to listOf("b1", "b2"),
-            "is_shared" to true,
-            "share_code" to "XYZ789",
-            "version" to 3L,
-            "last_modified_at" to 5555L
-        )
+        val map =
+            mapOf<String, Any?>(
+                "name" to "Map Shelf",
+                "shelf_material" to "SILVER_METAL",
+                "position" to 5,
+                "is_tidy_mode" to true,
+                "book_ids" to listOf("b1", "b2"),
+                "is_shared" to true,
+                "share_code" to "XYZ789",
+                "version" to 3L,
+                "last_modified_at" to 5555L,
+            )
 
         // When
         val dto = map.toBookshelfFirestoreDto("map-shelf-id")
@@ -181,31 +182,33 @@ class BookshelfFirestoreMapperTest {
 
     // Helper functions
 
-    private fun createTestBookshelfEntity() = BookshelfEntity(
-        id = "shelf-1",
-        name = "Test Shelf",
-        shelfMaterial = "DARK_WOOD",
-        position = 2,
-        isTidyMode = true,
-        ownerId = "owner-1",
-        lastModifiedAt = 10000L,
-        syncStatus = "PENDING",
-        cloudId = "cloud-shelf-1",
-        version = 5L,
-        isShared = true,
-        shareCode = "ABC123"
-    )
+    private fun createTestBookshelfEntity() =
+        BookshelfEntity(
+            id = "shelf-1",
+            name = "Test Shelf",
+            shelfMaterial = "DARK_WOOD",
+            position = 2,
+            isTidyMode = true,
+            ownerId = "owner-1",
+            lastModifiedAt = 10000L,
+            syncStatus = "PENDING",
+            cloudId = "cloud-shelf-1",
+            version = 5L,
+            isShared = true,
+            shareCode = "ABC123",
+        )
 
-    private fun createTestBookshelfFirestoreDto() = BookshelfFirestoreDto(
-        id = "shelf-1",
-        name = "Test Shelf",
-        shelfMaterial = "DARK_WOOD",
-        position = 2,
-        isTidyMode = true,
-        bookIds = listOf("book-1", "book-2"),
-        isShared = true,
-        shareCode = "ABC123",
-        version = 5L,
-        lastModifiedAt = 10000L
-    )
+    private fun createTestBookshelfFirestoreDto() =
+        BookshelfFirestoreDto(
+            id = "shelf-1",
+            name = "Test Shelf",
+            shelfMaterial = "DARK_WOOD",
+            position = 2,
+            isTidyMode = true,
+            bookIds = listOf("book-1", "book-2"),
+            isShared = true,
+            shareCode = "ABC123",
+            version = 5L,
+            lastModifiedAt = 10000L,
+        )
 }

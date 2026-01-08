@@ -11,14 +11,13 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Validates input and delegates to repository.
  */
 class UpsertBookClubReviewUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : UpsertBookClubReviewUseCase {
-
     override suspend fun invoke(
         clubCode: String,
         bookId: String,
         rating: Float,
-        reviewText: String
+        reviewText: String,
     ): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Upserting review for book %s in club %s", bookId, clubCode)
 
@@ -34,12 +33,15 @@ class UpsertBookClubReviewUseCaseImpl(
             return Result.Error(DataError.Sync.INVALID_INPUT)
         }
 
-        return when (val result = bookClubRepository.upsertBookReview(
-            code = clubCode,
-            bookId = bookId,
-            rating = rating,
-            reviewText = reviewText.trim()
-        )) {
+        return when (
+            val result =
+                bookClubRepository.upsertBookReview(
+                    code = clubCode,
+                    bookId = bookId,
+                    rating = rating,
+                    reviewText = reviewText.trim(),
+                )
+        ) {
             is Result.Success -> {
                 Timber.tag(TAG).d("Review upserted successfully")
                 Result.Success(Unit)

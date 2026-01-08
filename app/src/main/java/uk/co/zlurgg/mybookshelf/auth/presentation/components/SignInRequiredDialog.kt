@@ -15,7 +15,7 @@ fun SignInRequiredDialog(
     title: String,
     message: String,
     onSignIn: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -30,6 +30,6 @@ fun SignInRequiredDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.action_cancel))
             }
-        }
+        },
     )
 }

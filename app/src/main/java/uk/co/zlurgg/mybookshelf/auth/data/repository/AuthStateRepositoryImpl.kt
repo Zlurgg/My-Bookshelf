@@ -11,9 +11,8 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 private val Context.authDataStore by preferencesDataStore(name = "auth_preferences")
 
 class AuthStateRepositoryImpl(
-    private val context: Context
+    private val context: Context,
 ) : AuthStateRepository {
-
     override suspend fun isSignedIn(): Boolean {
         return context.authDataStore.data
             .map { preferences -> preferences[SIGNED_IN_KEY] ?: false }

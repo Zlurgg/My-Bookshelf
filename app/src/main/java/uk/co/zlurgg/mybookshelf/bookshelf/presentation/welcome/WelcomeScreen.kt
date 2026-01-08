@@ -31,7 +31,7 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 @Composable
 fun WelcomeScreenRoot(
     viewModel: WelcomeViewModel = koinViewModel(),
-    onNavigateToBookcase: () -> Unit
+    onNavigateToBookcase: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -44,7 +44,7 @@ fun WelcomeScreenRoot(
                     onNavigateToBookcase()
                 }
             }
-        }
+        },
     )
 }
 
@@ -52,24 +52,25 @@ fun WelcomeScreenRoot(
 fun WelcomeScreen(
     state: WelcomeState,
     onAction: (WelcomeAction) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize(),
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(24.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.MenuBook,
                 contentDescription = null,
                 modifier = Modifier.size(120.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.primary,
             )
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -77,7 +78,7 @@ fun WelcomeScreen(
             Text(
                 text = stringResource(R.string.welcome_title),
                 style = MaterialTheme.typography.headlineLarge,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -86,7 +87,7 @@ fun WelcomeScreen(
                 text = stringResource(R.string.welcome_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -94,7 +95,7 @@ fun WelcomeScreen(
             Text(
                 text = stringResource(R.string.welcome_privacy_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -104,18 +105,18 @@ fun WelcomeScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp),
             )
 
             Spacer(modifier = Modifier.height(48.dp))
 
             Button(
                 onClick = { onAction(WelcomeAction.OnGetStartedClick) },
-                modifier = Modifier.fillMaxWidth(0.7f)
+                modifier = Modifier.fillMaxWidth(0.7f),
             ) {
                 Text(
                     text = stringResource(R.string.welcome_get_started),
-                    style = MaterialTheme.typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium,
                 )
             }
         }
@@ -128,7 +129,7 @@ fun WelcomeScreenPreview() {
     MyBookshelfTheme {
         WelcomeScreen(
             state = WelcomeState(),
-            onAction = {}
+            onAction = {},
         )
     }
 }

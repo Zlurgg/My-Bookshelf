@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -13,9 +13,8 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 class DeleteShelfUseCaseImpl(
     private val repository: BookcaseRepository,
     private val bookClubRepository: BookClubRepository,
-    private val syncSchedulerService: SyncSchedulerService
+    private val syncSchedulerService: SyncSchedulerService,
 ) : DeleteShelfUseCase {
-
     companion object {
         private const val TAG = "DeleteShelf"
     }
@@ -32,11 +31,12 @@ class DeleteShelfUseCaseImpl(
                 if (deleteClubResult is Result.Error) {
                     Timber.tag(TAG).e("Failed to delete book club from Firestore: %s", deleteClubResult.error)
                     // Map Sync errors to Local errors for proper UI feedback
-                    val localError = when (deleteClubResult.error) {
-                        DataError.Sync.PERMISSION_DENIED -> DataError.Local.PERMISSION_DENIED
-                        DataError.Sync.NETWORK_ERROR -> DataError.Local.DISK_FULL // No better mapping available
-                        else -> DataError.Local.UNKNOWN
-                    }
+                    val localError =
+                        when (deleteClubResult.error) {
+                            DataError.Sync.PERMISSION_DENIED -> DataError.Local.PERMISSION_DENIED
+                            DataError.Sync.NETWORK_ERROR -> DataError.Local.DISK_FULL // No better mapping available
+                            else -> DataError.Local.UNKNOWN
+                        }
                     // Don't continue with local deletion if Firestore deletion failed
                     // This prevents orphaned clubs in Firestore
                     return Result.Error(localError)

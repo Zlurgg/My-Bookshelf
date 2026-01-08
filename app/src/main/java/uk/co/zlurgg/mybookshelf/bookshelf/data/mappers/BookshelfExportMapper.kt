@@ -15,19 +15,18 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
  */
 class BookshelfExportMapper(
     private val idGenerator: IdGenerator,
-    private val remoteBookDataSource: RemoteBookDataSource
+    private val remoteBookDataSource: RemoteBookDataSource,
 ) {
-
     fun toExportData(shelf: Bookshelf): BookshelfExportData {
         return BookshelfExportData(
-            bookshelf = BookshelfMapper.toExportedBookshelf(shelf)
+            bookshelf = BookshelfMapper.toExportedBookshelf(shelf),
         )
     }
 
     suspend fun fromExportData(
         exportData: BookshelfExportData,
         customName: String? = null,
-        onProgress: (current: Int, total: Int) -> Unit = { _, _ -> }
+        onProgress: (current: Int, total: Int) -> Unit = { _, _ -> },
     ): Result<Bookshelf, DataError> {
         val exportedShelf = exportData.bookshelf
         val finalName = customName ?: exportedShelf.name
@@ -41,10 +40,13 @@ class BookshelfExportMapper(
             // Use search API with work key to find the book
             // Format: "key:/works/OL123W"
             val searchQuery = "key:/works/${bookId.workId}"
-            when (val searchResult = remoteBookDataSource.searchBooks(
-                query = searchQuery,
-                resultLimit = 1
-            )) {
+            when (
+                val searchResult =
+                    remoteBookDataSource.searchBooks(
+                        query = searchQuery,
+                        resultLimit = 1,
+                    )
+            ) {
                 is Result.Success -> {
                     val foundBook = searchResult.data.results.firstOrNull()
                     if (foundBook != null) {
@@ -66,8 +68,8 @@ class BookshelfExportMapper(
                 id = generateNewId(),
                 name = finalName,
                 books = books,
-                shelfStyle = exportedShelf.shelfStyle
-            )
+                shelfStyle = exportedShelf.shelfStyle,
+            ),
         )
     }
 

@@ -14,7 +14,9 @@ enum class SyncStatus {
     CONFLICT,
 
     /** Entity is marked for deletion (soft delete for sync) */
-    DELETED;
+    DELETED,
+
+    ;
 
     companion object {
         fun fromString(value: String): SyncStatus {

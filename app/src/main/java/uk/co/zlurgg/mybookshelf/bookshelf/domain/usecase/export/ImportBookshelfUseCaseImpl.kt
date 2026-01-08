@@ -18,40 +18,48 @@ class ImportBookshelfUseCaseImpl(
     private val serializer: BookshelfSerializer,
     private val validator: BookshelfImportValidator,
     private val dataOrchestrator: BookshelfDataOrchestrator,
-    private val exportMapper: BookshelfExportMapper
+    private val exportMapper: BookshelfExportMapper,
 ) : ImportBookshelfUseCase {
-
     companion object {
         private const val TAG = "BookshelfImport"
     }
 
-    override suspend fun execute(jsonData: String, customName: String?): Result<Unit, DataError.Local> {
-        Timber.tag(TAG).d("Starting bookshelf import%s", if (customName != null) " with custom name: $customName" else "")
+    override suspend fun execute(
+        jsonData: String,
+        customName: String?,
+    ): Result<Unit, DataError.Local> {
+        Timber.tag(
+            TAG,
+        ).d("Starting bookshelf import%s", if (customName != null) " with custom name: $customName" else "")
 
-        val result = serializer.deserialize(jsonData)
-            .flatMap { exportData ->
-                Timber.tag(TAG).d("Deserialization successful, validating format...")
-                validator.validateFormat(exportData).map { exportData }
-            }
-            .flatMap { exportData ->
-                Timber.tag(TAG).d("Validation successful, converting to domain model...")
-                when (val shelfResult = exportMapper.fromExportData(exportData, customName)) {
-                    is Result.Success -> {
-                        Timber.tag(TAG).d("Conversion successful, importing to database...")
-                        dataOrchestrator.importShelfToDatabase(shelfResult.data)
-                    }
-                    is Result.Error -> {
-                        // Convert remote errors to local errors for consistency
-                        val localError = when (shelfResult.error) {
-                            is DataError.Remote -> DataError.Local.UNKNOWN
-                            is DataError.Local -> shelfResult.error
-                            else -> DataError.Local.UNKNOWN
+        val result =
+            serializer.deserialize(jsonData)
+                .flatMap { exportData ->
+                    Timber.tag(TAG).d("Deserialization successful, validating format...")
+                    validator.validateFormat(exportData).map { exportData }
+                }
+                .flatMap { exportData ->
+                    Timber.tag(TAG).d("Validation successful, converting to domain model...")
+                    when (val shelfResult = exportMapper.fromExportData(exportData, customName)) {
+                        is Result.Success -> {
+                            Timber.tag(TAG).d("Conversion successful, importing to database...")
+                            dataOrchestrator.importShelfToDatabase(shelfResult.data)
                         }
-                        Timber.tag(TAG).e("Export mapper error: %s (converted to %s)", shelfResult.error, localError)
-                        Result.Error(localError)
+                        is Result.Error -> {
+                            // Convert remote errors to local errors for consistency
+                            val localError =
+                                when (shelfResult.error) {
+                                    is DataError.Remote -> DataError.Local.UNKNOWN
+                                    is DataError.Local -> shelfResult.error
+                                    else -> DataError.Local.UNKNOWN
+                                }
+                            Timber.tag(
+                                TAG,
+                            ).e("Export mapper error: %s (converted to %s)", shelfResult.error, localError)
+                            Result.Error(localError)
+                        }
                     }
                 }
-            }
 
         return when (result) {
             is Result.Success -> {

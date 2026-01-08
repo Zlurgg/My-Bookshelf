@@ -17,45 +17,51 @@ import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdateRepository
 class UpdateRepositoryImpl(
     private val gitHubApiService: GitHubApiService,
     private val apkDownloadService: ApkDownloadService,
-    private val config: UpdateConfig
+    private val config: UpdateConfig,
 ) : UpdateRepository {
-
-    override suspend fun getLatestRelease(): Result<UpdateInfo> = withContext(Dispatchers.IO) {
-        try {
-            Timber.d("Fetching latest release from GitHub")
-            val response = gitHubApiService.getLatestRelease(
-                owner = config.gitHubOwner,
-                repo = config.gitHubRepo
-            )
-            val updateInfo = response.toDomain()
-            Timber.i("Latest release: ${updateInfo.versionName}")
-            Result.success(updateInfo)
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to fetch latest release")
-            Result.failure(e)
+    override suspend fun getLatestRelease(): Result<UpdateInfo> =
+        withContext(Dispatchers.IO) {
+            try {
+                Timber.d("Fetching latest release from GitHub")
+                val response =
+                    gitHubApiService.getLatestRelease(
+                        owner = config.gitHubOwner,
+                        repo = config.gitHubRepo,
+                    )
+                val updateInfo = response.toDomain()
+                Timber.i("Latest release: ${updateInfo.versionName}")
+                Result.success(updateInfo)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch latest release")
+                Result.failure(e)
+            }
         }
-    }
 
-    override suspend fun getReleaseByVersion(version: String): Result<UpdateInfo> = withContext(Dispatchers.IO) {
-        try {
-            // GitHub tags typically use "v" prefix (e.g., "v1.0.5")
-            val tag = if (version.startsWith("v")) version else "v$version"
-            Timber.d("Fetching release for version $tag from GitHub")
-            val response = gitHubApiService.getReleaseByTag(
-                owner = config.gitHubOwner,
-                repo = config.gitHubRepo,
-                tag = tag
-            )
-            val updateInfo = response.toDomain()
-            Timber.i("Release info for $tag: ${updateInfo.versionName}")
-            Result.success(updateInfo)
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to fetch release for version $version")
-            Result.failure(e)
+    override suspend fun getReleaseByVersion(version: String): Result<UpdateInfo> =
+        withContext(Dispatchers.IO) {
+            try {
+                // GitHub tags typically use "v" prefix (e.g., "v1.0.5")
+                val tag = if (version.startsWith("v")) version else "v$version"
+                Timber.d("Fetching release for version $tag from GitHub")
+                val response =
+                    gitHubApiService.getReleaseByTag(
+                        owner = config.gitHubOwner,
+                        repo = config.gitHubRepo,
+                        tag = tag,
+                    )
+                val updateInfo = response.toDomain()
+                Timber.i("Release info for $tag: ${updateInfo.versionName}")
+                Result.success(updateInfo)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to fetch release for version $version")
+                Result.failure(e)
+            }
         }
-    }
 
-    override fun downloadApk(url: String, fileName: String): Long {
+    override fun downloadApk(
+        url: String,
+        fileName: String,
+    ): Long {
         return apkDownloadService.downloadApk(url, fileName)
     }
 

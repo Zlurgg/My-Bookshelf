@@ -43,63 +43,64 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ValidateBookCl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
-val bookClubModule = module {
-    // Services
-    single<BookClubCodeGenerator> { BookClubCodeGeneratorImpl(get()) }
+val bookClubModule =
+    module {
+        // Services
+        single<BookClubCodeGenerator> { BookClubCodeGeneratorImpl(get()) }
 
-    // Repository
-    single<BookClubRepository> {
-        BookClubRepositoryImpl(
-            bookClubDao = get(),
-            bookshelfDao = get(),
-            remoteDataSource = get(),
-            codeGenerator = get(),
-            authService = get(),
-            idGenerator = get(),
-            timeProvider = get()
-        )
+        // Repository
+        single<BookClubRepository> {
+            BookClubRepositoryImpl(
+                bookClubDao = get(),
+                bookshelfDao = get(),
+                remoteDataSource = get(),
+                codeGenerator = get(),
+                authService = get(),
+                idGenerator = get(),
+                timeProvider = get(),
+            )
+        }
+
+        // UseCases
+        singleOf(::CreateBookClubUseCaseImpl).bind<CreateBookClubUseCase>()
+        single<GenerateInviteLinkUseCase> { GenerateInviteLinkUseCaseImpl(ApiConfig.shareBaseUrl) }
+        single<ParseClubCodeUseCase> { ParseClubCodeUseCaseImpl() }
+        singleOf(::GetBookClubPreviewUseCaseImpl).bind<GetBookClubPreviewUseCase>()
+        singleOf(::JoinBookClubUseCaseImpl).bind<JoinBookClubUseCase>()
+        singleOf(::SyncBookClubUseCaseImpl).bind<SyncBookClubUseCase>()
+        singleOf(::RestoreBookClubMembershipsUseCaseImpl).bind<RestoreBookClubMembershipsUseCase>()
+        singleOf(::LeaveBookClubUseCaseImpl).bind<LeaveBookClubUseCase>()
+        singleOf(::ValidateBookClubMembershipsUseCaseImpl).bind<ValidateBookClubMembershipsUseCase>()
+        singleOf(::GetBookClubReviewsUseCaseImpl).bind<GetBookClubReviewsUseCase>()
+        singleOf(::UpsertBookClubReviewUseCaseImpl).bind<UpsertBookClubReviewUseCase>()
+        singleOf(::DeleteBookClubReviewUseCaseImpl).bind<DeleteBookClubReviewUseCase>()
+        singleOf(::GetBookClubCommentsUseCaseImpl).bind<GetBookClubCommentsUseCase>()
+        singleOf(::AddBookClubCommentUseCaseImpl).bind<AddBookClubCommentUseCase>()
+        singleOf(::EditBookClubCommentUseCaseImpl).bind<EditBookClubCommentUseCase>()
+        singleOf(::DeleteBookClubCommentUseCaseImpl).bind<DeleteBookClubCommentUseCase>()
+
+        // UseCase Facade
+        single {
+            BookClubUseCases(
+                createBookClub = get(),
+                generateInviteLink = get(),
+                parseClubCode = get(),
+                getBookClubPreview = get(),
+                joinBookClub = get(),
+                syncBookClub = get(),
+                restoreBookClubMemberships = get(),
+                leaveBookClub = get(),
+                validateMemberships = get(),
+                getBookClubReviews = get(),
+                upsertBookClubReview = get(),
+                deleteBookClubReview = get(),
+                getBookClubComments = get(),
+                addBookClubComment = get(),
+                editBookClubComment = get(),
+                deleteBookClubComment = get(),
+            )
+        }
+
+        // Handler
+        single { BookClubOperationsHandler(get()) }
     }
-
-    // UseCases
-    singleOf(::CreateBookClubUseCaseImpl).bind<CreateBookClubUseCase>()
-    single<GenerateInviteLinkUseCase> { GenerateInviteLinkUseCaseImpl(ApiConfig.shareBaseUrl) }
-    single<ParseClubCodeUseCase> { ParseClubCodeUseCaseImpl() }
-    singleOf(::GetBookClubPreviewUseCaseImpl).bind<GetBookClubPreviewUseCase>()
-    singleOf(::JoinBookClubUseCaseImpl).bind<JoinBookClubUseCase>()
-    singleOf(::SyncBookClubUseCaseImpl).bind<SyncBookClubUseCase>()
-    singleOf(::RestoreBookClubMembershipsUseCaseImpl).bind<RestoreBookClubMembershipsUseCase>()
-    singleOf(::LeaveBookClubUseCaseImpl).bind<LeaveBookClubUseCase>()
-    singleOf(::ValidateBookClubMembershipsUseCaseImpl).bind<ValidateBookClubMembershipsUseCase>()
-    singleOf(::GetBookClubReviewsUseCaseImpl).bind<GetBookClubReviewsUseCase>()
-    singleOf(::UpsertBookClubReviewUseCaseImpl).bind<UpsertBookClubReviewUseCase>()
-    singleOf(::DeleteBookClubReviewUseCaseImpl).bind<DeleteBookClubReviewUseCase>()
-    singleOf(::GetBookClubCommentsUseCaseImpl).bind<GetBookClubCommentsUseCase>()
-    singleOf(::AddBookClubCommentUseCaseImpl).bind<AddBookClubCommentUseCase>()
-    singleOf(::EditBookClubCommentUseCaseImpl).bind<EditBookClubCommentUseCase>()
-    singleOf(::DeleteBookClubCommentUseCaseImpl).bind<DeleteBookClubCommentUseCase>()
-
-    // UseCase Facade
-    single {
-        BookClubUseCases(
-            createBookClub = get(),
-            generateInviteLink = get(),
-            parseClubCode = get(),
-            getBookClubPreview = get(),
-            joinBookClub = get(),
-            syncBookClub = get(),
-            restoreBookClubMemberships = get(),
-            leaveBookClub = get(),
-            validateMemberships = get(),
-            getBookClubReviews = get(),
-            upsertBookClubReview = get(),
-            deleteBookClubReview = get(),
-            getBookClubComments = get(),
-            addBookClubComment = get(),
-            editBookClubComment = get(),
-            deleteBookClubComment = get()
-        )
-    }
-
-    // Handler
-    single { BookClubOperationsHandler(get()) }
-}

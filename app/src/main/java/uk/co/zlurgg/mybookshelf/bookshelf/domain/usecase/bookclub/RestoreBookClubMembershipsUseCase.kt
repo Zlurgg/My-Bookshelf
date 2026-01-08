@@ -21,5 +21,5 @@ interface RestoreBookClubMembershipsUseCase {
  */
 data class RestoreResult(
     val restoredCount: Int,
-    val failedCount: Int
+    val failedCount: Int,
 )

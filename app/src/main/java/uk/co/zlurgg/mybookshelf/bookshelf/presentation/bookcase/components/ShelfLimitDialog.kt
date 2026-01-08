@@ -14,7 +14,7 @@ import uk.co.zlurgg.mybookshelf.R
 fun ShelfLimitDialog(
     title: String,
     message: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -24,6 +24,6 @@ fun ShelfLimitDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.action_ok))
             }
-        }
+        },
     )
 }

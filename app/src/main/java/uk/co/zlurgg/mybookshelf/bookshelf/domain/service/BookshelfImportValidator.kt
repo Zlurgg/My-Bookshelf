@@ -10,5 +10,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 interface BookshelfImportValidator {
     fun validateFormat(exportData: BookshelfExportData): Result<Unit, DataError.Local>
+
     suspend fun checkNameConflict(shelfName: String): Result<String?, DataError.Local>
 }

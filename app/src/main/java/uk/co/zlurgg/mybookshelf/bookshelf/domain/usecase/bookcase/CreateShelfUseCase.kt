@@ -13,6 +13,6 @@ interface CreateShelfUseCase {
     suspend fun execute(
         name: String,
         style: ShelfStyle,
-        existingShelves: List<Bookshelf>
+        existingShelves: List<Bookshelf>,
     ): Result<Bookshelf, DataError.Local>
 }

@@ -10,12 +10,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.components.MessageDialog
  * Thin wrapper around MessageDialog with success-specific messaging.
  */
 @Composable
-fun ImportSuccessDialog(
-    onDismiss: () -> Unit
-) {
+fun ImportSuccessDialog(onDismiss: () -> Unit) {
     MessageDialog(
         title = stringResource(id = R.string.import_success_title),
         message = stringResource(id = R.string.import_success_message),
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
     )
 }

@@ -11,7 +11,7 @@ import uk.co.zlurgg.mybookshelf.R
 fun DeleteBookClubDialog(
     clubName: String,
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -28,6 +28,6 @@ fun DeleteBookClubDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        }
+        },
     )
 }

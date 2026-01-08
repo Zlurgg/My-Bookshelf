@@ -10,12 +10,11 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Implementation of GetBookClubCommentsUseCase.
  */
 class GetBookClubCommentsUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : GetBookClubCommentsUseCase {
-
     override suspend fun invoke(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubComment>, DataError.Sync> {
         Timber.tag(TAG).d("Getting comments for book %s in club %s", bookId, clubCode)
 

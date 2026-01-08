@@ -8,5 +8,5 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class BookIdentifier(
-    val workId: String
+    val workId: String,
 )

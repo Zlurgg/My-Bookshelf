@@ -39,7 +39,7 @@ fun ClubReviewsCard(
     onReviewSubmit: () -> Unit,
     onReviewDelete: () -> Unit,
     isLoading: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     // Filter to only reviews with text
     val reviewsWithText = reviews.filter { it.reviewText.isNotBlank() }
@@ -47,19 +47,20 @@ fun ClubReviewsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
-                text = if (reviewsWithText.isNotEmpty()) {
-                    stringResource(R.string.club_reviews_count, reviewsWithText.size)
-                } else {
-                    stringResource(R.string.club_reviews_title)
-                },
+                text =
+                    if (reviewsWithText.isNotEmpty()) {
+                        stringResource(R.string.club_reviews_count, reviewsWithText.size)
+                    } else {
+                        stringResource(R.string.club_reviews_title)
+                    },
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -72,7 +73,7 @@ fun ClubReviewsCard(
                     if (review != otherReviews.last()) {
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 8.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant
+                            color = MaterialTheme.colorScheme.outlineVariant,
                         )
                     }
                 }
@@ -81,7 +82,7 @@ fun ClubReviewsCard(
                 Text(
                     text = stringResource(R.string.club_review_empty),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -94,7 +95,7 @@ fun ClubReviewsCard(
                 text = stringResource(R.string.club_review_your_review),
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -106,42 +107,43 @@ fun ClubReviewsCard(
                 placeholder = { Text(stringResource(R.string.club_review_placeholder)) },
                 minLines = 2,
                 maxLines = 5,
-                enabled = !isLoading
+                enabled = !isLoading,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Spacer(modifier = Modifier.weight(1f))
 
                 if (userHasExistingReview) {
                     IconButton(
                         onClick = onReviewDelete,
-                        enabled = !isLoading
+                        enabled = !isLoading,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Delete,
                             contentDescription = stringResource(R.string.club_review_delete),
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
                         )
                     }
                 }
 
                 IconButton(
                     onClick = onReviewSubmit,
-                    enabled = !isLoading && userReviewText.isNotBlank()
+                    enabled = !isLoading && userReviewText.isNotBlank(),
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = stringResource(R.string.club_review_post),
-                        tint = if (userReviewText.isNotBlank()) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                        tint =
+                            if (userReviewText.isNotBlank()) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                     )
                 }
             }
@@ -152,17 +154,17 @@ fun ClubReviewsCard(
 @Composable
 private fun ReviewItem(
     review: BookClubReview,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = review.displayName.ifBlank { stringResource(R.string.anonymous) },
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             if (review.rating > 0) {
@@ -170,7 +172,7 @@ private fun ReviewItem(
                 Text(
                     text = stringResource(R.string.rating_display, review.rating.toInt()),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -180,7 +182,7 @@ private fun ReviewItem(
         Text(
             text = review.reviewText,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

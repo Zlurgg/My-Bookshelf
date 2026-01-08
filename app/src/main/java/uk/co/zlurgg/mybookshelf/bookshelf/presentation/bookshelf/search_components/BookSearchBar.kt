@@ -25,19 +25,19 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import uk.co.zlurgg.mybookshelf.R
 
-
 @Composable
 fun BookSearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onImeSearch: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     CompositionLocalProvider(
-        LocalTextSelectionColors provides TextSelectionColors(
-            handleColor = MaterialTheme.colorScheme.onBackground,
-            backgroundColor = MaterialTheme.colorScheme.background
-        )
+        LocalTextSelectionColors provides
+            TextSelectionColors(
+                handleColor = MaterialTheme.colorScheme.onBackground,
+                backgroundColor = MaterialTheme.colorScheme.background,
+            ),
     ) {
         OutlinedTextField(
             value = searchQuery,
@@ -48,56 +48,60 @@ fun BookSearchBar(
                 }
             },
             shape = RoundedCornerShape(100),
-            colors = OutlinedTextFieldDefaults.colors(
-                cursorColor = MaterialTheme.colorScheme.primary,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-            ),
+            colors =
+                OutlinedTextFieldDefaults.colors(
+                    cursorColor = MaterialTheme.colorScheme.primary,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                ),
             placeholder = {
                 Text(
-                    text = stringResource(id = R.string.search_hint)
+                    text = stringResource(id = R.string.search_hint),
                 )
             },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.66f)
+                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.66f),
                 )
             },
             singleLine = true,
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    onImeSearch()
-                }
-            ),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Search
-            ),
+            keyboardActions =
+                KeyboardActions(
+                    onSearch = {
+                        onImeSearch()
+                    },
+                ),
+            keyboardOptions =
+                KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Search,
+                ),
             trailingIcon = {
                 AnimatedVisibility(
-                    visible = searchQuery.isNotBlank()
+                    visible = searchQuery.isNotBlank(),
                 ) {
                     IconButton(
                         onClick = {
                             onSearchQueryChange("")
-                        }
+                        },
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = stringResource(id = R.string.cd_clear_search),
-                            tint = MaterialTheme.colorScheme.onSurface
+                            tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 }
             },
-            modifier = modifier
-                .background(
-                    shape = RoundedCornerShape(100),
-                    color = MaterialTheme.colorScheme.surfaceVariant
-                )
-                .minimumInteractiveComponentSize()
+            modifier =
+                modifier
+                    .background(
+                        shape = RoundedCornerShape(100),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                    )
+                    .minimumInteractiveComponentSize(),
         )
     }
 }

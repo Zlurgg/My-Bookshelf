@@ -26,7 +26,7 @@ import uk.co.zlurgg.mybookshelf.auth.presentation.components.WelcomeHeader
 @Composable
 fun SignInScreenRoot(
     viewModel: SignInViewModel = koinViewModel(),
-    onNavigate: (PostSignInDestination) -> Unit
+    onNavigate: (PostSignInDestination) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -52,7 +52,7 @@ fun SignInScreenRoot(
             ImportGuestDataDialog(
                 guestDataInfo = guestDataInfo,
                 onImport = { viewModel.onAction(SignInAction.ImportGuestData) },
-                onSkip = { viewModel.onAction(SignInAction.SkipGuestDataImport) }
+                onSkip = { viewModel.onAction(SignInAction.SkipGuestDataImport) },
             )
         }
     }
@@ -61,7 +61,7 @@ fun SignInScreenRoot(
         state = state,
         snackbarHostState = snackbarHostState,
         onSignInClick = { viewModel.onAction(SignInAction.SignIn) },
-        onContinueAsGuestClick = { viewModel.onAction(SignInAction.ContinueAsGuest) }
+        onContinueAsGuestClick = { viewModel.onAction(SignInAction.ContinueAsGuest) },
     )
 }
 
@@ -70,18 +70,19 @@ private fun SignInScreen(
     state: SignInState,
     snackbarHostState: SnackbarHostState,
     onSignInClick: () -> Unit,
-    onContinueAsGuestClick: () -> Unit
+    onContinueAsGuestClick: () -> Unit,
 ) {
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 32.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             WelcomeHeader()
 
@@ -89,14 +90,14 @@ private fun SignInScreen(
 
             SignInButton(
                 onClick = onSignInClick,
-                isLoading = state.isLoading
+                isLoading = state.isLoading,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             ContinueAsGuestButton(
                 onClick = onContinueAsGuestClick,
-                enabled = !state.isLoading
+                enabled = !state.isLoading,
             )
         }
     }

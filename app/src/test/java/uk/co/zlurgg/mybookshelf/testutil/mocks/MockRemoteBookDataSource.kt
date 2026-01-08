@@ -8,7 +8,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
 
 class MockRemoteBookDataSource : RemoteBookDataSource {
-
     var shouldThrowException = false
     var returnEmptyResults = false
     var networkError: DataError.Remote = DataError.Remote.REQUEST_TIMEOUT
@@ -24,7 +23,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         val language: String?,
         val authorFilter: String?,
         val titleFilter: String?,
-        val sort: String?
+        val sort: String?,
     )
 
     fun configureSearchResponse(response: SearchResponseDto) {
@@ -32,12 +31,13 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
     }
 
     fun configureSearchResults(count: Int) {
-        val results = (1..count).map { index ->
-            TestSearchedBookDtoBuilder()
-                .withId("/works/OL${index}W")
-                .withTitle("Test Book $index")
-                .build()
-        }
+        val results =
+            (1..count).map { index ->
+                TestSearchedBookDtoBuilder()
+                    .withId("/works/OL${index}W")
+                    .withTitle("Test Book $index")
+                    .build()
+            }
         configuredSearchResponse = SearchResponseDto(numFound = count, results = results)
     }
 
@@ -60,7 +60,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         language: String?,
         authorFilter: String?,
         titleFilter: String?,
-        sort: String?
+        sort: String?,
     ): Result<SearchResponseDto, DataError.Remote> {
         searchBooksCallCount++
         lastSearchQuery = query
@@ -72,10 +72,11 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
             configuredSearchResponse != null -> Result.Success(configuredSearchResponse!!)
             else -> {
                 // Default response with some test data
-                val defaultResults = listOf(
-                    TestSearchedBookDtoBuilder.withAllFields(),
-                    TestSearchedBookDtoBuilder.withMinimalFields()
-                )
+                val defaultResults =
+                    listOf(
+                        TestSearchedBookDtoBuilder.withAllFields(),
+                        TestSearchedBookDtoBuilder.withMinimalFields(),
+                    )
                 Result.Success(SearchResponseDto(numFound = defaultResults.size, results = defaultResults))
             }
         }

@@ -8,5 +8,5 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class BookshelfExportData(
-    val bookshelf: ExportedBookshelf
+    val bookshelf: ExportedBookshelf,
 )

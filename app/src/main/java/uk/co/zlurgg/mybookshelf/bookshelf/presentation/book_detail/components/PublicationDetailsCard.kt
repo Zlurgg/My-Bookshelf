@@ -27,7 +27,7 @@ fun PublicationDetailsCard(
     publisher: String?,
     publishDate: String?,
     internetArchiveId: String?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     // Only show card if there's at least one detail
     if (isbn == null && publisher == null && publishDate == null && internetArchiveId == null) {
@@ -38,15 +38,15 @@ fun PublicationDetailsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.publication_details_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -55,7 +55,7 @@ fun PublicationDetailsCard(
                 Text(
                     text = stringResource(R.string.publication_isbn_label, it),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -64,7 +64,7 @@ fun PublicationDetailsCard(
                 Text(
                     text = stringResource(R.string.publication_publisher_label, it),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -73,7 +73,7 @@ fun PublicationDetailsCard(
                 Text(
                     text = stringResource(R.string.publication_publish_date_label, it),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -83,7 +83,7 @@ fun PublicationDetailsCard(
                 TextButton(
                     onClick = {
                         uriHandler.openUri("https://archive.org/details/$iaId")
-                    }
+                    },
                 ) {
                     Text(stringResource(R.string.publication_view_internet_archive))
                 }

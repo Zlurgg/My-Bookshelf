@@ -35,7 +35,7 @@ fun AddBookshelfDialog(
     onDismiss: () -> Unit,
     onAddShelf: (String, ShelfStyle) -> Unit,
     isLoading: Boolean,
-    defaultName: String
+    defaultName: String,
 ) {
     var name by remember { mutableStateOf(defaultName) }
     var hasBeenFocused by remember { mutableStateOf(false) }
@@ -53,32 +53,45 @@ fun AddBookshelfDialog(
                     onValueChange = { name = it },
                     label = { Text(stringResource(id = R.string.field_shelf_name_label)) },
                     enabled = !isLoading,
-                    modifier = Modifier.onFocusChanged { focusState ->
-                        if (focusState.isFocused && !hasBeenFocused && name == defaultName) {
-                            name = ""
-                            hasBeenFocused = true
-                        }
-                    }
+                    modifier =
+                        Modifier.onFocusChanged { focusState ->
+                            if (focusState.isFocused && !hasBeenFocused && name == defaultName) {
+                                name = ""
+                                hasBeenFocused = true
+                            }
+                        },
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(stringResource(id = R.string.field_shelf_style_label))
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(ShelfStyle.entries.size) { index ->
                         val style = ShelfStyle.entries[index]
                         Card(
                             onClick = { selected.value = style },
-                            border = if (selected.value == style) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                            border =
+                                if (selected.value == style) {
+                                    BorderStroke(
+                                        2.dp,
+                                        MaterialTheme.colorScheme.primary,
+                                    )
+                                } else {
+                                    null
+                                },
+                            colors =
+                                CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                ),
                         ) {
                             Image(
                                 painter = ShelfMaterial.fromShelfStyle(style).painterSmall(),
                                 contentDescription = style.name,
-                                modifier = Modifier
-                                    .height(48.dp)
-                                    .fillMaxWidth()
+                                modifier =
+                                    Modifier
+                                        .height(48.dp)
+                                        .fillMaxWidth(),
                             )
                         }
                     }
@@ -97,7 +110,7 @@ fun AddBookshelfDialog(
                     onClick = {
                         val finalName = name.trim().ifBlank { defaultName }
                         onAddShelf(finalName, selected.value)
-                    }
+                    },
                 ) {
                     Text(stringResource(id = R.string.action_add))
                 }
@@ -106,10 +119,10 @@ fun AddBookshelfDialog(
         dismissButton = {
             Button(
                 onClick = onDismiss,
-                enabled = !isLoading
+                enabled = !isLoading,
             ) {
                 Text(stringResource(id = R.string.action_cancel))
             }
-        }
+        },
     )
 }

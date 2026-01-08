@@ -1,0 +1,152 @@
+# Detekt Configuration for MyBookshelf
+# https://detekt.dev/docs/rules/
+
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+complexity:
+  LongMethod:
+    threshold: 60
+  LongParameterList:
+    functionThreshold: 8
+    constructorThreshold: 12
+  LargeClass:
+    threshold: 600
+  ComplexCondition:
+    threshold: 4
+  ComplexMethod:
+    threshold: 15
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 20
+    thresholdInInterfaces: 15
+    thresholdInObjects: 15
+    thresholdInEnums: 10
+
+coroutines:
+  active: true
+  GlobalCoroutineUsage:
+    active: true
+  SuspendFunWithCoroutineScopeReceiver:
+    active: true
+
+empty-blocks:
+  active: true
+  EmptyCatchBlock:
+    active: true
+    allowedExceptionNameRegex: "_|(ignore|expected).*"
+  EmptyClassBlock:
+    active: true
+  EmptyDefaultConstructor:
+    active: true
+  EmptyDoWhileBlock:
+    active: true
+  EmptyElseBlock:
+    active: true
+  EmptyFinallyBlock:
+    active: true
+  EmptyForBlock:
+    active: true
+  EmptyFunctionBlock:
+    active: true
+    ignoreOverridden: true
+  EmptyIfBlock:
+    active: true
+  EmptyInitBlock:
+    active: true
+  EmptyKtFile:
+    active: true
+  EmptySecondaryConstructor:
+    active: true
+  EmptyTryBlock:
+    active: true
+  EmptyWhenBlock:
+    active: true
+  EmptyWhileBlock:
+    active: true
+
+exceptions:
+  active: true
+  SwallowedException:
+    active: true
+    allowedExceptionNameRegex: "_|(ignore|expected).*"
+  TooGenericExceptionCaught:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+  TooGenericExceptionThrown:
+    active: true
+
+naming:
+  active: true
+  FunctionNaming:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+    functionPattern: '[a-z][a-zA-Z0-9]*'
+  VariableNaming:
+    active: true
+    variablePattern: '[a-z][A-Za-z0-9]*'
+    privateVariablePattern: '_?[a-z][A-Za-z0-9]*'
+
+performance:
+  active: true
+  SpreadOperator:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+
+potential-bugs:
+  active: true
+  EqualsAlwaysReturnsTrueOrFalse:
+    active: true
+  UnreachableCatchBlock:
+    active: true
+  UnsafeCallOnNullableType:
+    active: false  # Disabled - Kotlin's null safety handles this
+
+style:
+  active: true
+  MagicNumber:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '100'
+      - '1000'
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: true
+    ignoreLocalVariableDeclaration: true
+    ignoreConstantDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreNamedArgument: true
+    ignoreEnums: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
+    excludeCommentStatements: true
+    excludes: ['**/test/**', '**/androidTest/**']
+  NewLineAtEndOfFile:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+  ReturnCount:
+    active: true
+    max: 4
+    excludeLabeled: true
+    excludeReturnFromLambda: true
+    excludeGuardClauses: true
+  UnusedPrivateMember:
+    active: true
+    allowedNames: "(_|ignored|expected|serialVersionUID)"
+  WildcardImport:
+    active: true
+    excludes: ['**/test/**', '**/androidTest/**']
+    excludeImports:
+      - 'java.util.*'
+      - 'kotlinx.android.synthetic.*'

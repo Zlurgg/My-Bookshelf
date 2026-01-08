@@ -58,59 +58,63 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
         // Always start at SignIn - it will auto-navigate if already signed in
         NavHost(
             navController = navController,
-            startDestination = NavigationRoute.MyBookshelfGraph.ROUTE
+            startDestination = NavigationRoute.MyBookshelfGraph.ROUTE,
         ) {
             navigation(
                 route = NavigationRoute.MyBookshelfGraph.ROUTE,
-                startDestination = NavigationRoute.SignIn.ROUTE
+                startDestination = NavigationRoute.SignIn.ROUTE,
             ) {
                 composable(
-                    route = NavigationRoute.SignIn.ROUTE
+                    route = NavigationRoute.SignIn.ROUTE,
                 ) {
                     SignInScreenRoot(
                         onNavigate = { destination ->
-                            val route = when (destination) {
-                                PostSignInDestination.Welcome -> NavigationRoute.Welcome.createRoute()
-                                PostSignInDestination.Bookcase -> NavigationRoute.Bookcase.createRoute()
-                            }
+                            val route =
+                                when (destination) {
+                                    PostSignInDestination.Welcome -> NavigationRoute.Welcome.createRoute()
+                                    PostSignInDestination.Bookcase -> NavigationRoute.Bookcase.createRoute()
+                                }
                             navController.navigate(route) {
                                 popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
                             }
-                        }
+                        },
                     )
                 }
 
                 composable(
-                    route = NavigationRoute.Welcome.ROUTE
+                    route = NavigationRoute.Welcome.ROUTE,
                 ) {
                     WelcomeScreenRoot(
                         onNavigateToBookcase = {
                             navController.navigate(NavigationRoute.Bookcase.createRoute()) {
                                 popUpTo(NavigationRoute.Welcome.ROUTE) { inclusive = true }
                             }
-                        }
+                        },
                     )
                 }
                 composable(
                     route = NavigationRoute.Bookcase.ROUTE,
-                    arguments = listOf(
-                        navArgument(NavigationRoute.Bookcase.ARG_NEW_SHELF) {
-                            type = NavType.BoolType
-                            defaultValue = false
-                        },
-                        navArgument(NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS) {
-                            type = NavType.BoolType
-                            defaultValue = false
-                        }
-                    )
+                    arguments =
+                        listOf(
+                            navArgument(NavigationRoute.Bookcase.ARG_NEW_SHELF) {
+                                type = NavType.BoolType
+                                defaultValue = false
+                            },
+                            navArgument(NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS) {
+                                type = NavType.BoolType
+                                defaultValue = false
+                            },
+                        ),
                 ) { backStackEntry ->
                     val viewModel = koinViewModel<BookcaseViewModel>()
-                    val isNewShelf = backStackEntry.arguments?.getBoolean(
-                        NavigationRoute.Bookcase.ARG_NEW_SHELF
-                    ) ?: false
-                    val switchToBookClubs = backStackEntry.arguments?.getBoolean(
-                        NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS
-                    ) ?: false
+                    val isNewShelf =
+                        backStackEntry.arguments?.getBoolean(
+                            NavigationRoute.Bookcase.ARG_NEW_SHELF,
+                        ) ?: false
+                    val switchToBookClubs =
+                        backStackEntry.arguments?.getBoolean(
+                            NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS,
+                        ) ?: false
 
                     BookcaseScreenRoot(
                         viewModel = viewModel,
@@ -135,7 +139,7 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                             navController.navigate(NavigationRoute.SignIn.createRoute()) {
                                 popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
                             }
-                        }
+                        },
                     )
 
                     // Show add dialog if we're coming back from creating a new shelf
@@ -149,19 +153,22 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
 
                 composable(
                     route = NavigationRoute.Bookshelf.ROUTE,
-                    arguments = listOf(
-                        navArgument(NavigationRoute.Bookshelf.KEY_ID) {
-                            type = NavType.StringType
-                        }
-                    )
+                    arguments =
+                        listOf(
+                            navArgument(NavigationRoute.Bookshelf.KEY_ID) {
+                                type = NavType.StringType
+                            },
+                        ),
                 ) { backStackEntry ->
-                    val shelfId = backStackEntry.arguments?.getString(
-                        NavigationRoute.Bookshelf.KEY_ID
-                    ) ?: ""
+                    val shelfId =
+                        backStackEntry.arguments?.getString(
+                            NavigationRoute.Bookshelf.KEY_ID,
+                        ) ?: ""
 
-                    val viewModel = koinViewModel<BookshelfViewModel>(
-                        parameters = { parametersOf(shelfId) }
-                    )
+                    val viewModel =
+                        koinViewModel<BookshelfViewModel>(
+                            parameters = { parametersOf(shelfId) },
+                        )
                     val state = viewModel.state.collectAsStateWithLifecycle().value
 
                     BookshelfScreenRoot(
@@ -184,29 +191,33 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
 
                 composable(
                     route = NavigationRoute.BookDetail.ROUTE,
-                    arguments = listOf(
-                        navArgument(NavigationRoute.BookDetail.KEY_ID) {
-                            type = NavType.StringType
-                        },
-                        navArgument(NavigationRoute.BookDetail.KEY_SHELF_ID) {
-                            type = NavType.StringType
-                        }
-                    )
+                    arguments =
+                        listOf(
+                            navArgument(NavigationRoute.BookDetail.KEY_ID) {
+                                type = NavType.StringType
+                            },
+                            navArgument(NavigationRoute.BookDetail.KEY_SHELF_ID) {
+                                type = NavType.StringType
+                            },
+                        ),
                 ) { backStackEntry ->
-                    val bookId = backStackEntry.arguments?.getString(
-                        NavigationRoute.BookDetail.KEY_ID
-                    ) ?: ""
-                    val shelfIdArg = backStackEntry.arguments?.getString(
-                        NavigationRoute.BookDetail.KEY_SHELF_ID
-                    ).takeIf { !it.isNullOrBlank() }
+                    val bookId =
+                        backStackEntry.arguments?.getString(
+                            NavigationRoute.BookDetail.KEY_ID,
+                        ) ?: ""
+                    val shelfIdArg =
+                        backStackEntry.arguments?.getString(
+                            NavigationRoute.BookDetail.KEY_SHELF_ID,
+                        ).takeIf { !it.isNullOrBlank() }
 
-                    val viewModel = koinViewModel<BookDetailViewModel>(
-                        parameters = { parametersOf(bookId, shelfIdArg) }
-                    )
+                    val viewModel =
+                        koinViewModel<BookDetailViewModel>(
+                            parameters = { parametersOf(bookId, shelfIdArg) },
+                        )
 
                     BookDetailsScreenRoot(
                         viewModel = viewModel,
-                        onBackClick = { navController.popBackStack() }
+                        onBackClick = { navController.popBackStack() },
                     )
                 }
             }
@@ -221,7 +232,7 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                 ImportSuccessDialog(
                     onDismiss = {
                         deepLinkViewModel.onAction(DeepLinkAction.OnDismissSuccess)
-                    }
+                    },
                 )
             }
             deepLinkState.error != null -> {
@@ -229,7 +240,7 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                     errorMessage = deepLinkState.error,
                     onDismiss = {
                         deepLinkViewModel.onAction(DeepLinkAction.OnDismissError)
-                    }
+                    },
                 )
             }
             deepLinkState.conflictExistingName != null && deepLinkState.conflictJsonData != null -> {
@@ -244,17 +255,20 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                         deepLinkViewModel.onAction(
                             DeepLinkAction.ResolveNameConflictWithNewName(
                                 jsonData = deepLinkState.conflictJsonData,
-                                newName = newName
-                            )
+                                newName = newName,
+                            ),
                         )
-                    }
+                    },
                 )
             }
         }
     }
 }
 
-private fun handleDeepLink(uri: Uri, deepLinkViewModel: DeepLinkViewModel) {
+private fun handleDeepLink(
+    uri: Uri,
+    deepLinkViewModel: DeepLinkViewModel,
+) {
     if (uri.scheme != "mybookshelf") return
 
     when (uri.host) {

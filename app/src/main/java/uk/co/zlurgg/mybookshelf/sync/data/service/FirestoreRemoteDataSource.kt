@@ -9,7 +9,6 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
@@ -35,14 +34,13 @@ import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
  * - /sharedShelves/{shareCode}
  */
 class FirestoreRemoteDataSource(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
 ) : RemoteSyncDataSource {
-
     // ==================== Books ====================
 
     override suspend fun uploadBook(
         userId: String,
-        book: BookFirestoreDto
+        book: BookFirestoreDto,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("uploadBook") {
             firestore.collection(USERS_COLLECTION)
@@ -56,15 +54,16 @@ class FirestoreRemoteDataSource(
 
     override suspend fun downloadBook(
         userId: String,
-        bookId: String
+        bookId: String,
     ): Result<BookFirestoreDto?, DataError.Sync> {
         return executeFirestoreOperation("downloadBook") {
-            val snapshot = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(BOOKS_COLLECTION)
-                .document(bookId)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(BOOKS_COLLECTION)
+                    .document(bookId)
+                    .get()
+                    .await()
 
             if (snapshot.exists()) {
                 snapshot.data?.toBookFirestoreDto(snapshot.id)
@@ -76,15 +75,16 @@ class FirestoreRemoteDataSource(
 
     override suspend fun downloadBooksSince(
         userId: String,
-        sinceTimestamp: Long
+        sinceTimestamp: Long,
     ): Result<List<BookFirestoreDto>, DataError.Sync> {
         return executeFirestoreOperation("downloadBooksSince") {
-            val snapshot = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(BOOKS_COLLECTION)
-                .whereGreaterThan(FIELD_LAST_MODIFIED, sinceTimestamp)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(BOOKS_COLLECTION)
+                    .whereGreaterThan(FIELD_LAST_MODIFIED, sinceTimestamp)
+                    .get()
+                    .await()
 
             snapshot.documents.mapNotNull { doc ->
                 doc.data?.toBookFirestoreDto(doc.id)
@@ -94,7 +94,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun deleteBook(
         userId: String,
-        bookId: String
+        bookId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("deleteBook") {
             firestore.collection(USERS_COLLECTION)
@@ -110,7 +110,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun uploadBookshelf(
         userId: String,
-        shelf: BookshelfFirestoreDto
+        shelf: BookshelfFirestoreDto,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("uploadBookshelf") {
             firestore.collection(USERS_COLLECTION)
@@ -124,15 +124,16 @@ class FirestoreRemoteDataSource(
 
     override suspend fun downloadBookshelf(
         userId: String,
-        shelfId: String
+        shelfId: String,
     ): Result<BookshelfFirestoreDto?, DataError.Sync> {
         return executeFirestoreOperation("downloadBookshelf") {
-            val snapshot = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(BOOKSHELVES_COLLECTION)
-                .document(shelfId)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(BOOKSHELVES_COLLECTION)
+                    .document(shelfId)
+                    .get()
+                    .await()
 
             if (snapshot.exists()) {
                 snapshot.data?.toBookshelfFirestoreDto(snapshot.id)
@@ -144,15 +145,16 @@ class FirestoreRemoteDataSource(
 
     override suspend fun downloadBookshelvesSince(
         userId: String,
-        sinceTimestamp: Long
+        sinceTimestamp: Long,
     ): Result<List<BookshelfFirestoreDto>, DataError.Sync> {
         return executeFirestoreOperation("downloadBookshelvesSince") {
-            val snapshot = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(BOOKSHELVES_COLLECTION)
-                .whereGreaterThan(FIELD_LAST_MODIFIED, sinceTimestamp)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(BOOKSHELVES_COLLECTION)
+                    .whereGreaterThan(FIELD_LAST_MODIFIED, sinceTimestamp)
+                    .get()
+                    .await()
 
             snapshot.documents.mapNotNull { doc ->
                 doc.data?.toBookshelfFirestoreDto(doc.id)
@@ -162,7 +164,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun deleteBookshelf(
         userId: String,
-        shelfId: String
+        shelfId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("deleteBookshelf") {
             firestore.collection(USERS_COLLECTION)
@@ -196,10 +198,11 @@ class FirestoreRemoteDataSource(
 
     override suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync> {
         return executeFirestoreOperation("getSharedShelf") {
-            val snapshot = firestore.collection(SHARED_SHELVES_COLLECTION)
-                .document(shareCode)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(SHARED_SHELVES_COLLECTION)
+                    .document(shareCode)
+                    .get()
+                    .await()
 
             if (snapshot.exists()) {
                 snapshot.data?.toSharedShelfDto(snapshot.id)
@@ -211,7 +214,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun subscribeToShelf(
         shareCode: String,
-        userId: String
+        userId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("subscribeToShelf") {
             firestore.collection(SHARED_SHELVES_COLLECTION)
@@ -223,7 +226,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun unsubscribeFromShelf(
         shareCode: String,
-        userId: String
+        userId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("unsubscribeFromShelf") {
             firestore.collection(SHARED_SHELVES_COLLECTION)
@@ -237,15 +240,16 @@ class FirestoreRemoteDataSource(
 
     override suspend fun uploadBooks(
         userId: String,
-        books: List<BookFirestoreDto>
+        books: List<BookFirestoreDto>,
     ): Result<Int, DataError.Sync> {
         if (books.isEmpty()) return Result.Success(0)
 
         return executeFirestoreOperation("uploadBooks") {
             val batch = firestore.batch()
-            val booksCollection = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(BOOKS_COLLECTION)
+            val booksCollection =
+                firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(BOOKS_COLLECTION)
 
             books.forEach { book ->
                 val docRef = booksCollection.document(book.id)
@@ -259,15 +263,16 @@ class FirestoreRemoteDataSource(
 
     override suspend fun uploadBookshelves(
         userId: String,
-        shelves: List<BookshelfFirestoreDto>
+        shelves: List<BookshelfFirestoreDto>,
     ): Result<Int, DataError.Sync> {
         if (shelves.isEmpty()) return Result.Success(0)
 
         return executeFirestoreOperation("uploadBookshelves") {
             val batch = firestore.batch()
-            val shelvesCollection = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(BOOKSHELVES_COLLECTION)
+            val shelvesCollection =
+                firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(BOOKSHELVES_COLLECTION)
 
             shelves.forEach { shelf ->
                 val docRef = shelvesCollection.document(shelf.id)
@@ -281,16 +286,15 @@ class FirestoreRemoteDataSource(
 
     // ==================== User Preferences ====================
 
-    override suspend fun getUserPreferences(
-        userId: String
-    ): Result<UserPreferencesFirestoreDto?, DataError.Sync> {
+    override suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync> {
         return executeFirestoreOperation("getUserPreferences") {
-            val snapshot = firestore.collection(USERS_COLLECTION)
-                .document(userId)
-                .collection(SETTINGS_COLLECTION)
-                .document(PREFERENCES_DOCUMENT)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(USERS_COLLECTION)
+                    .document(userId)
+                    .collection(SETTINGS_COLLECTION)
+                    .document(PREFERENCES_DOCUMENT)
+                    .get()
+                    .await()
 
             if (snapshot.exists()) {
                 snapshot.toObject(UserPreferencesFirestoreDto::class.java)
@@ -302,7 +306,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun setUserPreferences(
         userId: String,
-        preferences: UserPreferencesFirestoreDto
+        preferences: UserPreferencesFirestoreDto,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("setUserPreferences") {
             firestore.collection(USERS_COLLECTION)
@@ -318,7 +322,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun createBookClub(
         code: String,
-        metadata: BookClubMetadataDto
+        metadata: BookClubMetadataDto,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("createBookClub") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -330,10 +334,11 @@ class FirestoreRemoteDataSource(
 
     override suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync> {
         return executeFirestoreOperation("getBookClubMetadata") {
-            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(code)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(code)
+                    .get()
+                    .await()
 
             if (snapshot.exists()) {
                 snapshot.toObject(BookClubMetadataDto::class.java)
@@ -345,7 +350,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun addBookClubMember(
         code: String,
-        member: BookClubMemberDto
+        member: BookClubMemberDto,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("addBookClubMember") {
             // Use userId as document ID for easy lookup, and also store it as a field
@@ -361,7 +366,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun removeBookClubMember(
         code: String,
-        userId: String
+        userId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("removeBookClubMember") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -375,11 +380,12 @@ class FirestoreRemoteDataSource(
 
     override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> {
         return executeFirestoreOperation("getBookClubMembers") {
-            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(code)
-                .collection(MEMBERS_COLLECTION)
-                .get()
-                .await()
+            val snapshot =
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(code)
+                    .collection(MEMBERS_COLLECTION)
+                    .get()
+                    .await()
 
             snapshot.documents.mapNotNull { doc ->
                 doc.toObject(BookClubMemberDto::class.java)
@@ -387,21 +393,25 @@ class FirestoreRemoteDataSource(
         }
     }
 
-    override suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync> {
+    override suspend fun isMember(
+        code: String,
+        userId: String,
+    ): Result<Boolean, DataError.Sync> {
         return executeFirestoreOperation("isMember") {
-            val doc = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(code)
-                .collection(MEMBERS_COLLECTION)
-                .document(userId)
-                .get()
-                .await()
+            val doc =
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(code)
+                    .collection(MEMBERS_COLLECTION)
+                    .document(userId)
+                    .get()
+                    .await()
             doc.exists()
         }
     }
 
     override suspend fun addBookToClub(
         code: String,
-        book: BookClubBookDto
+        book: BookClubBookDto,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("addBookToClub") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -415,7 +425,7 @@ class FirestoreRemoteDataSource(
 
     override suspend fun removeBookFromClub(
         code: String,
-        bookId: String
+        bookId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("removeBookFromClub") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -430,11 +440,12 @@ class FirestoreRemoteDataSource(
     override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> {
         return executeFirestoreOperation("getClubBooks") {
             // Force server fetch to get latest books (no caching for sync)
-            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(code)
-                .collection(CLUB_BOOKS_COLLECTION)
-                .get(Source.SERVER)
-                .await()
+            val snapshot =
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(code)
+                    .collection(CLUB_BOOKS_COLLECTION)
+                    .get(Source.SERVER)
+                    .await()
 
             snapshot.documents.mapNotNull { doc ->
                 doc.toObject(BookClubBookDto::class.java)
@@ -445,7 +456,7 @@ class FirestoreRemoteDataSource(
     override suspend fun updateBookClubCounts(
         code: String,
         bookCount: Int,
-        memberCount: Int
+        memberCount: Int,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("updateBookClubCounts") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -453,8 +464,8 @@ class FirestoreRemoteDataSource(
                 .update(
                     mapOf(
                         "book_count" to bookCount,
-                        "member_count" to memberCount
-                    )
+                        "member_count" to memberCount,
+                    ),
                 )
                 .await()
         }
@@ -463,7 +474,7 @@ class FirestoreRemoteDataSource(
     override suspend fun updateBookClubName(
         code: String,
         name: String,
-        lastModifiedAt: Long
+        lastModifiedAt: Long,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("updateBookClubName") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -471,8 +482,8 @@ class FirestoreRemoteDataSource(
                 .update(
                     mapOf(
                         "name" to name,
-                        "last_modified_at" to lastModifiedAt
-                    )
+                        "last_modified_at" to lastModifiedAt,
+                    ),
                 )
                 .await()
         }
@@ -481,7 +492,7 @@ class FirestoreRemoteDataSource(
     override suspend fun updateBookClubStyle(
         code: String,
         style: String,
-        lastModifiedAt: Long
+        lastModifiedAt: Long,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("updateBookClubStyle") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -489,8 +500,8 @@ class FirestoreRemoteDataSource(
                 .update(
                     mapOf(
                         "shelf_style" to style,
-                        "last_modified_at" to lastModifiedAt
-                    )
+                        "last_modified_at" to lastModifiedAt,
+                    ),
                 )
                 .await()
         }
@@ -517,7 +528,10 @@ class FirestoreRemoteDataSource(
         }
     }
 
-    override suspend fun addClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> {
+    override suspend fun addClubMembership(
+        userId: String,
+        clubCode: String,
+    ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("addClubMembership") {
             // Use set with merge to create document if it doesn't exist
             val data = mapOf(FIELD_CLUB_MEMBERSHIPS to FieldValue.arrayUnion(clubCode))
@@ -530,7 +544,10 @@ class FirestoreRemoteDataSource(
         }
     }
 
-    override suspend fun removeClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> {
+    override suspend fun removeClubMembership(
+        userId: String,
+        clubCode: String,
+    ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("removeClubMembership") {
             firestore.collection(USERS_COLLECTION)
                 .document(userId)
@@ -545,16 +562,17 @@ class FirestoreRemoteDataSource(
 
     override suspend fun getBookReviews(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubReviewDto>, DataError.Sync> {
         return executeFirestoreOperation("getBookReviews") {
-            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(clubCode)
-                .collection(CLUB_BOOKS_COLLECTION)
-                .document(bookId)
-                .collection(REVIEWS_COLLECTION)
-                .get(Source.SERVER)
-                .await()
+            val snapshot =
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(clubCode)
+                    .collection(CLUB_BOOKS_COLLECTION)
+                    .document(bookId)
+                    .collection(REVIEWS_COLLECTION)
+                    .get(Source.SERVER)
+                    .await()
 
             snapshot.documents.mapNotNull { doc ->
                 doc.toObject(BookClubReviewDto::class.java)
@@ -565,7 +583,7 @@ class FirestoreRemoteDataSource(
     override suspend fun upsertBookReview(
         clubCode: String,
         bookId: String,
-        review: BookClubReviewDto
+        review: BookClubReviewDto,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("upsertBookReview") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -582,7 +600,7 @@ class FirestoreRemoteDataSource(
     override suspend fun deleteBookReview(
         clubCode: String,
         bookId: String,
-        userId: String
+        userId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("deleteBookReview") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -600,17 +618,18 @@ class FirestoreRemoteDataSource(
 
     override suspend fun getBookComments(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubCommentDto>, DataError.Sync> {
         return executeFirestoreOperation("getBookComments") {
-            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(clubCode)
-                .collection(CLUB_BOOKS_COLLECTION)
-                .document(bookId)
-                .collection(COMMENTS_COLLECTION)
-                .orderBy("created_at", com.google.firebase.firestore.Query.Direction.ASCENDING)
-                .get(Source.SERVER)
-                .await()
+            val snapshot =
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(clubCode)
+                    .collection(CLUB_BOOKS_COLLECTION)
+                    .document(bookId)
+                    .collection(COMMENTS_COLLECTION)
+                    .orderBy("created_at", com.google.firebase.firestore.Query.Direction.ASCENDING)
+                    .get(Source.SERVER)
+                    .await()
 
             snapshot.documents.mapNotNull { doc ->
                 doc.toObject(BookClubCommentDto::class.java)
@@ -621,17 +640,18 @@ class FirestoreRemoteDataSource(
     override suspend fun addBookComment(
         clubCode: String,
         bookId: String,
-        comment: BookClubCommentDto
+        comment: BookClubCommentDto,
     ): Result<String, DataError.Sync> {
         return executeFirestoreOperation("addBookComment") {
             // Use .add() for auto-generated document ID
-            val docRef = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(clubCode)
-                .collection(CLUB_BOOKS_COLLECTION)
-                .document(bookId)
-                .collection(COMMENTS_COLLECTION)
-                .add(BookClubCommentDto.toFirestoreMap(comment.toDomain()))
-                .await()
+            val docRef =
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(clubCode)
+                    .collection(CLUB_BOOKS_COLLECTION)
+                    .document(bookId)
+                    .collection(COMMENTS_COLLECTION)
+                    .add(BookClubCommentDto.toFirestoreMap(comment.toDomain()))
+                    .await()
 
             docRef.id
         }
@@ -641,7 +661,7 @@ class FirestoreRemoteDataSource(
         clubCode: String,
         bookId: String,
         commentId: String,
-        newText: String
+        newText: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("editBookComment") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -653,8 +673,8 @@ class FirestoreRemoteDataSource(
                 .update(
                     mapOf(
                         "text" to newText,
-                        "updated_at" to com.google.firebase.Timestamp.now()
-                    )
+                        "updated_at" to com.google.firebase.Timestamp.now(),
+                    ),
                 )
                 .await()
         }
@@ -663,7 +683,7 @@ class FirestoreRemoteDataSource(
     override suspend fun deleteBookComment(
         clubCode: String,
         bookId: String,
-        commentId: String
+        commentId: String,
     ): Result<Unit, DataError.Sync> {
         return executeFirestoreOperation("deleteBookComment") {
             firestore.collection(BOOK_CLUBS_COLLECTION)
@@ -681,7 +701,7 @@ class FirestoreRemoteDataSource(
 
     private suspend fun <T> executeFirestoreOperation(
         operationName: String,
-        operation: suspend () -> T
+        operation: suspend () -> T,
     ): Result<T, DataError.Sync> {
         return try {
             val result = operation()

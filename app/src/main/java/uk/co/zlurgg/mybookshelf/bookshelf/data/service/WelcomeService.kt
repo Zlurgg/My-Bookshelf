@@ -10,7 +10,7 @@ import androidx.core.content.edit
  * This is a pure persistence layer - contains NO business logic.
  */
 class WelcomeService(
-    context: Context
+    context: Context,
 ) {
     private val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 

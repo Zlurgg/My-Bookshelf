@@ -12,14 +12,14 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Extracts common logic for creating book clubs and generating invite links.
  */
 class BookClubOperationsHandler(
-    private val bookClubUseCases: BookClubUseCases
+    private val bookClubUseCases: BookClubUseCases,
 ) {
     /**
      * Result of a successful book club creation.
      */
     data class BookClubCreationResult(
         val clubCode: String,
-        val inviteLink: String
+        val inviteLink: String,
     )
 
     /**
@@ -27,7 +27,9 @@ class BookClubOperationsHandler(
      */
     sealed class LookupResult {
         data class Found(val bookClub: BookClub, val code: String) : LookupResult()
+
         data class NotFound(val error: DataError) : LookupResult()
+
         data class InvalidCode(val error: DataError.Validation) : LookupResult()
     }
 
@@ -45,7 +47,7 @@ class BookClubOperationsHandler(
      */
     suspend fun createBookClub(
         shelfId: String,
-        shelfName: String
+        shelfName: String,
     ): Result<BookClubCreationResult, DataError.Sync> {
         return when (val createResult = bookClubUseCases.createBookClub.execute(shelfId)) {
             is Result.Success -> {
@@ -94,8 +96,9 @@ class BookClubOperationsHandler(
      * @return Result with JoinResult on success, or DataError.Sync on failure
      */
     suspend fun joinBookClub(): Result<JoinResult, DataError.Sync> {
-        val code = lastLookedUpCode
-            ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+        val code =
+            lastLookedUpCode
+                ?: return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
 
         return bookClubUseCases.joinBookClub(code)
     }
@@ -125,7 +128,10 @@ class BookClubOperationsHandler(
      * @param shelfName The name of the shelf (optional, defaults to "Book Club")
      * @return The invite link URL
      */
-    fun generateInviteLink(clubCode: String, shelfName: String = "Book Club"): String {
+    fun generateInviteLink(
+        clubCode: String,
+        shelfName: String = "Book Club",
+    ): String {
         return bookClubUseCases.generateInviteLink.execute(clubCode, shelfName)
     }
 
@@ -139,7 +145,7 @@ class BookClubOperationsHandler(
      */
     suspend fun syncBooksFromClub(
         clubCode: String,
-        localShelfId: String
+        localShelfId: String,
     ): Result<SyncResult, DataError.Sync> {
         return bookClubUseCases.syncBookClub.execute(clubCode, localShelfId)
     }

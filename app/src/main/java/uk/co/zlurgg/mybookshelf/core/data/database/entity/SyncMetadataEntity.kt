@@ -13,5 +13,5 @@ data class SyncMetadataEntity(
     val lastSyncTimestamp: Long,
     val syncInProgress: Boolean = false,
     val lastSyncError: String? = null,
-    val pendingOperationsCount: Int = 0
+    val pendingOperationsCount: Int = 0,
 )

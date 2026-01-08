@@ -8,15 +8,14 @@ import kotlin.random.Random
  * Creates matte, realistic colors that simulate materials like cloth, leather, and aged paper.
  */
 object MaterialColorGenerator {
-
     /**
      * Generates a matte, realistic color suitable for material surfaces.
      * Returns an ARGB color as Int that mimics real material finishes.
      */
     fun generateMatteColor(): Int {
         val hue = Random.Default.nextFloat() * 360f
-        val saturation = 0.25f + Random.Default.nextFloat() * 0.35f  // 0.25–0.6 for muted colors
-        val lightness = 0.15f + Random.Default.nextFloat() * 0.25f   // 0.15–0.4 for realistic darkness
+        val saturation = 0.25f + Random.Default.nextFloat() * 0.35f // 0.25–0.6 for muted colors
+        val lightness = 0.15f + Random.Default.nextFloat() * 0.25f // 0.15–0.4 for realistic darkness
 
         val baseColor = hslToArgb(hue, saturation, lightness)
         return applyMatteFinish(baseColor)
@@ -62,19 +61,24 @@ object MaterialColorGenerator {
     /**
      * Converts HSL color values to ARGB integer.
      */
-    private fun hslToArgb(h: Float, s: Float, l: Float): Int {
+    private fun hslToArgb(
+        h: Float,
+        s: Float,
+        l: Float,
+    ): Int {
         val c = (1f - abs(2 * l - 1f)) * s
         val x = c * (1f - abs((h / 60f) % 2 - 1f))
         val m = l - c / 2f
 
-        val (r1, g1, b1) = when {
-            h < 60 -> Triple(c, x, 0f)
-            h < 120 -> Triple(x, c, 0f)
-            h < 180 -> Triple(0f, c, x)
-            h < 240 -> Triple(0f, x, c)
-            h < 300 -> Triple(x, 0f, c)
-            else -> Triple(c, 0f, x)
-        }
+        val (r1, g1, b1) =
+            when {
+                h < 60 -> Triple(c, x, 0f)
+                h < 120 -> Triple(x, c, 0f)
+                h < 180 -> Triple(0f, c, x)
+                h < 240 -> Triple(0f, x, c)
+                h < 300 -> Triple(x, 0f, c)
+                else -> Triple(c, 0f, x)
+            }
 
         val alpha = 255
         val red = ((r1 + m) * 255).toInt().coerceIn(0, 255)

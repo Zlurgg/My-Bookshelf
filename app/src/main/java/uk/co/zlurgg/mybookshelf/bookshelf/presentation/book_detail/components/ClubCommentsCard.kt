@@ -76,7 +76,7 @@ fun ClubCommentsCard(
     onCommentEditCancel: () -> Unit,
     onCommentDelete: (commentId: String) -> Unit,
     isLoading: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
 
@@ -89,20 +89,21 @@ fun ClubCommentsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             // Title
             Text(
-                text = if (comments.isNotEmpty()) {
-                    stringResource(R.string.club_comments_count, comments.size)
-                } else {
-                    stringResource(R.string.club_discussion_title)
-                },
+                text =
+                    if (comments.isNotEmpty()) {
+                        stringResource(R.string.club_comments_count, comments.size)
+                    } else {
+                        stringResource(R.string.club_discussion_title)
+                    },
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -111,11 +112,12 @@ fun ClubCommentsCard(
             if (comments.isNotEmpty()) {
                 LazyColumn(
                     state = listState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 300.dp),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 300.dp),
                     contentPadding = PaddingValues(vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(comments, key = { it.id }) { comment ->
                         val isOwnComment = comment.userId == currentUserId
@@ -130,7 +132,7 @@ fun ClubCommentsCard(
                             onEditStart = { onCommentEditStart(comment.id, comment.text) },
                             onEditSave = onCommentEditSave,
                             onEditCancel = onCommentEditCancel,
-                            onDelete = { onCommentDelete(comment.id) }
+                            onDelete = { onCommentDelete(comment.id) },
                         )
                     }
                 }
@@ -138,7 +140,7 @@ fun ClubCommentsCard(
                 Text(
                     text = stringResource(R.string.club_comment_empty),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -149,7 +151,7 @@ fun ClubCommentsCard(
             // Input row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom
+                verticalAlignment = Alignment.Bottom,
             ) {
                 OutlinedTextField(
                     value = commentText,
@@ -157,23 +159,24 @@ fun ClubCommentsCard(
                     modifier = Modifier.weight(1f),
                     placeholder = { Text(stringResource(R.string.club_comment_placeholder)) },
                     maxLines = 3,
-                    enabled = !isLoading && editingCommentId == null
+                    enabled = !isLoading && editingCommentId == null,
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 IconButton(
                     onClick = onCommentSubmit,
-                    enabled = !isLoading && commentText.isNotBlank() && editingCommentId == null
+                    enabled = !isLoading && commentText.isNotBlank() && editingCommentId == null,
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = stringResource(R.string.club_comment_send),
-                        tint = if (commentText.isNotBlank() && editingCommentId == null) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        }
+                        tint =
+                            if (commentText.isNotBlank() && editingCommentId == null) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                     )
                 }
             }
@@ -193,73 +196,77 @@ private fun CommentBubble(
     onEditSave: () -> Unit,
     onEditCancel: () -> Unit,
     onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
     // Alignment and colors based on ownership
     val horizontalArrangement = if (isOwnComment) Arrangement.End else Arrangement.Start
-    val bubbleShape = RoundedCornerShape(
-        topStart = 12.dp,
-        topEnd = 12.dp,
-        bottomStart = if (isOwnComment) 12.dp else 4.dp,
-        bottomEnd = if (isOwnComment) 4.dp else 12.dp
-    )
-    val backgroundColor = if (isOwnComment) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surfaceVariant
-    }
-    val contentColor = if (isOwnComment) {
-        MaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val bubbleShape =
+        RoundedCornerShape(
+            topStart = 12.dp,
+            topEnd = 12.dp,
+            bottomStart = if (isOwnComment) 12.dp else 4.dp,
+            bottomEnd = if (isOwnComment) 4.dp else 12.dp,
+        )
+    val backgroundColor =
+        if (isOwnComment) {
+            MaterialTheme.colorScheme.primaryContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceVariant
+        }
+    val contentColor =
+        if (isOwnComment) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        }
 
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = horizontalArrangement
+        horizontalArrangement = horizontalArrangement,
     ) {
         Box {
             Surface(
                 shape = bubbleShape,
                 color = backgroundColor,
-                modifier = Modifier
-                    .widthIn(max = 280.dp)
-                    .combinedClickable(
-                        onClick = { },
-                        onLongClick = {
-                            if (isOwnComment && !isEditing) {
-                                showMenu = true
-                            }
-                        }
-                    )
+                modifier =
+                    Modifier
+                        .widthIn(max = 280.dp)
+                        .combinedClickable(
+                            onClick = { },
+                            onLongClick = {
+                                if (isOwnComment && !isEditing) {
+                                    showMenu = true
+                                }
+                            },
+                        ),
             ) {
                 Column(
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier.padding(12.dp),
                 ) {
                     // Header: Display name and timestamp
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             text = comment.displayName.ifBlank { stringResource(R.string.anonymous) },
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
-                            color = contentColor
+                            color = contentColor,
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Row(
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(
                                 text = formatRelativeTime(comment.createdAt),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = contentColor.copy(alpha = 0.7f)
+                                color = contentColor.copy(alpha = 0.7f),
                             )
 
                             // Show (edited) indicator
@@ -269,7 +276,7 @@ private fun CommentBubble(
                                     text = stringResource(R.string.club_comment_edited),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontStyle = FontStyle.Italic,
-                                    color = contentColor.copy(alpha = 0.7f)
+                                    color = contentColor.copy(alpha = 0.7f),
                                 )
                             }
                         }
@@ -283,34 +290,35 @@ private fun CommentBubble(
                             value = editingText,
                             onValueChange = onEditTextChange,
                             modifier = Modifier.fillMaxWidth(),
-                            maxLines = 5
+                            maxLines = 5,
                         )
 
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End
+                            horizontalArrangement = Arrangement.End,
                         ) {
                             IconButton(onClick = onEditCancel) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
                                     contentDescription = stringResource(R.string.action_cancel),
-                                    tint = contentColor
+                                    tint = contentColor,
                                 )
                             }
                             IconButton(
                                 onClick = onEditSave,
-                                enabled = editingText.isNotBlank()
+                                enabled = editingText.isNotBlank(),
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.Check,
                                     contentDescription = stringResource(R.string.club_comment_save),
-                                    tint = if (editingText.isNotBlank()) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        contentColor.copy(alpha = 0.5f)
-                                    }
+                                    tint =
+                                        if (editingText.isNotBlank()) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            contentColor.copy(alpha = 0.5f)
+                                        },
                                 )
                             }
                         }
@@ -318,7 +326,7 @@ private fun CommentBubble(
                         Text(
                             text = comment.text,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = contentColor
+                            color = contentColor,
                         )
                     }
                 }
@@ -327,7 +335,7 @@ private fun CommentBubble(
             // Dropdown menu for own comments
             DropdownMenu(
                 expanded = showMenu,
-                onDismissRequest = { showMenu = false }
+                onDismissRequest = { showMenu = false },
             ) {
                 DropdownMenuItem(
                     text = { Text(stringResource(R.string.club_comment_edit)) },
@@ -338,15 +346,15 @@ private fun CommentBubble(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Filled.Edit,
-                            contentDescription = null
+                            contentDescription = null,
                         )
-                    }
+                    },
                 )
                 DropdownMenuItem(
                     text = {
                         Text(
                             text = stringResource(R.string.club_comment_delete),
-                            color = MaterialTheme.colorScheme.error
+                            color = MaterialTheme.colorScheme.error,
                         )
                     },
                     onClick = {
@@ -357,9 +365,9 @@ private fun CommentBubble(
                         Icon(
                             imageVector = Icons.Filled.Delete,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.error
+                            tint = MaterialTheme.colorScheme.error,
                         )
-                    }
+                    },
                 )
             }
         }
@@ -376,6 +384,6 @@ private fun formatRelativeTime(timestampMillis: Long): String {
         timestampMillis,
         System.currentTimeMillis(),
         DateUtils.MINUTE_IN_MILLIS,
-        DateUtils.FORMAT_ABBREV_RELATIVE
+        DateUtils.FORMAT_ABBREV_RELATIVE,
     ).toString()
 }

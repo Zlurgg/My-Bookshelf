@@ -15,7 +15,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles both local storage and Firestore sync for collaborative shelves.
  */
 interface BookClubRepository {
-
     // ========== Club Management ==========
 
     /**
@@ -48,7 +47,10 @@ interface BookClubRepository {
      * @param code The club code
      * @param newName The new name for the club
      */
-    suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync>
+    suspend fun renameBookClub(
+        code: String,
+        newName: String,
+    ): Result<Unit, DataError.Sync>
 
     /**
      * Updates a book club's style. Only the creator can update.
@@ -57,7 +59,10 @@ interface BookClubRepository {
      * @param code The club code
      * @param style The new style name
      */
-    suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync>
+    suspend fun updateClubStyle(
+        code: String,
+        style: String,
+    ): Result<Unit, DataError.Sync>
 
     /**
      * Leaves a book club. Removes the user from the club's member list,
@@ -144,7 +149,10 @@ interface BookClubRepository {
      * @param code The club code
      * @param book The book to sync
      */
-    suspend fun syncBookToClub(code: String, book: Book): Result<Unit, DataError.Sync>
+    suspend fun syncBookToClub(
+        code: String,
+        book: Book,
+    ): Result<Unit, DataError.Sync>
 
     /**
      * Removes a book from a book club in Firestore.
@@ -153,7 +161,10 @@ interface BookClubRepository {
      * @param code The club code
      * @param bookId The book ID to remove
      */
-    suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync>
+    suspend fun removeBookFromClub(
+        code: String,
+        bookId: String,
+    ): Result<Unit, DataError.Sync>
 
     /**
      * Syncs books FROM the club to the local shelf.
@@ -164,7 +175,10 @@ interface BookClubRepository {
      * @param localShelfId The local shelf ID to sync books to
      * @return Number of books added/removed
      */
-    suspend fun syncBooksFromClub(code: String, localShelfId: String): Result<SyncResult, DataError.Sync>
+    suspend fun syncBooksFromClub(
+        code: String,
+        localShelfId: String,
+    ): Result<SyncResult, DataError.Sync>
 
     // ========== Reviews ==========
 
@@ -175,7 +189,10 @@ interface BookClubRepository {
      * @param bookId The book ID to get reviews for
      * @return List of reviews from all members
      */
-    suspend fun getBookReviews(code: String, bookId: String): Result<List<BookClubReview>, DataError.Sync>
+    suspend fun getBookReviews(
+        code: String,
+        bookId: String,
+    ): Result<List<BookClubReview>, DataError.Sync>
 
     /**
      * Creates or updates the current user's review for a book.
@@ -189,7 +206,7 @@ interface BookClubRepository {
         code: String,
         bookId: String,
         rating: Float,
-        reviewText: String
+        reviewText: String,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -198,7 +215,10 @@ interface BookClubRepository {
      * @param code The club code
      * @param bookId The book ID to delete review for
      */
-    suspend fun deleteBookReview(code: String, bookId: String): Result<Unit, DataError.Sync>
+    suspend fun deleteBookReview(
+        code: String,
+        bookId: String,
+    ): Result<Unit, DataError.Sync>
 
     // ========== Comments ==========
 
@@ -210,7 +230,10 @@ interface BookClubRepository {
      * @param bookId The book ID to get comments for
      * @return List of comments from all members
      */
-    suspend fun getBookComments(code: String, bookId: String): Result<List<BookClubComment>, DataError.Sync>
+    suspend fun getBookComments(
+        code: String,
+        bookId: String,
+    ): Result<List<BookClubComment>, DataError.Sync>
 
     /**
      * Adds a new comment for the current user.
@@ -224,7 +247,7 @@ interface BookClubRepository {
     suspend fun addBookComment(
         code: String,
         bookId: String,
-        text: String
+        text: String,
     ): Result<String, DataError.Sync>
 
     /**
@@ -240,7 +263,7 @@ interface BookClubRepository {
         code: String,
         bookId: String,
         commentId: String,
-        newText: String
+        newText: String,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -254,7 +277,7 @@ interface BookClubRepository {
     suspend fun deleteBookComment(
         code: String,
         bookId: String,
-        commentId: String
+        commentId: String,
     ): Result<Unit, DataError.Sync>
 }
 
@@ -263,5 +286,5 @@ interface BookClubRepository {
  */
 data class SyncResult(
     val booksAdded: Int,
-    val booksRemoved: Int
+    val booksRemoved: Int,
 )

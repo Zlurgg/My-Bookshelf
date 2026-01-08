@@ -32,7 +32,7 @@ import uk.co.zlurgg.mybookshelf.R
 fun DescriptionCard(
     description: String?,
     modifier: Modifier = Modifier,
-    initiallyExpanded: Boolean = false
+    initiallyExpanded: Boolean = false,
 ) {
     if (description.isNullOrBlank()) return
 
@@ -40,17 +40,18 @@ fun DescriptionCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .animateContentSize()
+            modifier =
+                Modifier
+                    .padding(16.dp)
+                    .animateContentSize(),
         ) {
             Text(
                 text = stringResource(R.string.description_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -60,21 +61,22 @@ fun DescriptionCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
 
             if (description.length > 150) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
-                    text = if (isExpanded) {
-                        stringResource(R.string.description_show_less)
-                    } else {
-                        stringResource(R.string.description_show_more)
-                    },
+                    text =
+                        if (isExpanded) {
+                            stringResource(R.string.description_show_less)
+                        } else {
+                            stringResource(R.string.description_show_more)
+                        },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { isExpanded = !isExpanded }
+                    modifier = Modifier.clickable { isExpanded = !isExpanded },
                 )
             }
         }

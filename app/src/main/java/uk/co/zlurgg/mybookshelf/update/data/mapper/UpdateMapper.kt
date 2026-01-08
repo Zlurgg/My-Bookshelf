@@ -16,6 +16,6 @@ fun GitHubReleaseDto.toDomain(): UpdateInfo {
         releaseUrl = htmlUrl,
         apkDownloadUrl = apkAsset?.downloadUrl,
         apkSize = apkAsset?.size,
-        changelog = body
+        changelog = body,
     )
 }

@@ -15,5 +15,5 @@ class BookcaseUseCases(
     val renameShelf: RenameShelfUseCase,
     val updateShelfStyle: UpdateShelfStyleUseCase,
     val duplicateShelf: DuplicateShelfUseCase,
-    val shareShelf: ShareBookshelfUseCase
+    val shareShelf: ShareBookshelfUseCase,
 )

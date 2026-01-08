@@ -19,7 +19,6 @@ import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
  * Mocks: IdGenerator, RemoteBookDataSource
  */
 class JsonBookshelfSerializerTest {
-
     private val mockIdGenerator = SimpleMockIdGenerator()
     private val mockRemoteDataSource = SimpleMockRemoteBookDataSource()
     private val exportMapper = BookshelfExportMapper(mockIdGenerator, mockRemoteDataSource)
@@ -28,10 +27,11 @@ class JsonBookshelfSerializerTest {
     @Test
     fun `serialize converts shelf to valid JSON string`() {
         // Given
-        val shelf = TestShelfBuilder()
-            .withName("Fiction")
-            .withStyle(ShelfStyle.DarkWood)
-            .build()
+        val shelf =
+            TestShelfBuilder()
+                .withName("Fiction")
+                .withStyle(ShelfStyle.DarkWood)
+                .build()
 
         // When
         val result = serializer.serialize(shelf)
@@ -46,7 +46,8 @@ class JsonBookshelfSerializerTest {
     @Test
     fun `deserialize converts valid JSON to ExportData`() {
         // Given
-        val validJson = """
+        val validJson =
+            """
             {
                 "bookshelf": {
                     "name": "Fiction",
@@ -54,7 +55,7 @@ class JsonBookshelfSerializerTest {
                     "bookIds": []
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // When
         val result = serializer.deserialize(validJson)
@@ -76,18 +77,21 @@ class JsonBookshelfSerializerTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return serialization error",
+        assertEquals(
+            "Should return serialization error",
             DataError.Local.SERIALIZATION_ERROR,
-            (result as Result.Error).error)
+            (result as Result.Error).error,
+        )
     }
 
     @Test
     fun `serialize and deserialize round trip preserves data`() {
         // Given
-        val originalShelf = TestShelfBuilder()
-            .withName("Science Fiction")
-            .withStyle(ShelfStyle.GreyMetal)
-            .build()
+        val originalShelf =
+            TestShelfBuilder()
+                .withName("Science Fiction")
+                .withStyle(ShelfStyle.GreyMetal)
+                .build()
 
         // When
         val serializeResult = serializer.serialize(originalShelf)
@@ -106,11 +110,12 @@ class JsonBookshelfSerializerTest {
     @Test
     fun `deserialize handles malformed structure`() {
         // Given - valid JSON but wrong structure
-        val wrongStructure = """
+        val wrongStructure =
+            """
             {
                 "wrongField": "value"
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // When
         val result = serializer.deserialize(wrongStructure)
@@ -122,14 +127,17 @@ class JsonBookshelfSerializerTest {
     @Test
     fun `serialize handles shelf with books`() {
         // Given
-        val shelf = TestShelfBuilder()
-            .withName("Fantasy")
-            .withStyle(ShelfStyle.DarkWood)
-            .withBooks(listOf(
-                createExportedBook("book-1", "The Hobbit"),
-                createExportedBook("book-2", "Lord of the Rings")
-            ))
-            .build()
+        val shelf =
+            TestShelfBuilder()
+                .withName("Fantasy")
+                .withStyle(ShelfStyle.DarkWood)
+                .withBooks(
+                    listOf(
+                        createExportedBook("book-1", "The Hobbit"),
+                        createExportedBook("book-2", "Lord of the Rings"),
+                    ),
+                )
+                .build()
 
         // When
         val result = serializer.serialize(shelf)
@@ -145,6 +153,7 @@ class JsonBookshelfSerializerTest {
     // Simplified mocks
     private class SimpleMockIdGenerator : IdGenerator {
         var nextId = "test-id"
+
         override fun generateId(): String = nextId
     }
 
@@ -155,7 +164,7 @@ class JsonBookshelfSerializerTest {
             language: String?,
             authorFilter: String?,
             titleFilter: String?,
-            sort: String?
+            sort: String?,
         ): Result<SearchResponseDto, DataError.Remote> {
             return Result.Success(SearchResponseDto(numFound = 0, results = emptyList()))
         }
@@ -165,20 +174,22 @@ class JsonBookshelfSerializerTest {
         }
     }
 
-    private fun createExportedBook(id: String, title: String) =
-        uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book(
-            id = id,
-            title = title,
-            authors = emptyList(),
-            imageUrl = "",
-            description = null,
-            languages = emptyList(),
-            firstPublishYear = null,
-            averageRating = null,
-            ratingCount = null,
-            numPages = null,
-            numEditions = 0,
-            purchased = false,
-            spineColor = 0xFF8B4513.toInt()
-        )
+    private fun createExportedBook(
+        id: String,
+        title: String,
+    ) = uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book(
+        id = id,
+        title = title,
+        authors = emptyList(),
+        imageUrl = "",
+        description = null,
+        languages = emptyList(),
+        firstPublishYear = null,
+        averageRating = null,
+        ratingCount = null,
+        numPages = null,
+        numEditions = 0,
+        purchased = false,
+        spineColor = 0xFF8B4513.toInt(),
+    )
 }

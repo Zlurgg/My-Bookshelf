@@ -12,14 +12,13 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Ownership validation is enforced by Firestore security rules.
  */
 class EditBookClubCommentUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : EditBookClubCommentUseCase {
-
     override suspend fun invoke(
         clubCode: String,
         bookId: String,
         commentId: String,
-        newText: String
+        newText: String,
     ): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Editing comment %s for book %s in club %s", commentId, bookId, clubCode)
 

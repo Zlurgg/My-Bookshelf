@@ -7,14 +7,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
@@ -22,8 +22,8 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 
@@ -31,7 +31,6 @@ import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
  * Unit tests for SyncEngine.
  */
 class SyncEngineTest {
-
     private lateinit var syncEngine: SyncEngine
     private lateinit var fakeBookshelfDao: FakeBookshelfDao
     private lateinit var fakeSyncDao: FakeSyncDao
@@ -47,247 +46,268 @@ class SyncEngineTest {
         fakeConnectivityMonitor = FakeConnectivityMonitor()
         testTimeProvider = TestTimeProvider(1000L)
 
-        syncEngine = SyncEngine(
-            bookshelfDao = fakeBookshelfDao,
-            syncDao = fakeSyncDao,
-            remoteDataSource = fakeRemoteDataSource,
-            conflictResolver = DefaultConflictResolver.lastWriteWins(),
-            connectivityMonitor = fakeConnectivityMonitor,
-            timeProvider = testTimeProvider
-        )
+        syncEngine =
+            SyncEngine(
+                bookshelfDao = fakeBookshelfDao,
+                syncDao = fakeSyncDao,
+                remoteDataSource = fakeRemoteDataSource,
+                conflictResolver = DefaultConflictResolver.lastWriteWins(),
+                connectivityMonitor = fakeConnectivityMonitor,
+                timeProvider = testTimeProvider,
+            )
     }
 
     // ==================== performFullSync Tests ====================
 
     @Test
-    fun `performFullSync returns error when not connected`() = runBlocking {
-        // Given
-        fakeConnectivityMonitor.setConnected(false)
+    fun `performFullSync returns error when not connected`() =
+        runBlocking {
+            // Given
+            fakeConnectivityMonitor.setConnected(false)
 
-        // When
-        val result = syncEngine.performFullSync("user-1")
+            // When
+            val result = syncEngine.performFullSync("user-1")
 
-        // Then
-        assertTrue(result is Result.Error)
-        assertEquals(DataError.Sync.NETWORK_ERROR, (result as Result.Error).error)
-    }
+            // Then
+            assertTrue(result is Result.Error)
+            assertEquals(DataError.Sync.NETWORK_ERROR, (result as Result.Error).error)
+        }
 
     @Test
-    fun `performFullSync returns error when sync already in progress`() = runBlocking {
-        // Given
-        fakeConnectivityMonitor.setConnected(true)
-        fakeSyncDao.setMetadata(
-            SyncMetadataEntity(
-                userId = "user-1",
-                lastSyncTimestamp = 0L,
-                syncInProgress = true
+    fun `performFullSync returns error when sync already in progress`() =
+        runBlocking {
+            // Given
+            fakeConnectivityMonitor.setConnected(true)
+            fakeSyncDao.setMetadata(
+                SyncMetadataEntity(
+                    userId = "user-1",
+                    lastSyncTimestamp = 0L,
+                    syncInProgress = true,
+                ),
             )
-        )
 
-        // When
-        val result = syncEngine.performFullSync("user-1")
+            // When
+            val result = syncEngine.performFullSync("user-1")
 
-        // Then
-        assertTrue(result is Result.Error)
-        assertEquals(DataError.Sync.SYNC_IN_PROGRESS, (result as Result.Error).error)
-    }
-
-    @Test
-    fun `performFullSync succeeds with no pending changes`() = runBlocking {
-        // Given
-        fakeConnectivityMonitor.setConnected(true)
-
-        // When
-        val result = syncEngine.performFullSync("user-1")
-
-        // Then
-        assertTrue(result is Result.Success)
-        val syncResult = (result as Result.Success).data
-        assertEquals(0, syncResult.pushedCount)
-        assertEquals(0, syncResult.pulledCount)
-    }
+            // Then
+            assertTrue(result is Result.Error)
+            assertEquals(DataError.Sync.SYNC_IN_PROGRESS, (result as Result.Error).error)
+        }
 
     @Test
-    fun `performFullSync pushes pending books`() = runBlocking {
-        // Given
-        fakeConnectivityMonitor.setConnected(true)
-        val pendingBook = createTestBookEntity(
-            id = "book-1",
-            ownerId = "user-1",
-            syncStatus = "PENDING"
-        )
-        fakeBookshelfDao.addPendingBook(pendingBook)
+    fun `performFullSync succeeds with no pending changes`() =
+        runBlocking {
+            // Given
+            fakeConnectivityMonitor.setConnected(true)
 
-        // When
-        val result = syncEngine.performFullSync("user-1")
+            // When
+            val result = syncEngine.performFullSync("user-1")
 
-        // Then
-        assertTrue(result is Result.Success)
-        val syncResult = (result as Result.Success).data
-        assertEquals(1, syncResult.pushedCount)
-        assertTrue(fakeRemoteDataSource.uploadedBooks.containsKey("book-1"))
-    }
+            // Then
+            assertTrue(result is Result.Success)
+            val syncResult = (result as Result.Success).data
+            assertEquals(0, syncResult.pushedCount)
+            assertEquals(0, syncResult.pulledCount)
+        }
 
     @Test
-    fun `performFullSync handles deleted books`() = runBlocking {
-        // Given
-        fakeConnectivityMonitor.setConnected(true)
-        val deletedBook = createTestBookEntity(
-            id = "book-deleted",
-            ownerId = "user-1",
-            syncStatus = "DELETED"
-        )
-        fakeBookshelfDao.addPendingBook(deletedBook)
+    fun `performFullSync pushes pending books`() =
+        runBlocking {
+            // Given
+            fakeConnectivityMonitor.setConnected(true)
+            val pendingBook =
+                createTestBookEntity(
+                    id = "book-1",
+                    ownerId = "user-1",
+                    syncStatus = "PENDING",
+                )
+            fakeBookshelfDao.addPendingBook(pendingBook)
 
-        // When
-        val result = syncEngine.performFullSync("user-1")
+            // When
+            val result = syncEngine.performFullSync("user-1")
 
-        // Then
-        assertTrue(result is Result.Success)
-        val syncResult = (result as Result.Success).data
-        assertEquals(1, syncResult.deletedCount)
-        assertTrue(fakeRemoteDataSource.deletedBookIds.contains("book-deleted"))
-    }
+            // Then
+            assertTrue(result is Result.Success)
+            val syncResult = (result as Result.Success).data
+            assertEquals(1, syncResult.pushedCount)
+            assertTrue(fakeRemoteDataSource.uploadedBooks.containsKey("book-1"))
+        }
+
+    @Test
+    fun `performFullSync handles deleted books`() =
+        runBlocking {
+            // Given
+            fakeConnectivityMonitor.setConnected(true)
+            val deletedBook =
+                createTestBookEntity(
+                    id = "book-deleted",
+                    ownerId = "user-1",
+                    syncStatus = "DELETED",
+                )
+            fakeBookshelfDao.addPendingBook(deletedBook)
+
+            // When
+            val result = syncEngine.performFullSync("user-1")
+
+            // Then
+            assertTrue(result is Result.Success)
+            val syncResult = (result as Result.Success).data
+            assertEquals(1, syncResult.deletedCount)
+            assertTrue(fakeRemoteDataSource.deletedBookIds.contains("book-deleted"))
+        }
 
     // ==================== pushLocalChanges Tests ====================
 
     @Test
-    fun `pushLocalChanges uploads pending books`() = runBlocking {
-        // Given
-        val pendingBook = createTestBookEntity(
-            id = "book-1",
-            ownerId = "user-1",
-            syncStatus = "PENDING"
-        )
-        fakeBookshelfDao.addPendingBook(pendingBook)
+    fun `pushLocalChanges uploads pending books`() =
+        runBlocking {
+            // Given
+            val pendingBook =
+                createTestBookEntity(
+                    id = "book-1",
+                    ownerId = "user-1",
+                    syncStatus = "PENDING",
+                )
+            fakeBookshelfDao.addPendingBook(pendingBook)
 
-        // When
-        val result = syncEngine.pushLocalChanges("user-1")
+            // When
+            val result = syncEngine.pushLocalChanges("user-1")
 
-        // Then
-        assertTrue(result is Result.Success)
-        assertEquals(1, (result as Result.Success).data.pushedCount)
-    }
-
-    @Test
-    fun `pushLocalChanges uploads pending shelves`() = runBlocking {
-        // Given
-        val pendingShelf = createTestBookshelfEntity(
-            id = "shelf-1",
-            ownerId = "user-1",
-            syncStatus = "PENDING"
-        )
-        fakeBookshelfDao.addPendingShelf(pendingShelf)
-
-        // When
-        val result = syncEngine.pushLocalChanges("user-1")
-
-        // Then
-        assertTrue(result is Result.Success)
-        assertEquals(1, (result as Result.Success).data.pushedCount)
-    }
+            // Then
+            assertTrue(result is Result.Success)
+            assertEquals(1, (result as Result.Success).data.pushedCount)
+        }
 
     @Test
-    fun `pushLocalChanges filters by owner`() = runBlocking {
-        // Given - books from different owners
-        val myBook = createTestBookEntity(id = "book-1", ownerId = "user-1", syncStatus = "PENDING")
-        val otherBook = createTestBookEntity(id = "book-2", ownerId = "user-2", syncStatus = "PENDING")
-        fakeBookshelfDao.addPendingBook(myBook)
-        fakeBookshelfDao.addPendingBook(otherBook)
+    fun `pushLocalChanges uploads pending shelves`() =
+        runBlocking {
+            // Given
+            val pendingShelf =
+                createTestBookshelfEntity(
+                    id = "shelf-1",
+                    ownerId = "user-1",
+                    syncStatus = "PENDING",
+                )
+            fakeBookshelfDao.addPendingShelf(pendingShelf)
 
-        // When
-        val result = syncEngine.pushLocalChanges("user-1")
+            // When
+            val result = syncEngine.pushLocalChanges("user-1")
 
-        // Then
-        assertTrue(result is Result.Success)
-        assertEquals(1, (result as Result.Success).data.pushedCount)
-        assertTrue(fakeRemoteDataSource.uploadedBooks.containsKey("book-1"))
-        assertTrue(!fakeRemoteDataSource.uploadedBooks.containsKey("book-2"))
-    }
+            // Then
+            assertTrue(result is Result.Success)
+            assertEquals(1, (result as Result.Success).data.pushedCount)
+        }
+
+    @Test
+    fun `pushLocalChanges filters by owner`() =
+        runBlocking {
+            // Given - books from different owners
+            val myBook = createTestBookEntity(id = "book-1", ownerId = "user-1", syncStatus = "PENDING")
+            val otherBook = createTestBookEntity(id = "book-2", ownerId = "user-2", syncStatus = "PENDING")
+            fakeBookshelfDao.addPendingBook(myBook)
+            fakeBookshelfDao.addPendingBook(otherBook)
+
+            // When
+            val result = syncEngine.pushLocalChanges("user-1")
+
+            // Then
+            assertTrue(result is Result.Success)
+            assertEquals(1, (result as Result.Success).data.pushedCount)
+            assertTrue(fakeRemoteDataSource.uploadedBooks.containsKey("book-1"))
+            assertTrue(!fakeRemoteDataSource.uploadedBooks.containsKey("book-2"))
+        }
 
     // ==================== pullRemoteChanges Tests ====================
 
     @Test
-    fun `pullRemoteChanges downloads new books`() = runBlocking {
-        // Given
-        val remoteBook = BookFirestoreDto(
-            id = "remote-book-1",
-            title = "Remote Book",
-            authors = listOf("Author"),
-            imageUrl = "url",
-            version = 1L,
-            lastModifiedAt = 2000L
-        )
-        fakeRemoteDataSource.addRemoteBook(remoteBook)
+    fun `pullRemoteChanges downloads new books`() =
+        runBlocking {
+            // Given
+            val remoteBook =
+                BookFirestoreDto(
+                    id = "remote-book-1",
+                    title = "Remote Book",
+                    authors = listOf("Author"),
+                    imageUrl = "url",
+                    version = 1L,
+                    lastModifiedAt = 2000L,
+                )
+            fakeRemoteDataSource.addRemoteBook(remoteBook)
 
-        // When
-        val result = syncEngine.pullRemoteChanges("user-1")
+            // When
+            val result = syncEngine.pullRemoteChanges("user-1")
 
-        // Then
-        assertTrue(result is Result.Success)
-        assertEquals(1, (result as Result.Success).data.pulledCount)
-        assertTrue(fakeBookshelfDao.upsertedBooks.any { it.id == "remote-book-1" })
-    }
+            // Then
+            assertTrue(result is Result.Success)
+            assertEquals(1, (result as Result.Success).data.pulledCount)
+            assertTrue(fakeBookshelfDao.upsertedBooks.any { it.id == "remote-book-1" })
+        }
 
     @Test
-    fun `pullRemoteChanges updates synced local book with remote version`() = runBlocking {
-        // Given - local book is SYNCED
-        val localBook = createTestBookEntity(
-            id = "book-1",
-            ownerId = "user-1",
-            syncStatus = "SYNCED"
-        )
-        fakeBookshelfDao.addBook(localBook)
+    fun `pullRemoteChanges updates synced local book with remote version`() =
+        runBlocking {
+            // Given - local book is SYNCED
+            val localBook =
+                createTestBookEntity(
+                    id = "book-1",
+                    ownerId = "user-1",
+                    syncStatus = "SYNCED",
+                )
+            fakeBookshelfDao.addBook(localBook)
 
-        val remoteBook = BookFirestoreDto(
-            id = "book-1",
-            title = "Updated Title",
-            authors = listOf("Author"),
-            imageUrl = "url",
-            version = 2L,
-            lastModifiedAt = 2000L
-        )
-        fakeRemoteDataSource.addRemoteBook(remoteBook)
+            val remoteBook =
+                BookFirestoreDto(
+                    id = "book-1",
+                    title = "Updated Title",
+                    authors = listOf("Author"),
+                    imageUrl = "url",
+                    version = 2L,
+                    lastModifiedAt = 2000L,
+                )
+            fakeRemoteDataSource.addRemoteBook(remoteBook)
 
-        // When
-        val result = syncEngine.pullRemoteChanges("user-1")
+            // When
+            val result = syncEngine.pullRemoteChanges("user-1")
 
-        // Then
-        assertTrue(result is Result.Success)
-        assertEquals(1, (result as Result.Success).data.pulledCount)
-    }
+            // Then
+            assertTrue(result is Result.Success)
+            assertEquals(1, (result as Result.Success).data.pulledCount)
+        }
 
     // ==================== Conflict Detection Tests ====================
 
     @Test
-    fun `pullRemoteChanges detects conflict when local has pending changes`() = runBlocking {
-        // Given - local book has PENDING changes
-        val localBook = createTestBookEntity(
-            id = "book-1",
-            ownerId = "user-1",
-            syncStatus = "PENDING",
-            lastModifiedAt = 1500L,
-            version = 1L
-        )
-        fakeBookshelfDao.addBook(localBook)
+    fun `pullRemoteChanges detects conflict when local has pending changes`() =
+        runBlocking {
+            // Given - local book has PENDING changes
+            val localBook =
+                createTestBookEntity(
+                    id = "book-1",
+                    ownerId = "user-1",
+                    syncStatus = "PENDING",
+                    lastModifiedAt = 1500L,
+                    version = 1L,
+                )
+            fakeBookshelfDao.addBook(localBook)
 
-        val remoteBook = BookFirestoreDto(
-            id = "book-1",
-            title = "Remote Updated",
-            authors = listOf("Author"),
-            imageUrl = "url",
-            version = 2L,
-            lastModifiedAt = 2000L
-        )
-        fakeRemoteDataSource.addRemoteBook(remoteBook)
+            val remoteBook =
+                BookFirestoreDto(
+                    id = "book-1",
+                    title = "Remote Updated",
+                    authors = listOf("Author"),
+                    imageUrl = "url",
+                    version = 2L,
+                    lastModifiedAt = 2000L,
+                )
+            fakeRemoteDataSource.addRemoteBook(remoteBook)
 
-        // When
-        val result = syncEngine.pullRemoteChanges("user-1")
+            // When
+            val result = syncEngine.pullRemoteChanges("user-1")
 
-        // Then - with LAST_WRITE_WINS, remote wins (newer timestamp)
-        assertTrue(result is Result.Success)
-        assertEquals(1, (result as Result.Success).data.pulledCount)
-    }
+            // Then - with LAST_WRITE_WINS, remote wins (newer timestamp)
+            assertTrue(result is Result.Success)
+            assertEquals(1, (result as Result.Success).data.pulledCount)
+        }
 
     // ==================== Cancel Tests ====================
 
@@ -310,7 +330,7 @@ class SyncEngineTest {
         ownerId: String? = null,
         syncStatus: String = "PENDING",
         lastModifiedAt: Long = 1000L,
-        version: Long = 1L
+        version: Long = 1L,
     ) = BookEntity(
         id = id,
         title = title,
@@ -328,14 +348,14 @@ class SyncEngineTest {
         ownerId = ownerId,
         syncStatus = syncStatus,
         lastModifiedAt = lastModifiedAt,
-        version = version
+        version = version,
     )
 
     private fun createTestBookshelfEntity(
         id: String = "shelf-1",
         name: String = "Test Shelf",
         ownerId: String? = null,
-        syncStatus: String = "PENDING"
+        syncStatus: String = "PENDING",
     ) = BookshelfEntity(
         id = id,
         name = name,
@@ -345,7 +365,7 @@ class SyncEngineTest {
         ownerId = ownerId,
         syncStatus = syncStatus,
         lastModifiedAt = 1000L,
-        version = 1L
+        version = 1L,
     )
 
     // ==================== Fake Implementations ====================
@@ -358,6 +378,7 @@ class SyncEngineTest {
         }
 
         override fun isConnected(): Boolean = connected
+
         override fun observeConnectivity(): Flow<Boolean> = flowOf(connected)
     }
 
@@ -380,19 +401,31 @@ class SyncEngineTest {
             return flowOf(if (metadata?.userId == userId) metadata else null)
         }
 
-        override suspend fun updateLastSyncTimestamp(userId: String, timestamp: Long) {
+        override suspend fun updateLastSyncTimestamp(
+            userId: String,
+            timestamp: Long,
+        ) {
             metadata = metadata?.copy(lastSyncTimestamp = timestamp)
         }
 
-        override suspend fun updateSyncInProgress(userId: String, inProgress: Boolean) {
+        override suspend fun updateSyncInProgress(
+            userId: String,
+            inProgress: Boolean,
+        ) {
             metadata = metadata?.copy(syncInProgress = inProgress)
         }
 
-        override suspend fun updateLastSyncError(userId: String, error: String?) {
+        override suspend fun updateLastSyncError(
+            userId: String,
+            error: String?,
+        ) {
             metadata = metadata?.copy(lastSyncError = error)
         }
 
-        override suspend fun updatePendingOperationsCount(userId: String, count: Int) {
+        override suspend fun updatePendingOperationsCount(
+            userId: String,
+            count: Int,
+        ) {
             metadata = metadata?.copy(pendingOperationsCount = count)
         }
 
@@ -424,11 +457,15 @@ class SyncEngineTest {
         }
 
         override suspend fun getPendingSyncBooks(): List<BookEntity> = pendingBooks.toList()
+
         override suspend fun getPendingSyncShelves(): List<BookshelfEntity> = pendingShelves.toList()
+
         override suspend fun getPendingSyncCrossRefs(): List<BookshelfBookCrossRef> = emptyList()
 
         override suspend fun getBookById(id: String): BookEntity? = books[id]
+
         override suspend fun getShelfById(id: String): BookshelfEntity? = shelves[id]
+
         override suspend fun getShelfByName(name: String): BookshelfEntity? = shelves.values.find { it.name == name }
 
         override suspend fun upsert(book: BookEntity) {
@@ -451,13 +488,21 @@ class SyncEngineTest {
             pendingShelves.removeAll { it.id == id }
         }
 
-        override suspend fun updateBookSyncStatus(id: String, status: String, timestamp: Long) {
+        override suspend fun updateBookSyncStatus(
+            id: String,
+            status: String,
+            timestamp: Long,
+        ) {
             books[id]?.let { book ->
                 books[id] = book.copy(syncStatus = status, lastModifiedAt = timestamp)
             }
         }
 
-        override suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long) {
+        override suspend fun updateShelfSyncStatus(
+            id: String,
+            status: String,
+            timestamp: Long,
+        ) {
             shelves[id]?.let { shelf ->
                 shelves[id] = shelf.copy(syncStatus = status, lastModifiedAt = timestamp)
             }
@@ -466,31 +511,72 @@ class SyncEngineTest {
         override fun getBooksForShelf(shelfId: String): Flow<List<BookEntity>> = flowOf(emptyList())
 
         override suspend fun countOrphanBooks(): Int = books.values.count { it.ownerId == null }
+
         override suspend fun countOrphanShelves(): Int = shelves.values.count { it.ownerId == null }
+
         override suspend fun assignOwnerToOrphanBooks(userId: String) {}
+
         override suspend fun assignOwnerToOrphanShelves(userId: String) {}
 
         override fun getAllShelves(): Flow<List<BookshelfEntity>> = flowOf(shelves.values.toList())
+
         override fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>> =
             flowOf(shelves.values.filter { it.ownerId == userId || it.ownerId == null }.toList())
+
         override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) {}
-        override suspend fun deleteCrossRef(shelfId: String, bookId: String) {}
+
+        override suspend fun deleteCrossRef(
+            shelfId: String,
+            bookId: String,
+        ) {}
+
         override suspend fun deleteAllCrossRefsForShelf(shelfId: String) {}
+
         override fun getBookCountForShelf(shelfId: String): Flow<Int> = flowOf(0)
+
         override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = flowOf(false)
+
         override fun getShelvesForBook(bookId: String): Flow<List<String>> = flowOf(emptyList())
-        override suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long) {}
-        override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) {}
+
+        override suspend fun updateCrossRefSyncStatus(
+            shelfId: String,
+            bookId: String,
+            status: String,
+            timestamp: Long,
+        ) {}
+
+        override suspend fun markAllCrossRefsForShelfAs(
+            shelfId: String,
+            status: String,
+            timestamp: Long,
+        ) {}
+
         override suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity? = null
-        override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}
-        override suspend fun getBooksByOwner(ownerId: String): List<BookEntity> = books.values.filter { it.ownerId == ownerId }
-        override suspend fun getShelvesByOwner(ownerId: String): List<BookshelfEntity> = shelves.values.filter { it.ownerId == ownerId }
+
+        override suspend fun updateShelfSharingStatus(
+            id: String,
+            isShared: Boolean,
+            shareCode: String?,
+        ) {}
+
+        override suspend fun getBooksByOwner(ownerId: String): List<BookEntity> =
+            books.values.filter { it.ownerId == ownerId }
+
+        override suspend fun getShelvesByOwner(ownerId: String): List<BookshelfEntity> =
+            shelves.values.filter {
+                it.ownerId == ownerId
+            }
+
         override suspend fun markAllBooksPending(ownerId: String) {}
+
         override suspend fun markAllShelvesPending(ownerId: String) {}
+
         override suspend fun deleteAllCrossRefsForOwner(ownerId: String) {}
+
         override suspend fun deleteAllBooksForOwner(ownerId: String) {
             books.entries.removeIf { it.value.ownerId == ownerId }
         }
+
         override suspend fun deleteAllShelvesForOwner(ownerId: String) {
             shelves.entries.removeIf { it.value.ownerId == ownerId }
         }
@@ -512,82 +598,290 @@ class SyncEngineTest {
             remoteShelves.add(shelf)
         }
 
-        override suspend fun uploadBook(userId: String, book: BookFirestoreDto): Result<Unit, DataError.Sync> {
+        override suspend fun uploadBook(
+            userId: String,
+            book: BookFirestoreDto,
+        ): Result<Unit, DataError.Sync> {
             uploadedBooks[book.id] = book
             return Result.Success(Unit)
         }
 
-        override suspend fun downloadBook(userId: String, bookId: String): Result<BookFirestoreDto?, DataError.Sync> {
+        override suspend fun downloadBook(
+            userId: String,
+            bookId: String,
+        ): Result<BookFirestoreDto?, DataError.Sync> {
             return Result.Success(remoteBooks.find { it.id == bookId })
         }
 
-        override suspend fun downloadBooksSince(userId: String, sinceTimestamp: Long): Result<List<BookFirestoreDto>, DataError.Sync> {
+        override suspend fun downloadBooksSince(
+            userId: String,
+            sinceTimestamp: Long,
+        ): Result<List<BookFirestoreDto>, DataError.Sync> {
             return Result.Success(remoteBooks.filter { it.lastModifiedAt > sinceTimestamp })
         }
 
-        override suspend fun deleteBook(userId: String, bookId: String): Result<Unit, DataError.Sync> {
+        override suspend fun deleteBook(
+            userId: String,
+            bookId: String,
+        ): Result<Unit, DataError.Sync> {
             deletedBookIds.add(bookId)
             return Result.Success(Unit)
         }
 
-        override suspend fun uploadBookshelf(userId: String, shelf: BookshelfFirestoreDto): Result<Unit, DataError.Sync> {
+        override suspend fun uploadBookshelf(
+            userId: String,
+            shelf: BookshelfFirestoreDto,
+        ): Result<Unit, DataError.Sync> {
             uploadedShelves[shelf.id] = shelf
             return Result.Success(Unit)
         }
 
-        override suspend fun downloadBookshelf(userId: String, shelfId: String): Result<BookshelfFirestoreDto?, DataError.Sync> {
+        override suspend fun downloadBookshelf(
+            userId: String,
+            shelfId: String,
+        ): Result<BookshelfFirestoreDto?, DataError.Sync> {
             return Result.Success(remoteShelves.find { it.id == shelfId })
         }
 
-        override suspend fun downloadBookshelvesSince(userId: String, sinceTimestamp: Long): Result<List<BookshelfFirestoreDto>, DataError.Sync> {
+        override suspend fun downloadBookshelvesSince(
+            userId: String,
+            sinceTimestamp: Long,
+        ): Result<List<BookshelfFirestoreDto>, DataError.Sync> {
             return Result.Success(remoteShelves.filter { it.lastModifiedAt > sinceTimestamp })
         }
 
-        override suspend fun deleteBookshelf(userId: String, shelfId: String): Result<Unit, DataError.Sync> {
+        override suspend fun deleteBookshelf(
+            userId: String,
+            shelfId: String,
+        ): Result<Unit, DataError.Sync> {
             deletedShelfIds.add(shelfId)
             return Result.Success(Unit)
         }
 
-        override suspend fun shareShelf(sharedShelf: SharedShelfDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun shareShelf(sharedShelf: SharedShelfDto): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
         override suspend fun unshareShelf(shareCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync> = Result.Success(null)
-        override suspend fun subscribeToShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun unsubscribeFromShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun uploadBooks(userId: String, books: List<BookFirestoreDto>): Result<Int, DataError.Sync> {
+
+        override suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync> =
+            Result.Success(
+                null,
+            )
+
+        override suspend fun subscribeToShelf(
+            shareCode: String,
+            userId: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun unsubscribeFromShelf(
+            shareCode: String,
+            userId: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun uploadBooks(
+            userId: String,
+            books: List<BookFirestoreDto>,
+        ): Result<Int, DataError.Sync> {
             books.forEach { uploadedBooks[it.id] = it }
             return Result.Success(books.size)
         }
-        override suspend fun uploadBookshelves(userId: String, shelves: List<BookshelfFirestoreDto>): Result<Int, DataError.Sync> {
+
+        override suspend fun uploadBookshelves(
+            userId: String,
+            shelves: List<BookshelfFirestoreDto>,
+        ): Result<Int, DataError.Sync> {
             shelves.forEach { uploadedShelves[it.id] = it }
             return Result.Success(shelves.size)
         }
-        override suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync> = Result.Success(null)
-        override suspend fun setUserPreferences(userId: String, preferences: UserPreferencesFirestoreDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+
+        override suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync> =
+            Result.Success(
+                null,
+            )
+
+        override suspend fun setUserPreferences(
+            userId: String,
+            preferences: UserPreferencesFirestoreDto,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
 
         // Book Club methods (not used by SyncEngine, but required by interface)
-        override suspend fun createBookClub(code: String, metadata: BookClubMetadataDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync> = Result.Success(null)
-        override suspend fun addBookClubMember(code: String, member: BookClubMemberDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync> = Result.Success(false)
-        override suspend fun addBookToClub(code: String, book: BookClubBookDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun updateBookClubCounts(code: String, bookCount: Int, memberCount: Int): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun updateBookClubName(code: String, name: String, lastModifiedAt: Long): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun updateBookClubStyle(code: String, style: String, lastModifiedAt: Long): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun createBookClub(
+            code: String,
+            metadata: BookClubMetadataDto,
+        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
+
+        override suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync> =
+            Result.Success(
+                null,
+            )
+
+        override suspend fun addBookClubMember(
+            code: String,
+            member: BookClubMemberDto,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> =
+            Result.Success(
+                emptyList(),
+            )
+
+        override suspend fun isMember(
+            code: String,
+            userId: String,
+        ): Result<Boolean, DataError.Sync> =
+            Result.Success(
+                false,
+            )
+
+        override suspend fun addBookToClub(
+            code: String,
+            book: BookClubBookDto,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> =
+            Result.Success(
+                emptyList(),
+            )
+
+        override suspend fun updateBookClubCounts(
+            code: String,
+            bookCount: Int,
+            memberCount: Int,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun updateBookClubName(
+            code: String,
+            name: String,
+            lastModifiedAt: Long,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun updateBookClubStyle(
+            code: String,
+            style: String,
+            lastModifiedAt: Long,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
         override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun addClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeBookClubMember(code: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookReviews(clubCode: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun upsertBookReview(clubCode: String, bookId: String, review: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun deleteBookReview(clubCode: String, bookId: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+
+        override suspend fun addClubMembership(
+            userId: String,
+            clubCode: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun removeClubMembership(
+            userId: String,
+            clubCode: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun removeBookFromClub(
+            code: String,
+            bookId: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun removeBookClubMember(
+            code: String,
+            userId: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun getBookReviews(
+            clubCode: String,
+            bookId: String,
+        ): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto>, DataError.Sync> =
+            Result.Success(
+                emptyList(),
+            )
+
+        override suspend fun upsertBookReview(
+            clubCode: String,
+            bookId: String,
+            review: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun deleteBookReview(
+            clubCode: String,
+            bookId: String,
+            userId: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
 
         // Comment methods (not used by SyncEngine, but required by interface)
-        override suspend fun getBookComments(clubCode: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun addBookComment(clubCode: String, bookId: String, comment: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto): Result<String, DataError.Sync> = Result.Success("comment-id")
-        override suspend fun editBookComment(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun deleteBookComment(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getBookComments(
+            clubCode: String,
+            bookId: String,
+        ): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto>, DataError.Sync> =
+            Result.Success(
+                emptyList(),
+            )
+
+        override suspend fun addBookComment(
+            clubCode: String,
+            bookId: String,
+            comment: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto,
+        ): Result<String, DataError.Sync> =
+            Result.Success(
+                "comment-id",
+            )
+
+        override suspend fun editBookComment(
+            clubCode: String,
+            bookId: String,
+            commentId: String,
+            newText: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
+
+        override suspend fun deleteBookComment(
+            clubCode: String,
+            bookId: String,
+            commentId: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(
+                Unit,
+            )
     }
 }

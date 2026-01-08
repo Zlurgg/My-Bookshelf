@@ -13,9 +13,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.map
  * Follows Clean Architecture by coordinating between data and domain layers.
  */
 class SearchBooksUseCaseImpl(
-    private val remoteBookDataSource: RemoteBookDataSource
+    private val remoteBookDataSource: RemoteBookDataSource,
 ) : SearchBooksUseCase {
-
     companion object {
         private const val MAX_QUERY_LENGTH = 200
         private const val MAX_AUTHOR_FILTER_LENGTH = 100
@@ -27,7 +26,7 @@ class SearchBooksUseCaseImpl(
         resultLimit: Int?,
         language: String?,
         authorFilter: String?,
-        titleFilter: String?
+        titleFilter: String?,
     ): Result<List<Book>, DataError.Remote> {
         // Validate input lengths to prevent abuse and performance issues
         if (query.length > MAX_QUERY_LENGTH) {
@@ -48,7 +47,7 @@ class SearchBooksUseCaseImpl(
             language = language,
             authorFilter = authorFilter,
             titleFilter = titleFilter,
-            sort = null  // Always use API's default relevance sorting
+            sort = null, // Always use API's default relevance sorting
         ).map { dto ->
             dto.results.map { it.toBook() }
         }

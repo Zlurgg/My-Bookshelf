@@ -11,7 +11,7 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 class SignInUseCase(
     private val authService: AuthService,
     private val authStateRepository: AuthStateRepository,
-    private val syncScheduler: SyncSchedulerService
+    private val syncScheduler: SyncSchedulerService,
 ) {
     companion object {
         private const val TAG = "SignIn"

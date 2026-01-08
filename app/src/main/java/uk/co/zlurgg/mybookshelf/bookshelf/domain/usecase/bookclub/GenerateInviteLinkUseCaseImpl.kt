@@ -13,23 +13,26 @@ import java.net.URLEncoder
  * Deep link format: mybookshelf://club/{clubCode}
  */
 class GenerateInviteLinkUseCaseImpl(
-    private val shareBaseUrl: String
+    private val shareBaseUrl: String,
 ) : GenerateInviteLinkUseCase {
-
     companion object {
         private const val CLUB_PATH = "club"
         private const val PARAM_CODE = "code"
         private const val PARAM_NAME = "name"
     }
 
-    override fun execute(clubCode: String, clubName: String?): String {
-        val builder = StringBuilder(shareBaseUrl)
-            .append("/")
-            .append(CLUB_PATH)
-            .append("?")
-            .append(PARAM_CODE)
-            .append("=")
-            .append(clubCode)
+    override fun execute(
+        clubCode: String,
+        clubName: String?,
+    ): String {
+        val builder =
+            StringBuilder(shareBaseUrl)
+                .append("/")
+                .append(CLUB_PATH)
+                .append("?")
+                .append(PARAM_CODE)
+                .append("=")
+                .append(clubCode)
 
         if (!clubName.isNullOrBlank()) {
             val encodedName = URLEncoder.encode(clubName, "UTF-8")

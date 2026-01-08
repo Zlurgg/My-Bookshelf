@@ -27,21 +27,22 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookThickness
 @Composable
 fun BookHorizontal(
     book: Book,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     val thickness = getBookThickness(book.numPages)
     Box(
-        modifier = Modifier
-            .clickable { onClick() }
-            .width(150.dp)
-            .height(thickness.dp) // Use page-based thickness
-            .background(Color(book.spineColor), shape = RoundedCornerShape(2.dp))
-            .padding(horizontal = 4.dp)
+        modifier =
+            Modifier
+                .clickable { onClick() }
+                .width(150.dp)
+                .height(thickness.dp) // Use page-based thickness
+                .background(Color(book.spineColor), shape = RoundedCornerShape(2.dp))
+                .padding(horizontal = 4.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = book.title,
@@ -49,16 +50,17 @@ fun BookHorizontal(
                 maxLines = 1,
                 fontSize = 10.sp,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             LoadImage(
                 imageUrl = book.imageUrl,
                 title = book.title,
-                modifier = Modifier
-                    .size((thickness * 0.9f).dp) // Scale with thickness
-                    .rotate(90f)
-                    .clip(RoundedCornerShape(2.dp))
+                modifier =
+                    Modifier
+                        .size((thickness * 0.9f).dp) // Scale with thickness
+                        .rotate(90f)
+                        .clip(RoundedCornerShape(2.dp)),
             )
         }
     }

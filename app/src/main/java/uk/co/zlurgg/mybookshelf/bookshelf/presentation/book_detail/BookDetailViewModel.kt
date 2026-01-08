@@ -16,23 +16,23 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class BookDetailViewModel(
     private val bookDetailUseCases: BookDetailUseCases,
     private val bookClubUseCases: BookClubUseCases,
     private val authService: AuthService,
     private val bookId: String,
-    private val shelfId: String
+    private val shelfId: String,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(BookDetailState())
     val state: StateFlow<BookDetailState> = _state.asStateFlow()
 
     // Job for debounced auto-save of personal notes
     private var saveNotesJob: Job? = null
+
     // Job for debounced auto-save of club review
     private var saveReviewJob: Job? = null
 
@@ -51,7 +51,7 @@ class BookDetailViewModel(
                     onShelf = bookDetails.isOnShelf,
                     isBookClub = bookDetails.isBookClub,
                     clubCode = bookDetails.clubCode,
-                    isLoading = false
+                    isLoading = false,
                 )
             }
 
@@ -93,7 +93,7 @@ class BookDetailViewModel(
                             clubReviews = reviews,
                             userClubRating = userReview?.rating ?: 0f,
                             userClubReviewText = userReview?.reviewText ?: "",
-                            isLoadingReviews = false
+                            isLoadingReviews = false,
                         )
                     }
                 }
@@ -101,10 +101,11 @@ class BookDetailViewModel(
                     _state.update {
                         it.copy(
                             isLoadingReviews = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(
-                                reviewsResult.error,
-                                "load club reviews"
-                            )
+                            errorMessage =
+                                ErrorFormatter.formatDataErrorMessage(
+                                    reviewsResult.error,
+                                    "load club reviews",
+                                ),
                         )
                     }
                 }
@@ -121,7 +122,7 @@ class BookDetailViewModel(
                     _state.update {
                         it.copy(
                             clubComments = commentsResult.data,
-                            isLoadingComments = false
+                            isLoadingComments = false,
                         )
                     }
                 }
@@ -129,10 +130,11 @@ class BookDetailViewModel(
                     _state.update {
                         it.copy(
                             isLoadingComments = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(
-                                commentsResult.error,
-                                "load club comments"
-                            )
+                            errorMessage =
+                                ErrorFormatter.formatDataErrorMessage(
+                                    commentsResult.error,
+                                    "load club comments",
+                                ),
                         )
                     }
                 }
@@ -142,7 +144,7 @@ class BookDetailViewModel(
 
     // Navigation callback
     private var onNavigateBack: (() -> Unit)? = null
-    
+
     fun setNavigationCallback(onBack: () -> Unit) {
         onNavigateBack = onBack
     }
@@ -182,7 +184,13 @@ class BookDetailViewModel(
                     val currentBook = state.value.book
                     if (currentBook != null) {
                         // Toggle: pass opposite of current purchased status
-                        when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(currentBook, !currentBook.purchased)) {
+                        when (
+                            val purchaseResult =
+                                bookDetailUseCases.toggleBookPurchase.execute(
+                                    currentBook,
+                                    !currentBook.purchased,
+                                )
+                        ) {
                             is Result.Success -> {
                                 // Update state immediately following renameShelf pattern
                                 _state.update { it.copy(book = purchaseResult.data) }
@@ -202,7 +210,7 @@ class BookDetailViewModel(
                     // Always save current notes state before navigating (idempotent operation)
                     bookDetailUseCases.updateBookMetadata.execute(
                         bookId = bookId,
-                        personalNotes = state.value.book?.personalNotes
+                        personalNotes = state.value.book?.personalNotes,
                     )
                     // Note: Ignoring result - this is best-effort save before navigation
 
@@ -225,10 +233,13 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnReadingStatusChange -> {
                 viewModelScope.launch {
-                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
-                        bookId = bookId,
-                        readingStatus = action.status
-                    )) {
+                    when (
+                        val metadataResult =
+                            bookDetailUseCases.updateBookMetadata.execute(
+                                bookId = bookId,
+                                readingStatus = action.status,
+                            )
+                    ) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
                             _state.update { it.updateBook { book -> book?.copy(readingStatus = action.status) } }
@@ -241,10 +252,13 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnPersonalRatingChange -> {
                 viewModelScope.launch {
-                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
-                        bookId = bookId,
-                        personalRating = action.rating
-                    )) {
+                    when (
+                        val metadataResult =
+                            bookDetailUseCases.updateBookMetadata.execute(
+                                bookId = bookId,
+                                personalRating = action.rating,
+                            )
+                    ) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
                             _state.update { it.updateBook { book -> book?.copy(personalRating = action.rating) } }
@@ -263,22 +277,26 @@ class BookDetailViewModel(
                 _state.update { it.updateBook { book -> book?.copy(personalNotes = action.notes) } }
 
                 // Start debounced auto-save (2 seconds after user stops typing)
-                saveNotesJob = viewModelScope.launch {
-                    delay(2000) // Wait 2 seconds
+                saveNotesJob =
+                    viewModelScope.launch {
+                        delay(2000) // Wait 2 seconds
 
-                    // Execute actual save to database
-                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
-                        bookId = bookId,
-                        personalNotes = action.notes
-                    )) {
-                        is Result.Success -> {
-                            // Save successful - state already updated above
-                        }
-                        is Result.Error -> {
-                            _state.update { it.withError(metadataResult.error, "update personal notes") }
+                        // Execute actual save to database
+                        when (
+                            val metadataResult =
+                                bookDetailUseCases.updateBookMetadata.execute(
+                                    bookId = bookId,
+                                    personalNotes = action.notes,
+                                )
+                        ) {
+                            is Result.Success -> {
+                                // Save successful - state already updated above
+                            }
+                            is Result.Error -> {
+                                _state.update { it.withError(metadataResult.error, "update personal notes") }
+                            }
                         }
                     }
-                }
             }
 
             // Club review actions
@@ -295,11 +313,12 @@ class BookDetailViewModel(
                 _state.update { it.copy(userClubReviewText = action.text) }
 
                 // Start debounced auto-save (2 seconds after user stops typing)
-                saveReviewJob = viewModelScope.launch {
-                    delay(2000) // Wait 2 seconds
-                    val clubCode = state.value.clubCode ?: return@launch
-                    submitClubReview(clubCode, state.value.userClubRating, action.text)
-                }
+                saveReviewJob =
+                    viewModelScope.launch {
+                        delay(2000) // Wait 2 seconds
+                        val clubCode = state.value.clubCode ?: return@launch
+                        submitClubReview(clubCode, state.value.userClubRating, action.text)
+                    }
             }
             is BookDetailAction.OnClubReviewSubmit -> {
                 val clubCode = state.value.clubCode ?: return
@@ -316,9 +335,10 @@ class BookDetailViewModel(
                                     userClubRating = 0f,
                                     userClubReviewText = "",
                                     // Remove user's review from the list
-                                    clubReviews = it.clubReviews.filter { review ->
-                                        review.userId != authService.getSignedInUser()?.userId
-                                    }
+                                    clubReviews =
+                                        it.clubReviews.filter { review ->
+                                            review.userId != authService.getSignedInUser()?.userId
+                                        },
                                 )
                             }
                         }
@@ -354,7 +374,7 @@ class BookDetailViewModel(
                 _state.update {
                     it.copy(
                         editingCommentId = action.commentId,
-                        editingCommentText = action.currentText
+                        editingCommentText = action.currentText,
                     )
                 }
             }
@@ -373,7 +393,7 @@ class BookDetailViewModel(
                             _state.update {
                                 it.copy(
                                     editingCommentId = null,
-                                    editingCommentText = ""
+                                    editingCommentText = "",
                                 )
                             }
                             loadClubComments(clubCode)
@@ -388,14 +408,21 @@ class BookDetailViewModel(
                 _state.update {
                     it.copy(
                         editingCommentId = null,
-                        editingCommentText = ""
+                        editingCommentText = "",
                     )
                 }
             }
             is BookDetailAction.OnCommentDelete -> {
                 val clubCode = state.value.clubCode ?: return
                 viewModelScope.launch {
-                    when (val deleteResult = bookClubUseCases.deleteBookClubComment(clubCode, bookId, action.commentId)) {
+                    when (
+                        val deleteResult =
+                            bookClubUseCases.deleteBookClubComment(
+                                clubCode,
+                                bookId,
+                                action.commentId,
+                            )
+                    ) {
                         is Result.Success -> {
                             loadClubComments(clubCode)
                         }
@@ -408,14 +435,21 @@ class BookDetailViewModel(
         }
     }
 
-    private fun submitClubReview(clubCode: String, rating: Float, reviewText: String) {
+    private fun submitClubReview(
+        clubCode: String,
+        rating: Float,
+        reviewText: String,
+    ) {
         viewModelScope.launch {
-            when (val upsertResult = bookClubUseCases.upsertBookClubReview(
-                clubCode = clubCode,
-                bookId = bookId,
-                rating = rating,
-                reviewText = reviewText
-            )) {
+            when (
+                val upsertResult =
+                    bookClubUseCases.upsertBookClubReview(
+                        clubCode = clubCode,
+                        bookId = bookId,
+                        rating = rating,
+                        reviewText = reviewText,
+                    )
+            ) {
                 is Result.Success -> {
                     // Reload reviews to get updated list
                     loadClubReviews(clubCode)
@@ -431,7 +465,10 @@ class BookDetailViewModel(
     // State Update Helpers (Private Extensions)
     // ============================================================================
 
-    private fun BookDetailState.withError(error: DataError, operation: String): BookDetailState {
+    private fun BookDetailState.withError(
+        error: DataError,
+        operation: String,
+    ): BookDetailState {
         return copy(errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation))
     }
 
@@ -443,4 +480,3 @@ class BookDetailViewModel(
         return copy(onShelf = onShelf)
     }
 }
-

@@ -15,5 +15,8 @@ interface RenameShelfUseCase {
      * @param newName New name for the shelf (will be trimmed)
      * @return Result.Success if renamed, Result.Error if validation fails or shelf not found
      */
-    suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local>
+    suspend fun execute(
+        shelfId: String,
+        newName: String,
+    ): Result<Unit, DataError.Local>
 }

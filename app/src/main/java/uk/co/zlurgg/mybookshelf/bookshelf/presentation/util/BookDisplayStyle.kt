@@ -4,5 +4,5 @@ enum class BookDisplayStyle {
     VERTICAL,
     LEANING_LEFT,
     LEANING_RIGHT,
-    HORIZONTAL_STACK
+    HORIZONTAL_STACK,
 }

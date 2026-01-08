@@ -10,5 +10,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 interface DeleteShelfUseCase {
     suspend fun execute(shelfId: String): Result<Unit, DataError.Local>
+
     suspend fun restore(shelf: Bookshelf): Result<Unit, DataError.Local>
 }

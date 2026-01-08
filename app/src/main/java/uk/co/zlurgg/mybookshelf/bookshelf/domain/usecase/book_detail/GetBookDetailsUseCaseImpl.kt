@@ -3,8 +3,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookDetailsWithShelfStatus
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -17,10 +17,12 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class GetBookDetailsUseCaseImpl(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
-    private val bookcaseRepository: BookcaseRepository
+    private val bookcaseRepository: BookcaseRepository,
 ) : GetBookDetailsUseCase {
-
-    override suspend fun execute(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> {
+    override suspend fun execute(
+        bookId: String,
+        shelfId: String,
+    ): Flow<BookDetailsWithShelfStatus> {
         // Get shelf info to check if it's a book club
         val shelf = bookcaseRepository.getShelfById(shelfId)
         val isBookClub = shelf?.isBookClub ?: false
@@ -32,13 +34,13 @@ class GetBookDetailsUseCaseImpl(
                 // Convert single book fetch to Flow behavior by getting book once
                 kotlinx.coroutines.flow.flow {
                     emit(bookRepository.getBookById(bookId))
-                }
+                },
             ) { isOnShelf, book ->
                 BookDetailsWithShelfStatus(
                     book = book,
                     isOnShelf = isOnShelf,
                     isBookClub = isBookClub,
-                    clubCode = clubCode
+                    clubCode = clubCode,
                 )
             }
     }
@@ -60,7 +62,7 @@ class GetBookDetailsUseCaseImpl(
         } catch (e: Exception) {
             Result.Error(
                 ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
+                    ?: DataError.Local.UNKNOWN,
             )
         }
     }

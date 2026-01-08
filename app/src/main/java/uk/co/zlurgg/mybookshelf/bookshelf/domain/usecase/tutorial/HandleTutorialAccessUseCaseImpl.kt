@@ -18,9 +18,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class HandleTutorialAccessUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
     private val getOrCreateTutorialShelf: GetOrCreateTutorialShelfUseCase,
-    private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
+    private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase,
 ) : HandleTutorialAccessUseCase {
-
     override suspend fun execute(): Result<TutorialAccessResult, DataError.Local> {
         return ErrorMapper.safeCall {
             // Check if tutorial shelf already exists
@@ -31,15 +30,16 @@ class HandleTutorialAccessUseCaseImpl(
                 // Tutorial shelf exists - navigate to tutorial book
                 val tutorialBook = tutorialShelf.books.firstOrNull()
 
-                val bookId = tutorialBook?.id ?: // Book exists, use ID if it doesn't exist, create it
-                    when (val result = getOrCreateTutorialBook.execute(tutorialShelf.id)) {
-                        is Result.Success -> result.data
-                        is Result.Error -> throw Exception("Failed to create tutorial book: ${result.error}")
-                    }
+                val bookId =
+                    tutorialBook?.id ?: // Book exists, use ID if it doesn't exist, create it
+                        when (val result = getOrCreateTutorialBook.execute(tutorialShelf.id)) {
+                            is Result.Success -> result.data
+                            is Result.Error -> throw Exception("Failed to create tutorial book: ${result.error}")
+                        }
 
                 TutorialAccessResult.NavigateToBook(
                     shelfId = tutorialShelf.id,
-                    bookId = bookId
+                    bookId = bookId,
                 )
             } else {
                 // Tutorial doesn't exist, create silently without navigating

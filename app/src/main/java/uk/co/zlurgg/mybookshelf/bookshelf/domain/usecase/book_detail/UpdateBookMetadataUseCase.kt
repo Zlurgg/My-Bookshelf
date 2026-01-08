@@ -16,6 +16,6 @@ interface UpdateBookMetadataUseCase {
         readingStatus: ReadingStatus? = null,
         personalRating: Float? = null,
         personalNotes: String? = null,
-        purchaseDate: Long? = null
+        purchaseDate: Long? = null,
     ): Result<Unit, DataError>
 }

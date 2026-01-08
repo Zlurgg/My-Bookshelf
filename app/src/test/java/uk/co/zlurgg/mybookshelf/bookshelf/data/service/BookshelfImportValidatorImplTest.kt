@@ -20,7 +20,6 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
  * Mocks: MockBookcaseRepository
  */
 class BookshelfImportValidatorImplTest {
-
     private lateinit var mockBookcaseRepository: MockBookcaseRepository
     private lateinit var validator: BookshelfImportValidatorImpl
 
@@ -42,7 +41,6 @@ class BookshelfImportValidatorImplTest {
         assertTrue("Should succeed", result is Result.Success)
     }
 
-
     @Test
     fun `validateFormat rejects blank shelf name`() {
         // Given
@@ -53,9 +51,11 @@ class BookshelfImportValidatorImplTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return validation error",
+        assertEquals(
+            "Should return validation error",
             DataError.Local.VALIDATION_ERROR,
-            (result as Result.Error).error)
+            (result as Result.Error).error,
+        )
     }
 
     @Test
@@ -68,97 +68,113 @@ class BookshelfImportValidatorImplTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return validation error",
+        assertEquals(
+            "Should return validation error",
             DataError.Local.VALIDATION_ERROR,
-            (result as Result.Error).error)
+            (result as Result.Error).error,
+        )
     }
 
     @Test
-    fun `checkNameConflict returns null when no conflict exists`() = runTest {
-        // Given
-        val existingShelf = TestShelfBuilder()
-            .withName("Existing Shelf")
-            .build()
-        mockBookcaseRepository.configureShelves(listOf(existingShelf))
+    fun `checkNameConflict returns null when no conflict exists`() =
+        runTest {
+            // Given
+            val existingShelf =
+                TestShelfBuilder()
+                    .withName("Existing Shelf")
+                    .build()
+            mockBookcaseRepository.configureShelves(listOf(existingShelf))
 
-        // When
-        val result = validator.checkNameConflict("New Shelf")
+            // When
+            val result = validator.checkNameConflict("New Shelf")
 
-        // Then
-        assertTrue("Should succeed", result is Result.Success)
-        assertNull("Should not find conflict", (result as Result.Success).data)
-    }
-
-    @Test
-    fun `checkNameConflict returns conflicting name when duplicate found`() = runTest {
-        // Given
-        val existingShelf = TestShelfBuilder()
-            .withName("Fiction")
-            .build()
-        mockBookcaseRepository.configureShelves(listOf(existingShelf))
-
-        // When
-        val result = validator.checkNameConflict("Fiction")
-
-        // Then
-        assertTrue("Should succeed", result is Result.Success)
-        assertEquals("Should find conflict",
-            "Fiction",
-            (result as Result.Success).data)
-    }
+            // Then
+            assertTrue("Should succeed", result is Result.Success)
+            assertNull("Should not find conflict", (result as Result.Success).data)
+        }
 
     @Test
-    fun `checkNameConflict handles multiple shelves correctly`() = runTest {
-        // Given
-        val shelf1 = TestShelfBuilder().withName("Fiction").build()
-        val shelf2 = TestShelfBuilder().withName("Non-Fiction").build()
-        val shelf3 = TestShelfBuilder().withName("Biography").build()
-        mockBookcaseRepository.configureShelves(listOf(shelf1, shelf2, shelf3))
+    fun `checkNameConflict returns conflicting name when duplicate found`() =
+        runTest {
+            // Given
+            val existingShelf =
+                TestShelfBuilder()
+                    .withName("Fiction")
+                    .build()
+            mockBookcaseRepository.configureShelves(listOf(existingShelf))
 
-        // When
-        val result = validator.checkNameConflict("Non-Fiction")
+            // When
+            val result = validator.checkNameConflict("Fiction")
 
-        // Then
-        assertTrue("Should succeed", result is Result.Success)
-        assertEquals("Should find exact match",
-            "Non-Fiction",
-            (result as Result.Success).data)
-    }
-
-    @Test
-    fun `checkNameConflict handles empty bookcase`() = runTest {
-        // Given
-        mockBookcaseRepository.configureShelves(emptyList())
-
-        // When
-        val result = validator.checkNameConflict("Any Name")
-
-        // Then
-        assertTrue("Should succeed", result is Result.Success)
-        assertNull("Should not find conflict in empty bookcase",
-            (result as Result.Success).data)
-    }
+            // Then
+            assertTrue("Should succeed", result is Result.Success)
+            assertEquals(
+                "Should find conflict",
+                "Fiction",
+                (result as Result.Success).data,
+            )
+        }
 
     @Test
-    fun `checkNameConflict handles repository exception`() = runTest {
-        // Given
-        mockBookcaseRepository.shouldThrowException = true
+    fun `checkNameConflict handles multiple shelves correctly`() =
+        runTest {
+            // Given
+            val shelf1 = TestShelfBuilder().withName("Fiction").build()
+            val shelf2 = TestShelfBuilder().withName("Non-Fiction").build()
+            val shelf3 = TestShelfBuilder().withName("Biography").build()
+            mockBookcaseRepository.configureShelves(listOf(shelf1, shelf2, shelf3))
 
-        // When
-        val result = validator.checkNameConflict("Fiction")
+            // When
+            val result = validator.checkNameConflict("Non-Fiction")
 
-        // Then
-        assertTrue("Should fail", result is Result.Error)
-        // Error will always be DataError.Local due to ErrorMapper implementation
-    }
+            // Then
+            assertTrue("Should succeed", result is Result.Success)
+            assertEquals(
+                "Should find exact match",
+                "Non-Fiction",
+                (result as Result.Success).data,
+            )
+        }
+
+    @Test
+    fun `checkNameConflict handles empty bookcase`() =
+        runTest {
+            // Given
+            mockBookcaseRepository.configureShelves(emptyList())
+
+            // When
+            val result = validator.checkNameConflict("Any Name")
+
+            // Then
+            assertTrue("Should succeed", result is Result.Success)
+            assertNull(
+                "Should not find conflict in empty bookcase",
+                (result as Result.Success).data,
+            )
+        }
+
+    @Test
+    fun `checkNameConflict handles repository exception`() =
+        runTest {
+            // Given
+            mockBookcaseRepository.shouldThrowException = true
+
+            // When
+            val result = validator.checkNameConflict("Fiction")
+
+            // Then
+            assertTrue("Should fail", result is Result.Error)
+            // Error will always be DataError.Local due to ErrorMapper implementation
+        }
 
     private fun createExportData(shelfName: String): BookshelfExportData {
         return BookshelfExportData(
-            bookshelf = ExportedBookshelf(
-                name = shelfName,
-                shelfStyle = ShelfStyle.DarkWood,
-                bookIds = emptyList()
-            )
+            bookshelf =
+                ExportedBookshelf(
+                    name = shelfName,
+                    shelfStyle = ShelfStyle.DarkWood,
+                    bookIds = emptyList(),
+                ),
         )
     }
 }

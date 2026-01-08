@@ -8,5 +8,5 @@ data class BookClubMembership(
     val clubCode: String,
     val localShelfId: String,
     val joinedAt: Long,
-    val lastSyncedAt: Long
+    val lastSyncedAt: Long,
 )

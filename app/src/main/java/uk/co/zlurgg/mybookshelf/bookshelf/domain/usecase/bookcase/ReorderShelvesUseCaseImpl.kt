@@ -7,13 +7,12 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class ReorderShelvesUseCaseImpl(
-    private val repository: BookcaseRepository
+    private val repository: BookcaseRepository,
 ) : ReorderShelvesUseCase {
-
     override suspend fun execute(
         shelfToMove: Bookshelf,
         newPosition: Int,
-        currentShelves: List<Bookshelf>
+        currentShelves: List<Bookshelf>,
     ): Result<List<Bookshelf>, DataError.Local> {
         return try {
             val currentShelfIndex = currentShelves.indexOfFirst { it.id == shelfToMove.id }
@@ -23,21 +22,24 @@ class ReorderShelvesUseCaseImpl(
             }
 
             // Create reordered list with updated positions
-            val reorderedList = currentShelves.toMutableList().apply {
-                removeAt(currentShelfIndex)
-                add(newPosition.coerceIn(0, size), shelfToMove.copy(position = newPosition))
-            }
+            val reorderedList =
+                currentShelves.toMutableList().apply {
+                    removeAt(currentShelfIndex)
+                    add(newPosition.coerceIn(0, size), shelfToMove.copy(position = newPosition))
+                }
 
             // Update positions for all affected shelves
-            val updatedShelves = reorderedList.mapIndexed { index, bookshelf ->
-                bookshelf.copy(position = index)
-            }
+            val updatedShelves =
+                reorderedList.mapIndexed { index, bookshelf ->
+                    bookshelf.copy(position = index)
+                }
 
             // Persist changes - only update shelves whose positions actually changed
             val originalPositions = currentShelves.associate { it.id to it.position }
-            val shelvesToUpdate = updatedShelves.filter {
-                originalPositions[it.id] != it.position
-            }
+            val shelvesToUpdate =
+                updatedShelves.filter {
+                    originalPositions[it.id] != it.position
+                }
 
             shelvesToUpdate.forEach { updatedShelf ->
                 repository.updateShelf(updatedShelf)

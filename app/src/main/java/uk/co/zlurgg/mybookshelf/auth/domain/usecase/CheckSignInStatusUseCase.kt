@@ -6,7 +6,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 
 class CheckSignInStatusUseCase(
     private val authService: AuthService,
-    private val authStateRepository: AuthStateRepository
+    private val authStateRepository: AuthStateRepository,
 ) {
     companion object {
         private const val TAG = "AuthStatus"
@@ -18,8 +18,12 @@ class CheckSignInStatusUseCase(
 
         val isSignedIn = localState && firebaseUser != null
 
-        Timber.tag(TAG).d("Auth status - Local: %s, Firebase: %s, Result: %s",
-            localState, firebaseUser != null, isSignedIn)
+        Timber.tag(TAG).d(
+            "Auth status - Local: %s, Firebase: %s, Result: %s",
+            localState,
+            firebaseUser != null,
+            isSignedIn,
+        )
 
         return isSignedIn
     }

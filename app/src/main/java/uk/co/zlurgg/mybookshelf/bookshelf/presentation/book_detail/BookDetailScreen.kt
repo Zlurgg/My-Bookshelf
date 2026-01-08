@@ -25,32 +25,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import uk.co.zlurgg.mybookshelf.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.BookDetailImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.BookOverviewCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.RecommendationStatusCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PersonalNotesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubCommentsCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubRatingCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.CommunityRatingsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.DescriptionCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PublicationDetailsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.LanguagesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PersonalNotesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PublicationDetailsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PurchasedToggleCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.RecommendationStatusCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubRatingCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubReviewsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubCommentsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBook
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
-import org.koin.compose.koinInject
-import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 
 @Composable
 fun BookDetailsScreenRoot(
     viewModel: BookDetailViewModel = koinViewModel(),
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -61,7 +60,7 @@ fun BookDetailsScreenRoot(
 
     BookDetailsScreen(
         state = state,
-        onAction = viewModel::onAction
+        onAction = viewModel::onAction,
     )
 }
 
@@ -71,7 +70,7 @@ fun BookDetailsScreen(
     state: BookDetailState,
     onAction: (BookDetailAction) -> Unit,
     modifier: Modifier = Modifier,
-    authService: AuthService = koinInject()
+    authService: AuthService = koinInject(),
 ) {
     if (state.book != null) {
         val isTutorialBook = state.book.id == BookDetailConstants.TUTORIAL_BOOK_ID
@@ -85,10 +84,10 @@ fun BookDetailsScreen(
                         IconButton(onClick = { onAction(BookDetailAction.OnBackClick) }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(id = R.string.action_close)
+                                contentDescription = stringResource(id = R.string.action_close),
                             )
                         }
-                    }
+                    },
                 )
             },
             bottomBar = {
@@ -102,11 +101,11 @@ fun BookDetailsScreen(
                         },
                         onRemoveFromShelf = { book ->
                             onAction(BookDetailAction.OnRemoveBookClick(book))
-                        }
+                        },
                     )
                 }
             },
-            modifier = modifier
+            modifier = modifier,
         ) { innerPadding ->
             // Image visibility state
             var showImageWithSpacing by remember(state.book.imageUrl) {
@@ -114,11 +113,12 @@ fun BookDetailsScreen(
             }
 
             LazyColumn(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize(),
+                modifier =
+                    Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(),
                 contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 if (isTutorialBook) {
                     // Simplified read-only view for tutorial book
@@ -129,7 +129,7 @@ fun BookDetailsScreen(
                             authors = state.book.authors,
                             firstPublishYear = state.book.firstPublishYear,
                             numPages = state.book.numPages,
-                            numEditions = state.book.numEditions
+                            numEditions = state.book.numEditions,
                         )
                     }
 
@@ -143,7 +143,7 @@ fun BookDetailsScreen(
                                     if (!success) {
                                         showImageWithSpacing = false
                                     }
-                                }
+                                },
                             )
                         }
                     }
@@ -152,7 +152,7 @@ fun BookDetailsScreen(
                     item {
                         DescriptionCard(
                             description = state.book.description,
-                            initiallyExpanded = true  // Show full tutorial content by default
+                            initiallyExpanded = true, // Show full tutorial content by default
                         )
                     }
                 } else if (state.isBookClub) {
@@ -164,7 +164,7 @@ fun BookDetailsScreen(
                             authors = state.book.authors,
                             firstPublishYear = state.book.firstPublishYear,
                             numPages = state.book.numPages,
-                            numEditions = state.book.numEditions
+                            numEditions = state.book.numEditions,
                         )
                     }
 
@@ -178,7 +178,7 @@ fun BookDetailsScreen(
                                     if (!success) {
                                         showImageWithSpacing = false
                                     }
-                                }
+                                },
                             )
                         }
                     }
@@ -190,7 +190,7 @@ fun BookDetailsScreen(
                             userClubRating = state.userClubRating,
                             onClubRatingChange = { rating ->
                                 onAction(BookDetailAction.OnClubRatingChange(rating))
-                            }
+                            },
                         )
                     }
 
@@ -223,7 +223,7 @@ fun BookDetailsScreen(
                             onCommentDelete = { commentId ->
                                 onAction(BookDetailAction.OnCommentDelete(commentId))
                             },
-                            isLoading = state.isLoadingComments
+                            isLoading = state.isLoadingComments,
                         )
                     }
                 } else {
@@ -235,7 +235,7 @@ fun BookDetailsScreen(
                             authors = state.book.authors,
                             firstPublishYear = state.book.firstPublishYear,
                             numPages = state.book.numPages,
-                            numEditions = state.book.numEditions
+                            numEditions = state.book.numEditions,
                         )
                     }
 
@@ -249,7 +249,7 @@ fun BookDetailsScreen(
                                     if (!success) {
                                         showImageWithSpacing = false
                                     }
-                                }
+                                },
                             )
                         }
                     }
@@ -265,7 +265,7 @@ fun BookDetailsScreen(
                                 },
                                 onPersonalRatingChange = { rating ->
                                     onAction(BookDetailAction.OnPersonalRatingChange(rating))
-                                }
+                                },
                             )
                         }
                     }
@@ -277,7 +277,7 @@ fun BookDetailsScreen(
                                 notes = state.book.personalNotes,
                                 onNotesChange = { notes ->
                                     onAction(BookDetailAction.OnPersonalNotesChange(notes))
-                                }
+                                },
                             )
                         }
                     }
@@ -286,14 +286,14 @@ fun BookDetailsScreen(
                     item {
                         CommunityRatingsCard(
                             averageRating = state.book.averageRating,
-                            ratingCount = state.book.ratingCount
+                            ratingCount = state.book.ratingCount,
                         )
                     }
 
                     // 5. Description Card
                     item {
                         DescriptionCard(
-                            description = state.book.description
+                            description = state.book.description,
                         )
                     }
 
@@ -303,14 +303,14 @@ fun BookDetailsScreen(
                             isbn = state.book.isbn,
                             publisher = state.book.publisher,
                             publishDate = state.book.publishDate,
-                            internetArchiveId = state.book.internetArchiveId
+                            internetArchiveId = state.book.internetArchiveId,
                         )
                     }
 
                     // 7. Languages Card
                     item {
                         LanguagesCard(
-                            languages = state.book.languages
+                            languages = state.book.languages,
                         )
                     }
 
@@ -320,7 +320,7 @@ fun BookDetailsScreen(
                             purchased = state.book.purchased,
                             onPurchaseToggle = {
                                 onAction(BookDetailAction.OnPurchaseClick)
-                            }
+                            },
                         )
                     }
 
@@ -332,10 +332,11 @@ fun BookDetailsScreen(
         // Minimal fallback to avoid blank page
         Scaffold { innerPadding ->
             Column(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-                    .padding(16.dp)
+                modifier =
+                    Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .padding(16.dp),
             ) {
                 Text(stringResource(id = R.string.bookdetail_loading))
             }
@@ -347,10 +348,11 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailScreenPreview() {
     BookDetailsScreen(
-        state = BookDetailState(
-            book = sampleBook,
-            onShelf = false
-        ),
-        onAction = {}
+        state =
+            BookDetailState(
+                book = sampleBook,
+                onShelf = false,
+            ),
+        onAction = {},
     )
 }

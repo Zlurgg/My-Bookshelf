@@ -17,10 +17,9 @@ data class SearchedBookDto(
     @SerialName("ratings_count") val ratingsCount: Int? = null,
     @SerialName("number_of_pages_median") val numPagesMedian: Int? = null,
     @SerialName("edition_count") val numEditions: Int? = null,
-
     // Enhanced metadata from API
     @SerialName("isbn") val isbns: List<String>? = null,
     @SerialName("publisher") val publishers: List<String>? = null,
     @SerialName("publish_date") val publishDates: List<String>? = null,
-    @SerialName("ia") val internetArchiveIds: List<String>? = null
+    @SerialName("ia") val internetArchiveIds: List<String>? = null,
 )

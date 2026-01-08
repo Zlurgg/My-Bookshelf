@@ -10,5 +10,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 interface BookshelfDataOrchestrator {
     suspend fun loadShelfForExport(shelfId: String): Result<Bookshelf, DataError.Local>
+
     suspend fun importShelfToDatabase(shelf: Bookshelf): Result<Unit, DataError.Local>
 }

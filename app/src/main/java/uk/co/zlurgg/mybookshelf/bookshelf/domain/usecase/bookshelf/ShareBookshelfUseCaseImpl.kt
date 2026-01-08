@@ -5,9 +5,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class ShareBookshelfUseCaseImpl(
-    private val bookshelfExportService: BookshelfExportService
+    private val bookshelfExportService: BookshelfExportService,
 ) : ShareBookshelfUseCase {
-
     override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> {
         return bookshelfExportService.shareBookshelf(shelfId)
     }

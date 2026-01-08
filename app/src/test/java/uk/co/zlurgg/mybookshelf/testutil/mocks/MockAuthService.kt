@@ -10,7 +10,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Provides configurable behavior for testing different authentication scenarios.
  */
 class MockAuthService : AuthService {
-
     // Configuration properties
     private var currentUser: UserData? = null
     var signInResult: Result<UserData, DataError.Local> = Result.Error(DataError.Local.AUTH_FAILED)
@@ -43,7 +42,10 @@ class MockAuthService : AuthService {
         signOutCalled = false
     }
 
-    fun configureSignedIn(userId: String = "test-user", username: String = "Test User") {
+    fun configureSignedIn(
+        userId: String = "test-user",
+        username: String = "Test User",
+    ) {
         currentUser = UserData(userId = userId, username = username, profilePictureUrl = null)
     }
 

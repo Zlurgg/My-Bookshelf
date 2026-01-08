@@ -34,9 +34,8 @@ class SyncRepositoryImpl(
     private val syncDao: SyncDao,
     private val bookshelfDao: BookshelfDao,
     private val connectivityMonitor: ConnectivityMonitor,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
 ) : SyncRepository {
-
     override suspend fun performSync(userId: String): Result<SyncResult, DataError.Sync> {
         Timber.tag(TAG).d("=== FULL SYNC REQUESTED for user: %s ===", userId)
 
@@ -72,43 +71,50 @@ class SyncRepositoryImpl(
 
     override suspend fun resolveConflict(
         conflict: SyncConflict,
-        resolution: ConflictResolution
+        resolution: ConflictResolution,
     ): Result<Unit, DataError.Sync> {
-        Timber.tag(TAG).d("Resolving conflict for entity: %s with resolution: %s",
-            conflict.entityId, resolution)
+        Timber.tag(TAG).d(
+            "Resolving conflict for entity: %s with resolution: %s",
+            conflict.entityId,
+            resolution,
+        )
 
         // For now, we just mark it as resolved by updating the sync status
         // The actual resolution logic is handled by ConflictResolver during sync
         return try {
             when (conflict.entityType) {
                 EntityType.BOOK -> {
-                    val newStatus = when (resolution) {
-                        ConflictResolution.KeepLocal -> "PENDING"
-                        ConflictResolution.KeepRemote -> "SYNCED"
-                        else -> "PENDING"
-                    }
+                    val newStatus =
+                        when (resolution) {
+                            ConflictResolution.KeepLocal -> "PENDING"
+                            ConflictResolution.KeepRemote -> "SYNCED"
+                            else -> "PENDING"
+                        }
                     bookshelfDao.updateBookSyncStatus(
                         conflict.entityId,
                         newStatus,
-                        timeProvider.currentTimeMillis()
+                        timeProvider.currentTimeMillis(),
                     )
                 }
                 EntityType.BOOKSHELF -> {
-                    val newStatus = when (resolution) {
-                        ConflictResolution.KeepLocal -> "PENDING"
-                        ConflictResolution.KeepRemote -> "SYNCED"
-                        else -> "PENDING"
-                    }
+                    val newStatus =
+                        when (resolution) {
+                            ConflictResolution.KeepLocal -> "PENDING"
+                            ConflictResolution.KeepRemote -> "SYNCED"
+                            else -> "PENDING"
+                        }
                     bookshelfDao.updateShelfSyncStatus(
                         conflict.entityId,
                         newStatus,
-                        timeProvider.currentTimeMillis()
+                        timeProvider.currentTimeMillis(),
                     )
                 }
                 EntityType.CROSS_REF -> {
                     // Cross-refs are synced as part of bookshelf, no direct handling needed
-                    Timber.tag(TAG).d("Cross-ref conflict for: %s - delegating to bookshelf sync",
-                        conflict.entityId)
+                    Timber.tag(TAG).d(
+                        "Cross-ref conflict for: %s - delegating to bookshelf sync",
+                        conflict.entityId,
+                    )
                 }
             }
             Timber.tag(TAG).d("Conflict resolved successfully for: %s", conflict.entityId)
@@ -128,7 +134,7 @@ class SyncRepositoryImpl(
         return combine(
             syncDao.observeSyncMetadata(userId),
             connectivityMonitor.observeConnectivity(),
-            syncEngine.progress
+            syncEngine.progress,
         ) { metadata, isConnected, progress ->
             when {
                 // Not connected - offline state
@@ -144,7 +150,7 @@ class SyncRepositoryImpl(
                     SyncState.Error(
                         message = metadata.lastSyncError,
                         isRetryable = isRetryableError(metadata.lastSyncError),
-                        lastAttemptTimestamp = metadata.lastSyncTimestamp
+                        lastAttemptTimestamp = metadata.lastSyncTimestamp,
                     )
                 }
 
@@ -153,7 +159,7 @@ class SyncRepositoryImpl(
                     val conflicts = syncEngine.getUnresolvedConflicts()
                     SyncState.HasConflicts(
                         conflictCount = conflicts.size,
-                        conflictIds = conflicts.map { it.entityId }
+                        conflictIds = conflicts.map { it.entityId },
                     )
                 }
 
@@ -161,15 +167,16 @@ class SyncRepositoryImpl(
                 metadata?.lastSyncTimestamp != null && metadata.lastSyncTimestamp > 0 -> {
                     SyncState.Idle(
                         lastSyncTimestamp = metadata.lastSyncTimestamp,
-                        pendingChangesCount = metadata.pendingOperationsCount
+                        pendingChangesCount = metadata.pendingOperationsCount,
                     )
                 }
 
                 // Never synced but user is signed in
-                else -> SyncState.Idle(
-                    lastSyncTimestamp = 0L,
-                    pendingChangesCount = 0
-                )
+                else ->
+                    SyncState.Idle(
+                        lastSyncTimestamp = 0L,
+                        pendingChangesCount = 0,
+                    )
             }
         }
     }
@@ -180,13 +187,15 @@ class SyncRepositoryImpl(
     }
 
     override suspend fun getPendingChangesCount(userId: String): Int {
-        val pendingBooks = bookshelfDao.getPendingSyncBooks()
-            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
-            .size
+        val pendingBooks =
+            bookshelfDao.getPendingSyncBooks()
+                .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
+                .size
 
-        val pendingShelves = bookshelfDao.getPendingSyncShelves()
-            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
-            .size
+        val pendingShelves =
+            bookshelfDao.getPendingSyncShelves()
+                .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
+                .size
 
         return pendingBooks + pendingShelves
     }
@@ -207,11 +216,13 @@ class SyncRepositoryImpl(
         return when (error) {
             DataError.Sync.NETWORK_ERROR.name,
             DataError.Sync.SYNC_IN_PROGRESS.name,
-            DataError.Sync.UNKNOWN.name -> true
+            DataError.Sync.UNKNOWN.name,
+            -> true
 
             DataError.Sync.NOT_SIGNED_IN.name,
             DataError.Sync.PERMISSION_DENIED.name,
-            DataError.Sync.QUOTA_EXCEEDED.name -> false
+            DataError.Sync.QUOTA_EXCEEDED.name,
+            -> false
 
             else -> true
         }

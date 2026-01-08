@@ -11,7 +11,6 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
  */
 @Dao
 interface SyncDao {
-
     @Upsert
     suspend fun upsertSyncMetadata(metadata: SyncMetadataEntity)
 
@@ -22,16 +21,28 @@ interface SyncDao {
     fun observeSyncMetadata(userId: String): Flow<SyncMetadataEntity?>
 
     @Query("UPDATE SyncMetadataEntity SET lastSyncTimestamp = :timestamp WHERE userId = :userId")
-    suspend fun updateLastSyncTimestamp(userId: String, timestamp: Long)
+    suspend fun updateLastSyncTimestamp(
+        userId: String,
+        timestamp: Long,
+    )
 
     @Query("UPDATE SyncMetadataEntity SET syncInProgress = :inProgress WHERE userId = :userId")
-    suspend fun updateSyncInProgress(userId: String, inProgress: Boolean)
+    suspend fun updateSyncInProgress(
+        userId: String,
+        inProgress: Boolean,
+    )
 
     @Query("UPDATE SyncMetadataEntity SET lastSyncError = :error WHERE userId = :userId")
-    suspend fun updateLastSyncError(userId: String, error: String?)
+    suspend fun updateLastSyncError(
+        userId: String,
+        error: String?,
+    )
 
     @Query("UPDATE SyncMetadataEntity SET pendingOperationsCount = :count WHERE userId = :userId")
-    suspend fun updatePendingOperationsCount(userId: String, count: Int)
+    suspend fun updatePendingOperationsCount(
+        userId: String,
+        count: Int,
+    )
 
     @Query("DELETE FROM SyncMetadataEntity WHERE userId = :userId")
     suspend fun deleteSyncMetadata(userId: String)

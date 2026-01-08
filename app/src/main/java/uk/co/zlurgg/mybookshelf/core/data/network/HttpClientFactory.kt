@@ -17,14 +17,17 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 object HttpClientFactory {
-
-    fun create(engine: HttpClientEngine, enableLogging: Boolean = false): HttpClient {
+    fun create(
+        engine: HttpClientEngine,
+        enableLogging: Boolean = false,
+    ): HttpClient {
         return HttpClient(engine) {
             install(ContentNegotiation) {
                 json(
-                    json = Json {
-                        ignoreUnknownKeys = true
-                    }
+                    json =
+                        Json {
+                            ignoreUnknownKeys = true
+                        },
                 )
             }
             install(HttpTimeout) {
@@ -38,30 +41,31 @@ object HttpClientFactory {
                 retryIf { _, httpResponse ->
                     // Retry on server errors (5xx) and rate limiting (429)
                     httpResponse.status == HttpStatusCode.InternalServerError ||
-                    httpResponse.status == HttpStatusCode.BadGateway ||
-                    httpResponse.status == HttpStatusCode.ServiceUnavailable ||
-                    httpResponse.status == HttpStatusCode.GatewayTimeout ||
-                    httpResponse.status == HttpStatusCode.TooManyRequests
+                        httpResponse.status == HttpStatusCode.BadGateway ||
+                        httpResponse.status == HttpStatusCode.ServiceUnavailable ||
+                        httpResponse.status == HttpStatusCode.GatewayTimeout ||
+                        httpResponse.status == HttpStatusCode.TooManyRequests
                 }
                 retryOnExceptionIf { _, cause ->
                     // Retry on network-related exceptions
                     cause is java.net.SocketTimeoutException ||
-                    cause is java.net.UnknownHostException ||
-                    cause is java.net.ConnectException ||
-                    cause is io.ktor.client.network.sockets.SocketTimeoutException ||
-                    cause is io.ktor.util.network.UnresolvedAddressException
+                        cause is java.net.UnknownHostException ||
+                        cause is java.net.ConnectException ||
+                        cause is io.ktor.client.network.sockets.SocketTimeoutException ||
+                        cause is io.ktor.util.network.UnresolvedAddressException
                 }
                 exponentialDelay(
                     base = 1.0,
-                    maxDelayMs = 10_000L
+                    maxDelayMs = 10_000L,
                 )
             }
             install(Logging) {
-                logger = object : Logger {
-                    override fun log(message: String) {
-                        println(message)
+                logger =
+                    object : Logger {
+                        override fun log(message: String) {
+                            println(message)
+                        }
                     }
-                }
                 level = if (enableLogging) LogLevel.ALL else LogLevel.NONE
             }
             defaultRequest {

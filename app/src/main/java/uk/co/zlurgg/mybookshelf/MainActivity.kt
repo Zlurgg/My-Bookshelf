@@ -11,7 +11,6 @@ import androidx.compose.runtime.setValue
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.MyBookShelfApp
 
 class MainActivity : ComponentActivity() {
-
     private var currentIntent by mutableStateOf<Intent?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {

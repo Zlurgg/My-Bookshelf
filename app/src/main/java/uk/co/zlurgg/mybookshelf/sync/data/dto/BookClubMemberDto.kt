@@ -15,13 +15,11 @@ import java.util.Date
 data class BookClubMemberDto(
     @DocumentId
     val userId: String = "",
-
     @get:PropertyName("display_name")
     @set:PropertyName("display_name")
     var displayName: String = "",
-
     @ServerTimestamp
     @get:PropertyName("joined_at")
     @set:PropertyName("joined_at")
-    var joinedAt: Date? = null
+    var joinedAt: Date? = null,
 )

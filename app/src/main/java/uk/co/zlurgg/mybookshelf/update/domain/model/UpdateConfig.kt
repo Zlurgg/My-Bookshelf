@@ -13,5 +13,5 @@ data class UpdateConfig(
     val gitHubOwner: String,
     val gitHubRepo: String,
     val appName: String,
-    val downloadTitle: String = "Downloading Update"
+    val downloadTitle: String = "Downloading Update",
 )

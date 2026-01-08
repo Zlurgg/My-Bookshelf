@@ -11,9 +11,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Delegates to BookClubRepository to fetch club metadata from Firestore.
  */
 class GetBookClubPreviewUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : GetBookClubPreviewUseCase {
-
     override suspend fun invoke(code: String): Result<BookClub?, DataError.Sync> {
         return bookClubRepository.getBookClub(code)
     }

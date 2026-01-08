@@ -6,9 +6,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 
 class ShouldShowWelcomeUseCaseImpl(
     private val welcomePreferences: WelcomePreferences,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
 ) : ShouldShowWelcomeUseCase {
-
     override suspend fun execute(): Boolean {
         val userId = currentUserProvider.getCurrentUserId()
         val hasShown = welcomePreferences.hasShownWelcome(userId).first()

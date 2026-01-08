@@ -10,15 +10,18 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -27,9 +30,6 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
@@ -43,9 +43,8 @@ class BookcaseViewModel(
     private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase,
     private val checkSignInStatusUseCase: CheckSignInStatusUseCase,
     private val signOutUseCase: SignOutUseCase,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(BookcaseState())
     val state: StateFlow<BookcaseState> = _state.asStateFlow()
 
@@ -88,7 +87,7 @@ class BookcaseViewModel(
                         operationSuccess = false,
                         errorMessage = null,
                         tutorialShelfIdForNavigation = null,
-                        tutorialBookForNavigation = null
+                        tutorialBookForNavigation = null,
                     )
                 }
             }
@@ -147,7 +146,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showRenameDialog = true,
-                        shelfToRename = action.bookshelf
+                        shelfToRename = action.bookshelf,
                     )
                 }
             }
@@ -157,7 +156,7 @@ class BookcaseViewModel(
                     it.copy(
                         showRenameDialog = false,
                         shelfToRename = null,
-                        renameError = null
+                        renameError = null,
                     )
                 }
             }
@@ -170,7 +169,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showChangeStyleDialog = true,
-                        shelfToChangeStyle = action.bookshelf
+                        shelfToChangeStyle = action.bookshelf,
                     )
                 }
             }
@@ -179,7 +178,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showChangeStyleDialog = false,
-                        shelfToChangeStyle = null
+                        shelfToChangeStyle = null,
                     )
                 }
             }
@@ -218,7 +217,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showDeleteBookClubDialog = true,
-                        shelfToDelete = action.bookshelf
+                        shelfToDelete = action.bookshelf,
                     )
                 }
             }
@@ -227,7 +226,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showDeleteBookClubDialog = false,
-                        shelfToDelete = null
+                        shelfToDelete = null,
                     )
                 }
             }
@@ -241,7 +240,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showLeaveBookClubDialog = true,
-                        shelfToLeave = action.bookshelf
+                        shelfToLeave = action.bookshelf,
                     )
                 }
             }
@@ -250,7 +249,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showLeaveBookClubDialog = false,
-                        shelfToLeave = null
+                        shelfToLeave = null,
                     )
                 }
             }
@@ -304,7 +303,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showJoinBookClubDialog = true,
-                        joinLookupError = null
+                        joinLookupError = null,
                     )
                 }
             }
@@ -314,7 +313,7 @@ class BookcaseViewModel(
                     it.copy(
                         showJoinBookClubDialog = false,
                         joinLookupError = null,
-                        pendingInviteCode = null
+                        pendingInviteCode = null,
                     )
                 }
                 bookClubOperations.clearLookupState()
@@ -328,7 +327,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         bookClubPreview = null,
-                        showJoinBookClubDialog = true
+                        showJoinBookClubDialog = true,
                     )
                 }
             }
@@ -359,7 +358,10 @@ class BookcaseViewModel(
         }
     }
 
-    private fun addBookshelf(name: String, style: ShelfStyle) {
+    private fun addBookshelf(
+        name: String,
+        style: ShelfStyle,
+    ) {
         viewModelScope.launch {
             when (val result = shelfOperations.createShelf(name, style, state.value.bookshelves)) {
                 is Result.Success -> {
@@ -382,18 +384,20 @@ class BookcaseViewModel(
 
             bookcaseUseCases.getAllShelves.execute()
                 .catch { e ->
-                    val error = if (e is Exception) {
-                        ErrorMapper.mapExceptionToDataError(e)
-                    } else {
-                        DataError.Local.UNKNOWN
-                    }
+                    val error =
+                        if (e is Exception) {
+                            ErrorMapper.mapExceptionToDataError(e)
+                        } else {
+                            DataError.Local.UNKNOWN
+                        }
                     _state.update { it.withError(error, "load shelves") }
                 }
                 .collect { bookcase ->
                     // Calculate shelf counts for limit display
-                    val personalCount = bookcase.bookshelves.count {
-                        !it.isBookClub && it.name != BookshelfConstants.TUTORIAL_SHELF_NAME
-                    }
+                    val personalCount =
+                        bookcase.bookshelves.count {
+                            !it.isBookClub && it.name != BookshelfConstants.TUTORIAL_SHELF_NAME
+                        }
                     val clubCount = bookcase.bookshelves.count { it.isBookClub }
 
                     _state.update {
@@ -404,14 +408,17 @@ class BookcaseViewModel(
                             errorMessage = null,
                             defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(bookcase.bookshelves)}",
                             personalShelfCount = personalCount,
-                            bookClubCount = clubCount
+                            bookClubCount = clubCount,
                         )
                     }
                 }
         }
     }
 
-    private fun reorderShelf(shelf: Bookshelf, newPosition: Int) {
+    private fun reorderShelf(
+        shelf: Bookshelf,
+        newPosition: Int,
+    ) {
         viewModelScope.launch {
             val currentShelves = state.value.bookshelves
 
@@ -429,14 +436,17 @@ class BookcaseViewModel(
         }
     }
 
-    private fun renameShelf(shelfId: String, newName: String) {
+    private fun renameShelf(
+        shelfId: String,
+        newName: String,
+    ) {
         viewModelScope.launch {
             when (val renameResult = shelfManagement.renameShelf(shelfId, newName)) {
                 is Result.Success -> {
                     // Update the shelf name in the current state
                     _state.update {
                         it.updateShelfInList(shelfId) { shelf -> shelf.copy(name = newName) }
-                          .closeRenameDialog()
+                            .closeRenameDialog()
                     }
                 }
                 is Result.Error -> {
@@ -447,14 +457,17 @@ class BookcaseViewModel(
         }
     }
 
-    private fun changeShelfStyle(shelfId: String, newStyle: ShelfStyle) {
+    private fun changeShelfStyle(
+        shelfId: String,
+        newStyle: ShelfStyle,
+    ) {
         viewModelScope.launch {
             when (val styleResult = shelfManagement.updateShelfStyle(shelfId, newStyle)) {
                 is Result.Success -> {
                     // Update the shelf style in the current state
                     _state.update {
                         it.updateShelfInList(shelfId) { shelf -> shelf.copy(shelfStyle = newStyle) }
-                          .closeStyleDialog()
+                            .closeStyleDialog()
                     }
                 }
                 is Result.Error -> {
@@ -473,10 +486,11 @@ class BookcaseViewModel(
                         is TutorialAccessResult.NavigateToBook -> {
                             _state.update {
                                 it.copy(
-                                    tutorialBookForNavigation = Pair(
-                                        accessResult.shelfId,
-                                        accessResult.bookId
-                                    )
+                                    tutorialBookForNavigation =
+                                        Pair(
+                                            accessResult.shelfId,
+                                            accessResult.bookId,
+                                        ),
                                 )
                             }
                         }
@@ -488,7 +502,7 @@ class BookcaseViewModel(
                 is Result.Error -> {
                     _state.update {
                         it.copy(
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "open tutorial")
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "open tutorial"),
                         )
                     }
                 }
@@ -506,7 +520,7 @@ class BookcaseViewModel(
                         it.copy(
                             isLoading = false,
                             operationSuccess = true,
-                            switchToPersonalTab = shelf.isBookClub  // Switch tab if was a book club
+                            switchToPersonalTab = shelf.isBookClub, // Switch tab if was a book club
                         )
                     }
                     // Shelf list will update automatically via reactive flow
@@ -527,7 +541,7 @@ class BookcaseViewModel(
                 showDeleteBookClubDialog = false,
                 bookshelves = it.bookshelves - shelfToDelete,
                 recentlyDeleted = shelfToDelete,
-                shelfToDelete = null
+                shelfToDelete = null,
             )
         }
 
@@ -544,7 +558,11 @@ class BookcaseViewModel(
                         it.copy(
                             bookshelves = it.bookshelves + shelfToDelete,
                             recentlyDeleted = null,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(deleteResult.error, "delete book club")
+                            errorMessage =
+                                ErrorFormatter.formatDataErrorMessage(
+                                    deleteResult.error,
+                                    "delete book club",
+                                ),
                         )
                     }
                 }
@@ -561,7 +579,7 @@ class BookcaseViewModel(
                 showLeaveBookClubDialog = false,
                 bookshelves = it.bookshelves - shelfToLeave,
                 recentlyDeleted = shelfToLeave,
-                shelfToLeave = null
+                shelfToLeave = null,
             )
         }
 
@@ -578,7 +596,7 @@ class BookcaseViewModel(
                         it.copy(
                             bookshelves = it.bookshelves + shelfToLeave,
                             recentlyDeleted = null,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(leaveResult.error, "leave book club")
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(leaveResult.error, "leave book club"),
                         )
                     }
                 }
@@ -599,7 +617,7 @@ class BookcaseViewModel(
                             bookClubInviteLink = createResult.data.inviteLink,
                             bookClubName = shelf.name,
                             isNewlyCreatedBookClub = true,
-                            switchToBookClubsTab = true
+                            switchToBookClubsTab = true,
                         )
                     }
                 }
@@ -612,7 +630,11 @@ class BookcaseViewModel(
                         _state.update {
                             it.copy(
                                 isCreatingBookClub = false,
-                                errorMessage = ErrorFormatter.formatDataErrorMessage(createResult.error, "create book club")
+                                errorMessage =
+                                    ErrorFormatter.formatDataErrorMessage(
+                                        createResult.error,
+                                        "create book club",
+                                    ),
                             )
                         }
                     }
@@ -630,7 +652,7 @@ class BookcaseViewModel(
                 bookClubCode = clubCode,
                 bookClubInviteLink = inviteLink,
                 bookClubName = shelf.name,
-                isNewlyCreatedBookClub = false
+                isNewlyCreatedBookClub = false,
             )
         }
     }
@@ -649,7 +671,7 @@ class BookcaseViewModel(
                         it.copy(
                             joinLookupLoading = false,
                             showJoinBookClubDialog = false,
-                            bookClubPreview = lookupResult.bookClub
+                            bookClubPreview = lookupResult.bookClub,
                         )
                     }
                 }
@@ -657,7 +679,11 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             joinLookupLoading = false,
-                            joinLookupError = ErrorFormatter.formatDataErrorMessage(lookupResult.error, "find book club")
+                            joinLookupError =
+                                ErrorFormatter.formatDataErrorMessage(
+                                    lookupResult.error,
+                                    "find book club",
+                                ),
                         )
                     }
                 }
@@ -665,7 +691,11 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             joinLookupLoading = false,
-                            joinLookupError = ErrorFormatter.formatDataErrorMessage(lookupResult.error, "validate code")
+                            joinLookupError =
+                                ErrorFormatter.formatDataErrorMessage(
+                                    lookupResult.error,
+                                    "validate code",
+                                ),
                         )
                     }
                 }
@@ -685,7 +715,7 @@ class BookcaseViewModel(
                                 it.copy(
                                     joinInProgress = false,
                                     bookClubPreview = null,
-                                    joinBookClubSuccess = result.shelfName
+                                    joinBookClubSuccess = result.shelfName,
                                 )
                             }
                         }
@@ -694,10 +724,11 @@ class BookcaseViewModel(
                                 it.copy(
                                     joinInProgress = false,
                                     bookClubPreview = null,
-                                    errorMessage = ErrorFormatter.formatDataErrorMessage(
-                                        DataError.Sync.ALREADY_MEMBER,
-                                        "join book club"
-                                    )
+                                    errorMessage =
+                                        ErrorFormatter.formatDataErrorMessage(
+                                            DataError.Sync.ALREADY_MEMBER,
+                                            "join book club",
+                                        ),
                                 )
                             }
                         }
@@ -709,7 +740,7 @@ class BookcaseViewModel(
                             it.copy(
                                 joinInProgress = false,
                                 bookClubPreview = null,
-                                showBookClubLimitDialog = true
+                                showBookClubLimitDialog = true,
                             )
                         }
                     } else {
@@ -717,7 +748,11 @@ class BookcaseViewModel(
                             it.copy(
                                 joinInProgress = false,
                                 bookClubPreview = null,
-                                errorMessage = ErrorFormatter.formatDataErrorMessage(joinResult.error, "join book club")
+                                errorMessage =
+                                    ErrorFormatter.formatDataErrorMessage(
+                                        joinResult.error,
+                                        "join book club",
+                                    ),
                             )
                         }
                     }
@@ -734,7 +769,7 @@ class BookcaseViewModel(
             it.copy(
                 pendingInviteCode = code,
                 showJoinBookClubDialog = true,
-                joinLookupError = null
+                joinLookupError = null,
             )
         }
         // Auto-trigger the lookup
@@ -743,9 +778,10 @@ class BookcaseViewModel(
 
     private fun calculateNextShelfNumber(shelves: List<Bookshelf>): Int {
         val newBookshelfPattern = Regex("^New Bookshelf (\\d+)$")
-        val existingNumbers = shelves.mapNotNull { shelf ->
-            newBookshelfPattern.matchEntire(shelf.name)?.groupValues?.get(1)?.toIntOrNull()
-        }
+        val existingNumbers =
+            shelves.mapNotNull { shelf ->
+                newBookshelfPattern.matchEntire(shelf.name)?.groupValues?.get(1)?.toIntOrNull()
+            }
         return (existingNumbers.maxOrNull() ?: 0) + 1
     }
 
@@ -753,10 +789,13 @@ class BookcaseViewModel(
     // State Update Helpers (Private Extensions)
     // ============================================================================
 
-    private fun BookcaseState.withError(error: DataError, operation: String): BookcaseState {
+    private fun BookcaseState.withError(
+        error: DataError,
+        operation: String,
+    ): BookcaseState {
         return copy(
             isLoading = false,
-            errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation)
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation),
         )
     }
 
@@ -767,22 +806,25 @@ class BookcaseViewModel(
             isLoading = false,
             operationSuccess = true,
             showAddDialog = false,
-            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(newShelves)}"
+            defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(newShelves)}",
         )
     }
 
     private fun BookcaseState.withShelfDeleted(shelf: Bookshelf): BookcaseState {
         return copy(
             bookshelves = bookshelves - shelf,
-            recentlyDeleted = shelf
+            recentlyDeleted = shelf,
         )
     }
 
-    private fun BookcaseState.withShelfDeleteError(shelf: Bookshelf, error: DataError): BookcaseState {
+    private fun BookcaseState.withShelfDeleteError(
+        shelf: Bookshelf,
+        error: DataError,
+    ): BookcaseState {
         return copy(
             bookshelves = bookshelves + shelf,
             recentlyDeleted = null,
-            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "remove shelf")
+            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "remove shelf"),
         )
     }
 
@@ -790,17 +832,18 @@ class BookcaseViewModel(
         return copy(
             bookshelves = bookshelves + shelf,
             recentlyDeleted = null,
-            operationSuccess = true
+            operationSuccess = true,
         )
     }
 
     private fun BookcaseState.updateShelfInList(
         shelfId: String,
-        transform: (Bookshelf) -> Bookshelf
+        transform: (Bookshelf) -> Bookshelf,
     ): BookcaseState {
-        val updatedShelves = bookshelves.map { shelf ->
-            if (shelf.id == shelfId) transform(shelf) else shelf
-        }
+        val updatedShelves =
+            bookshelves.map { shelf ->
+                if (shelf.id == shelfId) transform(shelf) else shelf
+            }
         return copy(bookshelves = updatedShelves)
     }
 
@@ -810,7 +853,7 @@ class BookcaseViewModel(
             shelfToRename = null,
             renameError = null,
             operationSuccess = true,
-            errorMessage = null
+            errorMessage = null,
         )
     }
 
@@ -819,7 +862,7 @@ class BookcaseViewModel(
             showChangeStyleDialog = false,
             shelfToChangeStyle = null,
             operationSuccess = true,
-            errorMessage = null
+            errorMessage = null,
         )
     }
 
@@ -844,7 +887,7 @@ class BookcaseViewModel(
                     it.copy(
                         availableUpdate = updateInfo,
                         showUpdateDialog = true,
-                        isCheckingForUpdates = false
+                        isCheckingForUpdates = false,
                     )
                 }
             } else {
@@ -855,7 +898,7 @@ class BookcaseViewModel(
                     it.copy(
                         currentVersionInfo = currentInfo,
                         showUpToDateDialog = true,
-                        isCheckingForUpdates = false
+                        isCheckingForUpdates = false,
                     )
                 }
             }
@@ -872,7 +915,7 @@ class BookcaseViewModel(
                 _state.update {
                     it.copy(
                         showUpdateDialog = false,
-                        availableUpdate = null
+                        availableUpdate = null,
                     )
                 }
             } else {
@@ -892,7 +935,7 @@ class BookcaseViewModel(
             _state.update {
                 it.copy(
                     showUpdateDialog = false,
-                    availableUpdate = null
+                    availableUpdate = null,
                 )
             }
         }
@@ -913,7 +956,7 @@ class BookcaseViewModel(
                         it.copy(
                             isLoading = false,
                             showSignOutDialog = false,
-                            signedOutSuccessfully = true
+                            signedOutSuccessfully = true,
                         )
                     }
                 }
@@ -922,7 +965,7 @@ class BookcaseViewModel(
                         it.copy(
                             isLoading = false,
                             showSignOutDialog = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "sign out")
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "sign out"),
                         )
                     }
                 }
@@ -934,4 +977,3 @@ class BookcaseViewModel(
         private const val TAG = "BookcaseVM"
     }
 }
-

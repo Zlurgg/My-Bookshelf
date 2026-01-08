@@ -14,12 +14,13 @@ import kotlinx.coroutines.test.advanceUntilIdle
 @OptIn(ExperimentalCoroutinesApi::class)
 class ViewModelTestHelper<T>(
     private val testScope: TestScope,
-    private val stateFlow: StateFlow<T>
+    private val stateFlow: StateFlow<T>,
 ) {
     private var currentState: T? = null
-    private var stateCollectorJob = testScope.launch {
-        stateFlow.collect { currentState = it }
-    }
+    private var stateCollectorJob =
+        testScope.launch {
+            stateFlow.collect { currentState = it }
+        }
 
     /**
      * Gets the current state value after ensuring all pending coroutines complete.
@@ -68,7 +69,7 @@ fun <T> StateFlow<T>.testHelper(testScope: TestScope): ViewModelTestHelper<T> {
 @OptIn(ExperimentalCoroutinesApi::class)
 suspend inline fun <T> ViewModelTestHelper<T>.executeAndAssert(
     noinline action: suspend () -> Unit,
-    assertion: (T?) -> Unit
+    assertion: (T?) -> Unit,
 ) {
     val state = executeAndGetState(action)
     assertion(state)

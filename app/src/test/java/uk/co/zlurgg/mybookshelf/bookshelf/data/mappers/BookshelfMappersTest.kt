@@ -2,19 +2,19 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 
 class BookshelfMappersTest {
-
     @Test
     fun `toDomain maps correctly`() {
-        val entity = BookshelfEntity(
-            id = "s1",
-            name = "Sci-Fi",
-            shelfMaterial = ShelfStyle.GreyMetal.name
-        )
+        val entity =
+            BookshelfEntity(
+                id = "s1",
+                name = "Sci-Fi",
+                shelfMaterial = ShelfStyle.GreyMetal.name,
+            )
 
         val domain = entity.toDomain()
 
@@ -26,12 +26,13 @@ class BookshelfMappersTest {
 
     @Test
     fun `toEntity maps correctly`() {
-        val domain = Bookshelf(
-            id = "s2",
-            name = "Fantasy",
-            books = emptyList(),
-            shelfStyle = ShelfStyle.DarkWood
-        )
+        val domain =
+            Bookshelf(
+                id = "s2",
+                name = "Fantasy",
+                books = emptyList(),
+                shelfStyle = ShelfStyle.DarkWood,
+            )
 
         val entity = domain.toEntity()
 

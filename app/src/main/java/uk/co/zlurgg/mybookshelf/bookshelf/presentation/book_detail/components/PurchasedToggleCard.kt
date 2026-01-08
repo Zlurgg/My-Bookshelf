@@ -25,21 +25,22 @@ import uk.co.zlurgg.mybookshelf.R
 fun PurchasedToggleCard(
     purchased: Boolean,
     onPurchaseToggle: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Checkbox(
                 checked = purchased,
-                onCheckedChange = { onPurchaseToggle() }
+                onCheckedChange = { onPurchaseToggle() },
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -47,7 +48,7 @@ fun PurchasedToggleCard(
             Text(
                 text = stringResource(R.string.book_purchased_label),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         }
     }

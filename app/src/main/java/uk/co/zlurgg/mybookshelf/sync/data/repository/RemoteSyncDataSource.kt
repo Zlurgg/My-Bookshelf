@@ -19,31 +19,39 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
  * Uses DTOs directly since this is a data layer concern.
  */
 interface RemoteSyncDataSource {
-
     // ==================== Books ====================
 
     /**
      * Uploads a book to the cloud.
      */
-    suspend fun uploadBook(userId: String, book: BookFirestoreDto): Result<Unit, DataError.Sync>
+    suspend fun uploadBook(
+        userId: String,
+        book: BookFirestoreDto,
+    ): Result<Unit, DataError.Sync>
 
     /**
      * Downloads a book from the cloud.
      */
-    suspend fun downloadBook(userId: String, bookId: String): Result<BookFirestoreDto?, DataError.Sync>
+    suspend fun downloadBook(
+        userId: String,
+        bookId: String,
+    ): Result<BookFirestoreDto?, DataError.Sync>
 
     /**
      * Downloads all books modified since a given timestamp.
      */
     suspend fun downloadBooksSince(
         userId: String,
-        sinceTimestamp: Long
+        sinceTimestamp: Long,
     ): Result<List<BookFirestoreDto>, DataError.Sync>
 
     /**
      * Deletes a book from the cloud.
      */
-    suspend fun deleteBook(userId: String, bookId: String): Result<Unit, DataError.Sync>
+    suspend fun deleteBook(
+        userId: String,
+        bookId: String,
+    ): Result<Unit, DataError.Sync>
 
     // ==================== Bookshelves ====================
 
@@ -52,7 +60,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun uploadBookshelf(
         userId: String,
-        shelf: BookshelfFirestoreDto
+        shelf: BookshelfFirestoreDto,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -60,7 +68,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun downloadBookshelf(
         userId: String,
-        shelfId: String
+        shelfId: String,
     ): Result<BookshelfFirestoreDto?, DataError.Sync>
 
     /**
@@ -68,13 +76,16 @@ interface RemoteSyncDataSource {
      */
     suspend fun downloadBookshelvesSince(
         userId: String,
-        sinceTimestamp: Long
+        sinceTimestamp: Long,
     ): Result<List<BookshelfFirestoreDto>, DataError.Sync>
 
     /**
      * Deletes a bookshelf from the cloud.
      */
-    suspend fun deleteBookshelf(userId: String, shelfId: String): Result<Unit, DataError.Sync>
+    suspend fun deleteBookshelf(
+        userId: String,
+        shelfId: String,
+    ): Result<Unit, DataError.Sync>
 
     // ==================== Shared Shelves ====================
 
@@ -96,12 +107,18 @@ interface RemoteSyncDataSource {
     /**
      * Adds current user as subscriber to a shared shelf.
      */
-    suspend fun subscribeToShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync>
+    suspend fun subscribeToShelf(
+        shareCode: String,
+        userId: String,
+    ): Result<Unit, DataError.Sync>
 
     /**
      * Removes current user from subscribers of a shared shelf.
      */
-    suspend fun unsubscribeFromShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync>
+    suspend fun unsubscribeFromShelf(
+        shareCode: String,
+        userId: String,
+    ): Result<Unit, DataError.Sync>
 
     // ==================== Batch Operations ====================
 
@@ -110,7 +127,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun uploadBooks(
         userId: String,
-        books: List<BookFirestoreDto>
+        books: List<BookFirestoreDto>,
     ): Result<Int, DataError.Sync>
 
     /**
@@ -118,7 +135,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun uploadBookshelves(
         userId: String,
-        shelves: List<BookshelfFirestoreDto>
+        shelves: List<BookshelfFirestoreDto>,
     ): Result<Int, DataError.Sync>
 
     // ==================== User Preferences ====================
@@ -135,7 +152,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun setUserPreferences(
         userId: String,
-        preferences: UserPreferencesFirestoreDto
+        preferences: UserPreferencesFirestoreDto,
     ): Result<Unit, DataError.Sync>
 
     // ==================== Book Clubs ====================
@@ -145,7 +162,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun createBookClub(
         code: String,
-        metadata: BookClubMetadataDto
+        metadata: BookClubMetadataDto,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -159,7 +176,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun addBookClubMember(
         code: String,
-        member: BookClubMemberDto
+        member: BookClubMemberDto,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -167,7 +184,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun removeBookClubMember(
         code: String,
-        userId: String
+        userId: String,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -178,14 +195,17 @@ interface RemoteSyncDataSource {
     /**
      * Checks if a user is a member of a book club.
      */
-    suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync>
+    suspend fun isMember(
+        code: String,
+        userId: String,
+    ): Result<Boolean, DataError.Sync>
 
     /**
      * Adds a book to a book club.
      */
     suspend fun addBookToClub(
         code: String,
-        book: BookClubBookDto
+        book: BookClubBookDto,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -193,7 +213,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun removeBookFromClub(
         code: String,
-        bookId: String
+        bookId: String,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -207,7 +227,7 @@ interface RemoteSyncDataSource {
     suspend fun updateBookClubCounts(
         code: String,
         bookCount: Int,
-        memberCount: Int
+        memberCount: Int,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -216,7 +236,7 @@ interface RemoteSyncDataSource {
     suspend fun updateBookClubName(
         code: String,
         name: String,
-        lastModifiedAt: Long
+        lastModifiedAt: Long,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -225,7 +245,7 @@ interface RemoteSyncDataSource {
     suspend fun updateBookClubStyle(
         code: String,
         style: String,
-        lastModifiedAt: Long
+        lastModifiedAt: Long,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -237,12 +257,18 @@ interface RemoteSyncDataSource {
      * Adds a club code to the user's membership list in their preferences.
      * This enables restoring book club shelves after sign-out/sign-in.
      */
-    suspend fun addClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync>
+    suspend fun addClubMembership(
+        userId: String,
+        clubCode: String,
+    ): Result<Unit, DataError.Sync>
 
     /**
      * Removes a club code from the user's membership list in their preferences.
      */
-    suspend fun removeClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync>
+    suspend fun removeClubMembership(
+        userId: String,
+        clubCode: String,
+    ): Result<Unit, DataError.Sync>
 
     // ==================== Book Club Reviews ====================
 
@@ -251,7 +277,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun getBookReviews(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubReviewDto>, DataError.Sync>
 
     /**
@@ -261,7 +287,7 @@ interface RemoteSyncDataSource {
     suspend fun upsertBookReview(
         clubCode: String,
         bookId: String,
-        review: BookClubReviewDto
+        review: BookClubReviewDto,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -270,7 +296,7 @@ interface RemoteSyncDataSource {
     suspend fun deleteBookReview(
         clubCode: String,
         bookId: String,
-        userId: String
+        userId: String,
     ): Result<Unit, DataError.Sync>
 
     // ==================== Book Club Comments ====================
@@ -280,7 +306,7 @@ interface RemoteSyncDataSource {
      */
     suspend fun getBookComments(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<List<BookClubCommentDto>, DataError.Sync>
 
     /**
@@ -292,7 +318,7 @@ interface RemoteSyncDataSource {
     suspend fun addBookComment(
         clubCode: String,
         bookId: String,
-        comment: BookClubCommentDto
+        comment: BookClubCommentDto,
     ): Result<String, DataError.Sync>
 
     /**
@@ -303,7 +329,7 @@ interface RemoteSyncDataSource {
         clubCode: String,
         bookId: String,
         commentId: String,
-        newText: String
+        newText: String,
     ): Result<Unit, DataError.Sync>
 
     /**
@@ -313,6 +339,6 @@ interface RemoteSyncDataSource {
     suspend fun deleteBookComment(
         clubCode: String,
         bookId: String,
-        commentId: String
+        commentId: String,
     ): Result<Unit, DataError.Sync>
 }

@@ -15,10 +15,12 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
  */
 class RenameShelfUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val syncSchedulerService: SyncSchedulerService
+    private val syncSchedulerService: SyncSchedulerService,
 ) : RenameShelfUseCase {
-
-    override suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local> {
+    override suspend fun execute(
+        shelfId: String,
+        newName: String,
+    ): Result<Unit, DataError.Local> {
         return try {
             // Trim whitespace from new name
             val trimmedName = newName.trim()
@@ -29,8 +31,9 @@ class RenameShelfUseCaseImpl(
             }
 
             // Get the shelf to rename
-            val shelfToRename = bookcaseRepository.getShelfById(shelfId)
-                ?: return Result.Error(DataError.Local.NOT_FOUND)
+            val shelfToRename =
+                bookcaseRepository.getShelfById(shelfId)
+                    ?: return Result.Error(DataError.Local.NOT_FOUND)
 
             // Note: Duplicate names are allowed - users can have multiple shelves with the same name
 

@@ -95,146 +95,147 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewMo
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeViewModel
 
-val bookshelfModule = module {
-    // Network
-    singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
-    singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
+val bookshelfModule =
+    module {
+        // Network
+        singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
+        singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
 
-    // Repositories
-    singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
-    singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()
-    singleOf(::BookRepositoryImpl).bind<BookRepository>()
+        // Repositories
+        singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
+        singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()
+        singleOf(::BookRepositoryImpl).bind<BookRepository>()
 
-    // Export/Import Services
-    single<ShareTokenService> { UrlEncodedShareTokenService() }
-    singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
-    singleOf(::AndroidShareService)
-    singleOf(::JsonBookshelfSerializer).bind<BookshelfSerializer>()
-    singleOf(::BookshelfImportValidatorImpl).bind<BookshelfImportValidator>()
-    singleOf(::DatabaseBookshelfDataOrchestrator).bind<BookshelfDataOrchestrator>()
-    singleOf(::BookshelfExportMapper)
+        // Export/Import Services
+        single<ShareTokenService> { UrlEncodedShareTokenService() }
+        singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
+        singleOf(::AndroidShareService)
+        singleOf(::JsonBookshelfSerializer).bind<BookshelfSerializer>()
+        singleOf(::BookshelfImportValidatorImpl).bind<BookshelfImportValidator>()
+        singleOf(::DatabaseBookshelfDataOrchestrator).bind<BookshelfDataOrchestrator>()
+        singleOf(::BookshelfExportMapper)
 
-    // Welcome & Tutorial Services
-    single { WelcomeService(get()) }
+        // Welcome & Tutorial Services
+        single { WelcomeService(get()) }
 
-    // Tutorial UseCases
-    singleOf(::GetOrCreateTutorialBookUseCaseImpl).bind<GetOrCreateTutorialBookUseCase>()
-    singleOf(::GetOrCreateTutorialShelfUseCaseImpl).bind<GetOrCreateTutorialShelfUseCase>()
-    singleOf(::HandleTutorialAccessUseCaseImpl).bind<HandleTutorialAccessUseCase>()
+        // Tutorial UseCases
+        singleOf(::GetOrCreateTutorialBookUseCaseImpl).bind<GetOrCreateTutorialBookUseCase>()
+        singleOf(::GetOrCreateTutorialShelfUseCaseImpl).bind<GetOrCreateTutorialShelfUseCase>()
+        singleOf(::HandleTutorialAccessUseCaseImpl).bind<HandleTutorialAccessUseCase>()
 
-    // Welcome UseCases
-    singleOf(::InitializeWelcomeUseCaseImpl).bind<InitializeWelcomeUseCase>()
-    singleOf(::ShouldShowWelcomeUseCaseImpl).bind<ShouldShowWelcomeUseCase>()
-    singleOf(::MarkWelcomeShownUseCaseImpl).bind<MarkWelcomeShownUseCase>()
+        // Welcome UseCases
+        singleOf(::InitializeWelcomeUseCaseImpl).bind<InitializeWelcomeUseCase>()
+        singleOf(::ShouldShowWelcomeUseCaseImpl).bind<ShouldShowWelcomeUseCase>()
+        singleOf(::MarkWelcomeShownUseCaseImpl).bind<MarkWelcomeShownUseCase>()
 
-    // Export/Import UseCases
-    singleOf(::ExportBookshelfUseCaseImpl).bind<ExportBookshelfUseCase>()
-    singleOf(::ImportBookshelfUseCaseImpl).bind<ImportBookshelfUseCase>()
-    singleOf(::CheckImportConflictUseCaseImpl).bind<CheckImportConflictUseCase>()
+        // Export/Import UseCases
+        singleOf(::ExportBookshelfUseCaseImpl).bind<ExportBookshelfUseCase>()
+        singleOf(::ImportBookshelfUseCaseImpl).bind<ImportBookshelfUseCase>()
+        singleOf(::CheckImportConflictUseCaseImpl).bind<CheckImportConflictUseCase>()
 
-    // DeepLink UseCase
-    singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
+        // DeepLink UseCase
+        singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
 
-    // Book Detail UseCases
-    singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
-    singleOf(::RemoveBookFromShelfUseCaseImpl).bind<RemoveBookFromShelfUseCase>()
-    singleOf(::GetBookDetailsUseCaseImpl).bind<GetBookDetailsUseCase>()
-    singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
-    singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
-    singleOf(::UpdateBookMetadataUseCaseImpl).bind<UpdateBookMetadataUseCase>()
+        // Book Detail UseCases
+        singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
+        singleOf(::RemoveBookFromShelfUseCaseImpl).bind<RemoveBookFromShelfUseCase>()
+        singleOf(::GetBookDetailsUseCaseImpl).bind<GetBookDetailsUseCase>()
+        singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
+        singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
+        singleOf(::UpdateBookMetadataUseCaseImpl).bind<UpdateBookMetadataUseCase>()
 
-    // Bookshelf UseCases
-    singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
-    singleOf(::GetShelfBooksUseCaseImpl).bind<GetShelfBooksUseCase>()
-    singleOf(::ShareBookshelfUseCaseImpl).bind<ShareBookshelfUseCase>()
-    singleOf(::UpdateShelfTidyModeUseCaseImpl).bind<UpdateShelfTidyModeUseCase>()
+        // Bookshelf UseCases
+        singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
+        singleOf(::GetShelfBooksUseCaseImpl).bind<GetShelfBooksUseCase>()
+        singleOf(::ShareBookshelfUseCaseImpl).bind<ShareBookshelfUseCase>()
+        singleOf(::UpdateShelfTidyModeUseCaseImpl).bind<UpdateShelfTidyModeUseCase>()
 
-    // Bookcase UseCases
-    singleOf(::CreateShelfUseCaseImpl).bind<CreateShelfUseCase>()
-    singleOf(::DeleteShelfUseCaseImpl).bind<DeleteShelfUseCase>()
-    singleOf(::GetAllShelvesUseCaseImpl).bind<GetAllShelvesUseCase>()
-    singleOf(::ReorderShelvesUseCaseImpl).bind<ReorderShelvesUseCase>()
-    singleOf(::GetShelfByIdUseCaseImpl).bind<GetShelfByIdUseCase>()
-    singleOf(::RenameShelfUseCaseImpl).bind<RenameShelfUseCase>()
-    singleOf(::UpdateShelfStyleUseCaseImpl).bind<UpdateShelfStyleUseCase>()
-    singleOf(::DuplicateShelfUseCaseImpl).bind<DuplicateShelfUseCase>()
+        // Bookcase UseCases
+        singleOf(::CreateShelfUseCaseImpl).bind<CreateShelfUseCase>()
+        singleOf(::DeleteShelfUseCaseImpl).bind<DeleteShelfUseCase>()
+        singleOf(::GetAllShelvesUseCaseImpl).bind<GetAllShelvesUseCase>()
+        singleOf(::ReorderShelvesUseCaseImpl).bind<ReorderShelvesUseCase>()
+        singleOf(::GetShelfByIdUseCaseImpl).bind<GetShelfByIdUseCase>()
+        singleOf(::RenameShelfUseCaseImpl).bind<RenameShelfUseCase>()
+        singleOf(::UpdateShelfStyleUseCaseImpl).bind<UpdateShelfStyleUseCase>()
+        singleOf(::DuplicateShelfUseCaseImpl).bind<DuplicateShelfUseCase>()
 
-    // UseCase Facades
-    single {
-        BookDetailUseCases(
-            addBookToShelf = get(),
-            removeBookFromShelf = get(),
-            getBookDetails = get(),
-            upsertBook = get(),
-            toggleBookPurchase = get(),
-            updateBookMetadata = get()
-        )
+        // UseCase Facades
+        single {
+            BookDetailUseCases(
+                addBookToShelf = get(),
+                removeBookFromShelf = get(),
+                getBookDetails = get(),
+                upsertBook = get(),
+                toggleBookPurchase = get(),
+                updateBookMetadata = get(),
+            )
+        }
+        single {
+            BookshelfUseCases(
+                searchBooks = get(),
+                getShelfBooks = get(),
+                addBookToShelf = get(),
+                removeBookFromShelf = get(),
+                upsertBook = get(),
+                shareBookshelf = get(),
+                updateShelfTidyMode = get(),
+            )
+        }
+        single {
+            BookcaseUseCases(
+                getAllShelves = get(),
+                createShelf = get(),
+                deleteShelf = get(),
+                reorderShelves = get(),
+                getShelfById = get(),
+                renameShelf = get(),
+                updateShelfStyle = get(),
+                duplicateShelf = get(),
+                shareShelf = get(),
+            )
+        }
+
+        // Presentation Handlers
+        single { ShelfOperationsHandler(get()) }
+        single { ShelfManagementHandler(get(), get(), get()) }
+
+        // ViewModels
+        viewModelOf(::DeepLinkViewModel)
+        viewModelOf(::WelcomeViewModel)
+
+        viewModel { (shelfId: String) ->
+            BookshelfViewModel(
+                bookshelfUseCases = get(),
+                bookcaseUseCases = get(),
+                bookClubOperations = get(),
+                shelfId = shelfId,
+            )
+        }
+
+        viewModel {
+            BookcaseViewModel(
+                shelfOperations = get(),
+                shelfManagement = get(),
+                bookcaseUseCases = get(),
+                bookClubOperations = get(),
+                checkForUpdateUseCase = get(),
+                downloadUpdateUseCase = get(),
+                dismissUpdateUseCase = get(),
+                getCurrentVersionInfoUseCase = get(),
+                checkSignInStatusUseCase = get(),
+                signOutUseCase = get(),
+                currentUserProvider = get(),
+            )
+        }
+
+        viewModel { (bookId: String, shelfId: String) ->
+            BookDetailViewModel(
+                bookDetailUseCases = get(),
+                bookClubUseCases = get(),
+                authService = get(),
+                bookId = bookId,
+                shelfId = shelfId,
+            )
+        }
     }
-    single {
-        BookshelfUseCases(
-            searchBooks = get(),
-            getShelfBooks = get(),
-            addBookToShelf = get(),
-            removeBookFromShelf = get(),
-            upsertBook = get(),
-            shareBookshelf = get(),
-            updateShelfTidyMode = get()
-        )
-    }
-    single {
-        BookcaseUseCases(
-            getAllShelves = get(),
-            createShelf = get(),
-            deleteShelf = get(),
-            reorderShelves = get(),
-            getShelfById = get(),
-            renameShelf = get(),
-            updateShelfStyle = get(),
-            duplicateShelf = get(),
-            shareShelf = get()
-        )
-    }
-
-    // Presentation Handlers
-    single { ShelfOperationsHandler(get()) }
-    single { ShelfManagementHandler(get(), get(), get()) }
-
-    // ViewModels
-    viewModelOf(::DeepLinkViewModel)
-    viewModelOf(::WelcomeViewModel)
-
-    viewModel { (shelfId: String) ->
-        BookshelfViewModel(
-            bookshelfUseCases = get(),
-            bookcaseUseCases = get(),
-            bookClubOperations = get(),
-            shelfId = shelfId
-        )
-    }
-
-    viewModel {
-        BookcaseViewModel(
-            shelfOperations = get(),
-            shelfManagement = get(),
-            bookcaseUseCases = get(),
-            bookClubOperations = get(),
-            checkForUpdateUseCase = get(),
-            downloadUpdateUseCase = get(),
-            dismissUpdateUseCase = get(),
-            getCurrentVersionInfoUseCase = get(),
-            checkSignInStatusUseCase = get(),
-            signOutUseCase = get(),
-            currentUserProvider = get()
-        )
-    }
-
-    viewModel { (bookId: String, shelfId: String) ->
-        BookDetailViewModel(
-            bookDetailUseCases = get(),
-            bookClubUseCases = get(),
-            authService = get(),
-            bookId = bookId,
-            shelfId = shelfId
-        )
-    }
-}

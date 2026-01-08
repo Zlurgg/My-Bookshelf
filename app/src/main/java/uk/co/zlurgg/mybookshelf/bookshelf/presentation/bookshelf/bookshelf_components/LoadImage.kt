@@ -34,20 +34,20 @@ import coil3.compose.SubcomposeAsyncImage
 fun LoadImage(
     imageUrl: String,
     title: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     // Helper composable for book icon placeholder
     @Composable
     fun BookIconPlaceholder() {
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Default.Book,
                 contentDescription = "Book cover placeholder",
                 modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -70,13 +70,13 @@ fun LoadImage(
         // Show placeholder when no URL is available
         Box(
             modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Default.Book,
                 contentDescription = "No book cover",
                 modifier = Modifier.size(24.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

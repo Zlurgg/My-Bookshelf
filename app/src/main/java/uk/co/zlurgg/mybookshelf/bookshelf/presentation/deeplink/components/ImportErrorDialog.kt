@@ -12,11 +12,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.components.MessageDialog
 @Composable
 fun ImportErrorDialog(
     errorMessage: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     MessageDialog(
         title = stringResource(id = R.string.import_error_title),
         message = errorMessage,
-        onDismiss = onDismiss
+        onDismiss = onDismiss,
     )
 }

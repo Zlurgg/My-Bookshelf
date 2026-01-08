@@ -11,13 +11,12 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Ownership validation is enforced by Firestore security rules.
  */
 class DeleteBookClubCommentUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : DeleteBookClubCommentUseCase {
-
     override suspend fun invoke(
         clubCode: String,
         bookId: String,
-        commentId: String
+        commentId: String,
     ): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Deleting comment %s for book %s in club %s", commentId, bookId, clubCode)
 

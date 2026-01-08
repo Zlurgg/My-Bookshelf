@@ -1,11 +1,13 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.model
 
+import androidx.compose.runtime.Immutable
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
 /**
  * Domain model representing a Book Club.
  * A collaborative collection of books that multiple users can view and manage together.
  */
+@Immutable
 data class BookClub(
     val code: String,
     val name: String,
@@ -14,5 +16,5 @@ data class BookClub(
     val createdBy: String,
     val createdByName: String,
     val bookCount: Int,
-    val memberCount: Int
+    val memberCount: Int,
 )

@@ -13,9 +13,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Firestore operations, and local database updates.
  */
 class CreateBookClubUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : CreateBookClubUseCase {
-
     companion object {
         private const val TAG = "CreateBookClub"
         const val MAX_BOOK_CLUBS = 5

@@ -9,9 +9,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
  * Wraps the repository's reactive data source.
  */
 class GetShelfBooksUseCaseImpl(
-    private val bookshelfRepository: BookshelfRepository
+    private val bookshelfRepository: BookshelfRepository,
 ) : GetShelfBooksUseCase {
-
     override suspend fun execute(shelfId: String): Flow<List<Book>> {
         return bookshelfRepository.getBooksForShelf(shelfId)
     }

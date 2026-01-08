@@ -14,5 +14,5 @@ enum class ReadingStatus {
     CURRENTLY_READING,
 
     /** Finished, can recommend */
-    READ
+    READ,
 }

@@ -13,40 +13,43 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 /**
  * Converts Firestore metadata DTO to domain BookClub model.
  */
-fun BookClubMetadataDto.toDomain(): BookClub = BookClub(
-    code = code,
-    name = name,
-    style = ShelfStyle.entries.find { it.name == shelfStyle } ?: ShelfStyle.DarkWood,
-    createdAt = createdAt?.time ?: 0L,
-    createdBy = createdBy,
-    createdByName = createdByName,
-    bookCount = bookCount,
-    memberCount = memberCount
-)
+fun BookClubMetadataDto.toDomain(): BookClub =
+    BookClub(
+        code = code,
+        name = name,
+        style = ShelfStyle.entries.find { it.name == shelfStyle } ?: ShelfStyle.DarkWood,
+        createdAt = createdAt?.time ?: 0L,
+        createdBy = createdBy,
+        createdByName = createdByName,
+        bookCount = bookCount,
+        memberCount = memberCount,
+    )
 
 // ========== BookClubMembership (Entity <-> Domain) ==========
 
 /**
  * Converts domain BookClubMembership to Room entity.
  */
-fun BookClubMembership.toEntity(id: String): BookClubMembershipEntity = BookClubMembershipEntity(
-    id = id,
-    clubCode = clubCode,
-    localShelfId = localShelfId,
-    joinedAt = joinedAt,
-    lastSyncedAt = lastSyncedAt,
-    syncStatus = "SYNCED"
-)
+fun BookClubMembership.toEntity(id: String): BookClubMembershipEntity =
+    BookClubMembershipEntity(
+        id = id,
+        clubCode = clubCode,
+        localShelfId = localShelfId,
+        joinedAt = joinedAt,
+        lastSyncedAt = lastSyncedAt,
+        syncStatus = "SYNCED",
+    )
 
 /**
  * Converts Room entity to domain BookClubMembership.
  */
-fun BookClubMembershipEntity.toDomain(): BookClubMembership = BookClubMembership(
-    clubCode = clubCode,
-    localShelfId = localShelfId,
-    joinedAt = joinedAt,
-    lastSyncedAt = lastSyncedAt
-)
+fun BookClubMembershipEntity.toDomain(): BookClubMembership =
+    BookClubMembership(
+        clubCode = clubCode,
+        localShelfId = localShelfId,
+        joinedAt = joinedAt,
+        lastSyncedAt = lastSyncedAt,
+    )
 
 // ========== BookClubBook (DTO <-> Domain) ==========
 
@@ -55,23 +58,24 @@ fun BookClubMembershipEntity.toDomain(): BookClubMembership = BookClubMembership
  * Note: Personal metadata (notes, personal rating, reading status) are not included
  * as they're not stored in the club's book collection.
  */
-fun BookClubBookDto.toBook(): Book = Book(
-    id = id,
-    title = title,
-    authors = authors,
-    imageUrl = coverUrl ?: "",
-    isbn = isbn,
-    firstPublishYear = firstPublishYear?.toString(),
-    numPages = pageCount,
-    averageRating = averageRating?.toDouble(),
-    ratingCount = ratingCount,
-    // Remaining fields use defaults
-    description = null,
-    languages = emptyList(),
-    numEditions = 0,
-    purchased = false,
-    spineColor = spineColor
-)
+fun BookClubBookDto.toBook(): Book =
+    Book(
+        id = id,
+        title = title,
+        authors = authors,
+        imageUrl = coverUrl ?: "",
+        isbn = isbn,
+        firstPublishYear = firstPublishYear?.toString(),
+        numPages = pageCount,
+        averageRating = averageRating?.toDouble(),
+        ratingCount = ratingCount,
+        // Remaining fields use defaults
+        description = null,
+        languages = emptyList(),
+        numEditions = 0,
+        purchased = false,
+        spineColor = spineColor,
+    )
 
 /**
  * Converts domain Book to Firestore BookClubBookDto.
@@ -80,19 +84,20 @@ fun BookClubBookDto.toBook(): Book = Book(
  */
 fun Book.toBookClubBookDto(
     addedBy: String,
-    addedByName: String
-): BookClubBookDto = BookClubBookDto(
-    id = id,
-    title = title,
-    authors = authors,
-    coverUrl = imageUrl,
-    isbn = isbn,
-    workId = id, // OpenLibrary work ID is the book ID
-    firstPublishYear = firstPublishYear?.toIntOrNull(),
-    pageCount = numPages,
-    averageRating = averageRating?.toFloat(),
-    ratingCount = ratingCount,
-    spineColor = spineColor,
-    addedBy = addedBy,
-    addedByName = addedByName
-)
+    addedByName: String,
+): BookClubBookDto =
+    BookClubBookDto(
+        id = id,
+        title = title,
+        authors = authors,
+        coverUrl = imageUrl,
+        isbn = isbn,
+        workId = id, // OpenLibrary work ID is the book ID
+        firstPublishYear = firstPublishYear?.toIntOrNull(),
+        pageCount = numPages,
+        averageRating = averageRating?.toFloat(),
+        ratingCount = ratingCount,
+        spineColor = spineColor,
+        addedBy = addedBy,
+        addedByName = addedByName,
+    )

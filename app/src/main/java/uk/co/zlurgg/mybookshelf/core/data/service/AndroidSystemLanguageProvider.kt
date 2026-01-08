@@ -5,19 +5,18 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import java.util.Locale
 
 class AndroidSystemLanguageProvider(
-    private val context: Context
+    private val context: Context,
 ) : SystemLanguageProvider {
-
     override fun getCurrentLanguageCode(): String {
-        val locale = try {
-            context.resources.configuration.locales[0]
-        } catch (e: Exception) {
-            Locale.getDefault()
-        } ?: Locale.getDefault()
+        val locale =
+            try {
+                context.resources.configuration.locales[0]
+            } catch (e: Exception) {
+                Locale.getDefault()
+            } ?: Locale.getDefault()
 
         return mapToOpenLibraryLanguageCode(locale.language)
     }
-
 
     private fun mapToOpenLibraryLanguageCode(languageCode: String): String {
         return when (languageCode) {

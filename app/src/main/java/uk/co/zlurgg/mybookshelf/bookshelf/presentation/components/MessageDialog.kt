@@ -19,7 +19,7 @@ import uk.co.zlurgg.mybookshelf.R
 fun MessageDialog(
     title: String,
     message: String,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -29,6 +29,6 @@ fun MessageDialog(
             Button(onClick = onDismiss) {
                 Text(stringResource(id = R.string.action_ok))
             }
-        }
+        },
     )
 }

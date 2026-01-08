@@ -38,7 +38,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
 @Composable
 fun BookSearchDialog(
     state: BookSearchState,
-    callbacks: BookSearchCallbacks
+    callbacks: BookSearchCallbacks,
 ) {
     AlertDialog(
         onDismissRequest = {
@@ -47,14 +47,15 @@ fun BookSearchDialog(
         },
         title = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 2.dp, bottom = 4.dp)
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 2.dp, bottom = 4.dp),
             ) {
                 BookSearchBar(
                     searchQuery = state.query,
                     onSearchQueryChange = callbacks.onQueryChange,
-                    onImeSearch = { /* handled by onQueryChange as user types */ }
+                    onImeSearch = { /* handled by onQueryChange as user types */ },
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -63,7 +64,7 @@ fun BookSearchDialog(
                     searchByTitle = state.searchByTitle,
                     searchByAuthor = state.searchByAuthor,
                     onToggleTitle = callbacks.onToggleSearchByTitle,
-                    onToggleAuthor = callbacks.onToggleSearchByAuthor
+                    onToggleAuthor = callbacks.onToggleSearchByAuthor,
                 )
             }
         },
@@ -72,7 +73,7 @@ fun BookSearchDialog(
                 // Progress indicator (shows during typing AND searching)
                 if (state.isTyping || state.isLoading) {
                     LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 }
 
@@ -82,46 +83,47 @@ fun BookSearchDialog(
                         text = "${state.results.size} results found",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     )
                 }
 
                 when {
-                    state.results.isEmpty() && state.query.isNotBlank()
-                            && !state.isTyping && !state.isLoading
-                            && state.hasSearched -> {
+                    state.results.isEmpty() && state.query.isNotBlank() &&
+                        !state.isTyping && !state.isLoading &&
+                        state.hasSearched -> {
                         // Enhanced empty state with icon and helpful messaging
                         Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(32.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxSize()
+                                    .padding(32.dp),
                             horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                            verticalArrangement = Arrangement.Center,
                         ) {
                             Icon(
                                 imageVector = Icons.Default.SearchOff,
                                 contentDescription = null,
                                 modifier = Modifier.size(64.dp),
-                                tint = MaterialTheme.colorScheme.outline
+                                tint = MaterialTheme.colorScheme.outline,
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "No books found for \"${state.query}\"",
                                 style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onSurface,
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = "Try different keywords or check your spelling",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
 
                     else -> {
                         LazyColumn(
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         ) {
                             items(state.results) { book ->
                                 val isInShelf = state.inShelfIds.contains(book.id)
@@ -130,14 +132,14 @@ fun BookSearchDialog(
                                         LoadImage(
                                             imageUrl = book.imageUrl,
                                             title = book.title,
-                                            modifier = Modifier.size(48.dp)
+                                            modifier = Modifier.size(48.dp),
                                         )
                                     },
                                     headlineContent = {
                                         Text(
                                             text = book.title,
                                             maxLines = 2,
-                                            overflow = TextOverflow.Ellipsis
+                                            overflow = TextOverflow.Ellipsis,
                                         )
                                     },
                                     supportingContent = {
@@ -145,12 +147,12 @@ fun BookSearchDialog(
                                             Text(
                                                 text = book.authors.joinToString(", "),
                                                 maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
+                                                overflow = TextOverflow.Ellipsis,
                                             )
                                             book.firstPublishYear?.let { year ->
                                                 Text(
                                                     text = year,
-                                                    maxLines = 1
+                                                    maxLines = 1,
                                                 )
                                             }
                                         }
@@ -160,19 +162,22 @@ fun BookSearchDialog(
                                             IconButton(onClick = { callbacks.onRemoveBook(book) }) {
                                                 Icon(
                                                     Icons.Default.Delete,
-                                                    contentDescription = stringResource(id = R.string.action_remove_short)
+                                                    contentDescription =
+                                                        stringResource(
+                                                            id = R.string.action_remove_short,
+                                                        ),
                                                 )
                                             }
                                         } else {
                                             IconButton(onClick = { callbacks.onAddBook(book) }) {
                                                 Icon(
                                                     Icons.Default.Add,
-                                                    contentDescription = stringResource(id = R.string.action_add_short)
+                                                    contentDescription = stringResource(id = R.string.action_add_short),
                                                 )
                                             }
                                         }
                                     },
-                                    modifier = Modifier.clickable { callbacks.onBookClick(book) }
+                                    modifier = Modifier.clickable { callbacks.onBookClick(book) },
                                 )
                             }
                         }
@@ -182,7 +187,7 @@ fun BookSearchDialog(
         },
         confirmButton = {
             TextButton(onClick = { callbacks.onDismiss() }) { Text(stringResource(id = R.string.action_close)) }
-        }
+        },
     )
 }
 
@@ -190,23 +195,25 @@ fun BookSearchDialog(
 @Composable
 private fun BookSearchScreenPreview() {
     BookSearchDialog(
-        state = BookSearchState(
-            query = "",
-            results = sampleBooks,
-            isLoading = false,
-            isTyping = false,
-            inShelfIds = emptySet(),
-            searchByTitle = true,
-            searchByAuthor = true
-        ),
-        callbacks = object : BookSearchCallbacks {
-            override val onQueryChange: (String) -> Unit = {}
-            override val onToggleSearchByTitle: () -> Unit = {}
-            override val onToggleSearchByAuthor: () -> Unit = {}
-            override val onAddBook: (Book) -> Unit = {}
-            override val onRemoveBook: (Book) -> Unit = {}
-            override val onBookClick: (Book) -> Unit = {}
-            override val onDismiss: () -> Unit = {}
-        }
+        state =
+            BookSearchState(
+                query = "",
+                results = sampleBooks,
+                isLoading = false,
+                isTyping = false,
+                inShelfIds = emptySet(),
+                searchByTitle = true,
+                searchByAuthor = true,
+            ),
+        callbacks =
+            object : BookSearchCallbacks {
+                override val onQueryChange: (String) -> Unit = {}
+                override val onToggleSearchByTitle: () -> Unit = {}
+                override val onToggleSearchByAuthor: () -> Unit = {}
+                override val onAddBook: (Book) -> Unit = {}
+                override val onRemoveBook: (Book) -> Unit = {}
+                override val onBookClick: (Book) -> Unit = {}
+                override val onDismiss: () -> Unit = {}
+            },
     )
 }

@@ -15,6 +15,6 @@ interface UpsertBookClubReviewUseCase {
         clubCode: String,
         bookId: String,
         rating: Float,
-        reviewText: String
+        reviewText: String,
     ): Result<Unit, DataError.Sync>
 }

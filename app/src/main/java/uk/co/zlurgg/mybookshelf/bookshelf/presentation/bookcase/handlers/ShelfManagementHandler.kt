@@ -13,17 +13,20 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class ShelfManagementHandler(
     private val bookcaseUseCases: BookcaseUseCases,
     private val handleTutorialAccess: HandleTutorialAccessUseCase,
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) {
     suspend fun reorderShelf(
         shelf: Bookshelf,
         newPosition: Int,
-        currentShelves: List<Bookshelf>
+        currentShelves: List<Bookshelf>,
     ): Result<List<Bookshelf>, DataError> {
         return bookcaseUseCases.reorderShelves.execute(shelf, newPosition, currentShelves)
     }
 
-    suspend fun renameShelf(shelfId: String, newName: String): Result<Unit, DataError> {
+    suspend fun renameShelf(
+        shelfId: String,
+        newName: String,
+    ): Result<Unit, DataError> {
         when (val validationResult = BookshelfConstants.validateShelfName(newName)) {
             is Result.Error -> return validationResult
             is Result.Success -> {}
@@ -41,7 +44,10 @@ class ShelfManagementHandler(
         return bookcaseUseCases.renameShelf.execute(shelfId, newName)
     }
 
-    suspend fun updateShelfStyle(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError> {
+    suspend fun updateShelfStyle(
+        shelfId: String,
+        newStyle: ShelfStyle,
+    ): Result<Unit, DataError> {
         return bookcaseUseCases.updateShelfStyle.execute(shelfId, newStyle)
     }
 

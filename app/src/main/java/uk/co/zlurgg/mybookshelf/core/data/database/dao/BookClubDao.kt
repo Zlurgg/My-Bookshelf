@@ -9,7 +9,6 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 
 @Dao
 interface BookClubDao {
-
     // ========== Membership Operations ==========
 
     @Upsert
@@ -30,8 +29,14 @@ interface BookClubDao {
     @Query("DELETE FROM book_club_memberships")
     suspend fun deleteAllMemberships()
 
-    @Query("UPDATE book_club_memberships SET syncStatus = :status, lastSyncedAt = :timestamp WHERE clubCode = :clubCode")
-    suspend fun updateMembershipSyncStatus(clubCode: String, status: String, timestamp: Long)
+    @Query(
+        "UPDATE book_club_memberships SET syncStatus = :status, lastSyncedAt = :timestamp WHERE clubCode = :clubCode",
+    )
+    suspend fun updateMembershipSyncStatus(
+        clubCode: String,
+        status: String,
+        timestamp: Long,
+    )
 
     // ========== Book Club Shelf Queries ==========
 
@@ -42,7 +47,11 @@ interface BookClubDao {
     suspend fun getShelfByClubCode(clubCode: String): BookshelfEntity?
 
     @Query("UPDATE BookshelfEntity SET isBookClub = :isBookClub, clubCode = :clubCode WHERE id = :shelfId")
-    suspend fun updateShelfBookClubStatus(shelfId: String, isBookClub: Boolean, clubCode: String?)
+    suspend fun updateShelfBookClubStatus(
+        shelfId: String,
+        isBookClub: Boolean,
+        clubCode: String?,
+    )
 
     // ========== Book Queries for Club Creation ==========
 

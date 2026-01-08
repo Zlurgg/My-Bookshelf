@@ -1,12 +1,12 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.usecase
 
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 
 /**
  * Implementation that clears all local data for a user during sign-out.
@@ -18,9 +18,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataU
  */
 class ClearUserDataUseCaseImpl(
     private val bookshelfDao: BookshelfDao,
-    private val bookClubDao: BookClubDao
+    private val bookClubDao: BookClubDao,
 ) : ClearUserDataUseCase {
-
     companion object {
         private const val TAG = "ClearUserData"
     }

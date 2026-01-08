@@ -15,7 +15,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncState
  * Implementations handle the complexity of coordinating local and remote data.
  */
 interface SyncRepository {
-
     /**
      * Performs a full sync for the given user.
      * Pushes local changes to cloud, then pulls remote changes.
@@ -52,7 +51,7 @@ interface SyncRepository {
      */
     suspend fun resolveConflict(
         conflict: SyncConflict,
-        resolution: ConflictResolution
+        resolution: ConflictResolution,
     ): Result<Unit, DataError.Sync>
 
     /**

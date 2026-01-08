@@ -1,6 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Properties
 import java.io.FileInputStream
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.ktlint)
 }
 
 // Load keystore properties
@@ -55,7 +57,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
@@ -80,7 +82,6 @@ android {
         arg("room.incremental", "true")
     }
     sourceSets["main"].assets.srcDir("schemas")
-
 }
 
 dependencies {
@@ -126,7 +127,7 @@ dependencies {
     testImplementation(libs.androidx.test.core.ktx)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.arch.core.testing)
-    
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -135,6 +136,23 @@ dependencies {
     androidTestImplementation(libs.work.testing)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
 
+// Detekt configuration
+detekt {
+    config.setFrom("$projectDir/detekt.yml")
+    buildUponDefaultConfig = true
+    allRules = false
+    baseline = file("$projectDir/detekt-baseline.xml")
+}
 
+// ktlint configuration
+// Note: ignoreFailures=true for existing codebase - fix issues gradually
+ktlint {
+    android = true
+    ignoreFailures = true
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.HTML)
+    }
 }

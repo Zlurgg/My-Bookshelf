@@ -18,9 +18,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 class JoinBookClubUseCaseImpl(
     private val bookClubRepository: BookClubRepository,
-    private val authService: AuthService
+    private val authService: AuthService,
 ) : JoinBookClubUseCase {
-
     override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> {
         Timber.tag(TAG).d("Attempting to join book club: %s", code)
 

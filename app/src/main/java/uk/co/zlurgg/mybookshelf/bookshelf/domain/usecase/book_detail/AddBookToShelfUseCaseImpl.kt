@@ -24,14 +24,17 @@ class AddBookToShelfUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
     private val bookClubRepository: BookClubRepository,
-    private val syncSchedulerService: SyncSchedulerService
+    private val syncSchedulerService: SyncSchedulerService,
 ) : AddBookToShelfUseCase {
-
-    override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> {
+    override suspend fun execute(
+        book: Book,
+        shelfId: String,
+    ): Result<Unit, DataError.Local> {
         return try {
             // Check shelf book limit before adding
-            val shelf = bookcaseRepository.getShelfById(shelfId)
-                ?: return Result.Error(DataError.Local.NOT_FOUND)
+            val shelf =
+                bookcaseRepository.getShelfById(shelfId)
+                    ?: return Result.Error(DataError.Local.NOT_FOUND)
 
             if (shelf.books.size >= MAX_BOOKS_PER_SHELF) {
                 Timber.tag(TAG).w("Shelf %s has reached maximum of %d books", shelfId, MAX_BOOKS_PER_SHELF)
@@ -41,21 +44,22 @@ class AddBookToShelfUseCaseImpl(
             // Check if book already exists to preserve personal metadata
             val existingBook = bookRepository.getBookById(book.id)
 
-            val bookToUpsert = if (existingBook != null) {
-                // Book exists - preserve ALL existing data including spine color
-                book.copy(
-                    spineColor = existingBook.spineColor,
-                    readingStatus = existingBook.readingStatus,
-                    personalRating = existingBook.personalRating,
-                    personalNotes = existingBook.personalNotes,
-                    dateAdded = existingBook.dateAdded,
-                    purchaseDate = existingBook.purchaseDate,
-                    purchased = existingBook.purchased
-                )
-            } else {
-                // New book - generate spine color now (not during search)
-                book.copy(spineColor = BookColorGenerator.generateSpineColor())
-            }
+            val bookToUpsert =
+                if (existingBook != null) {
+                    // Book exists - preserve ALL existing data including spine color
+                    book.copy(
+                        spineColor = existingBook.spineColor,
+                        readingStatus = existingBook.readingStatus,
+                        personalRating = existingBook.personalRating,
+                        personalNotes = existingBook.personalNotes,
+                        dateAdded = existingBook.dateAdded,
+                        purchaseDate = existingBook.purchaseDate,
+                        purchased = existingBook.purchased,
+                    )
+                } else {
+                    // New book - generate spine color now (not during search)
+                    book.copy(spineColor = BookColorGenerator.generateSpineColor())
+                }
 
             // Persist the book (with preserved metadata if it existed)
             bookRepository.upsertBook(bookToUpsert)
@@ -81,7 +85,7 @@ class AddBookToShelfUseCaseImpl(
         } catch (e: Exception) {
             Result.Error(
                 ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
+                    ?: DataError.Local.UNKNOWN,
             )
         }
     }

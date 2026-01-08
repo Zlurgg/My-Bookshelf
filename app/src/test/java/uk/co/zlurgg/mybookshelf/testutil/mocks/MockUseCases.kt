@@ -16,13 +16,13 @@ import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
  */
 
 class MockGetAllShelvesUseCase(
-    private var bookcaseToReturn: Bookcase = Bookcase(
-        id = "test-bookcase",
-        bookshelves = emptyList(),
-        bookCounts = emptyMap()
-    )
+    private var bookcaseToReturn: Bookcase =
+        Bookcase(
+            id = "test-bookcase",
+            bookshelves = emptyList(),
+            bookCounts = emptyMap(),
+        ),
 ) : GetAllShelvesUseCase {
-
     override suspend fun execute(): Flow<Bookcase> = flowOf(bookcaseToReturn)
 
     fun configureBookcase(bookcase: Bookcase) {
@@ -41,7 +41,7 @@ class MockCreateShelfUseCase : CreateShelfUseCase {
     override suspend fun execute(
         name: String,
         style: ShelfStyle,
-        existingShelves: List<Bookshelf>
+        existingShelves: List<Bookshelf>,
     ): Result<Bookshelf, DataError.Local> {
         executed = true
         lastUsedName = name
@@ -55,7 +55,7 @@ class MockCreateShelfUseCase : CreateShelfUseCase {
                 TestShelfBuilder()
                     .withName(name)
                     .withStyle(style)
-                    .build()
+                    .build(),
             )
         }
     }
@@ -117,7 +117,7 @@ class MockReorderShelvesUseCase : ReorderShelvesUseCase {
     override suspend fun execute(
         shelfToMove: Bookshelf,
         newPosition: Int,
-        currentShelves: List<Bookshelf>
+        currentShelves: List<Bookshelf>,
     ): Result<List<Bookshelf>, DataError.Local> {
         callCount++
         lastShelfToMove = shelfToMove
@@ -172,7 +172,10 @@ class MockRenameShelfUseCase : RenameShelfUseCase {
     var shouldReturnError = false
     var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
 
-    override suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local> {
+    override suspend fun execute(
+        shelfId: String,
+        newName: String,
+    ): Result<Unit, DataError.Local> {
         callCount++
         lastShelfId = shelfId
         lastNewName = newName
@@ -199,7 +202,10 @@ class MockUpdateShelfStyleUseCase : UpdateShelfStyleUseCase {
     var shouldReturnError = false
     var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
 
-    override suspend fun execute(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
+    override suspend fun execute(
+        shelfId: String,
+        newStyle: ShelfStyle,
+    ): Result<Unit, DataError.Local> {
         callCount++
         lastShelfId = shelfId
         lastNewStyle = newStyle
@@ -235,7 +241,7 @@ class MockDuplicateShelfUseCase : DuplicateShelfUseCase {
             Result.Success(
                 shelfToReturn ?: TestShelfBuilder()
                     .withName("Copy of Test Shelf")
-                    .build()
+                    .build(),
             )
         }
     }

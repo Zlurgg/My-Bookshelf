@@ -21,31 +21,32 @@ import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.data.usecase.ClearUserDataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 
-val authModule = module {
-    // Config
-    single {
-        AuthConfig(
-            webClientId = get<Context>().getString(R.string.web_client_id)
-        )
+val authModule =
+    module {
+        // Config
+        single {
+            AuthConfig(
+                webClientId = get<Context>().getString(R.string.web_client_id),
+            )
+        }
+
+        // Services
+        single<AuthService> {
+            GoogleAuthUiClient(
+                context = get(),
+                authConfig = get(),
+            )
+        }
+        single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
+        single<CurrentUserProvider> { CurrentUserProviderImpl(get()) }
+
+        // UseCases
+        single { SignInUseCase(get(), get(), get()) }
+        singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
+        single { SignOutUseCase(get(), get(), get(), get(), get(), get()) }
+        single { CheckSignInStatusUseCase(get(), get()) }
+        single { SignInUseCases(get(), get(), get()) }
+
+        // ViewModel
+        viewModel { SignInViewModel(get(), get(), get(), get(), get(), get()) }
     }
-
-    // Services
-    single<AuthService> {
-        GoogleAuthUiClient(
-            context = get(),
-            authConfig = get()
-        )
-    }
-    single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
-    single<CurrentUserProvider> { CurrentUserProviderImpl(get()) }
-
-    // UseCases
-    single { SignInUseCase(get(), get(), get()) }
-    singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
-    single { SignOutUseCase(get(), get(), get(), get(), get(), get()) }
-    single { CheckSignInStatusUseCase(get(), get()) }
-    single { SignInUseCases(get(), get(), get()) }
-
-    // ViewModel
-    viewModel { SignInViewModel(get(), get(), get(), get(), get(), get()) }
-}

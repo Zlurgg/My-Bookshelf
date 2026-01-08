@@ -11,12 +11,14 @@ sealed interface NavigationRoute {
     @Serializable
     data object SignIn : NavigationRoute {
         const val ROUTE = "sign_in"
+
         fun createRoute() = ROUTE
     }
 
     @Serializable
     data object Welcome : NavigationRoute {
         const val ROUTE = "welcome"
+
         fun createRoute() = ROUTE
     }
 
@@ -25,8 +27,11 @@ sealed interface NavigationRoute {
         const val ROUTE = "bookcase"
         const val ARG_NEW_SHELF = "new_shelf"
         const val ARG_SWITCH_TO_BOOK_CLUBS = "switch_to_book_clubs"
-        fun createRoute(isNew: Boolean = false, switchToBookClubs: Boolean = false) =
-            "bookcase?$ARG_NEW_SHELF=$isNew&$ARG_SWITCH_TO_BOOK_CLUBS=$switchToBookClubs"
+
+        fun createRoute(
+            isNew: Boolean = false,
+            switchToBookClubs: Boolean = false,
+        ) = "bookcase?$ARG_NEW_SHELF=$isNew&$ARG_SWITCH_TO_BOOK_CLUBS=$switchToBookClubs"
     }
 
     @Serializable
@@ -34,6 +39,7 @@ sealed interface NavigationRoute {
         companion object {
             const val ROUTE = "bookshelf/{id}"
             const val KEY_ID = "id"
+
             fun createRoute(id: String) = "bookshelf/$id"
         }
     }
@@ -44,8 +50,11 @@ sealed interface NavigationRoute {
             const val ROUTE = "book_detail/{id}/{shelfId}"
             const val KEY_ID = "id"
             const val KEY_SHELF_ID = "shelfId"
-            fun createRoute(id: String, shelfId: String) = "book_detail/$id/$shelfId"
+
+            fun createRoute(
+                id: String,
+                shelfId: String,
+            ) = "book_detail/$id/$shelfId"
         }
     }
 }
-

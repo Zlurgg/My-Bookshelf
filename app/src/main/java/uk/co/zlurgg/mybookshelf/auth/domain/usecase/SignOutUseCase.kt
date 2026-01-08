@@ -16,7 +16,7 @@ class SignOutUseCase(
     private val syncScheduler: SyncSchedulerService,
     private val clearUserData: ClearUserDataUseCase,
     private val currentUserProvider: CurrentUserProvider,
-    private val syncRepository: SyncRepository
+    private val syncRepository: SyncRepository,
 ) {
     companion object {
         private const val TAG = "SignOut"

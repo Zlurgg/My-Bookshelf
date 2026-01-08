@@ -9,6 +9,11 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.SystemUpdate
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -17,11 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import uk.co.zlurgg.mybookshelf.R
 
 /**
@@ -37,7 +37,7 @@ fun SettingsMenu(
     onJoinBookClub: () -> Unit,
     onSignIn: () -> Unit,
     onSignOut: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -45,14 +45,14 @@ fun SettingsMenu(
         IconButton(onClick = { expanded = true }) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
-                contentDescription = stringResource(R.string.settings_menu)
+                contentDescription = stringResource(R.string.settings_menu),
             )
         }
 
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.align(Alignment.TopEnd)
+            modifier = Modifier.align(Alignment.TopEnd),
         ) {
             // Check for Updates
             DropdownMenuItem(
@@ -64,9 +64,9 @@ fun SettingsMenu(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.SystemUpdate,
-                        contentDescription = null
+                        contentDescription = null,
                     )
-                }
+                },
             )
 
             // Help & Tutorial
@@ -79,9 +79,9 @@ fun SettingsMenu(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.HelpOutline,
-                        contentDescription = null
+                        contentDescription = null,
                     )
-                }
+                },
             )
 
             // About
@@ -94,9 +94,9 @@ fun SettingsMenu(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Info,
-                        contentDescription = null
+                        contentDescription = null,
                     )
-                }
+                },
             )
 
             // Join Book Club (only shown when signed in)
@@ -110,9 +110,9 @@ fun SettingsMenu(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.Default.Groups,
-                            contentDescription = null
+                            contentDescription = null,
                         )
-                    }
+                    },
                 )
             }
 
@@ -127,9 +127,9 @@ fun SettingsMenu(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Logout,
-                            contentDescription = null
+                            contentDescription = null,
                         )
-                    }
+                    },
                 )
             } else {
                 DropdownMenuItem(
@@ -141,9 +141,9 @@ fun SettingsMenu(
                     leadingIcon = {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Login,
-                            contentDescription = null
+                            contentDescription = null,
                         )
-                    }
+                    },
                 )
             }
         }

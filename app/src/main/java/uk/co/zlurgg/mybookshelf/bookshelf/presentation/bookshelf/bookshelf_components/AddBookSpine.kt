@@ -37,82 +37,92 @@ private const val HIGHLIGHT_HEIGHT = 140
 private const val ICON_SIZE = 24
 
 @Composable
-fun AddBookSpine(
-    onClick: () -> Unit,
-) {
+fun AddBookSpine(onClick: () -> Unit) {
     val cd = stringResource(id = R.string.cd_add_book_to_shelf)
-    
+
     // Bookend/bookstop design with decorative elements
     Box(
-        modifier = Modifier
-            .clickable { onClick() }
-            .height(BOOKEND_HEIGHT.dp)
-            .width(BOOKEND_WIDTH.dp)
-            .semantics { contentDescription = cd }
+        modifier =
+            Modifier
+                .clickable { onClick() }
+                .height(BOOKEND_HEIGHT.dp)
+                .width(BOOKEND_WIDTH.dp)
+                .semantics { contentDescription = cd },
     ) {
         // Base bookend structure with gradient-like appearance
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    MaterialTheme.colorScheme.tertiary,
-                    shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 2.dp, bottomEnd = 2.dp)
-                )
-                .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 2.dp, bottomEnd = 2.dp)),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(
+                        MaterialTheme.colorScheme.tertiary,
+                        shape =
+                            RoundedCornerShape(
+                                topStart = 8.dp,
+                                topEnd = 8.dp,
+                                bottomStart = 2.dp,
+                                bottomEnd = 2.dp,
+                            ),
+                    )
+                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp, bottomStart = 2.dp, bottomEnd = 2.dp)),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             // Decorative top section (bookend cap)
             Box(
-                modifier = Modifier
-                    .height(BOOKEND_CAP_HEIGHT.dp)
-                    .width(BOOKEND_CAP_WIDTH.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.2f),
-                        shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
-                    )
+                modifier =
+                    Modifier
+                        .height(BOOKEND_CAP_HEIGHT.dp)
+                        .width(BOOKEND_CAP_WIDTH.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp),
+                        ),
             )
-            
+
             // Main body with add icon
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .width(BOOKEND_BODY_WIDTH.dp)
-                    .background(
-                        MaterialTheme.colorScheme.tertiary,
-                        shape = RoundedCornerShape(2.dp)
-                    ),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .width(BOOKEND_BODY_WIDTH.dp)
+                        .background(
+                            MaterialTheme.colorScheme.tertiary,
+                            shape = RoundedCornerShape(2.dp),
+                        ),
+                contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onTertiary,
-                    modifier = Modifier.size(ICON_SIZE.dp)
+                    modifier = Modifier.size(ICON_SIZE.dp),
                 )
             }
-            
+
             // Decorative base (bookend foot)
             Box(
-                modifier = Modifier
-                    .height(BOOKEND_FOOT_HEIGHT.dp)
-                    .width(BOOKEND_FOOT_WIDTH.dp)
-                    .background(
-                        MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.15f),
-                        shape = RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp)
-                    )
+                modifier =
+                    Modifier
+                        .height(BOOKEND_FOOT_HEIGHT.dp)
+                        .width(BOOKEND_FOOT_WIDTH.dp)
+                        .background(
+                            MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(bottomStart = 4.dp, bottomEnd = 4.dp),
+                        ),
             )
         }
-        
+
         // Subtle highlight line to simulate 3D depth
         Box(
-            modifier = Modifier
-                .width(HIGHLIGHT_WIDTH.dp)
-                .height(HIGHLIGHT_HEIGHT.dp)
-                .background(
-                    MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.3f),
-                    shape = RoundedCornerShape(1.dp)
-                )
-                .align(Alignment.CenterStart)
+            modifier =
+                Modifier
+                    .width(HIGHLIGHT_WIDTH.dp)
+                    .height(HIGHLIGHT_HEIGHT.dp)
+                    .background(
+                        MaterialTheme.colorScheme.onTertiary.copy(alpha = 0.3f),
+                        shape = RoundedCornerShape(1.dp),
+                    )
+                    .align(Alignment.CenterStart),
         )
     }
 }

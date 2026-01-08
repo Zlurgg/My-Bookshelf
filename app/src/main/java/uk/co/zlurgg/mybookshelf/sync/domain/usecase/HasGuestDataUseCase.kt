@@ -9,7 +9,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo
  * ask them about importing existing guest data to their account.
  */
 interface HasGuestDataUseCase {
-
     /**
      * Checks for orphan data (books/shelves with no owner).
      *

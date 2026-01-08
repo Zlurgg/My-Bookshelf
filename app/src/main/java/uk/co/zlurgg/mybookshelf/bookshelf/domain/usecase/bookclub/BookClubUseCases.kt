@@ -8,28 +8,23 @@ class BookClubUseCases(
     // Phase 1: Create Book Club
     val createBookClub: CreateBookClubUseCase,
     val generateInviteLink: GenerateInviteLinkUseCase,
-
     // Phase 2: Join Book Club
     val parseClubCode: ParseClubCodeUseCase,
     val getBookClubPreview: GetBookClubPreviewUseCase,
     val joinBookClub: JoinBookClubUseCase,
-
     // Phase 3: Sync
     val syncBookClub: SyncBookClubUseCase,
-
     // Membership Management
     val restoreBookClubMemberships: RestoreBookClubMembershipsUseCase,
     val leaveBookClub: LeaveBookClubUseCase,
     val validateMemberships: ValidateBookClubMembershipsUseCase,
-
     // Reviews (for ratings)
     val getBookClubReviews: GetBookClubReviewsUseCase,
     val upsertBookClubReview: UpsertBookClubReviewUseCase,
     val deleteBookClubReview: DeleteBookClubReviewUseCase,
-
     // Comments (for discussion)
     val getBookClubComments: GetBookClubCommentsUseCase,
     val addBookClubComment: AddBookClubCommentUseCase,
     val editBookClubComment: EditBookClubCommentUseCase,
-    val deleteBookClubComment: DeleteBookClubCommentUseCase
+    val deleteBookClubComment: DeleteBookClubCommentUseCase,
 )

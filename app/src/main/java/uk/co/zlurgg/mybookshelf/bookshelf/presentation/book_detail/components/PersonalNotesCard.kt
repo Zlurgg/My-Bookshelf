@@ -27,21 +27,21 @@ import uk.co.zlurgg.mybookshelf.R
  */
 @Composable
 fun PersonalNotesCard(
-    notes: String,                        // "" = no notes
-    onNotesChange: (String) -> Unit,      // Pass "" to clear notes
-    modifier: Modifier = Modifier
+    notes: String, // "" = no notes
+    onNotesChange: (String) -> Unit, // Pass "" to clear notes
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.personal_notes_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -61,14 +61,16 @@ fun PersonalNotesCard(
                     Text(stringResource(R.string.personal_notes_character_count, currentLength))
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = { /* Keyboard dismisses automatically */ }
-                ),
+                keyboardActions =
+                    KeyboardActions(
+                        onDone = { /* Keyboard dismisses automatically */ },
+                    ),
                 minLines = 4,
                 maxLines = 10,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 240.dp) // Constrain max height to prevent layout issues
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp), // Constrain max height to prevent layout issues
             )
         }
     }

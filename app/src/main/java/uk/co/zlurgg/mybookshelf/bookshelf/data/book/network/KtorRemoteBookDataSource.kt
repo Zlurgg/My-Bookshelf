@@ -3,17 +3,16 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.network
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
-import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryBookApi
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryBookApi
+import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 
 class KtorRemoteBookDataSource(
     private val apiService: OpenLibraryBookApi,
-    private val systemLanguageProvider: SystemLanguageProvider
-): RemoteBookDataSource {
-
+    private val systemLanguageProvider: SystemLanguageProvider,
+) : RemoteBookDataSource {
     companion object {
         private const val TAG = "BookSearch"
     }
@@ -24,7 +23,7 @@ class KtorRemoteBookDataSource(
         language: String?,
         authorFilter: String?,
         titleFilter: String?,
-        sort: String?
+        sort: String?,
     ): Result<SearchResponseDto, DataError.Remote> {
         // Build query with field-specific filters
         val finalQuery = buildQuery(query, authorFilter, titleFilter)
@@ -35,14 +34,15 @@ class KtorRemoteBookDataSource(
         Timber.tag(TAG).d("Final query: '$finalQuery'")
         Timber.tag(TAG).d("Parameters - limit: %s, language: %s, sort: %s", resultLimit, finalLanguage, sort)
 
-        val result = ErrorMapper.httpNetworkCall<SearchResponseDto> {
-            apiService.searchBooks(
-                query = finalQuery,
-                resultLimit = resultLimit,
-                language = finalLanguage,
-                sort = sort
-            )
-        }
+        val result =
+            ErrorMapper.httpNetworkCall<SearchResponseDto> {
+                apiService.searchBooks(
+                    query = finalQuery,
+                    resultLimit = resultLimit,
+                    language = finalLanguage,
+                    sort = sort,
+                )
+            }
 
         // Log the response
         when (result) {
@@ -93,7 +93,7 @@ class KtorRemoteBookDataSource(
     private fun buildQuery(
         baseQuery: String,
         authorFilter: String?,
-        titleFilter: String?
+        titleFilter: String?,
     ): String {
         val queryParts = mutableListOf<String>()
 
@@ -102,7 +102,9 @@ class KtorRemoteBookDataSource(
             val trimmed = baseQuery.trim()
             // Multi-word queries get quotes for exact phrase matching
             val formatted = if (trimmed.contains(" ")) "\"$trimmed\"" else trimmed
-            Timber.tag(TAG).d("Query construction - base: '%s' → '%s' (multi-word: %b)", baseQuery, formatted, trimmed.contains(" "))
+            Timber.tag(
+                TAG,
+            ).d("Query construction - base: '%s' → '%s' (multi-word: %b)", baseQuery, formatted, trimmed.contains(" "))
             queryParts.add(formatted)
         }
 
@@ -111,7 +113,9 @@ class KtorRemoteBookDataSource(
             val trimmed = it.trim()
             val formatted = if (trimmed.contains(" ")) "\"$trimmed\"" else trimmed
             val fieldQuery = "author:$formatted"
-            Timber.tag(TAG).d("Query construction - author: '%s' → '%s' (multi-word: %b)", it, fieldQuery, trimmed.contains(" "))
+            Timber.tag(
+                TAG,
+            ).d("Query construction - author: '%s' → '%s' (multi-word: %b)", it, fieldQuery, trimmed.contains(" "))
             queryParts.add(fieldQuery)
         }
 
@@ -120,7 +124,9 @@ class KtorRemoteBookDataSource(
             val trimmed = it.trim()
             val formatted = if (trimmed.contains(" ")) "\"$trimmed\"" else trimmed
             val fieldQuery = "title:$formatted"
-            Timber.tag(TAG).d("Query construction - title: '%s' → '%s' (multi-word: %b)", it, fieldQuery, trimmed.contains(" "))
+            Timber.tag(
+                TAG,
+            ).d("Query construction - title: '%s' → '%s' (multi-word: %b)", it, fieldQuery, trimmed.contains(" "))
             queryParts.add(fieldQuery)
         }
 

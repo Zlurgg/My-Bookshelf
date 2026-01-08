@@ -18,12 +18,12 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 class MigrateLocalDataUseCaseImpl(
     private val bookshelfDao: BookshelfDao,
     private val syncScheduler: SyncSchedulerService,
-    private val currentUserProvider: CurrentUserProvider
+    private val currentUserProvider: CurrentUserProvider,
 ) : MigrateLocalDataUseCase {
-
     override suspend fun execute(): Result<MigrationResult, DataError.Sync> {
-        val userId = currentUserProvider.getCurrentUserId()
-            ?: return Result.Error(DataError.Sync.MIGRATION_FAILED)
+        val userId =
+            currentUserProvider.getCurrentUserId()
+                ?: return Result.Error(DataError.Sync.MIGRATION_FAILED)
 
         Timber.tag(TAG).d("=== MIGRATION START for user: %s ===", userId)
 
@@ -35,7 +35,7 @@ class MigrateLocalDataUseCaseImpl(
             Timber.tag(TAG).d(
                 "Found orphan entities - Books: %d, Shelves: %d",
                 orphanBookCount,
-                orphanShelfCount
+                orphanShelfCount,
             )
 
             // If no orphan data, no migration needed
@@ -60,21 +60,21 @@ class MigrateLocalDataUseCaseImpl(
             Timber.tag(TAG).d("Triggering immediate sync...")
             syncScheduler.triggerImmediateSync()
 
-            val result = MigrationResult(
-                booksAssigned = orphanBookCount,
-                shelvesAssigned = orphanShelfCount,
-                hadDataToMigrate = true,
-                syncTriggered = true
-            )
+            val result =
+                MigrationResult(
+                    booksAssigned = orphanBookCount,
+                    shelvesAssigned = orphanShelfCount,
+                    hadDataToMigrate = true,
+                    syncTriggered = true,
+                )
 
             Timber.tag(TAG).d(
                 "=== MIGRATION COMPLETE === Books: %d, Shelves: %d",
                 result.booksAssigned,
-                result.shelvesAssigned
+                result.shelvesAssigned,
             )
 
             Result.Success(result)
-
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Migration failed")
             Result.Error(DataError.Sync.MIGRATION_FAILED)

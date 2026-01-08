@@ -7,7 +7,6 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class Base64EncoderTest {
-
     @Test
     fun encodeSimpleStringAndDecodeBackReturnsOriginal() {
         // Given
@@ -38,7 +37,8 @@ class Base64EncoderTest {
     @Test
     fun encodeJsonDataAndDecodeBackReturnsOriginal() {
         // Given
-        val jsonData = """
+        val jsonData =
+            """
             {
               "formatVersion": 1,
               "exportedAt": "2025-10-01T16:29:00Z",
@@ -65,7 +65,7 @@ class Base64EncoderTest {
                 ]
               }
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // When
         val encoded = Base64Encoder.encode(jsonData)
@@ -78,14 +78,23 @@ class Base64EncoderTest {
     @Test
     fun encodeLargeJsonDataAndDecodeBackReturnsOriginal() {
         // Given - 5 books similar to URL_ENCODING_PLAN example
-        val largeJson = buildString {
-            append("""{"formatVersion":1,"exportedAt":"2025-10-01T16:29:00Z","appName":"My Bookshelf","bookshelf":{"name":"Large Shelf","shelfStyle":"OAK","books":[""")
-            repeat(5) { i ->
-                if (i > 0) append(",")
-                append("""{"id":"OL${i}W","title":"Book Title $i","authors":["Author $i"],"imageUrl":"https://covers.openlibrary.org/b/id/$i-L.jpg","description":"Description for book $i","languages":["eng"],"firstPublishYear":"2024","averageRating":4.5,"ratingCount":1000,"numPages":300,"numEditions":50,"purchased":false,"spineColor":-8355712}""")
+        val largeJson =
+            buildString {
+                append(
+                    """{"formatVersion":1,"exportedAt":"2025-10-01T16:29:00Z","appName":"My Bookshelf","bookshelf":{"name":"Large Shelf","shelfStyle":"OAK","books":[""",
+                )
+                repeat(5) { i ->
+                    if (i > 0) append(",")
+                    append(
+                        "{\"id\":\"OL${i}W\",\"title\":\"Book Title $i\"," +
+                            "\"authors\":[\"Author $i\"],\"imageUrl\":\"https://covers.openlibrary.org/b/id/$i-L.jpg\"," +
+                            "\"description\":\"Description for book $i\",\"languages\":[\"eng\"]," +
+                            "\"firstPublishYear\":\"2024\",\"averageRating\":4.5,\"ratingCount\":1000," +
+                            "\"numPages\":300,\"numEditions\":50,\"purchased\":false,\"spineColor\":-8355712}",
+                    )
+                }
+                append("]}}")
             }
-            append("]}}")
-        }
 
         // When
         val encoded = Base64Encoder.encode(largeJson)
@@ -139,7 +148,7 @@ class Base64EncoderTest {
         // Base64 expands by ~33%, so expect <133 chars
         assertTrue(
             "Compressed + Base64 should be much smaller than original: ${encoded.length} vs ${repetitiveData.length}",
-            encoded.length < repetitiveData.length / 4
+            encoded.length < repetitiveData.length / 4,
         )
     }
 
@@ -147,7 +156,8 @@ class Base64EncoderTest {
     fun encodeJsonWithPrettyPrintVsMinifiedShowsCompressionBenefit() {
         // Given
         val minifiedJson = """{"name":"Test","books":[{"title":"Book1"}]}"""
-        val prettyJson = """
+        val prettyJson =
+            """
             {
               "name": "Test",
               "books": [
@@ -156,7 +166,7 @@ class Base64EncoderTest {
                 }
               ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // When
         val encodedMinified = Base64Encoder.encode(minifiedJson)
@@ -170,7 +180,7 @@ class Base64EncoderTest {
         // Minified should produce shorter encoded output
         assertTrue(
             "Minified JSON should produce shorter Base64: ${encodedMinified.length} vs ${encodedPretty.length}",
-            encodedMinified.length < encodedPretty.length
+            encodedMinified.length < encodedPretty.length,
         )
     }
 
@@ -188,10 +198,11 @@ class Base64EncoderTest {
     @Test(expected = Exception::class)
     fun decodeCorruptedGZipDataThrowsException() {
         // Given - Valid Base64 but not valid GZip
-        val notGZipData = android.util.Base64.encodeToString(
-            "Not GZip data".toByteArray(),
-            android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP
-        )
+        val notGZipData =
+            android.util.Base64.encodeToString(
+                "Not GZip data".toByteArray(),
+                android.util.Base64.URL_SAFE or android.util.Base64.NO_WRAP,
+            )
 
         // When
         Base64Encoder.decode(notGZipData)
@@ -219,14 +230,26 @@ class Base64EncoderTest {
     @Test
     fun realistic5BookShelfStaysUnder2kbUrlLimit() {
         // Given - Realistic 5-book shelf JSON (minified)
-        val fiveBookShelf = buildString {
-            append("""{"formatVersion":1,"exportedAt":"2025-10-01T16:29:00Z","appName":"My Bookshelf","bookshelf":{"name":"My Reading List","shelfStyle":"WALNUT","books":[""")
-            repeat(5) { i ->
-                if (i > 0) append(",")
-                append("""{"id":"OL${100000 + i}W","title":"The Lord of the Rings Volume $i","authors":["J.R.R. Tolkien","Christopher Tolkien"],"imageUrl":"https://covers.openlibrary.org/b/id/12345678-L.jpg","description":"Epic fantasy novel that changed the genre forever. A masterpiece of world-building and storytelling.","languages":["eng"],"firstPublishYear":"1954","averageRating":4.52,"ratingCount":125000,"numPages":1178,"numEditions":500,"purchased":false,"spineColor":-8355712}""")
+        val fiveBookShelf =
+            buildString {
+                append(
+                    """{"formatVersion":1,"exportedAt":"2025-10-01T16:29:00Z","appName":"My Bookshelf","bookshelf":{"name":"My Reading List","shelfStyle":"WALNUT","books":[""",
+                )
+                repeat(5) { i ->
+                    if (i > 0) append(",")
+                    append(
+                        "{\"id\":\"OL${100000 + i}W\",\"title\":\"The Lord of the Rings Volume $i\"," +
+                            "\"authors\":[\"J.R.R. Tolkien\",\"Christopher Tolkien\"]," +
+                            "\"imageUrl\":\"https://covers.openlibrary.org/b/id/12345678-L.jpg\"," +
+                            "\"description\":\"Epic fantasy novel that changed the genre forever. " +
+                            "A masterpiece of world-building and storytelling.\"," +
+                            "\"languages\":[\"eng\"],\"firstPublishYear\":\"1954\"," +
+                            "\"averageRating\":4.52,\"ratingCount\":125000,\"numPages\":1178," +
+                            "\"numEditions\":500,\"purchased\":false,\"spineColor\":-8355712}",
+                    )
+                }
+                append("]}}")
             }
-            append("]}}")
-        }
 
         // When
         val encoded = Base64Encoder.encode(fiveBookShelf)
@@ -239,7 +262,7 @@ class Base64EncoderTest {
 
         assertTrue(
             "Full URL should be under 2000 chars for browser compatibility: ${fullUrl.length}",
-            fullUrl.length < 2000
+            fullUrl.length < 2000,
         )
 
         // Verify decoding works

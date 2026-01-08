@@ -32,27 +32,28 @@ fun ClubRatingCard(
     reviews: List<BookClubReview>,
     userClubRating: Float,
     onClubRatingChange: (Float) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     // Calculate average rating from reviews (only ratings > 0)
     val ratedReviews = reviews.filter { it.rating > 0 }
-    val averageRating = if (ratedReviews.isNotEmpty()) {
-        ratedReviews.map { it.rating }.average().toFloat()
-    } else {
-        0f
-    }
+    val averageRating =
+        if (ratedReviews.isNotEmpty()) {
+            ratedReviews.map { it.rating }.average().toFloat()
+        } else {
+            0f
+        }
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.club_rating_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -60,36 +61,38 @@ fun ClubRatingCard(
             // Average rating display
             if (ratedReviews.isNotEmpty()) {
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     // Display filled stars for average
                     for (i in 1..5) {
                         Icon(
-                            imageVector = if (i <= averageRating.toInt()) {
-                                Icons.Filled.Star
-                            } else {
-                                Icons.Filled.StarBorder
-                            },
+                            imageVector =
+                                if (i <= averageRating.toInt()) {
+                                    Icons.Filled.Star
+                                } else {
+                                    Icons.Filled.StarBorder
+                                },
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.secondary
+                            tint = MaterialTheme.colorScheme.secondary,
                         )
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = stringResource(
-                            R.string.club_rating_average,
-                            String.format("%.1f", averageRating),
-                            ratedReviews.size
-                        ),
+                        text =
+                            stringResource(
+                                R.string.club_rating_average,
+                                String.format("%.1f", averageRating),
+                                ratedReviews.size,
+                            ),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             } else {
                 Text(
                     text = stringResource(R.string.club_rating_no_ratings),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -99,33 +102,35 @@ fun ClubRatingCard(
             Text(
                 text = stringResource(R.string.club_rating_your_rating),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 for (i in 1..5) {
                     IconButton(
                         onClick = {
                             val newRating = if (userClubRating == i.toFloat()) 0f else i.toFloat()
                             onClubRatingChange(newRating)
-                        }
+                        },
                     ) {
                         Icon(
-                            imageVector = if (userClubRating > 0f && i <= userClubRating) {
-                                Icons.Filled.Star
-                            } else {
-                                Icons.Filled.StarBorder
-                            },
+                            imageVector =
+                                if (userClubRating > 0f && i <= userClubRating) {
+                                    Icons.Filled.Star
+                                } else {
+                                    Icons.Filled.StarBorder
+                                },
                             contentDescription = stringResource(R.string.cd_rate_stars, i),
-                            tint = if (userClubRating > 0f && i <= userClubRating) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
+                            tint =
+                                if (userClubRating > 0f && i <= userClubRating) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
                         )
                     }
                 }
@@ -135,14 +140,14 @@ fun ClubRatingCard(
                     Text(
                         text = stringResource(R.string.rating_display, userClubRating.toInt()),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.club_rating_tap_to_rate),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }

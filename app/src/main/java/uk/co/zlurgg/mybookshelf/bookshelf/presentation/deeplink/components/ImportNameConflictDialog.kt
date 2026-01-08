@@ -15,7 +15,7 @@ fun ImportNameConflictDialog(
     isLoading: Boolean,
     errorMessage: String? = null,
     onDismiss: () -> Unit,
-    onResolveConflict: (String) -> Unit
+    onResolveConflict: (String) -> Unit,
 ) {
     ShelfNameInputDialog(
         currentName = existingName,
@@ -23,11 +23,12 @@ fun ImportNameConflictDialog(
         isLoading = isLoading,
         titleRes = R.string.import_name_conflict_title,
         confirmTextRes = R.string.action_import,
-        prefixMessage = stringResource(
-            id = R.string.import_name_conflict_message,
-            existingName
-        ),
+        prefixMessage =
+            stringResource(
+                id = R.string.import_name_conflict_message,
+                existingName,
+            ),
         onDismiss = onDismiss,
-        onConfirm = onResolveConflict
+        onConfirm = onResolveConflict,
     )
 }

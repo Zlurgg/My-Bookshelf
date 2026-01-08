@@ -25,9 +25,7 @@ import kotlinx.coroutines.delay
 import uk.co.zlurgg.mybookshelf.R
 
 @Composable
-fun WelcomeHeader(
-    modifier: Modifier = Modifier
-) {
+fun WelcomeHeader(modifier: Modifier = Modifier) {
     var showWelcome by remember { mutableStateOf(false) }
     var showAppName by remember { mutableStateOf(false) }
     var showSubtitle by remember { mutableStateOf(false) }
@@ -42,19 +40,21 @@ fun WelcomeHeader(
 
     Column(
         modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AnimatedVisibility(
             visible = showWelcome,
-            enter = fadeIn(tween(400)) + slideInVertically(
-                initialOffsetY = { -it },
-                animationSpec = tween(400)
-            )
+            enter =
+                fadeIn(tween(400)) +
+                    slideInVertically(
+                        initialOffsetY = { -it },
+                        animationSpec = tween(400),
+                    ),
         ) {
             Text(
                 text = stringResource(R.string.welcome_to),
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
@@ -62,15 +62,17 @@ fun WelcomeHeader(
 
         AnimatedVisibility(
             visible = showAppName,
-            enter = fadeIn(tween(400)) + slideInVertically(
-                initialOffsetY = { it },
-                animationSpec = tween(400)
-            )
+            enter =
+                fadeIn(tween(400)) +
+                    slideInVertically(
+                        initialOffsetY = { it },
+                        animationSpec = tween(400),
+                    ),
         ) {
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displayMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
         }
 
@@ -78,13 +80,13 @@ fun WelcomeHeader(
 
         AnimatedVisibility(
             visible = showSubtitle,
-            enter = fadeIn(tween(600))
+            enter = fadeIn(tween(600)),
         ) {
             Text(
                 text = stringResource(R.string.sign_in_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

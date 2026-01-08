@@ -13,9 +13,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles format validation and name conflict detection.
  */
 class BookshelfImportValidatorImpl(
-    private val bookcaseRepository: BookcaseRepository
+    private val bookcaseRepository: BookcaseRepository,
 ) : BookshelfImportValidator {
-
     override fun validateFormat(exportData: BookshelfExportData): Result<Unit, DataError.Local> {
         return try {
             // Basic structure validation

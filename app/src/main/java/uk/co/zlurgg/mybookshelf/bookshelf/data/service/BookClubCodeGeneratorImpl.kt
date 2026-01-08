@@ -14,9 +14,8 @@ import kotlin.random.Random
  * when codes need to be manually entered.
  */
 class BookClubCodeGeneratorImpl(
-    private val remoteDataSource: RemoteSyncDataSource
+    private val remoteDataSource: RemoteSyncDataSource,
 ) : BookClubCodeGenerator {
-
     override suspend fun generateUniqueCode(): Result<String, DataError.Sync> {
         repeat(MAX_RETRIES) { attempt ->
             val code = generateCode()

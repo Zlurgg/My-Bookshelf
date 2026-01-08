@@ -13,7 +13,7 @@ fun RenameShelfDialog(
     currentName: String,
     errorMessage: String?,
     onDismiss: () -> Unit,
-    onRename: (String) -> Unit
+    onRename: (String) -> Unit,
 ) {
     ShelfNameInputDialog(
         currentName = currentName,
@@ -22,6 +22,6 @@ fun RenameShelfDialog(
         titleRes = R.string.dialog_rename_shelf_title,
         confirmTextRes = R.string.action_rename,
         onDismiss = onDismiss,
-        onConfirm = onRename
+        onConfirm = onRename,
     )
 }

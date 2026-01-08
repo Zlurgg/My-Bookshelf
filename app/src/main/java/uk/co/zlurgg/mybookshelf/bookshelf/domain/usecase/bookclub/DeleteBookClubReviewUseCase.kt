@@ -9,6 +9,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 interface DeleteBookClubReviewUseCase {
     suspend operator fun invoke(
         clubCode: String,
-        bookId: String
+        bookId: String,
     ): Result<Unit, DataError.Sync>
 }

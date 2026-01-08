@@ -10,7 +10,7 @@ import uk.co.zlurgg.mybookshelf.R
 @Composable
 fun SignOutDialog(
     onConfirm: () -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -25,6 +25,6 @@ fun SignOutDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        }
+        },
     )
 }

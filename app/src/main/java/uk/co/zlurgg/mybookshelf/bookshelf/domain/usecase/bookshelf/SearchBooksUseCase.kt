@@ -14,6 +14,6 @@ interface SearchBooksUseCase {
         resultLimit: Int? = null,
         language: String? = null,
         authorFilter: String? = null,
-        titleFilter: String? = null
+        titleFilter: String? = null,
     ): Result<List<Book>, DataError.Remote>
 }

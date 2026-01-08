@@ -10,7 +10,6 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
  * Unit tests for BookFirestoreMapper extension functions.
  */
 class BookFirestoreMapperTest {
-
     @Test
     fun `toFirestoreDto maps all fields correctly`() {
         // Given
@@ -130,21 +129,22 @@ class BookFirestoreMapperTest {
     @Test
     fun `toFirestoreDto handles null optional fields`() {
         // Given
-        val entity = BookEntity(
-            id = "book-minimal",
-            title = "Minimal Book",
-            description = null,
-            imageUrl = "url",
-            languages = emptyList(),
-            authors = emptyList(),
-            firstPublishYear = null,
-            ratingsAverage = null,
-            ratingsCount = null,
-            numPagesMedian = null,
-            numEditions = 0,
-            purchased = false,
-            spineColor = 0
-        )
+        val entity =
+            BookEntity(
+                id = "book-minimal",
+                title = "Minimal Book",
+                description = null,
+                imageUrl = "url",
+                languages = emptyList(),
+                authors = emptyList(),
+                firstPublishYear = null,
+                ratingsAverage = null,
+                ratingsCount = null,
+                numPagesMedian = null,
+                numEditions = 0,
+                purchased = false,
+                spineColor = 0,
+            )
 
         // When
         val dto = entity.toFirestoreDto()
@@ -163,25 +163,26 @@ class BookFirestoreMapperTest {
     @Test
     fun `toBookFirestoreDto from map parses correctly`() {
         // Given
-        val map = mapOf<String, Any?>(
-            "title" to "Map Book",
-            "authors" to listOf("Map Author"),
-            "image_url" to "https://example.com/map.jpg",
-            "description" to "From map",
-            "languages" to listOf("en"),
-            "first_publish_year" to "2021",
-            "average_rating" to 4.0,
-            "rating_count" to 50,
-            "num_pages" to 200,
-            "num_editions" to 2,
-            "purchased" to true,
-            "spine_color" to 12345,
-            "reading_status" to "FINISHED",
-            "personal_rating" to 5.0f,
-            "personal_notes" to "Excellent",
-            "version" to 2L,
-            "last_modified_at" to 9999L
-        )
+        val map =
+            mapOf<String, Any?>(
+                "title" to "Map Book",
+                "authors" to listOf("Map Author"),
+                "image_url" to "https://example.com/map.jpg",
+                "description" to "From map",
+                "languages" to listOf("en"),
+                "first_publish_year" to "2021",
+                "average_rating" to 4.0,
+                "rating_count" to 50,
+                "num_pages" to 200,
+                "num_editions" to 2,
+                "purchased" to true,
+                "spine_color" to 12345,
+                "reading_status" to "FINISHED",
+                "personal_rating" to 5.0f,
+                "personal_notes" to "Excellent",
+                "version" to 2L,
+                "last_modified_at" to 9999L,
+            )
 
         // When
         val dto = map.toBookFirestoreDto("map-book-id")
@@ -232,60 +233,62 @@ class BookFirestoreMapperTest {
 
     // Helper functions
 
-    private fun createTestBookEntity() = BookEntity(
-        id = "book-1",
-        title = "Test Book",
-        description = "A test description",
-        imageUrl = "https://example.com/cover.jpg",
-        languages = listOf("en", "fr"),
-        authors = listOf("Author 1", "Author 2"),
-        firstPublishYear = "2020",
-        ratingsAverage = 4.5,
-        ratingsCount = 100,
-        numPagesMedian = 300,
-        numEditions = 5,
-        purchased = true,
-        spineColor = -16711936,
-        readingStatus = "CURRENTLY_READING",
-        personalRating = 4.0f,
-        personalNotes = "Great book!",
-        dateAdded = 1000L,
-        purchaseDate = 2000L,
-        isbn = "978-0123456789",
-        publisher = "Test Publisher",
-        publishDate = "2020-01-01",
-        internetArchiveId = "ia-12345",
-        ownerId = "owner-1",
-        lastModifiedAt = 5000L,
-        syncStatus = "PENDING",
-        cloudId = "cloud-1",
-        version = 3L
-    )
+    private fun createTestBookEntity() =
+        BookEntity(
+            id = "book-1",
+            title = "Test Book",
+            description = "A test description",
+            imageUrl = "https://example.com/cover.jpg",
+            languages = listOf("en", "fr"),
+            authors = listOf("Author 1", "Author 2"),
+            firstPublishYear = "2020",
+            ratingsAverage = 4.5,
+            ratingsCount = 100,
+            numPagesMedian = 300,
+            numEditions = 5,
+            purchased = true,
+            spineColor = -16711936,
+            readingStatus = "CURRENTLY_READING",
+            personalRating = 4.0f,
+            personalNotes = "Great book!",
+            dateAdded = 1000L,
+            purchaseDate = 2000L,
+            isbn = "978-0123456789",
+            publisher = "Test Publisher",
+            publishDate = "2020-01-01",
+            internetArchiveId = "ia-12345",
+            ownerId = "owner-1",
+            lastModifiedAt = 5000L,
+            syncStatus = "PENDING",
+            cloudId = "cloud-1",
+            version = 3L,
+        )
 
-    private fun createTestBookFirestoreDto() = BookFirestoreDto(
-        id = "book-1",
-        title = "Test Book",
-        authors = listOf("Author 1", "Author 2"),
-        imageUrl = "https://example.com/cover.jpg",
-        description = "A test description",
-        languages = listOf("en", "fr"),
-        firstPublishYear = "2020",
-        averageRating = 4.5,
-        ratingCount = 100,
-        numPages = 300,
-        numEditions = 5,
-        purchased = true,
-        spineColor = -16711936,
-        readingStatus = "CURRENTLY_READING",
-        personalRating = 4.0f,
-        personalNotes = "Great book!",
-        dateAdded = 1000L,
-        purchaseDate = 2000L,
-        isbn = "978-0123456789",
-        publisher = "Test Publisher",
-        publishDate = "2020-01-01",
-        internetArchiveId = "ia-12345",
-        version = 3L,
-        lastModifiedAt = 5000L
-    )
+    private fun createTestBookFirestoreDto() =
+        BookFirestoreDto(
+            id = "book-1",
+            title = "Test Book",
+            authors = listOf("Author 1", "Author 2"),
+            imageUrl = "https://example.com/cover.jpg",
+            description = "A test description",
+            languages = listOf("en", "fr"),
+            firstPublishYear = "2020",
+            averageRating = 4.5,
+            ratingCount = 100,
+            numPages = 300,
+            numEditions = 5,
+            purchased = true,
+            spineColor = -16711936,
+            readingStatus = "CURRENTLY_READING",
+            personalRating = 4.0f,
+            personalNotes = "Great book!",
+            dateAdded = 1000L,
+            purchaseDate = 2000L,
+            isbn = "978-0123456789",
+            publisher = "Test Publisher",
+            publishDate = "2020-01-01",
+            internetArchiveId = "ia-12345",
+            version = 3L,
+            lastModifiedAt = 5000L,
+        )
 }

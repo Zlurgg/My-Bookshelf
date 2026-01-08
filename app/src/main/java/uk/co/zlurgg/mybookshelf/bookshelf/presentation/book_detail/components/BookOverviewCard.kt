@@ -26,19 +26,19 @@ fun BookOverviewCard(
     firstPublishYear: String?,
     numPages: Int?,
     numEditions: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             if (authors.isNotEmpty()) {
@@ -46,7 +46,7 @@ fun BookOverviewCard(
                 Text(
                     text = stringResource(R.string.book_overview_by_author, authors.joinToString(", ")),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -57,7 +57,7 @@ fun BookOverviewCard(
                 Text(
                     text = stringResource(R.string.publication_first_published_label, firstPublishYear),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -66,7 +66,7 @@ fun BookOverviewCard(
                 Text(
                     text = stringResource(R.string.publication_pages_label, numPages),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
@@ -75,7 +75,7 @@ fun BookOverviewCard(
                 Text(
                     text = stringResource(R.string.book_overview_editions, numEditions),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

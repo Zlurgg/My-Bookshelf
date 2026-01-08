@@ -43,22 +43,22 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 @Composable
 fun RecommendationStatusCard(
     readingStatus: ReadingStatus,
-    personalRating: Float,                      // 0 = unrated, 1-5 = rated
+    personalRating: Float, // 0 = unrated, 1-5 = rated
     onReadingStatusChange: (ReadingStatus) -> Unit,
-    onPersonalRatingChange: (Float) -> Unit,    // Pass 0f to clear rating
-    modifier: Modifier = Modifier
+    onPersonalRatingChange: (Float) -> Unit, // Pass 0f to clear rating
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
         ) {
             Text(
                 text = stringResource(R.string.reading_status_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -68,7 +68,7 @@ fun RecommendationStatusCard(
 
             ExposedDropdownMenuBox(
                 expanded = expanded,
-                onExpandedChange = { expanded = it }
+                onExpandedChange = { expanded = it },
             ) {
                 OutlinedTextField(
                     value = readingStatus.toDisplayString(),
@@ -76,17 +76,18 @@ fun RecommendationStatusCard(
                     readOnly = true,
                     label = { Text(stringResource(R.string.reading_status_label)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier
-                        .menuAnchor(
-                            type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
-                            enabled = true
-                        )
-                        .fillMaxWidth()
+                    modifier =
+                        Modifier
+                            .menuAnchor(
+                                type = ExposedDropdownMenuAnchorType.PrimaryNotEditable,
+                                enabled = true,
+                            )
+                            .fillMaxWidth(),
                 )
 
                 ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = { expanded = false },
                 ) {
                     ReadingStatus.entries.forEach { status ->
                         DropdownMenuItem(
@@ -94,7 +95,7 @@ fun RecommendationStatusCard(
                             onClick = {
                                 onReadingStatusChange(status)
                                 expanded = false
-                            }
+                            },
                         )
                     }
                 }
@@ -106,33 +107,35 @@ fun RecommendationStatusCard(
             Text(
                 text = stringResource(R.string.personal_rating_label),
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 for (i in 1..5) {
                     IconButton(
                         onClick = {
                             val newRating = if (personalRating == i.toFloat()) 0f else i.toFloat()
                             onPersonalRatingChange(newRating)
-                        }
+                        },
                     ) {
                         Icon(
-                            imageVector = if (personalRating > 0f && i <= personalRating) {
-                                Icons.Filled.Star
-                            } else {
-                                Icons.Filled.StarBorder
-                            },
+                            imageVector =
+                                if (personalRating > 0f && i <= personalRating) {
+                                    Icons.Filled.Star
+                                } else {
+                                    Icons.Filled.StarBorder
+                                },
                             contentDescription = stringResource(R.string.cd_rate_stars, i),
-                            tint = if (personalRating > 0f && i <= personalRating) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
+                            tint =
+                                if (personalRating > 0f && i <= personalRating) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
                         )
                     }
                 }
@@ -142,7 +145,7 @@ fun RecommendationStatusCard(
                     Text(
                         text = stringResource(R.string.rating_display, personalRating.toInt()),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
@@ -154,8 +157,9 @@ fun RecommendationStatusCard(
  * Converts ReadingStatus enum to user-friendly display string.
  */
 @Composable
-private fun ReadingStatus.toDisplayString(): String = when (this) {
-    ReadingStatus.WANT_TO_READ -> stringResource(R.string.reading_status_want_to_read)
-    ReadingStatus.CURRENTLY_READING -> stringResource(R.string.reading_status_currently_reading)
-    ReadingStatus.READ -> stringResource(R.string.reading_status_read)
-}
+private fun ReadingStatus.toDisplayString(): String =
+    when (this) {
+        ReadingStatus.WANT_TO_READ -> stringResource(R.string.reading_status_want_to_read)
+        ReadingStatus.CURRENTLY_READING -> stringResource(R.string.reading_status_currently_reading)
+        ReadingStatus.READ -> stringResource(R.string.reading_status_read)
+    }

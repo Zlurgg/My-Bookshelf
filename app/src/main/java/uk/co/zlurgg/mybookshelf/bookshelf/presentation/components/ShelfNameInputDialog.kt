@@ -46,7 +46,7 @@ fun ShelfNameInputDialog(
     confirmTextRes: Int,
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
-    prefixMessage: String? = null
+    prefixMessage: String? = null,
 ) {
     var name by remember { mutableStateOf(currentName) }
     val focusRequester = remember { FocusRequester() }
@@ -62,7 +62,7 @@ fun ShelfNameInputDialog(
                 if (prefixMessage != null) {
                     Text(
                         text = prefixMessage,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodyMedium,
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                 }
@@ -72,11 +72,12 @@ fun ShelfNameInputDialog(
                     onValueChange = { name = it },
                     label = { Text(stringResource(id = R.string.field_shelf_name_label)) },
                     enabled = !isLoading,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .focusRequester(focusRequester),
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .focusRequester(focusRequester),
                     singleLine = true,
-                    isError = errorMessage != null
+                    isError = errorMessage != null,
                 )
 
                 // Inline error message - visible within dialog
@@ -85,7 +86,7 @@ fun ShelfNameInputDialog(
                     Text(
                         text = errorMessage,
                         color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
                     )
                 }
 
@@ -101,7 +102,7 @@ fun ShelfNameInputDialog(
             } else {
                 Button(
                     enabled = name.isNotBlank() && name.trim() != currentName.trim(),
-                    onClick = { onConfirm(name.trim()) }
+                    onClick = { onConfirm(name.trim()) },
                 ) {
                     Text(stringResource(id = confirmTextRes))
                 }
@@ -110,11 +111,11 @@ fun ShelfNameInputDialog(
         dismissButton = {
             Button(
                 onClick = onDismiss,
-                enabled = !isLoading
+                enabled = !isLoading,
             ) {
                 Text(stringResource(id = R.string.action_cancel))
             }
-        }
+        },
     )
 
     LaunchedEffect(Unit) {

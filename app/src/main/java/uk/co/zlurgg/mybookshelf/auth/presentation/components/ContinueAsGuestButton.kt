@@ -20,14 +20,15 @@ fun ContinueAsGuestButton(
     TextButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier
-            .fillMaxWidth()
-            .height(48.dp)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(48.dp),
     ) {
         Text(
             text = stringResource(R.string.continue_as_guest),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

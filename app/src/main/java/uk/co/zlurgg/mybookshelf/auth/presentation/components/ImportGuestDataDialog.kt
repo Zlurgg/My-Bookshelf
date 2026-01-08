@@ -27,21 +27,21 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo
 fun ImportGuestDataDialog(
     guestDataInfo: GuestDataInfo,
     onImport: () -> Unit,
-    onSkip: () -> Unit
+    onSkip: () -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = onSkip,
         title = {
             Text(
                 text = stringResource(R.string.import_guest_data_title),
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall,
             )
         },
         text = {
             Column {
                 Text(
                     text = stringResource(R.string.import_guest_data_message),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -49,25 +49,27 @@ fun ImportGuestDataDialog(
                 // Show counts of books and shelves
                 if (guestDataInfo.bookCount > 0) {
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.guest_data_books,
-                            guestDataInfo.bookCount,
-                            guestDataInfo.bookCount
-                        ),
+                        text =
+                            pluralStringResource(
+                                R.plurals.guest_data_books,
+                                guestDataInfo.bookCount,
+                                guestDataInfo.bookCount,
+                            ),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
 
                 if (guestDataInfo.shelfCount > 0) {
                     Text(
-                        text = pluralStringResource(
-                            R.plurals.guest_data_shelves,
-                            guestDataInfo.shelfCount,
-                            guestDataInfo.shelfCount
-                        ),
+                        text =
+                            pluralStringResource(
+                                R.plurals.guest_data_shelves,
+                                guestDataInfo.shelfCount,
+                                guestDataInfo.shelfCount,
+                            ),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
                     )
                 }
 
@@ -76,7 +78,7 @@ fun ImportGuestDataDialog(
                 Text(
                     text = stringResource(R.string.import_guest_data_warning),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
@@ -89,6 +91,6 @@ fun ImportGuestDataDialog(
             TextButton(onClick = onSkip) {
                 Text(stringResource(R.string.action_skip))
             }
-        }
+        },
     )
 }

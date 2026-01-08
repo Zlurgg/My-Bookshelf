@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
@@ -43,7 +43,7 @@ class SyncEngine(
     private val remoteDataSource: RemoteSyncDataSource,
     private val conflictResolver: ConflictResolver,
     private val connectivityMonitor: ConnectivityMonitor,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
 ) {
     private val _progress = MutableStateFlow(SyncProgress())
     val progress: StateFlow<SyncProgress> = _progress.asStateFlow()
@@ -75,8 +75,8 @@ class SyncEngine(
                 SyncMetadataEntity(
                     userId = userId,
                     lastSyncTimestamp = 0L,
-                    syncInProgress = true
-                )
+                    syncInProgress = true,
+                ),
             )
         } else {
             syncDao.updateSyncInProgress(userId, true)
@@ -117,24 +117,29 @@ class SyncEngine(
             val pushData = (pushResult as Result.Success).data
             val pullData = (pullResult as Result.Success).data
 
-            val finalResult = SyncResult(
-                pushedCount = pushData.pushedCount,
-                pulledCount = pullData.pulledCount,
-                conflictCount = conflicts.size,
-                resolvedCount = conflicts.count { conflictResolver.canAutoResolve(it) },
-                deletedCount = pushData.deletedCount + pullData.deletedCount,
-                unresolvedConflictIds = conflicts
-                    .filter { !conflictResolver.canAutoResolve(it) }
-                    .map { it.entityId },
-                completedAt = timeProvider.currentTimeMillis()
-            )
+            val finalResult =
+                SyncResult(
+                    pushedCount = pushData.pushedCount,
+                    pulledCount = pullData.pulledCount,
+                    conflictCount = conflicts.size,
+                    resolvedCount = conflicts.count { conflictResolver.canAutoResolve(it) },
+                    deletedCount = pushData.deletedCount + pullData.deletedCount,
+                    unresolvedConflictIds =
+                        conflicts
+                            .filter { !conflictResolver.canAutoResolve(it) }
+                            .map { it.entityId },
+                    completedAt = timeProvider.currentTimeMillis(),
+                )
 
             markSyncComplete(userId, null)
-            Timber.tag(TAG).d("=== SYNC COMPLETE: pushed=%d, pulled=%d, conflicts=%d ===",
-                finalResult.pushedCount, finalResult.pulledCount, finalResult.conflictCount)
+            Timber.tag(TAG).d(
+                "=== SYNC COMPLETE: pushed=%d, pulled=%d, conflicts=%d ===",
+                finalResult.pushedCount,
+                finalResult.pulledCount,
+                finalResult.conflictCount,
+            )
 
             return Result.Success(finalResult)
-
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Sync failed with exception")
             markSyncComplete(userId, e.message)
@@ -153,8 +158,9 @@ class SyncEngine(
         var deletedCount = 0
 
         // Get pending books (exclude system entities like tutorial book)
-        val pendingBooks = bookshelfDao.getPendingSyncBooks()
-            .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
+        val pendingBooks =
+            bookshelfDao.getPendingSyncBooks()
+                .filter { (it.ownerId == userId || it.ownerId == null) && !SystemOwnerIds.isSystemOwner(it.ownerId) }
 
         Timber.tag(TAG).d("Found %d pending books", pendingBooks.size)
         updateProgress(SyncPhase.PUSHING_BOOKS, 0, pendingBooks.size)
@@ -177,7 +183,7 @@ class SyncEngine(
                     bookshelfDao.updateBookSyncStatus(
                         book.id,
                         "SYNCED",
-                        timeProvider.currentTimeMillis()
+                        timeProvider.currentTimeMillis(),
                     )
                     pushedBooks++
                 } else if (uploadResult is Result.Error) {
@@ -188,21 +194,24 @@ class SyncEngine(
 
         // Get pending shelves (exclude system entities like tutorial shelf and book clubs)
         // Book club shelves sync via BookClubRepository, not personal sync
-        val pendingShelves = bookshelfDao.getPendingSyncShelves()
-            .filter {
-                (it.ownerId == userId || it.ownerId == null) &&
-                !SystemOwnerIds.isSystemOwner(it.ownerId) &&
-                !it.isBookClub  // Book clubs sync separately via bookClubs collection
-            }
+        val pendingShelves =
+            bookshelfDao.getPendingSyncShelves()
+                .filter {
+                    (it.ownerId == userId || it.ownerId == null) &&
+                        !SystemOwnerIds.isSystemOwner(it.ownerId) &&
+                        !it.isBookClub // Book clubs sync separately via bookClubs collection
+                }
 
         Timber.tag(TAG).d("Found %d pending shelves", pendingShelves.size)
         updateProgress(SyncPhase.PUSHING_SHELVES, 0, pendingShelves.size)
 
         // Push shelves
         pendingShelves.forEachIndexed { index, shelf ->
-            if (isCancelled.get()) return Result.Success(
-                SyncResult(pushedCount = pushedBooks + pushedShelves)
-            )
+            if (isCancelled.get()) {
+                return Result.Success(
+                    SyncResult(pushedCount = pushedBooks + pushedShelves),
+                )
+            }
 
             updateProgress(SyncPhase.PUSHING_SHELVES, index + 1, pendingShelves.size)
 
@@ -216,19 +225,21 @@ class SyncEngine(
                 }
             } else {
                 // Get book IDs for this shelf
-                val bookIds = bookshelfDao.getBooksForShelf(shelf.id)
-                    .first()
-                    .map { it.id }
+                val bookIds =
+                    bookshelfDao.getBooksForShelf(shelf.id)
+                        .first()
+                        .map { it.id }
 
-                val uploadResult = remoteDataSource.uploadBookshelf(
-                    userId,
-                    shelf.toFirestoreDto(bookIds)
-                )
+                val uploadResult =
+                    remoteDataSource.uploadBookshelf(
+                        userId,
+                        shelf.toFirestoreDto(bookIds),
+                    )
                 if (uploadResult is Result.Success) {
                     bookshelfDao.updateShelfSyncStatus(
                         shelf.id,
                         "SYNCED",
-                        timeProvider.currentTimeMillis()
+                        timeProvider.currentTimeMillis(),
                     )
                     pushedShelves++
                 } else if (uploadResult is Result.Error) {
@@ -240,8 +251,8 @@ class SyncEngine(
         return Result.Success(
             SyncResult(
                 pushedCount = pushedBooks + pushedShelves,
-                deletedCount = deletedCount
-            )
+                deletedCount = deletedCount,
+            ),
         )
     }
 
@@ -280,14 +291,15 @@ class SyncEngine(
                 pulledBooks++
             } else {
                 // Conflict - local has pending changes
-                val conflict = SyncConflict(
-                    entityId = localBook.id,
-                    entityType = EntityType.BOOK,
-                    localTimestamp = localBook.lastModifiedAt,
-                    remoteTimestamp = remoteBook.lastModifiedAt,
-                    localVersion = localBook.version,
-                    remoteVersion = remoteBook.version
-                )
+                val conflict =
+                    SyncConflict(
+                        entityId = localBook.id,
+                        entityType = EntityType.BOOK,
+                        localTimestamp = localBook.lastModifiedAt,
+                        remoteTimestamp = remoteBook.lastModifiedAt,
+                        localVersion = localBook.version,
+                        remoteVersion = remoteBook.version,
+                    )
 
                 val resolution = conflictResolver.resolve(conflict)
                 if (resolution != null) {
@@ -310,9 +322,11 @@ class SyncEngine(
         Timber.tag(TAG).d("Downloaded %d shelves from cloud", remoteShelves.size)
 
         remoteShelves.forEach { remoteShelf ->
-            if (isCancelled.get()) return Result.Success(
-                SyncResult(pulledCount = pulledBooks + pulledShelves)
-            )
+            if (isCancelled.get()) {
+                return Result.Success(
+                    SyncResult(pulledCount = pulledBooks + pulledShelves),
+                )
+            }
 
             val localShelf = bookshelfDao.getShelfById(remoteShelf.id)
 
@@ -334,22 +348,23 @@ class SyncEngine(
                 bookshelfDao.upsertShelf(
                     remoteShelf.toEntity(userId, localShelf.cloudId ?: localShelf.id).copy(
                         isBookClub = localShelf.isBookClub,
-                        clubCode = localShelf.clubCode
-                    )
+                        clubCode = localShelf.clubCode,
+                    ),
                 )
                 // Update cross-refs to match remote state
                 recreateCrossRefs(remoteShelf.id, remoteShelf.bookIds)
                 pulledShelves++
             } else {
                 // Conflict - local has pending changes
-                val conflict = SyncConflict(
-                    entityId = localShelf.id,
-                    entityType = EntityType.BOOKSHELF,
-                    localTimestamp = localShelf.lastModifiedAt,
-                    remoteTimestamp = remoteShelf.lastModifiedAt,
-                    localVersion = localShelf.version,
-                    remoteVersion = remoteShelf.version
-                )
+                val conflict =
+                    SyncConflict(
+                        entityId = localShelf.id,
+                        entityType = EntityType.BOOKSHELF,
+                        localTimestamp = localShelf.lastModifiedAt,
+                        remoteTimestamp = remoteShelf.lastModifiedAt,
+                        localVersion = localShelf.version,
+                        remoteVersion = remoteShelf.version,
+                    )
 
                 val resolution = conflictResolver.resolve(conflict)
                 if (resolution != null) {
@@ -384,7 +399,7 @@ class SyncEngine(
         userId: String,
         conflict: SyncConflict,
         resolution: ConflictResolution,
-        remoteBook: BookFirestoreDto
+        remoteBook: BookFirestoreDto,
     ) {
         when (resolution) {
             ConflictResolution.KeepLocal -> {
@@ -392,7 +407,7 @@ class SyncEngine(
                 bookshelfDao.updateBookSyncStatus(
                     conflict.entityId,
                     "PENDING",
-                    timeProvider.currentTimeMillis()
+                    timeProvider.currentTimeMillis(),
                 )
             }
             ConflictResolution.KeepRemote, ConflictResolution.LastWriteWins -> {
@@ -404,7 +419,7 @@ class SyncEngine(
                 bookshelfDao.updateBookSyncStatus(
                     conflict.entityId,
                     "CONFLICT",
-                    timeProvider.currentTimeMillis()
+                    timeProvider.currentTimeMillis(),
                 )
             }
         }
@@ -414,14 +429,14 @@ class SyncEngine(
         userId: String,
         conflict: SyncConflict,
         resolution: ConflictResolution,
-        remoteShelf: BookshelfFirestoreDto
+        remoteShelf: BookshelfFirestoreDto,
     ) {
         when (resolution) {
             ConflictResolution.KeepLocal -> {
                 bookshelfDao.updateShelfSyncStatus(
                     conflict.entityId,
                     "PENDING",
-                    timeProvider.currentTimeMillis()
+                    timeProvider.currentTimeMillis(),
                 )
             }
             ConflictResolution.KeepRemote, ConflictResolution.LastWriteWins -> {
@@ -432,24 +447,27 @@ class SyncEngine(
                     if (localShelf != null) {
                         remoteEntity.copy(
                             isBookClub = localShelf.isBookClub,
-                            clubCode = localShelf.clubCode
+                            clubCode = localShelf.clubCode,
                         )
                     } else {
                         remoteEntity
-                    }
+                    },
                 )
             }
             else -> {
                 bookshelfDao.updateShelfSyncStatus(
                     conflict.entityId,
                     "CONFLICT",
-                    timeProvider.currentTimeMillis()
+                    timeProvider.currentTimeMillis(),
                 )
             }
         }
     }
 
-    private suspend fun markSyncComplete(userId: String, error: String?) {
+    private suspend fun markSyncComplete(
+        userId: String,
+        error: String?,
+    ) {
         syncDao.updateSyncInProgress(userId, false)
         if (error != null) {
             syncDao.updateLastSyncError(userId, error)
@@ -459,7 +477,11 @@ class SyncEngine(
         }
     }
 
-    private fun updateProgress(phase: SyncPhase, current: Int, total: Int) {
+    private fun updateProgress(
+        phase: SyncPhase,
+        current: Int,
+        total: Int,
+    ) {
         _progress.value = SyncProgress(phase, current, total)
     }
 
@@ -467,7 +489,10 @@ class SyncEngine(
      * Recreates cross-refs for a shelf from the cloud bookIds list.
      * Clears existing cross-refs first to ensure consistency with remote state.
      */
-    private suspend fun recreateCrossRefs(shelfId: String, bookIds: List<String>) {
+    private suspend fun recreateCrossRefs(
+        shelfId: String,
+        bookIds: List<String>,
+    ) {
         // Clear existing cross-refs for this shelf
         bookshelfDao.deleteAllCrossRefsForShelf(shelfId)
 
@@ -479,8 +504,8 @@ class SyncEngine(
                     shelfId = shelfId,
                     bookId = bookId,
                     // Use decreasing addedAt to preserve order (first book = highest timestamp)
-                    addedAt = now - index
-                )
+                    addedAt = now - index,
+                ),
             )
         }
         Timber.tag(TAG).d("Recreated %d cross-refs for shelf %s", bookIds.size, shelfId)

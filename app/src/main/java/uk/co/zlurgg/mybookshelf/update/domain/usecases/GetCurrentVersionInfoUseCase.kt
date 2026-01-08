@@ -17,7 +17,7 @@ interface GetCurrentVersionInfoUseCase {
  */
 class GetCurrentVersionInfoUseCaseImpl(
     private val updateRepository: UpdateRepository,
-    private val currentVersion: String
+    private val currentVersion: String,
 ) : GetCurrentVersionInfoUseCase {
     override suspend operator fun invoke(): UpdateInfo? {
         return try {

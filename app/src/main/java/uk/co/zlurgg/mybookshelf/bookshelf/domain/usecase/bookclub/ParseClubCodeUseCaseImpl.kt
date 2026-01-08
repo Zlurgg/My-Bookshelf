@@ -14,7 +14,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * - App links: "mybookshelf://club/ABC12XYZ"
  */
 class ParseClubCodeUseCaseImpl : ParseClubCodeUseCase {
-
     override fun invoke(input: String): Result<String, DataError.Validation> {
         val trimmedInput = input.trim()
 

@@ -44,7 +44,7 @@ fun BookEntity.toFirestoreDto(): BookFirestoreDto {
         publishDate = publishDate,
         internetArchiveId = internetArchiveId,
         version = version,
-        lastModifiedAt = lastModifiedAt
+        lastModifiedAt = lastModifiedAt,
     )
 }
 
@@ -56,7 +56,7 @@ fun BookEntity.toFirestoreDto(): BookFirestoreDto {
  */
 fun BookFirestoreDto.toEntity(
     ownerId: String,
-    cloudId: String = id
+    cloudId: String = id,
 ): BookEntity {
     return BookEntity(
         id = id,
@@ -85,7 +85,7 @@ fun BookFirestoreDto.toEntity(
         lastModifiedAt = lastModifiedAt,
         syncStatus = "SYNCED",
         cloudId = cloudId,
-        version = version
+        version = version,
     )
 }
 
@@ -107,7 +107,7 @@ fun BookshelfEntity.toFirestoreDto(bookIds: List<String>): BookshelfFirestoreDto
         isShared = isShared,
         shareCode = shareCode,
         version = version,
-        lastModifiedAt = lastModifiedAt
+        lastModifiedAt = lastModifiedAt,
     )
 }
 
@@ -122,7 +122,7 @@ fun BookshelfEntity.toFirestoreDto(bookIds: List<String>): BookshelfFirestoreDto
  */
 fun BookshelfFirestoreDto.toEntity(
     ownerId: String,
-    cloudId: String = id
+    cloudId: String = id,
 ): BookshelfEntity {
     return BookshelfEntity(
         id = id,
@@ -136,7 +136,7 @@ fun BookshelfFirestoreDto.toEntity(
         cloudId = cloudId,
         version = version,
         isShared = isShared,
-        shareCode = shareCode
+        shareCode = shareCode,
     )
 }
 
@@ -171,7 +171,7 @@ fun Map<String, Any?>.toBookFirestoreDto(documentId: String): BookFirestoreDto {
         publishDate = this["publish_date"] as? String,
         internetArchiveId = this["internet_archive_id"] as? String,
         version = (this["version"] as? Number)?.toLong() ?: 1L,
-        lastModifiedAt = (this["last_modified_at"] as? Number)?.toLong() ?: 0L
+        lastModifiedAt = (this["last_modified_at"] as? Number)?.toLong() ?: 0L,
     )
 }
 
@@ -190,7 +190,7 @@ fun Map<String, Any?>.toBookshelfFirestoreDto(documentId: String): BookshelfFire
         isShared = this["is_shared"] as? Boolean ?: false,
         shareCode = this["share_code"] as? String,
         version = (this["version"] as? Number)?.toLong() ?: 1L,
-        lastModifiedAt = (this["last_modified_at"] as? Number)?.toLong() ?: 0L
+        lastModifiedAt = (this["last_modified_at"] as? Number)?.toLong() ?: 0L,
     )
 }
 
@@ -206,6 +206,6 @@ fun Map<String, Any?>.toSharedShelfDto(documentId: String): SharedShelfDto {
         shelfName = this["shelf_name"] as? String ?: "",
         subscriberIds = this["subscriber_ids"] as? List<String> ?: emptyList(),
         createdAt = this["created_at"] as? Date,
-        bookCount = (this["book_count"] as? Number)?.toInt() ?: 0
+        bookCount = (this["book_count"] as? Number)?.toInt() ?: 0,
     )
 }

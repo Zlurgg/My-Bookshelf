@@ -11,5 +11,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 interface BookshelfSerializer {
     fun serialize(shelf: Bookshelf): Result<String, DataError.Local>
+
     fun deserialize(jsonData: String): Result<BookshelfExportData, DataError.Local>
 }

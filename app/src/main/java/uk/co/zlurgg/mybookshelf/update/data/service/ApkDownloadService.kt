@@ -16,19 +16,22 @@ import timber.log.Timber
  */
 class ApkDownloadService(
     private val context: Context,
-    private val downloadTitle: String = DEFAULT_DOWNLOAD_TITLE
+    private val downloadTitle: String = DEFAULT_DOWNLOAD_TITLE,
 ) {
-
-    fun downloadApk(url: String, fileName: String): Long {
+    fun downloadApk(
+        url: String,
+        fileName: String,
+    ): Long {
         Timber.d("Starting APK download: $fileName from $url")
 
-        val request = DownloadManager.Request(url.toUri())
-            .setTitle(downloadTitle)
-            .setDescription("Downloading $fileName")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
-            .setAllowedOverMetered(true)
-            .setAllowedOverRoaming(false)
+        val request =
+            DownloadManager.Request(url.toUri())
+                .setTitle(downloadTitle)
+                .setDescription("Downloading $fileName")
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, fileName)
+                .setAllowedOverMetered(true)
+                .setAllowedOverRoaming(false)
 
         val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val downloadId = downloadManager.enqueue(request)
@@ -47,10 +50,11 @@ class ApkDownloadService(
         }
 
         Timber.i("Installing APK from: $uri")
-        val intent = Intent(Intent.ACTION_VIEW).apply {
-            setDataAndType(uri, APK_MIME_TYPE)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
-        }
+        val intent =
+            Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, APK_MIME_TYPE)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            }
         context.startActivity(intent)
     }
 

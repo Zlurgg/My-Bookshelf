@@ -11,16 +11,16 @@ import uk.co.zlurgg.mybookshelf.R
 enum class BookcaseTab(
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector,
-    val labelResId: Int
+    val labelResId: Int,
 ) {
     MY_SHELVES(
         selectedIcon = Icons.Filled.Home,
         unselectedIcon = Icons.Outlined.Home,
-        labelResId = R.string.tab_my_shelves
+        labelResId = R.string.tab_my_shelves,
     ),
     BOOK_CLUBS(
         selectedIcon = Icons.Filled.Groups,
         unselectedIcon = Icons.Outlined.Groups,
-        labelResId = R.string.tab_book_clubs
-    )
+        labelResId = R.string.tab_book_clubs,
+    ),
 }

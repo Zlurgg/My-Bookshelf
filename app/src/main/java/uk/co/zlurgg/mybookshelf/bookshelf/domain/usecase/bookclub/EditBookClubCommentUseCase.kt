@@ -14,6 +14,6 @@ interface EditBookClubCommentUseCase {
         clubCode: String,
         bookId: String,
         commentId: String,
-        newText: String
+        newText: String,
     ): Result<Unit, DataError.Sync>
 }

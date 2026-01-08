@@ -11,38 +11,39 @@ enum class ShelfMaterial(
     val smallRes: Int,
     val mediumRes: Int,
     val largeRes: Int,
-    val shelfBackground: Color
+    val shelfBackground: Color,
 ) {
     DarkWood(
         R.drawable.shelf_wood_textured_brown_small,
         R.drawable.shelf_wood_textured_brown_medium,
         R.drawable.shelf_wood_textured_brown_large,
-        Color(0xFF2B1F16)
+        Color(0xFF2B1F16),
     ),
     SilverMetal(
         R.drawable.shelf_metal_textured_sliver_small,
         R.drawable.shelf_metal_textured_sliver_medium,
         R.drawable.shelf_metal_textured_sliver_large,
-        Color(0xFFCEC5C1)
+        Color(0xFFCEC5C1),
     ),
     WhiteMetal(
         R.drawable.shelf_metal_plain_white_small,
         R.drawable.shelf_metal_plain_white_medium,
         R.drawable.shelf_metal_plain_white_large,
-        Color(0xFFFAF0F0)
+        Color(0xFFFAF0F0),
     ),
     GreyMetal(
         R.drawable.shelf_metal_burnished_grey_small,
         R.drawable.shelf_metal_burnished_grey_medium,
         R.drawable.shelf_metal_burnished_grey_large,
-        Color(0xFF575050)
+        Color(0xFF575050),
     ),
     DarkGreyMetal(
         R.drawable.shelf_metal_burnished_dark_grey_small,
         R.drawable.shelf_metal_burnished_dark_grey_medium,
         R.drawable.shelf_metal_burnished_dark_grey_large,
-        Color(0xFF282424)
-    );
+        Color(0xFF282424),
+    ),
+    ;
 
     @Composable
     fun painterSmall(): Painter = painterResource(smallRes)

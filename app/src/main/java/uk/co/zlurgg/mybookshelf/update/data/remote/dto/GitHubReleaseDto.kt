@@ -13,7 +13,7 @@ data class GitHubReleaseDto(
     @SerialName("name") val name: String,
     @SerialName("html_url") val htmlUrl: String,
     @SerialName("body") val body: String? = null,
-    @SerialName("assets") val assets: List<AssetDto>
+    @SerialName("assets") val assets: List<AssetDto>,
 )
 
 /**
@@ -23,5 +23,5 @@ data class GitHubReleaseDto(
 data class AssetDto(
     @SerialName("name") val name: String,
     @SerialName("browser_download_url") val downloadUrl: String,
-    @SerialName("size") val size: Long
+    @SerialName("size") val size: Long,
 )

@@ -10,5 +10,5 @@ class BookDetailUseCases(
     val removeBookFromShelf: RemoveBookFromShelfUseCase,
     val upsertBook: UpsertBookUseCase,
     val toggleBookPurchase: ToggleBookPurchaseUseCase,
-    val updateBookMetadata: UpdateBookMetadataUseCase
+    val updateBookMetadata: UpdateBookMetadataUseCase,
 )

@@ -30,7 +30,7 @@ fun UpToDateDialog(
     currentVersionInfo: UpdateInfo?,
     currentVersionName: String,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -38,27 +38,28 @@ fun UpToDateDialog(
             Text(
                 text = stringResource(R.string.update_up_to_date_title),
                 style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
             )
         },
         text = {
             Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
             ) {
                 // Version section
                 Text(
                     text = stringResource(R.string.update_current_version_label),
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = currentVersionInfo?.versionName ?: currentVersionName,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
 
                 // Release notes section (if available)
@@ -69,7 +70,7 @@ fun UpToDateDialog(
                         Text(
                             text = stringResource(R.string.update_in_this_version_label),
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
 
@@ -85,7 +86,7 @@ fun UpToDateDialog(
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -95,23 +96,25 @@ fun UpToDateDialog(
 private fun UpToDateDialogPreview() {
     MyBookshelfTheme {
         UpToDateDialog(
-            currentVersionInfo = UpdateInfo(
-                versionName = "1.0.5",
-                releaseUrl = "https://github.com/example/releases/v1.0.5",
-                apkDownloadUrl = null,
-                apkSize = null,
-                changelog = """
-                    ## Features
-                    - In-app update checker
-                    - New bookshelf styles
+            currentVersionInfo =
+                UpdateInfo(
+                    versionName = "1.0.5",
+                    releaseUrl = "https://github.com/example/releases/v1.0.5",
+                    apkDownloadUrl = null,
+                    apkSize = null,
+                    changelog =
+                        """
+                        ## Features
+                        - In-app update checker
+                        - New bookshelf styles
 
-                    ## Improvements
-                    - Better accessibility support
-                    - Performance improvements
-                """.trimIndent()
-            ),
+                        ## Improvements
+                        - Better accessibility support
+                        - Performance improvements
+                        """.trimIndent(),
+                ),
             currentVersionName = "1.0.5",
-            onDismiss = {}
+            onDismiss = {},
         )
     }
 }
@@ -123,7 +126,7 @@ private fun UpToDateDialogNoChangelogPreview() {
         UpToDateDialog(
             currentVersionInfo = null,
             currentVersionName = "1.0.5",
-            onDismiss = {}
+            onDismiss = {},
         )
     }
 }

@@ -6,7 +6,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class MockBookRepository : BookRepository {
-
     private val books = mutableMapOf<String, Book>()
 
     var shouldThrowException = false

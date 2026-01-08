@@ -11,13 +11,12 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Validates that the comment text is not empty before adding.
  */
 class AddBookClubCommentUseCaseImpl(
-    private val bookClubRepository: BookClubRepository
+    private val bookClubRepository: BookClubRepository,
 ) : AddBookClubCommentUseCase {
-
     override suspend fun invoke(
         clubCode: String,
         bookId: String,
-        text: String
+        text: String,
     ): Result<String, DataError.Sync> {
         Timber.tag(TAG).d("Adding comment for book %s in club %s", bookId, clubCode)
 

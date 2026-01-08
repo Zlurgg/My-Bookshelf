@@ -11,7 +11,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
  * Provides configurable behavior for testing different scenarios.
  */
 class MockBookcaseRepository : BookcaseRepository {
-
     private val shelves = mutableMapOf<String, Bookshelf>()
 
     // Configuration properties
@@ -37,13 +36,13 @@ class MockBookcaseRepository : BookcaseRepository {
     var lastHardDeletedShelfId: String? = null
     var lastUpdatedShelf: Bookshelf? = null
 
-    override fun getAllShelves(): Flow<List<Bookshelf>> = flow {
-        if (shouldThrowException) throw RuntimeException("Test exception")
-        emit(shelvesToReturn)
-    }
+    override fun getAllShelves(): Flow<List<Bookshelf>> =
+        flow {
+            if (shouldThrowException) throw RuntimeException("Test exception")
+            emit(shelvesToReturn)
+        }
 
-    override fun getBookCountForShelf(shelfId: String): Flow<Int> =
-        flowOf(bookCountsToReturn[shelfId] ?: 0)
+    override fun getBookCountForShelf(shelfId: String): Flow<Int> = flowOf(bookCountsToReturn[shelfId] ?: 0)
 
     override suspend fun getShelfById(shelfId: String): Bookshelf? {
         if (shouldThrowException) throw RuntimeException("Test exception")

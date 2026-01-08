@@ -20,15 +20,14 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 class UpdateBookMetadataUseCaseImpl(
     private val bookRepository: BookRepository,
     private val timeProvider: TimeProvider,
-    private val syncSchedulerService: SyncSchedulerService
+    private val syncSchedulerService: SyncSchedulerService,
 ) : UpdateBookMetadataUseCase {
-
     override suspend fun execute(
         bookId: String,
         readingStatus: ReadingStatus?,
         personalRating: Float?,
         personalNotes: String?,
-        purchaseDate: Long?
+        purchaseDate: Long?,
     ): Result<Unit, DataError> {
         return try {
             // Validate personal rating (0.0-5.0, where 0 = unrated)
@@ -42,20 +41,22 @@ class UpdateBookMetadataUseCaseImpl(
             }
 
             // Get existing book
-            val existingBook = bookRepository.getBookById(bookId)
-                ?: return Result.Error(DataError.Local.NOT_FOUND)
+            val existingBook =
+                bookRepository.getBookById(bookId)
+                    ?: return Result.Error(DataError.Local.NOT_FOUND)
 
             // Update book with new metadata
             // null parameter = "don't change this field"
             // explicit value (including 0f/"") = "update to this value"
-            val updatedBook = existingBook.copy(
-                readingStatus = readingStatus ?: existingBook.readingStatus,
-                personalRating = personalRating ?: existingBook.personalRating,
-                personalNotes = personalNotes ?: existingBook.personalNotes,
-                purchaseDate = purchaseDate ?: existingBook.purchaseDate,
-                // Auto-set dateAdded if not already set
-                dateAdded = existingBook.dateAdded ?: timeProvider.currentTimeMillis()
-            )
+            val updatedBook =
+                existingBook.copy(
+                    readingStatus = readingStatus ?: existingBook.readingStatus,
+                    personalRating = personalRating ?: existingBook.personalRating,
+                    personalNotes = personalNotes ?: existingBook.personalNotes,
+                    purchaseDate = purchaseDate ?: existingBook.purchaseDate,
+                    // Auto-set dateAdded if not already set
+                    dateAdded = existingBook.dateAdded ?: timeProvider.currentTimeMillis(),
+                )
 
             // Save updated book
             bookRepository.upsertBook(updatedBook)
@@ -68,7 +69,7 @@ class UpdateBookMetadataUseCaseImpl(
         } catch (e: Exception) {
             Result.Error(
                 ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
+                    ?: DataError.Local.UNKNOWN,
             )
         }
     }

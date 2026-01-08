@@ -7,9 +7,8 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
  * Implementation that gets the current user ID from the AuthService.
  */
 class CurrentUserProviderImpl(
-    private val authService: AuthService
+    private val authService: AuthService,
 ) : CurrentUserProvider {
-
     override fun getCurrentUserId(): String? {
         return authService.getSignedInUser()?.userId
     }

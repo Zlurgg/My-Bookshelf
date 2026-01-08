@@ -7,5 +7,5 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 data class ExportedBookshelf(
     val name: String,
     val shelfStyle: ShelfStyle,
-    val bookIds: List<BookIdentifier>
+    val bookIds: List<BookIdentifier>,
 )

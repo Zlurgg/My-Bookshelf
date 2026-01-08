@@ -11,7 +11,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseTab
 @Composable
 fun BookcaseBottomBar(
     selectedTab: BookcaseTab,
-    onTabSelected: (BookcaseTab) -> Unit
+    onTabSelected: (BookcaseTab) -> Unit,
 ) {
     NavigationBar {
         BookcaseTab.entries.forEach { tab ->
@@ -21,10 +21,10 @@ fun BookcaseBottomBar(
                 icon = {
                     Icon(
                         imageVector = if (tab == selectedTab) tab.selectedIcon else tab.unselectedIcon,
-                        contentDescription = stringResource(tab.labelResId)
+                        contentDescription = stringResource(tab.labelResId),
                     )
                 },
-                label = { Text(stringResource(tab.labelResId)) }
+                label = { Text(stringResource(tab.labelResId)) },
             )
         }
     }
