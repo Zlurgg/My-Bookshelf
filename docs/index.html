@@ -3,7 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyBookshelf - Personal Book Collection Manager</title>
+    <title>My Bookshelf - Personal Book Collection Manager</title>
+
+    <!-- Open Graph / Social Media Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="My Bookshelf - Personal Book Collection Manager">
+    <meta property="og:description" content="Organize your book collection beautifully. Create virtual bookshelves, join Book Clubs, and share your reading journey with friends.">
+    <meta property="og:image" content="https://zlurgg.github.io/My-Bookshelf/assets/social-preview.png">
+    <meta property="og:url" content="https://zlurgg.github.io/My-Bookshelf/">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="My Bookshelf - Personal Book Collection Manager">
+    <meta name="twitter:description" content="Organize your book collection beautifully. Create virtual bookshelves, join Book Clubs, and share your reading journey with friends.">
+
     <style>
         * {
             margin: 0;
@@ -134,8 +147,7 @@
             line-height: 1.5;
         }
 
-        .features li::before {
-            content: "📚";
+        .feature-icon {
             margin-right: 1rem;
             font-size: 1.25rem;
             flex-shrink: 0;
@@ -241,6 +253,12 @@
             border: 1px solid rgba(142, 108, 136, 0.25);
         }
 
+        .badge.new {
+            background: rgba(76, 175, 80, 0.15);
+            border-color: rgba(76, 175, 80, 0.3);
+            color: #2E7D32;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 1rem;
@@ -270,9 +288,10 @@
     <div class="container">
         <div class="header">
             <div class="book-icon">📚</div>
-            <h1>MyBookshelf</h1>
+            <h1>My Bookshelf</h1>
             <p class="subtitle">Organize your personal book collection with style</p>
-            <span class="badge">v1.1.0</span>
+            <span class="badge">v1.2.0</span>
+            <span class="badge new">Book Clubs!</span>
         </div>
 
         <div class="divider"></div>
@@ -280,19 +299,21 @@
         <div class="features">
             <h3>✨ Features</h3>
             <ul>
-                <li>Create beautiful virtual bookshelves with realistic 3D effects</li>
-                <li>Search 20M+ books from Open Library API</li>
-                <li>Drag & drop organization with custom shelf materials</li>
-                <li>Optional cloud sync with Google Sign-In across devices</li>
-                <li>Share collections via self-contained deep links</li>
-                <li>Offline-first design — works without an account</li>
+                <li><span class="feature-icon">📚</span>Create beautiful virtual bookshelves with realistic 3D effects</li>
+                <li><span class="feature-icon">👥</span>Join Book Clubs to share reading with friends</li>
+                <li><span class="feature-icon">🔍</span>Search 20M+ books from Open Library API</li>
+                <li><span class="feature-icon">⭐</span>Rate books, write reviews, and add comments</li>
+                <li><span class="feature-icon">🎨</span>Custom shelf organization with different wood styles</li>
+                <li><span class="feature-icon">☁️</span>Optional cloud sync with Google Sign-In</li>
+                <li><span class="feature-icon">🔗</span>Share collections via deep links</li>
+                <li><span class="feature-icon">📴</span>Offline-first design — works without an account</li>
             </ul>
         </div>
 
         <div class="divider"></div>
 
         <div class="download-section">
-            <h3>📥 Get MyBookshelf</h3>
+            <h3>📥 Get My Bookshelf</h3>
 
             <a href="https://github.com/Zlurgg/My-Bookshelf/releases/latest" class="download-btn">
                 📦 Download Latest APK
@@ -303,7 +324,7 @@
             </a>
 
             <div class="app-info">
-                <strong>Version 1.1.0</strong> — Professional Android development showcase<br>
+                <strong>Version 1.2.0</strong> — Book Clubs feature release<br>
                 <strong>Requirements:</strong> Android 9.0+ (API 28)<br>
                 <strong>Tech Stack:</strong> Kotlin, Jetpack Compose, Firebase, Clean Architecture<br>
                 <br>
