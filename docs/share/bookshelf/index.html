@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Import Bookshelf - My Bookshelf</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #FAF7F3;
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* Shelf texture background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('../../assets/shelf_wood_textured_brown.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            opacity: 0.15;
+            z-index: -1;
+        }
+
+        /* Subtle paper grain overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(109, 76, 65, 0.02) 2px,
+                    rgba(109, 76, 65, 0.02) 4px
+                );
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 540px;
+            width: 100%;
+            background: #F5EFEA;
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            box-shadow:
+                0 4px 6px rgba(109, 76, 65, 0.1),
+                0 12px 24px rgba(109, 76, 65, 0.08);
+            border: 1px solid rgba(109, 76, 65, 0.1);
+            position: relative;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .book-icon {
+            font-size: 4rem;
+            margin-bottom: 0.5rem;
+            animation: gentle-bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes gentle-bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #6D4C41;
+            cursor: pointer;
+            text-decoration: underline;
+            text-decoration-color: rgba(109, 76, 65, 0.3);
+            text-underline-offset: 6px;
+            transition: all 0.2s ease;
+        }
+
+        h1:hover {
+            color: #4B372F;
+            text-decoration-color: #6D4C41;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #51443D;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .action-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(142, 108, 136, 0.1);
+            color: #6D4C41;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(142, 108, 136, 0.2);
+        }
+
+        .fallback {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fallback h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #6D4C41;
+            font-weight: 500;
+        }
+
+        .fallback p {
+            margin-bottom: 1.25rem;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #51443D;
+        }
+
+        .download-btn {
+            background: #8E6C88;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            margin: 0.5rem;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 2px 4px rgba(142, 108, 136, 0.2);
+        }
+
+        .download-btn:hover {
+            background: #7A5976;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(142, 108, 136, 0.3);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .instructions {
+            margin-top: 1.5rem;
+            padding: 1.25rem;
+            background: rgba(215, 204, 200, 0.3);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            color: #51443D;
+            line-height: 1.6;
+            border: 1px solid rgba(109, 76, 65, 0.1);
+        }
+
+        .instructions strong {
+            color: #6D4C41;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(
+                to right,
+                transparent,
+                rgba(109, 76, 65, 0.2) 20%,
+                rgba(109, 76, 65, 0.2) 80%,
+                transparent
+            );
+            margin: 1.5rem 0;
+        }
+
+        a {
+            color: #8E6C88;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        a:hover {
+            color: #6D4C41;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+                padding: 2rem 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.85rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .download-btn {
+                width: 100%;
+                margin: 0.5rem 0;
+            }
+        }
+
+        /* Loading animation for book icon */
+        .loading .book-icon {
+            animation: gentle-bounce 1s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="main-section" class="loading">
+            <div class="book-icon">📖</div>
+            <h1 id="bookshelf-title" onclick="launchApp()">
+                Loading Bookshelf...
+            </h1>
+            <p class="subtitle">Tap the title above to import this bookshelf</p>
+
+            <div class="action-hint">
+                👆 Click to import into your collection
+            </div>
+
+            <div id="fallback-info" class="fallback">
+                <div class="divider"></div>
+
+                <h2>📱 Don't have My Bookshelf?</h2>
+                <p>Download the app to import this bookshelf into your collection.</p>
+
+                <a href="https://github.com/Zlurgg/My-Bookshelf/releases/latest" class="download-btn">
+                    📦 Download My Bookshelf
+                </a>
+
+                <p style="margin-top: 1rem; font-size: 0.9rem;">
+                    Or <a href="https://github.com/Zlurgg/My-Bookshelf/releases">browse all releases</a>
+                </p>
+
+                <div class="instructions">
+                    <strong>📋 How to import this bookshelf:</strong>
+                    1. Download and install the My Bookshelf APK<br>
+                    2. Return to this page and tap the title above<br>
+                    3. The bookshelf will be imported automatically!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let shareToken = '';
+        let bookshelfName = '';
+        let appLaunchAttempted = false;
+
+        function getBookshelfNameFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('name') || null;
+        }
+
+        function getTokenFromUrl() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(window.location.search);
+            const encodedToken = hash || params.get('token') || params.get('t');
+            return encodedToken ? decodeURIComponent(encodedToken) : '';
+        }
+
+        function updatePageTitle(shelfName = 'Bookshelf') {
+            bookshelfName = shelfName;
+            document.getElementById('page-title').textContent = `${bookshelfName} - My Bookshelf`;
+            document.getElementById('bookshelf-title').textContent = bookshelfName;
+        }
+
+        function launchApp() {
+            attemptAppLaunch();
+        }
+
+        function attemptAppLaunch() {
+            shareToken = getTokenFromUrl();
+
+            if (!shareToken) {
+                showFallback();
+                return;
+            }
+
+            console.log('Attempting to launch app with token:', shareToken.substring(0, 20) + '...');
+
+            const appUrl = `mybookshelf://share/${shareToken}`;
+
+            // Direct navigation
+            window.location.href = appUrl;
+
+            // Iframe fallback
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = appUrl;
+            document.body.appendChild(iframe);
+
+            // Show fallback after delay
+            if (!appLaunchAttempted) {
+                setTimeout(showFallback, 3000);
+                appLaunchAttempted = true;
+            }
+        }
+
+        function showFallback() {
+            document.getElementById('main-section').classList.remove('loading');
+            document.getElementById('fallback-info').style.display = 'block';
+        }
+
+        // Initialize
+        window.onload = function() {
+            console.log('Bookshelf share page loaded');
+
+            const nameFromUrl = getBookshelfNameFromUrl();
+            updatePageTitle(nameFromUrl || 'Bookshelf');
+        };
+
+        // Handle visibility change
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && appLaunchAttempted) {
+                setTimeout(showFallback, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

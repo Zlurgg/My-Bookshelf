@@ -3,7 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="page-title">Import Bookshelf - MyBookshelf</title>
+    <title>Share - My Bookshelf</title>
+
+    <!-- Open Graph / Social Media Preview -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="My Bookshelf - Share your reading journey">
+    <meta property="og:description" content="Join Book Clubs and share bookshelves with friends. Organize your reading collection beautifully.">
+    <meta property="og:image" content="https://zlurgg.github.io/My-Bookshelf/assets/social-preview.png">
+    <meta property="og:url" content="https://zlurgg.github.io/My-Bookshelf/share/">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="My Bookshelf - Share your reading journey">
+    <meta name="twitter:description" content="Join Book Clubs and share bookshelves with friends. Organize your reading collection beautifully.">
+
     <style>
         * {
             margin: 0;
@@ -39,26 +52,6 @@
             z-index: -1;
         }
 
-        /* Subtle paper grain overlay */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                repeating-linear-gradient(
-                    0deg,
-                    transparent,
-                    transparent 2px,
-                    rgba(109, 76, 65, 0.02) 2px,
-                    rgba(109, 76, 65, 0.02) 4px
-                );
-            z-index: -1;
-            pointer-events: none;
-        }
-
         .container {
             max-width: 540px;
             width: 100%;
@@ -69,7 +62,7 @@
                 0 4px 6px rgba(109, 76, 65, 0.1),
                 0 12px 24px rgba(109, 76, 65, 0.08);
             border: 1px solid rgba(109, 76, 65, 0.1);
-            position: relative;
+            text-align: center;
             animation: slideUp 0.4s ease-out;
         }
 
@@ -86,34 +79,14 @@
 
         .book-icon {
             font-size: 4rem;
-            margin-bottom: 0.5rem;
-            animation: gentle-bounce 2s infinite ease-in-out;
-        }
-
-        @keyframes gentle-bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-8px);
-            }
+            margin-bottom: 1rem;
         }
 
         h1 {
-            font-size: 2.25rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: #6D4C41;
-            cursor: pointer;
-            text-decoration: underline;
-            text-decoration-color: rgba(109, 76, 65, 0.3);
-            text-underline-offset: 6px;
-            transition: all 0.2s ease;
-        }
-
-        h1:hover {
-            color: #4B372F;
-            text-decoration-color: #6D4C41;
         }
 
         .subtitle {
@@ -123,124 +96,89 @@
             font-weight: 400;
         }
 
-        .action-hint {
-            display: inline-flex;
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .option-btn {
+            display: flex;
             align-items: center;
-            gap: 0.5rem;
-            background: rgba(142, 108, 136, 0.1);
-            color: #6D4C41;
-            padding: 0.75rem 1.25rem;
+            gap: 1rem;
+            background: #FFF;
+            border: 2px solid rgba(109, 76, 65, 0.2);
             border-radius: 12px;
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(142, 108, 136, 0.2);
-        }
-
-        .fallback {
-            display: none;
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .fallback h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
+            padding: 1.25rem 1.5rem;
+            text-decoration: none;
             color: #6D4C41;
-            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        .fallback p {
-            margin-bottom: 1.25rem;
-            font-size: 1rem;
-            line-height: 1.6;
+        .option-btn:hover {
+            border-color: #8E6C88;
+            background: rgba(142, 108, 136, 0.05);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(142, 108, 136, 0.15);
+        }
+
+        .option-btn:hover .option-arrow {
+            transform: translateX(4px);
+            color: #8E6C88;
+        }
+
+        .option-icon {
+            font-size: 2rem;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        .option-title {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .option-desc {
+            font-size: 0.9rem;
             color: #51443D;
+        }
+
+        .option-arrow {
+            font-size: 1.5rem;
+            color: rgba(109, 76, 65, 0.4);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .download-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(109, 76, 65, 0.1);
         }
 
         .download-btn {
             background: #8E6C88;
             color: white;
             border: none;
-            padding: 1rem 2rem;
-            margin: 0.5rem;
+            padding: 0.875rem 1.75rem;
             border-radius: 12px;
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
             text-decoration: none;
             display: inline-block;
-            box-shadow: 0 2px 4px rgba(142, 108, 136, 0.2);
         }
 
         .download-btn:hover {
             background: #7A5976;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(142, 108, 136, 0.3);
-        }
-
-        .download-btn:active {
-            transform: translateY(0);
-        }
-
-        .secondary-btn {
-            background: transparent;
-            color: #6D4C41;
-            border: 2px solid #D7CCC8;
-        }
-
-        .secondary-btn:hover {
-            background: rgba(109, 76, 65, 0.05);
-            border-color: #6D4C41;
-        }
-
-        .instructions {
-            margin-top: 1.5rem;
-            padding: 1.25rem;
-            background: rgba(215, 204, 200, 0.3);
-            border-radius: 12px;
-            font-size: 0.95rem;
-            color: #51443D;
-            line-height: 1.6;
-            border: 1px solid rgba(109, 76, 65, 0.1);
-        }
-
-        .instructions strong {
-            color: #6D4C41;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-
-        .divider {
-            height: 1px;
-            background: linear-gradient(
-                to right,
-                transparent,
-                rgba(109, 76, 65, 0.2) 20%,
-                rgba(109, 76, 65, 0.2) 80%,
-                transparent
-            );
-            margin: 1.5rem 0;
-        }
-
-        a {
-            color: #8E6C88;
-            text-decoration: none;
-            transition: color 0.2s ease;
-        }
-
-        a:hover {
-            color: #6D4C41;
-            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
@@ -250,187 +188,42 @@
             }
 
             h1 {
-                font-size: 1.85rem;
+                font-size: 1.75rem;
             }
-
-            .subtitle {
-                font-size: 1rem;
-            }
-
-            .download-btn {
-                width: 100%;
-                margin: 0.5rem 0;
-            }
-        }
-
-        /* Loading animation for book icon */
-        .loading .book-icon {
-            animation: gentle-bounce 1s infinite ease-in-out;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="main-section" class="loading">
-            <div class="book-icon">📖</div>
-            <h1 id="bookshelf-title" onclick="launchApp()">
-                Loading Bookshelf...
-            </h1>
-            <p class="subtitle">Tap the title above to open in MyBookshelf</p>
+        <div class="book-icon">📚</div>
+        <h1>My Bookshelf</h1>
+        <p class="subtitle">Share your reading with friends</p>
 
-            <div class="action-hint">
-                👆 Click to import into your collection
-            </div>
-
-            <div id="fallback-info" class="fallback">
-                <div class="divider"></div>
-
-                <h2>📱 MyBookshelf Not Installed?</h2>
-                <p>Download the app to import this bookshelf into your collection.</p>
-
-                <a href="https://github.com/Zlurgg/My-Bookshelf/releases/latest" class="download-btn">
-                    📦 Download MyBookshelf
-                </a>
-
-                <p style="margin-top: 1rem; font-size: 0.9rem;">
-                    Or <a href="https://github.com/Zlurgg/My-Bookshelf/releases">browse all releases</a>
-                </p>
-
-                <div class="instructions">
-                    <strong>📋 How to import this bookshelf:</strong>
-                    1. Download and install MyBookshelf APK<br>
-                    2. Return to this page and tap the title above<br>
-                    3. The bookshelf will be imported automatically!
+        <div class="options">
+            <a href="./club/" class="option-btn">
+                <span class="option-icon">👥</span>
+                <div class="option-text">
+                    <div class="option-title">Join a Book Club</div>
+                    <div class="option-desc">Join a shared reading group with friends</div>
                 </div>
-            </div>
+                <span class="option-arrow">→</span>
+            </a>
+
+            <a href="./bookshelf/" class="option-btn">
+                <span class="option-icon">📖</span>
+                <div class="option-text">
+                    <div class="option-title">Import a Bookshelf</div>
+                    <div class="option-desc">Add a shared bookshelf to your collection</div>
+                </div>
+                <span class="option-arrow">→</span>
+            </a>
+        </div>
+
+        <div class="download-section">
+            <a href="https://github.com/Zlurgg/My-Bookshelf/releases/latest" class="download-btn">
+                📦 Download My Bookshelf
+            </a>
         </div>
     </div>
-
-    <script>
-        let shareToken = '';
-        let bookshelfName = '';
-        let appLaunchAttempted = false;
-        let isBookClubInvite = false;
-        let bookClubCode = '';
-
-        function isBookClubUrl() {
-            // Check if path contains /club
-            return window.location.pathname.includes('/club');
-        }
-
-        function getBookClubCode() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('code') || '';
-        }
-
-        function getBookshelfNameFromUrl() {
-            const params = new URLSearchParams(window.location.search);
-            return params.get('name') || null;
-        }
-
-        function getTokenFromUrl() {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(window.location.search);
-            const encodedToken = hash || params.get('token') || params.get('t');
-            return encodedToken ? decodeURIComponent(encodedToken) : '';
-        }
-
-        function updatePageTitle(shelfName = 'Bookshelf') {
-            bookshelfName = shelfName;
-            if (isBookClubInvite) {
-                document.getElementById('page-title').textContent = `Join ${bookshelfName} - MyBookshelf`;
-                document.getElementById('bookshelf-title').textContent = `Join "${bookshelfName}"`;
-                document.querySelector('.subtitle').textContent = 'Tap the title above to join this Book Club';
-                document.querySelector('.action-hint').innerHTML = '👆 Click to join this Book Club';
-                document.querySelector('.book-icon').textContent = '📚';
-            } else {
-                document.getElementById('page-title').textContent = `${bookshelfName} - MyBookshelf`;
-                document.getElementById('bookshelf-title').textContent = bookshelfName;
-            }
-        }
-
-        function extractShelfNameFromToken() {
-            try {
-                const token = getTokenFromUrl();
-                if (!token) return null;
-                return null;
-            } catch (e) {
-                console.log('Could not extract shelf name from token:', e);
-                return null;
-            }
-        }
-
-        function launchApp() {
-            attemptAppLaunch();
-        }
-
-        function attemptAppLaunch() {
-            let appUrl;
-
-            if (isBookClubInvite) {
-                // Book Club invite link
-                bookClubCode = getBookClubCode();
-                if (!bookClubCode) {
-                    showFallback();
-                    return;
-                }
-                console.log('Attempting to launch app with club code:', bookClubCode);
-                appUrl = `mybookshelf://club/${bookClubCode}`;
-            } else {
-                // Personal shelf share link
-                shareToken = getTokenFromUrl();
-                if (!shareToken) {
-                    showFallback();
-                    return;
-                }
-                console.log('Attempting to launch app with token:', shareToken.substring(0, 20) + '...');
-                appUrl = `mybookshelf://share/${shareToken}`;
-            }
-
-            // Direct navigation
-            window.location.href = appUrl;
-
-            // Iframe fallback
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = appUrl;
-            document.body.appendChild(iframe);
-
-            // Show fallback after delay
-            if (!appLaunchAttempted) {
-                setTimeout(showFallback, 3000);
-                appLaunchAttempted = true;
-            }
-        }
-
-        function showFallback() {
-            document.getElementById('main-section').classList.remove('loading');
-            document.getElementById('fallback-info').style.display = 'block';
-        }
-
-        // Initialize
-        window.onload = function() {
-            console.log('Share page loaded');
-
-            // Detect if this is a book club invite
-            isBookClubInvite = isBookClubUrl();
-
-            const nameFromUrl = getBookshelfNameFromUrl();
-            const nameFromToken = extractShelfNameFromToken();
-
-            if (isBookClubInvite) {
-                updatePageTitle(nameFromUrl || 'Book Club');
-            } else {
-                updatePageTitle(nameFromUrl || nameFromToken || 'Bookshelf');
-            }
-        };
-
-        // Handle visibility change
-        document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && appLaunchAttempted) {
-                setTimeout(showFallback, 1000);
-            }
-        });
-    </script>
 </body>
 </html>
