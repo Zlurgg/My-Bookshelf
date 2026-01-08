@@ -92,6 +92,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorial
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.MarkWelcomeShownUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.MarkWelcomeShownUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
@@ -228,6 +230,7 @@ val appModule = module {
     singleOf(::HandleTutorialAccessUseCaseImpl).bind<HandleTutorialAccessUseCase>()
     singleOf(::InitializeWelcomeUseCaseImpl).bind<InitializeWelcomeUseCase>()
     singleOf(::ShouldShowWelcomeUseCaseImpl).bind<ShouldShowWelcomeUseCase>()
+    singleOf(::MarkWelcomeShownUseCaseImpl).bind<MarkWelcomeShownUseCase>()
 
     // Export/Import Services and Use Cases
     singleOf(::AndroidShareService)

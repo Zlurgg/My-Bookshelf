@@ -32,6 +32,8 @@ class BookClubOperationsHandler(
     }
 
     // Store the last looked-up code for joining
+    // @Volatile ensures visibility across coroutine dispatchers
+    @Volatile
     private var lastLookedUpCode: String? = null
 
     /**
