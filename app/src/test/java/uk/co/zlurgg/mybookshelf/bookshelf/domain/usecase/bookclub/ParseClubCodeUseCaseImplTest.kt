@@ -263,6 +263,60 @@ class ParseClubCodeUseCaseImplTest {
         assertEquals(DataError.Validation.INVALID_CLUB_CODE, (result as Result.Error).error)
     }
 
+    // ========== Web URL Query Param Tests ==========
+
+    @Test
+    fun `extracts code from query param URL`() {
+        // Given - format used by GitHub Pages share links
+        val queryUrl = "https://zlurgg.github.io/My-Bookshelf/share/club?code=ABCD2345"
+
+        // When
+        val result = useCase(queryUrl)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals("ABCD2345", (result as Result.Success).data)
+    }
+
+    @Test
+    fun `extracts code from query param URL with name parameter`() {
+        // Given - share links include club name
+        val queryUrl = "https://zlurgg.github.io/My-Bookshelf/share/club?code=HJKM5678&name=Book%20Club"
+
+        // When
+        val result = useCase(queryUrl)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals("HJKM5678", (result as Result.Success).data)
+    }
+
+    @Test
+    fun `extracts code from query param with lowercase code`() {
+        // Given
+        val queryUrl = "https://zlurgg.github.io/My-Bookshelf/share/club?code=abcd2345"
+
+        // When
+        val result = useCase(queryUrl)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals("ABCD2345", (result as Result.Success).data)
+    }
+
+    @Test
+    fun `returns error for query param URL with invalid code`() {
+        // Given - code contains excluded character O
+        val queryUrl = "https://zlurgg.github.io/My-Bookshelf/share/club?code=ABCDO234"
+
+        // When
+        val result = useCase(queryUrl)
+
+        // Then
+        assertTrue("Should return error", result is Result.Error)
+        assertEquals(DataError.Validation.INVALID_CLUB_CODE, (result as Result.Error).error)
+    }
+
     // ========== App Link Tests ==========
 
     @Test

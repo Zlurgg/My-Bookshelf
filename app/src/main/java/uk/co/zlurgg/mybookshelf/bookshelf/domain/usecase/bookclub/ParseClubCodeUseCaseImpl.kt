@@ -9,7 +9,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  *
  * Supports multiple input formats:
  * - Raw codes: "ABC12XYZ"
- * - Web URLs: "https://zlurgg.github.io/My-Bookshelf/club/ABC12XYZ"
+ * - Web URLs with query param: "https://zlurgg.github.io/My-Bookshelf/share/club?code=ABC12XYZ"
+ * - Web URLs with path: "https://zlurgg.github.io/My-Bookshelf/club/ABC12XYZ"
  * - App links: "mybookshelf://club/ABC12XYZ"
  */
 class ParseClubCodeUseCaseImpl : ParseClubCodeUseCase {
@@ -46,7 +47,12 @@ class ParseClubCodeUseCaseImpl : ParseClubCodeUseCase {
                     .uppercase()
             }
 
-            // Web URL format: https://zlurgg.github.io/My-Bookshelf/club/CODE
+            // Web URL with query param format: .../club?code=CODE
+            input.contains(QUERY_PARAM_CODE, ignoreCase = true) -> {
+                extractCodeFromQueryParam(input)
+            }
+
+            // Web URL with path format: .../club/CODE
             input.contains(WEB_URL_CLUB_PATH, ignoreCase = true) -> {
                 val pathIndex = input.lowercase().indexOf(WEB_URL_CLUB_PATH.lowercase())
                 if (pathIndex >= 0) {
@@ -62,6 +68,22 @@ class ParseClubCodeUseCaseImpl : ParseClubCodeUseCase {
             // Raw code - just uppercase and validate
             else -> input.uppercase()
         }
+    }
+
+    /**
+     * Extracts code from query parameter format: ?code=ABC12XYZ or &code=ABC12XYZ
+     */
+    private fun extractCodeFromQueryParam(input: String): String {
+        val lowerInput = input.lowercase()
+        val codeIndex = lowerInput.indexOf(QUERY_PARAM_CODE.lowercase())
+        if (codeIndex < 0) return input.uppercase()
+
+        val valueStart = codeIndex + QUERY_PARAM_CODE.length
+        val valueEnd = input.indexOf('&', valueStart).takeIf { it >= 0 } ?: input.length
+
+        return input.substring(valueStart, valueEnd)
+            .trim()
+            .uppercase()
     }
 
     /**
@@ -85,5 +107,6 @@ class ParseClubCodeUseCaseImpl : ParseClubCodeUseCase {
 
         private const val APP_LINK_PREFIX = "mybookshelf://club/"
         private const val WEB_URL_CLUB_PATH = "/club/"
+        private const val QUERY_PARAM_CODE = "code="
     }
 }
