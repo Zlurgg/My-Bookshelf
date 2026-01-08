@@ -141,34 +141,38 @@ fun BookshelfScreen(
             // Hide FABs for tutorial shelf - users shouldn't add/share tutorial content
             if (!state.isTutorialShelf) {
                 Row {
-                    FloatingActionButton(
-                        onClick = {
-                            if (state.books.isNotEmpty()) {
-                                onAction(BookshelfAction.OnShareShelf)
-                            }
-                        },
-                        modifier = Modifier.size(56.dp),
-                        containerColor = if (state.books.isEmpty()) {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.primaryContainer
-                        }
-                    ) {
-                        if (state.isShareLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            Icon(
-                                imageVector = Icons.Filled.Share,
-                                contentDescription = "Share bookshelf",
-                                tint = if (state.books.isEmpty()) {
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                } else {
-                                    MaterialTheme.colorScheme.onPrimaryContainer
+                    // Share FAB - only for personal shelves, not Book Clubs
+                    // Book Clubs have their own invite sharing via the club invite code
+                    if (!state.isBookClub) {
+                        FloatingActionButton(
+                            onClick = {
+                                if (state.books.isNotEmpty()) {
+                                    onAction(BookshelfAction.OnShareShelf)
                                 }
-                            )
+                            },
+                            modifier = Modifier.size(56.dp),
+                            containerColor = if (state.books.isEmpty()) {
+                                MaterialTheme.colorScheme.surfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.primaryContainer
+                            }
+                        ) {
+                            if (state.isShareLoading) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Filled.Share,
+                                    contentDescription = "Share bookshelf",
+                                    tint = if (state.books.isEmpty()) {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                    } else {
+                                        MaterialTheme.colorScheme.onPrimaryContainer
+                                    }
+                                )
+                            }
                         }
+                        Spacer(modifier = Modifier.width(16.dp))
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
                     FloatingActionButton(
                         onClick = { onAction(BookshelfAction.OnSearchClick) }
                     ) {
