@@ -4,6 +4,46 @@
 
 ---
 
+## v1.2.0 - Book Clubs (January 2026)
+
+👥 **Collaborative Book Clubs!**
+
+### What's New
+- **Book Clubs** - Create collaborative shelves and invite friends to join
+- **Shared Ratings** - Rate books and see your club's average ratings
+- **Discussion Threads** - Comment on books with messaging-style conversations
+- **Real-time Sync** - Books added by any member sync to everyone instantly
+
+### Features
+- Create book clubs from any shelf with 8-character invite codes
+- Join clubs via invite link, deep link, or manual code entry
+- Add/remove books collaboratively (syncs to all members)
+- Rate books (1-5 stars) and see club average
+- Threaded comments with edit/delete support
+- Owner controls: rename, restyle, delete club
+- Member controls: leave club (keeps books as personal shelf)
+- Limits: 5 book clubs per user, 20 books per shelf
+
+### Deep Link Support
+- Share via `mybookshelf://club/{code}` deep links
+- Web landing page at mybookshelf.co.uk/club/{code}
+- Automatic app launch and join flow
+
+### Technical
+- 597 total tests (542 unit + 55 instrumented)
+- 50 UseCases across 10 domains
+- 16 new book club use cases
+- Enterprise-grade Firestore security rules
+- Full offline-first architecture maintained
+
+### Privacy
+- Club data stored securely in Firebase Firestore
+- Only members can access club content
+- Creator-only management controls
+- Secure invite code system
+
+---
+
 ## v1.1.0 - Cloud Sync (December 2025)
 
 🎉 **First full release with cloud sync!**

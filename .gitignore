@@ -18,5 +18,6 @@ app/google-services.json
 
 # Personal Development Files
 CLAUDE.md
-CODE_REVIEW.md
-TESTING_PATTERNS.md
+docs/TESTING_PATTERNS.md
+docs/FEATURE_PLAN_TEMPLATE.md
+docs/PROJECT_STANDARDS_TEMPLATE.md

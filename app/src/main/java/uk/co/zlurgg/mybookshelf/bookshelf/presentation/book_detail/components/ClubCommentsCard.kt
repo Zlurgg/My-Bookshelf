@@ -245,7 +245,7 @@ private fun CommentBubble(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = comment.displayName.ifBlank { "Anonymous" },
+                            text = comment.displayName.ifBlank { stringResource(R.string.anonymous) },
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = contentColor

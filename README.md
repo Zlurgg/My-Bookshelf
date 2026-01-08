@@ -12,9 +12,10 @@
 
 ## ✨ Features
 
-- 🧱 **Drag-and-Drop Shelf Builder** – Add and arrange books on custom shelves
+- 🧱 **Custom Shelf Organization** – Create and rearrange shelves in your bookcase
 - 🔍 **Search & Add Books** – Use Open Library API for easy book lookup
 - 🔗 **Bookshelf Sharing** – Export and share your shelves via deep links
+- 👥 **Book Clubs** – Create collaborative shelves with friends, share ratings and comments
 - 🎨 **Custom Shelf Styles** – Choose from different materials and colors
 - ☁️ **Cloud Sync** – Optional Google sign-in to sync across devices
 - 📱 **Offline-First** – Works without an account, data stored locally

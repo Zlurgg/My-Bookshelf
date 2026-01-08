@@ -536,9 +536,10 @@ fun BookcaseScreen(
 
     // Join Book Club success snackbar
     state.joinBookClubSuccess?.let { shelfName ->
+        val successMessage = stringResource(R.string.join_book_club_success, shelfName)
         LaunchedEffect(shelfName) {
             snackbarHostState.showSnackbar(
-                message = "Successfully joined \"$shelfName\"!"
+                message = successMessage
             )
             onAction(BookcaseAction.DismissJoinSuccess)
         }

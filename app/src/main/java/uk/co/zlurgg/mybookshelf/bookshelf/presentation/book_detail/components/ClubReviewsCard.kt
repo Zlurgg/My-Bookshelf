@@ -159,7 +159,7 @@ private fun ReviewItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = review.displayName.ifBlank { "Anonymous" },
+                text = review.displayName.ifBlank { stringResource(R.string.anonymous) },
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface

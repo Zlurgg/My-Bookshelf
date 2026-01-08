@@ -75,6 +75,7 @@
     <string name="club_comment_save">Save</string>
     <string name="club_comment_empty">No comments yet. Start the discussion!</string>
     <string name="club_comment_edited">(edited)</string>
+    <string name="anonymous">Anonymous</string>
 
     <!-- Purchase toggle card -->
     <string name="book_purchased_label">I own this book</string>
