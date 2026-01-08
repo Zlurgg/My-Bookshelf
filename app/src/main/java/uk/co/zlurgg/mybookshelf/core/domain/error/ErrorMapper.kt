@@ -4,6 +4,7 @@ import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.SerializationException
 import timber.log.Timber
@@ -11,7 +12,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import kotlin.coroutines.coroutineContext
 
 object ErrorMapper {
     // HTTP Status Codes (internal for inline function access)
@@ -80,7 +80,7 @@ object ErrorMapper {
             try {
                 execute()
             } catch (e: Exception) {
-                coroutineContext.ensureActive()
+                currentCoroutineContext().ensureActive()
 
                 // Log the actual exception for debugging
                 val mappedError = mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN
