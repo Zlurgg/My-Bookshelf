@@ -147,7 +147,7 @@ detekt {
 }
 
 // ktlint configuration
-// Note: ignoreFailures=true for existing codebase - fix issues gradually
+// Note: ignoreFailures=true - inline comment style issues to be addressed gradually
 ktlint {
     android = true
     ignoreFailures = true

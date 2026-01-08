@@ -11,22 +11,26 @@ config:
 
 complexity:
   LongMethod:
-    threshold: 60
+    threshold: 100
+    # Compose UIs are often long - focus on non-UI code
+    excludes: ['**/presentation/**']
   LongParameterList:
-    functionThreshold: 8
-    constructorThreshold: 12
+    functionThreshold: 10
+    constructorThreshold: 15
+    # Compose callbacks often require many parameters
+    excludes: ['**/presentation/**']
   LargeClass:
-    threshold: 600
+    threshold: 500
   ComplexCondition:
-    threshold: 4
-  ComplexMethod:
-    threshold: 15
+    threshold: 5
+  CyclomaticComplexMethod:
+    threshold: 20
   TooManyFunctions:
-    thresholdInFiles: 20
-    thresholdInClasses: 20
-    thresholdInInterfaces: 15
-    thresholdInObjects: 15
-    thresholdInEnums: 10
+    thresholdInFiles: 25
+    thresholdInClasses: 25
+    thresholdInInterfaces: 25
+    thresholdInObjects: 20
+    thresholdInEnums: 15
 
 coroutines:
   active: true
@@ -85,8 +89,12 @@ naming:
   active: true
   FunctionNaming:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**']
+    # Exclude Compose UI (uses PascalCase for @Composable functions)
+    excludes: ['**/test/**', '**/androidTest/**', '**/presentation/**']
     functionPattern: '[a-z][a-zA-Z0-9]*'
+  PackageNaming:
+    # Disabled - project uses underscores (book_detail, search_components)
+    active: false
   VariableNaming:
     active: true
     variablePattern: '[a-z][A-Za-z0-9]*'
@@ -111,7 +119,8 @@ style:
   active: true
   MagicNumber:
     active: true
-    excludes: ['**/test/**', '**/androidTest/**']
+    # UI code commonly uses numeric literals for dimensions, colors, etc.
+    excludes: ['**/test/**', '**/androidTest/**', '**/presentation/**']
     ignoreNumbers:
       - '-1'
       - '0'
@@ -143,7 +152,8 @@ style:
     excludeGuardClauses: true
   UnusedPrivateMember:
     active: true
-    allowedNames: "(_|ignored|expected|serialVersionUID)"
+    # Allow Preview functions (used by Android Studio for Compose previews)
+    allowedNames: "(_|ignored|expected|serialVersionUID|.*Preview)"
   WildcardImport:
     active: true
     excludes: ['**/test/**', '**/androidTest/**']

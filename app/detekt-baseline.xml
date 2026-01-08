@@ -2,227 +2,19 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>ComplexCondition:PublicationDetailsCard.kt$isbn == null &amp;&amp; publisher == null &amp;&amp; publishDate == null &amp;&amp; internetArchiveId == null</ID>
-    <ID>CyclomaticComplexMethod:AndroidSystemLanguageProvider.kt$AndroidSystemLanguageProvider$private fun mapToOpenLibraryLanguageCode(languageCode: String): String</ID>
-    <ID>CyclomaticComplexMethod:BookClubRepositoryImpl.kt$BookClubRepositoryImpl$override suspend fun createBookClub(shelfId: String): Result&lt;String, DataError.Sync&gt;</ID>
     <ID>CyclomaticComplexMethod:BookDetailViewModel.kt$BookDetailViewModel$fun onAction(action: BookDetailAction)</ID>
-    <ID>CyclomaticComplexMethod:BookSearchDialog.kt$@Composable fun BookSearchDialog( state: BookSearchState, callbacks: BookSearchCallbacks, )</ID>
     <ID>CyclomaticComplexMethod:BookcaseScreen.kt$@Composable @OptIn(ExperimentalMaterial3Api::class) fun BookcaseScreen( state: BookcaseState, selectedTab: BookcaseTab, onTabSelected: (BookcaseTab) -&gt; Unit, showAddBookshelfDialog: Boolean, onShowAddBookshelfDialogChange: (Boolean) -&gt; Unit, onAction: (BookcaseAction) -&gt; Unit, )</ID>
     <ID>CyclomaticComplexMethod:BookcaseScreen.kt$@Composable fun BookcaseScreenRoot( viewModel: BookcaseViewModel = koinViewModel(), onBookshelfClick: (Bookshelf) -&gt; Unit, onBookDetailClick: (String, String) -&gt; Unit, onAddBookshelfClick: (String, ShelfStyle) -&gt; Unit, onSignIn: () -&gt; Unit = {}, onSignOut: () -&gt; Unit = {}, switchToBookClubs: Boolean = false, )</ID>
     <ID>CyclomaticComplexMethod:BookcaseViewModel.kt$BookcaseViewModel$fun onAction(action: BookcaseAction)</ID>
-    <ID>CyclomaticComplexMethod:BookshelfCard.kt$@Composable fun BookshelfCard( shelf: Bookshelf, bookCount: Int, isReorderMode: Boolean, isTutorialShelf: Boolean, currentUserId: String?, onBookshelfClick: (Bookshelf) -&gt; Unit, onLongClick: (Bookshelf) -&gt; Unit, onChangeStyle: (Bookshelf) -&gt; Unit, onDelete: (Bookshelf) -&gt; Unit, onCreateBookClub: (Bookshelf) -&gt; Unit, onInviteToClub: (Bookshelf) -&gt; Unit, onDuplicateShelf: (Bookshelf) -&gt; Unit, onLeaveBookClub: (Bookshelf) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
     <ID>CyclomaticComplexMethod:BookshelfScreen.kt$@SuppressLint("ConfigurationScreenWidthHeight") @OptIn(ExperimentalMaterial3Api::class) @Composable fun BookshelfScreen( state: BookshelfState, onAction: (BookshelfAction) -&gt; Unit, )</ID>
-    <ID>CyclomaticComplexMethod:BookshelfViewModel.kt$BookshelfViewModel$fun onAction(action: BookshelfAction)</ID>
     <ID>CyclomaticComplexMethod:ErrorFormatter.kt$ErrorFormatter$fun formatDataErrorMessage( error: DataError, operation: String = "", ): String</ID>
-    <ID>CyclomaticComplexMethod:SyncEngine.kt$SyncEngine$suspend fun pullRemoteChanges(userId: String): Result&lt;SyncResult, DataError.Sync&gt;</ID>
-    <ID>CyclomaticComplexMethod:SyncEngine.kt$SyncEngine$suspend fun pushLocalChanges(userId: String): Result&lt;SyncResult, DataError.Sync&gt;</ID>
-    <ID>FunctionNaming:AboutDialog.kt$@Composable fun AboutDialog( versionName: String, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:AboutDialog.kt$@Preview(name = "Light Mode", showBackground = true) @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true) @Composable private fun AboutDialogPreview()</ID>
-    <ID>FunctionNaming:AddBookSpine.kt$@Composable fun AddBookSpine(onClick: () -&gt; Unit)</ID>
-    <ID>FunctionNaming:AddBookSpine.kt$@Preview @Composable private fun AddBookSpinePreview()</ID>
-    <ID>FunctionNaming:AddBookshelfDialog.kt$@Composable fun AddBookshelfDialog( onDismiss: () -&gt; Unit, onAddShelf: (String, ShelfStyle) -&gt; Unit, isLoading: Boolean, defaultName: String, )</ID>
-    <ID>FunctionNaming:AdvancedSearchFilters.kt$@Composable fun SearchFilters( searchByTitle: Boolean, searchByAuthor: Boolean, onToggleTitle: () -&gt; Unit, onToggleAuthor: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:AdvancedSearchFilters.kt$@Preview(showBackground = true) @Composable private fun SearchFiltersPreview()</ID>
-    <ID>FunctionNaming:BaseInfoDialog.kt$@Composable fun BaseInfoDialog( title: String, buttonText: String, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier, scrollable: Boolean = false, content: @Composable ColumnScope.() -&gt; Unit, )</ID>
-    <ID>FunctionNaming:BaseInfoDialog.kt$@Composable fun DialogContentSection( title: String, content: String, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:BookClubPreviewDialog.kt$@Composable fun BookClubPreviewDialog( bookClub: BookClub, onDismiss: () -&gt; Unit, onJoin: () -&gt; Unit, modifier: Modifier = Modifier, isJoining: Boolean = false, )</ID>
-    <ID>FunctionNaming:BookClubPreviewDialog.kt$@Composable private fun ShelfStylePreview( style: ShelfStyle, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:BookClubPreviewDialog.kt$@Composable private fun StatItem( icon: @Composable () -&gt; Unit, label: String, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:BookDetailImage.kt$@Composable fun BookDetailImage( imageUrl: String?, title: String, modifier: Modifier = Modifier, onImageLoadResult: (Boolean) -&gt; Unit = {}, )</ID>
-    <ID>FunctionNaming:BookDetailScreen.kt$@Composable fun BookDetailsScreenRoot( viewModel: BookDetailViewModel = koinViewModel(), onBackClick: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:BookDetailScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun BookDetailsScreen( state: BookDetailState, onAction: (BookDetailAction) -&gt; Unit, modifier: Modifier = Modifier, authService: AuthService = koinInject(), )</ID>
-    <ID>FunctionNaming:BookDetailScreen.kt$@Preview(showBackground = true) @Composable fun BookDetailScreenPreview()</ID>
-    <ID>FunctionNaming:BookHorizontalDisplay.kt$@Composable fun BookHorizontal( book: Book, onClick: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:BookHorizontalStackDisplay.kt$@Composable fun BookHorizontalStack( books: List&lt;Book&gt;, onClick: (Book) -&gt; Unit, maxStack: Int = 3, )</ID>
-    <ID>FunctionNaming:BookLeaningDisplay.kt$@Composable fun BookLeaning( book: Book, onClick: () -&gt; Unit, leanAngle: Float = -5f, height: Int = 140, )</ID>
-    <ID>FunctionNaming:BookOverviewCard.kt$@Composable fun BookOverviewCard( title: String, authors: List&lt;String&gt;, firstPublishYear: String?, numPages: Int?, numEditions: Int, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:BookPlaceholder.kt$@Composable fun BookPlaceholder(modifier: Modifier = Modifier)</ID>
-    <ID>FunctionNaming:BookSearchBar.kt$@Composable fun BookSearchBar( searchQuery: String, onSearchQueryChange: (String) -&gt; Unit, onImeSearch: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:BookSearchDialog.kt$@Composable fun BookSearchDialog( state: BookSearchState, callbacks: BookSearchCallbacks, )</ID>
-    <ID>FunctionNaming:BookSearchDialog.kt$@Preview @Composable private fun BookSearchScreenPreview()</ID>
-    <ID>FunctionNaming:BookVerticalDisplay.kt$@Composable fun BookVertical( book: Book, onClick: () -&gt; Unit, height: Int = 150, )</ID>
-    <ID>FunctionNaming:BookcaseBottomBar.kt$@Composable fun BookcaseBottomBar( selectedTab: BookcaseTab, onTabSelected: (BookcaseTab) -&gt; Unit, )</ID>
-    <ID>FunctionNaming:BookcaseScreen.kt$@Composable @OptIn(ExperimentalMaterial3Api::class) fun BookcaseScreen( state: BookcaseState, selectedTab: BookcaseTab, onTabSelected: (BookcaseTab) -&gt; Unit, showAddBookshelfDialog: Boolean, onShowAddBookshelfDialogChange: (Boolean) -&gt; Unit, onAction: (BookcaseAction) -&gt; Unit, )</ID>
-    <ID>FunctionNaming:BookcaseScreen.kt$@Composable fun BookcaseScreenRoot( viewModel: BookcaseViewModel = koinViewModel(), onBookshelfClick: (Bookshelf) -&gt; Unit, onBookDetailClick: (String, String) -&gt; Unit, onAddBookshelfClick: (String, ShelfStyle) -&gt; Unit, onSignIn: () -&gt; Unit = {}, onSignOut: () -&gt; Unit = {}, switchToBookClubs: Boolean = false, )</ID>
-    <ID>FunctionNaming:BookcaseScreen.kt$@Preview(showBackground = true) @Composable fun BookcaseScreenPreview()</ID>
-    <ID>FunctionNaming:BookcaseShelf.kt$@Composable fun BookcaseShelf( shelf: Bookshelf, callbacks: ShelfCallbacks, modifier: Modifier = Modifier, displayState: ShelfDisplayState = ShelfDisplayState(), )</ID>
-    <ID>FunctionNaming:BookcaseShelf.kt$@Preview(showBackground = true) @Composable fun BookcaseShelfPreview()</ID>
-    <ID>FunctionNaming:BookshelfCard.kt$@Composable fun BookshelfCard( shelf: Bookshelf, bookCount: Int, isReorderMode: Boolean, isTutorialShelf: Boolean, currentUserId: String?, onBookshelfClick: (Bookshelf) -&gt; Unit, onLongClick: (Bookshelf) -&gt; Unit, onChangeStyle: (Bookshelf) -&gt; Unit, onDelete: (Bookshelf) -&gt; Unit, onCreateBookClub: (Bookshelf) -&gt; Unit, onInviteToClub: (Bookshelf) -&gt; Unit, onDuplicateShelf: (Bookshelf) -&gt; Unit, onLeaveBookClub: (Bookshelf) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:BookshelfCard.kt$@Preview(showBackground = true) @Composable fun BookshelfCardPreview()</ID>
-    <ID>FunctionNaming:BookshelfRowDynamic.kt$@Composable fun BookshelfRowDynamic( books: List&lt;Book&gt;, onBookClick: (Book) -&gt; Unit, bookshelfMaterial: ShelfMaterial, modifier: Modifier = Modifier, config: BookshelfRowConfig = BookshelfRowConfig(), )</ID>
-    <ID>FunctionNaming:BookshelfScreen.kt$@Composable fun BookshelfScreenRoot( viewModel: BookshelfViewModel = koinViewModel(), onAddBookClick: (Book) -&gt; Unit, onBookClick: (Book) -&gt; Unit, onBackClick: () -&gt; Unit, shelfName: String? = null, shelfMaterial: ShelfMaterial? = null, )</ID>
-    <ID>FunctionNaming:BookshelfScreen.kt$@Preview(showBackground = true) @Composable fun BookshelfScreenPreview()</ID>
-    <ID>FunctionNaming:BookshelfScreen.kt$@SuppressLint("ConfigurationScreenWidthHeight") @OptIn(ExperimentalMaterial3Api::class) @Composable fun BookshelfScreen( state: BookshelfState, onAction: (BookshelfAction) -&gt; Unit, )</ID>
-    <ID>FunctionNaming:ChangeStyleDialog.kt$@Composable fun ChangeStyleDialog( currentStyle: ShelfStyle, onDismiss: () -&gt; Unit, onChangeStyle: (ShelfStyle) -&gt; Unit, isLoading: Boolean = false, )</ID>
-    <ID>FunctionNaming:ClubCommentsCard.kt$@Composable fun ClubCommentsCard( comments: List&lt;BookClubComment&gt;, currentUserId: String?, commentText: String, onCommentTextChange: (String) -&gt; Unit, onCommentSubmit: () -&gt; Unit, editingCommentId: String?, editingCommentText: String, onCommentEditStart: (commentId: String, currentText: String) -&gt; Unit, onCommentEditTextChange: (String) -&gt; Unit, onCommentEditSave: () -&gt; Unit, onCommentEditCancel: () -&gt; Unit, onCommentDelete: (commentId: String) -&gt; Unit, isLoading: Boolean, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:ClubCommentsCard.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun CommentBubble( comment: BookClubComment, isOwnComment: Boolean, isEditing: Boolean, editingText: String, onEditTextChange: (String) -&gt; Unit, onEditStart: () -&gt; Unit, onEditSave: () -&gt; Unit, onEditCancel: () -&gt; Unit, onDelete: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:ClubRatingCard.kt$@Composable fun ClubRatingCard( reviews: List&lt;BookClubReview&gt;, userClubRating: Float, onClubRatingChange: (Float) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:ClubReviewsCard.kt$@Composable fun ClubReviewsCard( reviews: List&lt;BookClubReview&gt;, currentUserId: String?, userReviewText: String, onReviewTextChange: (String) -&gt; Unit, onReviewSubmit: () -&gt; Unit, onReviewDelete: () -&gt; Unit, isLoading: Boolean, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:ClubReviewsCard.kt$@Composable private fun ReviewItem( review: BookClubReview, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:CommunityRatingsCard.kt$@Composable fun CommunityRatingsCard( averageRating: Double?, ratingCount: Int?, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:ContinueAsGuestButton.kt$@Composable fun ContinueAsGuestButton( onClick: () -&gt; Unit, modifier: Modifier = Modifier, enabled: Boolean = true, )</ID>
-    <ID>FunctionNaming:DeleteBookClubDialog.kt$@Composable fun DeleteBookClubDialog( clubName: String, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:DescriptionCard.kt$@Composable fun DescriptionCard( description: String?, modifier: Modifier = Modifier, initiallyExpanded: Boolean = false, )</ID>
-    <ID>FunctionNaming:ImportErrorDialog.kt$@Composable fun ImportErrorDialog( errorMessage: String, onDismiss: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:ImportGuestDataDialog.kt$@Composable fun ImportGuestDataDialog( guestDataInfo: GuestDataInfo, onImport: () -&gt; Unit, onSkip: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:ImportLoadingDialog.kt$@Composable fun ImportLoadingDialog()</ID>
-    <ID>FunctionNaming:ImportNameConflictDialog.kt$@Composable fun ImportNameConflictDialog( existingName: String, isLoading: Boolean, errorMessage: String? = null, onDismiss: () -&gt; Unit, onResolveConflict: (String) -&gt; Unit, )</ID>
-    <ID>FunctionNaming:ImportSuccessDialog.kt$@Composable fun ImportSuccessDialog(onDismiss: () -&gt; Unit)</ID>
-    <ID>FunctionNaming:InviteLinkDialog.kt$@Composable fun InviteLinkDialog( clubCode: String, inviteLink: String, clubName: String, isNewClub: Boolean = true, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:JoinBookClubDialog.kt$@Composable fun JoinBookClubDialog( onDismiss: () -&gt; Unit, onLookup: (code: String) -&gt; Unit, modifier: Modifier = Modifier, isLoading: Boolean = false, errorMessage: String? = null, initialCode: String = "", )</ID>
-    <ID>FunctionNaming:LanguagesCard.kt$@OptIn(ExperimentalLayoutApi::class) @Composable fun LanguagesCard( languages: List&lt;String&gt;, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:LeaveBookClubDialog.kt$@Composable fun LeaveBookClubDialog( clubName: String, onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:LoadImage.kt$@Composable fun BookIconPlaceholder()</ID>
-    <ID>FunctionNaming:LoadImage.kt$@Composable fun LoadImage( imageUrl: String, title: String, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:MessageDialog.kt$@Composable fun MessageDialog( title: String, message: String, onDismiss: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:MyBookShelfApp.kt$@Composable fun MyBookShelfApp(deepLinkIntent: Intent? = null)</ID>
-    <ID>FunctionNaming:PersonalNotesCard.kt$@Composable fun PersonalNotesCard( notes: String, // "" = no notes onNotesChange: (String) -&gt; Unit, // Pass "" to clear notes modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:PublicationDetailsCard.kt$@Composable fun PublicationDetailsCard( isbn: String?, publisher: String?, publishDate: String?, internetArchiveId: String?, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:PurchasedToggleCard.kt$@Composable fun PurchasedToggleCard( purchased: Boolean, onPurchaseToggle: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:RecommendationStatusCard.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun RecommendationStatusCard( readingStatus: ReadingStatus, personalRating: Float, // 0 = unrated, 1-5 = rated onReadingStatusChange: (ReadingStatus) -&gt; Unit, onPersonalRatingChange: (Float) -&gt; Unit, // Pass 0f to clear rating modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:RenameShelfDialog.kt$@Composable fun RenameShelfDialog( currentName: String, errorMessage: String?, onDismiss: () -&gt; Unit, onRename: (String) -&gt; Unit, )</ID>
-    <ID>FunctionNaming:SettingsMenu.kt$@Composable fun SettingsMenu( isSignedIn: Boolean, onCheckForUpdates: () -&gt; Unit, onShowHelp: () -&gt; Unit, onShowAbout: () -&gt; Unit, onJoinBookClub: () -&gt; Unit, onSignIn: () -&gt; Unit, onSignOut: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:ShelfActionsCard.kt$@Composable fun ShelfActionsCard( book: Book, onShelf: Boolean, onAddToShelf: (Book) -&gt; Unit, onRemoveFromShelf: (Book) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:ShelfLimitDialog.kt$@Composable fun ShelfLimitDialog( title: String, message: String, onDismiss: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:ShelfNameInputDialog.kt$@Composable fun ShelfNameInputDialog( currentName: String, errorMessage: String?, isLoading: Boolean, titleRes: Int, confirmTextRes: Int, onDismiss: () -&gt; Unit, onConfirm: (String) -&gt; Unit, prefixMessage: String? = null, )</ID>
-    <ID>FunctionNaming:SignInButton.kt$@Composable fun SignInButton( onClick: () -&gt; Unit, isLoading: Boolean, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:SignInRequiredDialog.kt$@Composable fun SignInRequiredDialog( title: String, message: String, onSignIn: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:SignInScreen.kt$@Composable fun SignInScreenRoot( viewModel: SignInViewModel = koinViewModel(), onNavigate: (PostSignInDestination) -&gt; Unit, )</ID>
-    <ID>FunctionNaming:SignInScreen.kt$@Composable private fun SignInScreen( state: SignInState, snackbarHostState: SnackbarHostState, onSignInClick: () -&gt; Unit, onContinueAsGuestClick: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:SignOutDialog.kt$@Composable fun SignOutDialog( onConfirm: () -&gt; Unit, onDismiss: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:Theme.kt$@Composable fun MyBookshelfTheme( darkTheme: Boolean = isSystemInDarkTheme(), dynamicColor: Boolean = true, content: @Composable () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:UpToDateDialog.kt$@Composable fun UpToDateDialog( currentVersionInfo: UpdateInfo?, currentVersionName: String, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:UpToDateDialog.kt$@Preview(name = "Light Mode", showBackground = true) @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true) @Composable private fun UpToDateDialogPreview()</ID>
-    <ID>FunctionNaming:UpToDateDialog.kt$@Preview(name = "No Changelog", showBackground = true) @Composable private fun UpToDateDialogNoChangelogPreview()</ID>
-    <ID>FunctionNaming:UpdateDialog.kt$@Composable fun UpdateDialog( updateInfo: UpdateInfo, onDownload: () -&gt; Unit, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:UpdateDialog.kt$@Composable internal fun ChangelogContent(changelog: String)</ID>
-    <ID>FunctionNaming:UpdateDialog.kt$@Preview(name = "Light Mode", showBackground = true) @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true) @Composable private fun UpdateDialogPreview()</ID>
-    <ID>FunctionNaming:UpdateDialog.kt$@Preview(name = "No Changelog", showBackground = true) @Composable private fun UpdateDialogNoChangelogPreview()</ID>
-    <ID>FunctionNaming:WelcomeHeader.kt$@Composable fun WelcomeHeader(modifier: Modifier = Modifier)</ID>
-    <ID>FunctionNaming:WelcomeScreen.kt$@Composable fun WelcomeScreen( state: WelcomeState, onAction: (WelcomeAction) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>FunctionNaming:WelcomeScreen.kt$@Composable fun WelcomeScreenRoot( viewModel: WelcomeViewModel = koinViewModel(), onNavigateToBookcase: () -&gt; Unit, )</ID>
-    <ID>FunctionNaming:WelcomeScreen.kt$@Preview(showBackground = true) @Composable fun WelcomeScreenPreview()</ID>
     <ID>ImplicitDefaultLocale:ClubRatingCard.kt$String.format("%.1f", averageRating)</ID>
     <ID>ImplicitDefaultLocale:CommunityRatingsCard.kt$String.format("%.1f", averageRating)</ID>
     <ID>LargeClass:BookClubRepositoryImpl.kt$BookClubRepositoryImpl : BookClubRepository</ID>
     <ID>LargeClass:BookcaseViewModel.kt$BookcaseViewModel : ViewModel</ID>
     <ID>LargeClass:FirestoreRemoteDataSource.kt$FirestoreRemoteDataSource : RemoteSyncDataSource</ID>
-    <ID>LongMethod:AddBookSpine.kt$@Composable fun AddBookSpine(onClick: () -&gt; Unit)</ID>
-    <ID>LongMethod:AddBookshelfDialog.kt$@Composable fun AddBookshelfDialog( onDismiss: () -&gt; Unit, onAddShelf: (String, ShelfStyle) -&gt; Unit, isLoading: Boolean, defaultName: String, )</ID>
-    <ID>LongMethod:BookClubPreviewDialog.kt$@Composable fun BookClubPreviewDialog( bookClub: BookClub, onDismiss: () -&gt; Unit, onJoin: () -&gt; Unit, modifier: Modifier = Modifier, isJoining: Boolean = false, )</ID>
     <ID>LongMethod:BookClubRepositoryImpl.kt$BookClubRepositoryImpl$override suspend fun createBookClub(shelfId: String): Result&lt;String, DataError.Sync&gt;</ID>
-    <ID>LongMethod:BookClubRepositoryImpl.kt$BookClubRepositoryImpl$override suspend fun joinBookClub(code: String): Result&lt;String, DataError.Sync&gt;</ID>
-    <ID>LongMethod:BookClubRepositoryImpl.kt$BookClubRepositoryImpl$override suspend fun syncBooksFromClub( code: String, localShelfId: String, ): Result&lt;SyncResult, DataError.Sync&gt;</ID>
-    <ID>LongMethod:BookDetailScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun BookDetailsScreen( state: BookDetailState, onAction: (BookDetailAction) -&gt; Unit, modifier: Modifier = Modifier, authService: AuthService = koinInject(), )</ID>
-    <ID>LongMethod:BookDetailViewModel.kt$BookDetailViewModel$fun onAction(action: BookDetailAction)</ID>
-    <ID>LongMethod:BookLeaningDisplay.kt$@Composable fun BookLeaning( book: Book, onClick: () -&gt; Unit, leanAngle: Float = -5f, height: Int = 140, )</ID>
-    <ID>LongMethod:BookSearchBar.kt$@Composable fun BookSearchBar( searchQuery: String, onSearchQueryChange: (String) -&gt; Unit, onImeSearch: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:BookSearchDialog.kt$@Composable fun BookSearchDialog( state: BookSearchState, callbacks: BookSearchCallbacks, )</ID>
-    <ID>LongMethod:BookVerticalDisplay.kt$@Composable fun BookVertical( book: Book, onClick: () -&gt; Unit, height: Int = 150, )</ID>
-    <ID>LongMethod:BookcaseScreen.kt$@Composable @OptIn(ExperimentalMaterial3Api::class) fun BookcaseScreen( state: BookcaseState, selectedTab: BookcaseTab, onTabSelected: (BookcaseTab) -&gt; Unit, showAddBookshelfDialog: Boolean, onShowAddBookshelfDialogChange: (Boolean) -&gt; Unit, onAction: (BookcaseAction) -&gt; Unit, )</ID>
-    <ID>LongMethod:BookcaseScreen.kt$@Composable fun BookcaseScreenRoot( viewModel: BookcaseViewModel = koinViewModel(), onBookshelfClick: (Bookshelf) -&gt; Unit, onBookDetailClick: (String, String) -&gt; Unit, onAddBookshelfClick: (String, ShelfStyle) -&gt; Unit, onSignIn: () -&gt; Unit = {}, onSignOut: () -&gt; Unit = {}, switchToBookClubs: Boolean = false, )</ID>
-    <ID>LongMethod:BookcaseShelf.kt$@Composable fun BookcaseShelf( shelf: Bookshelf, callbacks: ShelfCallbacks, modifier: Modifier = Modifier, displayState: ShelfDisplayState = ShelfDisplayState(), )</ID>
-    <ID>LongMethod:BookcaseViewModel.kt$BookcaseViewModel$fun onAction(action: BookcaseAction)</ID>
-    <ID>LongMethod:BookcaseViewModelTest.kt$BookcaseViewModelTest$private fun createViewModel(): BookcaseViewModel</ID>
-    <ID>LongMethod:BookshelfCard.kt$@Composable fun BookshelfCard( shelf: Bookshelf, bookCount: Int, isReorderMode: Boolean, isTutorialShelf: Boolean, currentUserId: String?, onBookshelfClick: (Bookshelf) -&gt; Unit, onLongClick: (Bookshelf) -&gt; Unit, onChangeStyle: (Bookshelf) -&gt; Unit, onDelete: (Bookshelf) -&gt; Unit, onCreateBookClub: (Bookshelf) -&gt; Unit, onInviteToClub: (Bookshelf) -&gt; Unit, onDuplicateShelf: (Bookshelf) -&gt; Unit, onLeaveBookClub: (Bookshelf) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:BookshelfRowDynamic.kt$@Composable fun BookshelfRowDynamic( books: List&lt;Book&gt;, onBookClick: (Book) -&gt; Unit, bookshelfMaterial: ShelfMaterial, modifier: Modifier = Modifier, config: BookshelfRowConfig = BookshelfRowConfig(), )</ID>
-    <ID>LongMethod:BookshelfScreen.kt$@SuppressLint("ConfigurationScreenWidthHeight") @OptIn(ExperimentalMaterial3Api::class) @Composable fun BookshelfScreen( state: BookshelfState, onAction: (BookshelfAction) -&gt; Unit, )</ID>
-    <ID>LongMethod:BookshelfViewModel.kt$BookshelfViewModel$fun onAction(action: BookshelfAction)</ID>
-    <ID>LongMethod:ChangeStyleDialog.kt$@Composable fun ChangeStyleDialog( currentStyle: ShelfStyle, onDismiss: () -&gt; Unit, onChangeStyle: (ShelfStyle) -&gt; Unit, isLoading: Boolean = false, )</ID>
-    <ID>LongMethod:ClubCommentsCard.kt$@Composable fun ClubCommentsCard( comments: List&lt;BookClubComment&gt;, currentUserId: String?, commentText: String, onCommentTextChange: (String) -&gt; Unit, onCommentSubmit: () -&gt; Unit, editingCommentId: String?, editingCommentText: String, onCommentEditStart: (commentId: String, currentText: String) -&gt; Unit, onCommentEditTextChange: (String) -&gt; Unit, onCommentEditSave: () -&gt; Unit, onCommentEditCancel: () -&gt; Unit, onCommentDelete: (commentId: String) -&gt; Unit, isLoading: Boolean, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:ClubCommentsCard.kt$@OptIn(ExperimentalFoundationApi::class) @Composable private fun CommentBubble( comment: BookClubComment, isOwnComment: Boolean, isEditing: Boolean, editingText: String, onEditTextChange: (String) -&gt; Unit, onEditStart: () -&gt; Unit, onEditSave: () -&gt; Unit, onEditCancel: () -&gt; Unit, onDelete: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:ClubRatingCard.kt$@Composable fun ClubRatingCard( reviews: List&lt;BookClubReview&gt;, userClubRating: Float, onClubRatingChange: (Float) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:ClubReviewsCard.kt$@Composable fun ClubReviewsCard( reviews: List&lt;BookClubReview&gt;, currentUserId: String?, userReviewText: String, onReviewTextChange: (String) -&gt; Unit, onReviewSubmit: () -&gt; Unit, onReviewDelete: () -&gt; Unit, isLoading: Boolean, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:ErrorFormatter.kt$ErrorFormatter$fun formatDataErrorMessage( error: DataError, operation: String = "", ): String</ID>
-    <ID>LongMethod:ImportGuestDataDialog.kt$@Composable fun ImportGuestDataDialog( guestDataInfo: GuestDataInfo, onImport: () -&gt; Unit, onSkip: () -&gt; Unit, )</ID>
-    <ID>LongMethod:InviteLinkDialog.kt$@Composable fun InviteLinkDialog( clubCode: String, inviteLink: String, clubName: String, isNewClub: Boolean = true, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:JoinBookClubDialog.kt$@Composable fun JoinBookClubDialog( onDismiss: () -&gt; Unit, onLookup: (code: String) -&gt; Unit, modifier: Modifier = Modifier, isLoading: Boolean = false, errorMessage: String? = null, initialCode: String = "", )</ID>
-    <ID>LongMethod:MockBookClubRepository.kt$MockBookClubRepository$fun reset()</ID>
-    <ID>LongMethod:MyBookShelfApp.kt$@Composable fun MyBookShelfApp(deepLinkIntent: Intent? = null)</ID>
-    <ID>LongMethod:RecommendationStatusCard.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun RecommendationStatusCard( readingStatus: ReadingStatus, personalRating: Float, // 0 = unrated, 1-5 = rated onReadingStatusChange: (ReadingStatus) -&gt; Unit, onPersonalRatingChange: (Float) -&gt; Unit, // Pass 0f to clear rating modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:SettingsMenu.kt$@Composable fun SettingsMenu( isSignedIn: Boolean, onCheckForUpdates: () -&gt; Unit, onShowHelp: () -&gt; Unit, onShowAbout: () -&gt; Unit, onJoinBookClub: () -&gt; Unit, onSignIn: () -&gt; Unit, onSignOut: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:ShelfNameInputDialog.kt$@Composable fun ShelfNameInputDialog( currentName: String, errorMessage: String?, isLoading: Boolean, titleRes: Int, confirmTextRes: Int, onDismiss: () -&gt; Unit, onConfirm: (String) -&gt; Unit, prefixMessage: String? = null, )</ID>
-    <ID>LongMethod:SyncEngine.kt$SyncEngine$suspend fun performFullSync(userId: String): Result&lt;SyncResult, DataError.Sync&gt;</ID>
-    <ID>LongMethod:SyncEngine.kt$SyncEngine$suspend fun pullRemoteChanges(userId: String): Result&lt;SyncResult, DataError.Sync&gt;</ID>
-    <ID>LongMethod:SyncEngine.kt$SyncEngine$suspend fun pushLocalChanges(userId: String): Result&lt;SyncResult, DataError.Sync&gt;</ID>
-    <ID>LongMethod:UpdateDialog.kt$@Composable fun UpdateDialog( updateInfo: UpdateInfo, onDownload: () -&gt; Unit, onDismiss: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongMethod:WelcomeHeader.kt$@Composable fun WelcomeHeader(modifier: Modifier = Modifier)</ID>
     <ID>LongParameterList:BookClubUseCases.kt$BookClubUseCases$( // Phase 1: Create Book Club val createBookClub: CreateBookClubUseCase, val generateInviteLink: GenerateInviteLinkUseCase, // Phase 2: Join Book Club val parseClubCode: ParseClubCodeUseCase, val getBookClubPreview: GetBookClubPreviewUseCase, val joinBookClub: JoinBookClubUseCase, // Phase 3: Sync val syncBookClub: SyncBookClubUseCase, // Membership Management val restoreBookClubMemberships: RestoreBookClubMembershipsUseCase, val leaveBookClub: LeaveBookClubUseCase, val validateMemberships: ValidateBookClubMembershipsUseCase, // Reviews (for ratings) val getBookClubReviews: GetBookClubReviewsUseCase, val upsertBookClubReview: UpsertBookClubReviewUseCase, val deleteBookClubReview: DeleteBookClubReviewUseCase, // Comments (for discussion) val getBookClubComments: GetBookClubCommentsUseCase, val addBookClubComment: AddBookClubCommentUseCase, val editBookClubComment: EditBookClubCommentUseCase, val deleteBookClubComment: DeleteBookClubCommentUseCase, )</ID>
-    <ID>LongParameterList:BookshelfCard.kt$( shelf: Bookshelf, bookCount: Int, isReorderMode: Boolean, isTutorialShelf: Boolean, currentUserId: String?, onBookshelfClick: (Bookshelf) -&gt; Unit, onLongClick: (Bookshelf) -&gt; Unit, onChangeStyle: (Bookshelf) -&gt; Unit, onDelete: (Bookshelf) -&gt; Unit, onCreateBookClub: (Bookshelf) -&gt; Unit, onInviteToClub: (Bookshelf) -&gt; Unit, onDuplicateShelf: (Bookshelf) -&gt; Unit, onLeaveBookClub: (Bookshelf) -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongParameterList:ClubCommentsCard.kt$( comment: BookClubComment, isOwnComment: Boolean, isEditing: Boolean, editingText: String, onEditTextChange: (String) -&gt; Unit, onEditStart: () -&gt; Unit, onEditSave: () -&gt; Unit, onEditCancel: () -&gt; Unit, onDelete: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongParameterList:ClubCommentsCard.kt$( comments: List&lt;BookClubComment&gt;, currentUserId: String?, commentText: String, onCommentTextChange: (String) -&gt; Unit, onCommentSubmit: () -&gt; Unit, editingCommentId: String?, editingCommentText: String, onCommentEditStart: (commentId: String, currentText: String) -&gt; Unit, onCommentEditTextChange: (String) -&gt; Unit, onCommentEditSave: () -&gt; Unit, onCommentEditCancel: () -&gt; Unit, onCommentDelete: (commentId: String) -&gt; Unit, isLoading: Boolean, modifier: Modifier = Modifier, )</ID>
-    <ID>LongParameterList:ClubReviewsCard.kt$( reviews: List&lt;BookClubReview&gt;, currentUserId: String?, userReviewText: String, onReviewTextChange: (String) -&gt; Unit, onReviewSubmit: () -&gt; Unit, onReviewDelete: () -&gt; Unit, isLoading: Boolean, modifier: Modifier = Modifier, )</ID>
-    <ID>LongParameterList:SettingsMenu.kt$( isSignedIn: Boolean, onCheckForUpdates: () -&gt; Unit, onShowHelp: () -&gt; Unit, onShowAbout: () -&gt; Unit, onJoinBookClub: () -&gt; Unit, onSignIn: () -&gt; Unit, onSignOut: () -&gt; Unit, modifier: Modifier = Modifier, )</ID>
-    <ID>LongParameterList:ShelfNameInputDialog.kt$( currentName: String, errorMessage: String?, isLoading: Boolean, titleRes: Int, confirmTextRes: Int, onDismiss: () -&gt; Unit, onConfirm: (String) -&gt; Unit, prefixMessage: String? = null, )</ID>
-    <ID>MagicNumber:BookDetailViewModel.kt$BookDetailViewModel$2000</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$150</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$200</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$250</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$3</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$300</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$30f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$350</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$35f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$4</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$400</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$40f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$450</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$45f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$500</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$50f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$55f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$600</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$60f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$65f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$70f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$800</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$80f</ID>
-    <ID>MagicNumber:BookDisplayUtils.kt$90f</ID>
-    <ID>MagicNumber:BookHorizontalDisplay.kt$0.9f</ID>
-    <ID>MagicNumber:BookHorizontalDisplay.kt$90f</ID>
-    <ID>MagicNumber:BookHorizontalStackDisplay.kt$5</ID>
-    <ID>MagicNumber:BookHorizontalStackDisplay.kt$90f</ID>
-    <ID>MagicNumber:BookLeaningDisplay.kt$0.75f</ID>
-    <ID>MagicNumber:BookLeaningDisplay.kt$5f</ID>
-    <ID>MagicNumber:BookVerticalDisplay.kt$0.8f</ID>
-    <ID>MagicNumber:BookcaseScreen.kt$5</ID>
-    <ID>MagicNumber:BookcaseShelf.kt$0.7f</ID>
-    <ID>MagicNumber:ClubRatingCard.kt$5</ID>
-    <ID>MagicNumber:DescriptionCard.kt$150</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$200</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$299</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$400</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$401</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$403</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$404</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$408</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$422</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$429</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$500</ID>
-    <ID>MagicNumber:ErrorMapper.kt$ErrorMapper$599</ID>
-    <ID>MagicNumber:HttpClientFactory.kt$HttpClientFactory$3</ID>
-    <ID>MagicNumber:ImageLoaderFactory.kt$ImageLoaderFactory$10_000L</ID>
-    <ID>MagicNumber:ImageLoaderFactory.kt$ImageLoaderFactory$30_000L</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$120</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$16</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$180</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$24</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$240</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$300</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$60</ID>
-    <ID>MagicNumber:MaterialColorGenerator.kt$MaterialColorGenerator$8</ID>
-    <ID>MagicNumber:RecommendationStatusCard.kt$5</ID>
-    <ID>MagicNumber:SignInButton.kt$500</ID>
-    <ID>MagicNumber:SignInButton.kt$700</ID>
-    <ID>MagicNumber:UpdateBookMetadataUseCaseImpl.kt$UpdateBookMetadataUseCaseImpl$5.0f</ID>
-    <ID>MagicNumber:UpdateBookMetadataUseCaseImpl.kt$UpdateBookMetadataUseCaseImpl$5000</ID>
-    <ID>MagicNumber:UpdateDialog.kt$1024</ID>
-    <ID>MagicNumber:UpdateDialog.kt$1024.0</ID>
-    <ID>MagicNumber:UpsertBookClubReviewUseCaseImpl.kt$UpsertBookClubReviewUseCaseImpl$5</ID>
-    <ID>MagicNumber:WelcomeHeader.kt$200</ID>
-    <ID>MagicNumber:WelcomeHeader.kt$400</ID>
-    <ID>MagicNumber:WelcomeHeader.kt$600</ID>
-    <ID>MagicNumber:WelcomeScreen.kt$0.7f</ID>
     <ID>MaxLineLength:ApiConfig.kt$ApiConfig.OpenLibrary.DefaultParams$const val SEARCH_FIELDS = "key,title,author_name,author_key,cover_edition_key,cover_i,ratings_average,ratings_count,first_publish_year,language,number_of_pages_median,edition_count,isbn,publisher,publish_date,ia"</ID>
     <ID>MaxLineLength:BookSearchState.kt$BookSearchState$val hasSearched: Boolean = false</ID>
     <ID>MaxLineLength:BookshelfDao.kt$BookshelfDao$"SELECT * FROM BookshelfEntity WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__') AND syncStatus != 'DELETED' ORDER BY position ASC"</ID>
@@ -236,57 +28,6 @@
     <ID>MaxLineLength:Migration9To10.kt$&lt;no name provided&gt;$"CREATE UNIQUE INDEX IF NOT EXISTS index_book_club_memberships_clubCode ON book_club_memberships(clubCode)"</ID>
     <ID>NestedBlockDepth:DeleteShelfUseCaseImpl.kt$DeleteShelfUseCaseImpl$override suspend fun execute(shelfId: String): Result&lt;Unit, DataError.Local&gt;</ID>
     <ID>NestedBlockDepth:UpdateShelfStyleUseCaseImpl.kt$UpdateShelfStyleUseCaseImpl$override suspend fun execute( shelfId: String, newStyle: ShelfStyle, ): Result&lt;Unit, DataError.Local&gt;</ID>
-    <ID>PackageNaming:AddBookSpine.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:AddBookToShelfUseCase.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:AddBookToShelfUseCaseImpl.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:AddBookToShelfUseCaseTest.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:AdvancedSearchFilters.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components</ID>
-    <ID>PackageNaming:BookDetailAction.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail</ID>
-    <ID>PackageNaming:BookDetailImage.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:BookDetailScreen.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail</ID>
-    <ID>PackageNaming:BookDetailState.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail</ID>
-    <ID>PackageNaming:BookDetailUseCases.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:BookDetailViewModel.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail</ID>
-    <ID>PackageNaming:BookDetailViewModelTest.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail</ID>
-    <ID>PackageNaming:BookHorizontalDisplay.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:BookHorizontalStackDisplay.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:BookLeaningDisplay.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:BookOverviewCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:BookPlaceholder.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:BookSearchBar.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components</ID>
-    <ID>PackageNaming:BookSearchCallbacks.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components</ID>
-    <ID>PackageNaming:BookSearchDialog.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components</ID>
-    <ID>PackageNaming:BookSearchState.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components</ID>
-    <ID>PackageNaming:BookVerticalDisplay.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:BookshelfRowConfig.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:BookshelfRowDynamic.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:ClubCommentsCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:ClubRatingCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:ClubReviewsCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:CommunityRatingsCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:DescriptionCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:GetBookDetailsUseCase.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:GetBookDetailsUseCaseImpl.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:GetBookDetailsUseCaseTest.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:LanguagesCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:LoadImage.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components</ID>
-    <ID>PackageNaming:PersonalNotesCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:PublicationDetailsCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:PurchasedToggleCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:RecommendationStatusCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:RemoveBookFromShelfUseCase.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:RemoveBookFromShelfUseCaseImpl.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:RemoveBookFromShelfUseCaseTest.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:ShelfActionsCard.kt$package uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components</ID>
-    <ID>PackageNaming:ToggleBookPurchaseUseCase.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:ToggleBookPurchaseUseCaseImpl.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:ToggleBookPurchaseUseCaseTest.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:UpdateBookMetadataUseCase.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:UpdateBookMetadataUseCaseImpl.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:UpdateBookMetadataUseCaseTest.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:UpsertBookUseCase.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:UpsertBookUseCaseImpl.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
-    <ID>PackageNaming:UpsertBookUseCaseTest.kt$package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail</ID>
     <ID>ReturnCount:BookClubRepositoryImpl.kt$BookClubRepositoryImpl$override suspend fun createBookClub(shelfId: String): Result&lt;String, DataError.Sync&gt;</ID>
     <ID>ReturnCount:BookClubRepositoryImpl.kt$BookClubRepositoryImpl$override suspend fun deleteBookClub(code: String): Result&lt;Unit, DataError.Sync&gt;</ID>
     <ID>ReturnCount:BookClubRepositoryImpl.kt$BookClubRepositoryImpl$override suspend fun joinBookClub(code: String): Result&lt;String, DataError.Sync&gt;</ID>
@@ -334,21 +75,12 @@
     <ID>TooGenericExceptionThrown:MockBookcaseRepository.kt$MockBookcaseRepository$throw RuntimeException("Test exception")</ID>
     <ID>TooGenericExceptionThrown:MockBookshelfRepository.kt$MockBookshelfRepository$throw RuntimeException("Mock repository error")</ID>
     <ID>TooGenericExceptionThrown:Result.kt$throw Exception("Result failed with error: $error")</ID>
-    <ID>TooManyFunctions:BookClubRepository.kt$BookClubRepository</ID>
     <ID>TooManyFunctions:BookClubRepositoryImpl.kt$BookClubRepositoryImpl : BookClubRepository</ID>
     <ID>TooManyFunctions:BookcaseViewModel.kt$BookcaseViewModel : ViewModel</ID>
     <ID>TooManyFunctions:BookshelfDao.kt$BookshelfDao</ID>
     <ID>TooManyFunctions:FirestoreRemoteDataSource.kt$FirestoreRemoteDataSource : RemoteSyncDataSource</ID>
     <ID>TooManyFunctions:RemoteSyncDataSource.kt$RemoteSyncDataSource</ID>
     <ID>UnusedParameter:WelcomeScreen.kt$state: WelcomeState</ID>
-    <ID>UnusedPrivateMember:AboutDialog.kt$@Preview(name = "Light Mode", showBackground = true) @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true) @Composable private fun AboutDialogPreview()</ID>
-    <ID>UnusedPrivateMember:AddBookSpine.kt$@Preview @Composable private fun AddBookSpinePreview()</ID>
-    <ID>UnusedPrivateMember:AdvancedSearchFilters.kt$@Preview(showBackground = true) @Composable private fun SearchFiltersPreview()</ID>
-    <ID>UnusedPrivateMember:BookSearchDialog.kt$@Preview @Composable private fun BookSearchScreenPreview()</ID>
-    <ID>UnusedPrivateMember:UpToDateDialog.kt$@Preview(name = "Light Mode", showBackground = true) @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true) @Composable private fun UpToDateDialogPreview()</ID>
-    <ID>UnusedPrivateMember:UpToDateDialog.kt$@Preview(name = "No Changelog", showBackground = true) @Composable private fun UpToDateDialogNoChangelogPreview()</ID>
-    <ID>UnusedPrivateMember:UpdateDialog.kt$@Preview(name = "Light Mode", showBackground = true) @Preview(name = "Dark Mode", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true) @Composable private fun UpdateDialogPreview()</ID>
-    <ID>UnusedPrivateMember:UpdateDialog.kt$@Preview(name = "No Changelog", showBackground = true) @Composable private fun UpdateDialogNoChangelogPreview()</ID>
     <ID>UseRequire:Base64Encoder.kt$Base64Encoder$throw IllegalArgumentException( "Decompressed data exceeds $MAX_DECOMPRESSED_SIZE byte limit (potential ZIP bomb)", )</ID>
   </CurrentIssues>
 </SmellBaseline>

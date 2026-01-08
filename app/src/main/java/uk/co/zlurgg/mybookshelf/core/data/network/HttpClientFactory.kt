@@ -17,6 +17,8 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 object HttpClientFactory {
+    private const val MAX_RETRIES = 3
+
     fun create(
         engine: HttpClientEngine,
         enableLogging: Boolean = false,
@@ -37,7 +39,7 @@ object HttpClientFactory {
             }
 
             install(HttpRequestRetry) {
-                maxRetries = 3
+                maxRetries = MAX_RETRIES
                 retryIf { _, httpResponse ->
                     // Retry on server errors (5xx) and rate limiting (429)
                     httpResponse.status == HttpStatusCode.InternalServerError ||

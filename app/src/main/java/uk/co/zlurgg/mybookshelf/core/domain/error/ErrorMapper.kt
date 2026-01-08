@@ -14,6 +14,19 @@ import java.net.UnknownHostException
 import kotlin.coroutines.coroutineContext
 
 object ErrorMapper {
+    // HTTP Status Codes (internal for inline function access)
+    @PublishedApi internal const val HTTP_OK = 200
+    @PublishedApi internal const val HTTP_OK_MAX = 299
+    private const val HTTP_BAD_REQUEST = 400
+    private const val HTTP_UNAUTHORIZED = 401
+    private const val HTTP_FORBIDDEN = 403
+    private const val HTTP_NOT_FOUND = 404
+    private const val HTTP_TIMEOUT = 408
+    private const val HTTP_UNPROCESSABLE = 422
+    private const val HTTP_TOO_MANY_REQUESTS = 429
+    private const val HTTP_SERVER_ERROR_MIN = 500
+    private const val HTTP_SERVER_ERROR_MAX = 599
+
     fun mapExceptionToDataError(exception: Exception): DataError {
         return when (exception) {
             // Network-related exceptions (UnresolvedAddressException and SocketTimeoutException are Ktor-specific)
@@ -38,14 +51,14 @@ object ErrorMapper {
 
     fun mapHttpStatusToDataError(statusCode: Int): DataError.Remote {
         return when (statusCode) {
-            400 -> DataError.Remote.CLIENT_ERROR
-            401 -> DataError.Remote.UNAUTHORIZED
-            403 -> DataError.Remote.FORBIDDEN
-            404 -> DataError.Remote.NOT_FOUND
-            408 -> DataError.Remote.REQUEST_TIMEOUT
-            422 -> DataError.Remote.MALFORMED_REQUEST
-            429 -> DataError.Remote.TOO_MANY_REQUESTS
-            in 500..599 -> DataError.Remote.SERVER_ERROR
+            HTTP_BAD_REQUEST -> DataError.Remote.CLIENT_ERROR
+            HTTP_UNAUTHORIZED -> DataError.Remote.UNAUTHORIZED
+            HTTP_FORBIDDEN -> DataError.Remote.FORBIDDEN
+            HTTP_NOT_FOUND -> DataError.Remote.NOT_FOUND
+            HTTP_TIMEOUT -> DataError.Remote.REQUEST_TIMEOUT
+            HTTP_UNPROCESSABLE -> DataError.Remote.MALFORMED_REQUEST
+            HTTP_TOO_MANY_REQUESTS -> DataError.Remote.TOO_MANY_REQUESTS
+            in HTTP_SERVER_ERROR_MIN..HTTP_SERVER_ERROR_MAX -> DataError.Remote.SERVER_ERROR
             else -> DataError.Remote.UNKNOWN
         }
     }
@@ -85,7 +98,7 @@ object ErrorMapper {
      */
     suspend inline fun <reified T> responseToResult(response: HttpResponse): Result<T, DataError.Remote> {
         return when (response.status.value) {
-            in 200..299 -> {
+            in HTTP_OK..HTTP_OK_MAX -> {
                 try {
                     Result.Success(response.body<T>())
                 } catch (e: Exception) {

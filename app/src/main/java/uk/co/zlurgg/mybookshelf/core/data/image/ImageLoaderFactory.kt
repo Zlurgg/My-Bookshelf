@@ -18,6 +18,11 @@ import io.ktor.client.plugins.HttpTimeout
  * - See IMAGE_LOADING_INVESTIGATION.md for detailed analysis
  */
 object ImageLoaderFactory {
+    // Timeout values for image loading (increased for slow Archive.org CDN)
+    private const val CONNECT_TIMEOUT_MS = 10_000L
+    private const val REQUEST_TIMEOUT_MS = 30_000L
+    private const val SOCKET_TIMEOUT_MS = 30_000L
+
     fun create(context: Context): ImageLoader {
         return ImageLoader.Builder(context)
             .components {
@@ -26,10 +31,9 @@ object ImageLoaderFactory {
                         httpClient =
                             HttpClient(Android) {
                                 install(HttpTimeout) {
-                                    // Increased timeouts to accommodate slow Archive.org responses
-                                    connectTimeoutMillis = 10_000L // 10 seconds (doubled from 5s)
-                                    requestTimeoutMillis = 30_000L // 30 seconds (tripled from 10s)
-                                    socketTimeoutMillis = 30_000L // 30 seconds (tripled from 10s)
+                                    connectTimeoutMillis = CONNECT_TIMEOUT_MS
+                                    requestTimeoutMillis = REQUEST_TIMEOUT_MS
+                                    socketTimeoutMillis = SOCKET_TIMEOUT_MS
                                 }
                             },
                     ),

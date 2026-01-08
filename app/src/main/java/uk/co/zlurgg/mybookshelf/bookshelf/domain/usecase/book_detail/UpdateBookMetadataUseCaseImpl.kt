@@ -22,6 +22,11 @@ class UpdateBookMetadataUseCaseImpl(
     private val timeProvider: TimeProvider,
     private val syncSchedulerService: SyncSchedulerService,
 ) : UpdateBookMetadataUseCase {
+    companion object {
+        const val MAX_RATING = 5.0f
+        const val MAX_NOTES_LENGTH = 5000
+    }
+
     override suspend fun execute(
         bookId: String,
         readingStatus: ReadingStatus?,
@@ -31,12 +36,12 @@ class UpdateBookMetadataUseCaseImpl(
     ): Result<Unit, DataError> {
         return try {
             // Validate personal rating (0.0-5.0, where 0 = unrated)
-            if (personalRating != null && (personalRating < 0f || personalRating > 5.0f)) {
+            if (personalRating != null && (personalRating < 0f || personalRating > MAX_RATING)) {
                 return Result.Error(DataError.Validation.INVALID_FORMAT)
             }
 
-            // Validate personal notes length (≤5000 characters)
-            if (personalNotes != null && personalNotes.length > 5000) {
+            // Validate personal notes length
+            if (personalNotes != null && personalNotes.length > MAX_NOTES_LENGTH) {
                 return Result.Error(DataError.Validation.TOO_LONG)
             }
 
