@@ -135,16 +135,5 @@ service cloud.firestore {
         );
     }
 
-    // ==================== Helper Functions ====================
-
-    // Check if user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-
-    // Check if user is the resource owner
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
   }
 }
