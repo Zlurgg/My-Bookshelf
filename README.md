@@ -24,7 +24,7 @@
 
 ## 🔒 Privacy & Data
 
-**MyBookshelf is a privacy-first application:**
+**My Bookshelf is a privacy-first application:**
 - ✅ Works fully offline – no account required
 - ✅ Optional Google sign-in enables cloud sync across devices
 - ✅ Synced data stored securely in Google Cloud (Firebase)
@@ -61,10 +61,8 @@ Instructions for setting up the project locally will be added here.
 
 ## 🚀 Planned Features
 
-- Personal ratings and reading status tracking
 - Search and filter books within shelves
 - Manga & comic support via AniList/ComicVine APIs
-- Affiliate link integration (Amazon Associates, Bookshop.org)
 - Reading habit reminders and progress tracking
 - Advanced shelf themes and customization
 - Enhanced search filters and book recommendations
@@ -116,6 +114,18 @@ Instructions for setting up the project locally will be added here.
 ### Sharing
 <div style="text-align: center;">
   <img src="docs/screenshots/share-shelf.jpg" width="400" alt="Share Shelf">
+</div>
+
+### Book Clubs
+<div style="text-align: center;">
+  <img src="docs/screenshots/bookclubs-tab.jpg" width="400" alt="Book Clubs Tab">
+  <img src="docs/screenshots/create-bookclub.jpg" width="400" alt="Create Book Club">
+  <img src="docs/screenshots/join-bookclub.jpg" width="400" alt="Join Book Club">
+</div>
+<div style="text-align: center;">
+  <img src="docs/screenshots/book_club_found.jpg" width="400" alt="Book Club Found">
+  <img src="docs/screenshots/club-shelf.jpg" width="400" alt="Book Club Shelf">
+  <img src="docs/screenshots/club-ratings_comments.jpg" width="400" alt="Club Ratings and Comments">
 </div>
 
 ---
