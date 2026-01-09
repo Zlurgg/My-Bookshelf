@@ -19,15 +19,8 @@ class GetCurrentVersionInfoUseCaseImpl(
     private val updateRepository: UpdateRepository,
     private val currentVersion: String
 ) : GetCurrentVersionInfoUseCase {
-    @Suppress("TooGenericExceptionCaught")
     override suspend operator fun invoke(): UpdateInfo? {
-        return try {
-            Timber.d("Fetching release info for current version: $currentVersion")
-            val result = updateRepository.getReleaseByVersion(currentVersion)
-            result.getOrNull()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to fetch current version info")
-            null
-        }
+        Timber.d("Fetching release info for current version: $currentVersion")
+        return updateRepository.getReleaseByVersion(currentVersion).getOrNull()
     }
 }
