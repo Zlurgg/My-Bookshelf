@@ -10,10 +10,14 @@ config:
   warningsAsErrors: false
 
 # Formatting rules (from detekt-formatting module / ktlint)
-# Most config is in .editorconfig, but we can disable categories here
 formatting:
   active: true
-  # Let .editorconfig handle specific rule config
+  PackageName:
+    active: true
+    excludes:
+      - '**/book_detail/**'
+      - '**/bookshelf_components/**'
+      - '**/search_components/**'
 
 complexity:
   LongMethod:
