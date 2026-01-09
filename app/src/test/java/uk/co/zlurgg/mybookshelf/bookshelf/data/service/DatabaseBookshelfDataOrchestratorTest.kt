@@ -72,9 +72,11 @@ class DatabaseBookshelfDataOrchestratorTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return NOT_FOUND error",
+        assertEquals(
+            "Should return NOT_FOUND error",
             DataError.Local.NOT_FOUND,
-            (result as Result.Error).error)
+            (result as Result.Error).error
+        )
     }
 
     @Test

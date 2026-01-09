@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
@@ -130,11 +130,14 @@ class SyncEngine(
             )
 
             markSyncComplete(userId, null)
-            Timber.tag(TAG).d("=== SYNC COMPLETE: pushed=%d, pulled=%d, conflicts=%d ===",
-                finalResult.pushedCount, finalResult.pulledCount, finalResult.conflictCount)
+            Timber.tag(TAG).d(
+                "=== SYNC COMPLETE: pushed=%d, pulled=%d, conflicts=%d ===",
+                finalResult.pushedCount,
+                finalResult.pulledCount,
+                finalResult.conflictCount
+            )
 
             return Result.Success(finalResult)
-
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Sync failed with exception")
             markSyncComplete(userId, e.message)
@@ -191,8 +194,8 @@ class SyncEngine(
         val pendingShelves = bookshelfDao.getPendingSyncShelves()
             .filter {
                 (it.ownerId == userId || it.ownerId == null) &&
-                !SystemOwnerIds.isSystemOwner(it.ownerId) &&
-                !it.isBookClub  // Book clubs sync separately via bookClubs collection
+                    !SystemOwnerIds.isSystemOwner(it.ownerId) &&
+                    !it.isBookClub // Book clubs sync separately via bookClubs collection
             }
 
         Timber.tag(TAG).d("Found %d pending shelves", pendingShelves.size)
@@ -200,9 +203,11 @@ class SyncEngine(
 
         // Push shelves
         pendingShelves.forEachIndexed { index, shelf ->
-            if (isCancelled.get()) return Result.Success(
-                SyncResult(pushedCount = pushedBooks + pushedShelves)
-            )
+            if (isCancelled.get()) {
+                return Result.Success(
+                    SyncResult(pushedCount = pushedBooks + pushedShelves)
+                )
+            }
 
             updateProgress(SyncPhase.PUSHING_SHELVES, index + 1, pendingShelves.size)
 
@@ -310,9 +315,11 @@ class SyncEngine(
         Timber.tag(TAG).d("Downloaded %d shelves from cloud", remoteShelves.size)
 
         remoteShelves.forEach { remoteShelf ->
-            if (isCancelled.get()) return Result.Success(
-                SyncResult(pulledCount = pulledBooks + pulledShelves)
-            )
+            if (isCancelled.get()) {
+                return Result.Success(
+                    SyncResult(pulledCount = pulledBooks + pulledShelves)
+                )
+            }
 
             val localShelf = bookshelfDao.getShelfById(remoteShelf.id)
 

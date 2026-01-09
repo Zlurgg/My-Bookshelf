@@ -20,7 +20,7 @@ object ErrorMapper {
             // Network-related exceptions (UnresolvedAddressException and SocketTimeoutException are Ktor-specific)
             is UnresolvedAddressException -> DataError.Remote.NO_INTERNET
             is UnknownHostException -> DataError.Remote.NO_INTERNET
-            is SocketTimeoutException -> DataError.Remote.REQUEST_TIMEOUT  // Handles both Java and Ktor variants
+            is SocketTimeoutException -> DataError.Remote.REQUEST_TIMEOUT // Handles both Java and Ktor variants
             is IOException -> DataError.Remote.UNKNOWN
 
             // Serialization exceptions (check specific types first)

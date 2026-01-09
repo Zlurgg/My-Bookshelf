@@ -70,7 +70,10 @@ fun AddBookshelfDialog(
                         val style = ShelfStyle.entries[index]
                         Card(
                             onClick = { selected.value = style },
-                            border = if (selected.value == style) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                            border = if (selected.value == style) BorderStroke(
+                                2.dp,
+                                MaterialTheme.colorScheme.primary
+                            ) else null,
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
                             Image(

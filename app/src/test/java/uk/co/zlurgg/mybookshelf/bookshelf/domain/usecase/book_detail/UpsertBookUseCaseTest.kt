@@ -223,7 +223,11 @@ class UpsertBookUseCaseTest {
         // Personal metadata should be preserved from existing book
         assertEquals("Should preserve personal rating", 4.5f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
-        assertEquals("Should preserve reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ, upsertedBook.readingStatus)
+        assertEquals(
+            "Should preserve reading status",
+            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ,
+            upsertedBook.readingStatus
+        )
         assertEquals("Should preserve dateAdded", 1609459200000L, upsertedBook.dateAdded)
         assertEquals("Should preserve purchaseDate", 1609545600000L, upsertedBook.purchaseDate)
         assertTrue("Should preserve purchased flag", upsertedBook.purchased)
@@ -254,6 +258,10 @@ class UpsertBookUseCaseTest {
         assertEquals("Should use API title", "Brand New Book", upsertedBook.title)
         assertEquals("Should use default rating", 0f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should use default notes", "", upsertedBook.personalNotes)
-        assertEquals("Should use default reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ, upsertedBook.readingStatus)
+        assertEquals(
+            "Should use default reading status",
+            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ,
+            upsertedBook.readingStatus
+        )
     }
 }

@@ -38,18 +38,18 @@ object HttpClientFactory {
                 retryIf { _, httpResponse ->
                     // Retry on server errors (5xx) and rate limiting (429)
                     httpResponse.status == HttpStatusCode.InternalServerError ||
-                    httpResponse.status == HttpStatusCode.BadGateway ||
-                    httpResponse.status == HttpStatusCode.ServiceUnavailable ||
-                    httpResponse.status == HttpStatusCode.GatewayTimeout ||
-                    httpResponse.status == HttpStatusCode.TooManyRequests
+                        httpResponse.status == HttpStatusCode.BadGateway ||
+                        httpResponse.status == HttpStatusCode.ServiceUnavailable ||
+                        httpResponse.status == HttpStatusCode.GatewayTimeout ||
+                        httpResponse.status == HttpStatusCode.TooManyRequests
                 }
                 retryOnExceptionIf { _, cause ->
                     // Retry on network-related exceptions
                     cause is java.net.SocketTimeoutException ||
-                    cause is java.net.UnknownHostException ||
-                    cause is java.net.ConnectException ||
-                    cause is io.ktor.client.network.sockets.SocketTimeoutException ||
-                    cause is io.ktor.util.network.UnresolvedAddressException
+                        cause is java.net.UnknownHostException ||
+                        cause is java.net.ConnectException ||
+                        cause is io.ktor.client.network.sockets.SocketTimeoutException ||
+                        cause is io.ktor.util.network.UnresolvedAddressException
                 }
                 exponentialDelay(
                     base = 1.0,

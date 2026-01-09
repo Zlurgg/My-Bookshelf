@@ -44,8 +44,8 @@ class SystemOwnerIdsTest {
 
     @Test
     fun `isSystemOwner returns false for similar but different string`() {
-        assertFalse(SystemOwnerIds.isSystemOwner("__system_tutorial"))  // Missing trailing underscore
-        assertFalse(SystemOwnerIds.isSystemOwner("system_tutorial"))    // Missing double underscores
+        assertFalse(SystemOwnerIds.isSystemOwner("__system_tutorial")) // Missing trailing underscore
+        assertFalse(SystemOwnerIds.isSystemOwner("system_tutorial")) // Missing double underscores
         assertFalse(SystemOwnerIds.isSystemOwner("__SYSTEM_TUTORIAL__")) // Wrong case
     }
 }

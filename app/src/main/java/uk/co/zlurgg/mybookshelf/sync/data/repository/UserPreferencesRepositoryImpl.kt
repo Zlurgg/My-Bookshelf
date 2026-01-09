@@ -2,8 +2,8 @@ package uk.co.zlurgg.mybookshelf.sync.data.repository
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository

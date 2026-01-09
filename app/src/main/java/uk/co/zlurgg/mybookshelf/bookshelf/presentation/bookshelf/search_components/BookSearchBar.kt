@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import uk.co.zlurgg.mybookshelf.R
 
-
 @Composable
 fun BookSearchBar(
     searchQuery: String,

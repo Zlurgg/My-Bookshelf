@@ -16,22 +16,22 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubReviewsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
@@ -43,12 +43,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClubReviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ValidateBookClubMembershipsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
@@ -266,8 +266,10 @@ class BookshelfViewModelTest {
 
         // Then
         assertTrue("Should set error message", stateAfterClick?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterClick?.errorMessage?.contains("Failed to cache book") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterClick?.errorMessage?.contains("Failed to cache book") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -289,8 +291,10 @@ class BookshelfViewModelTest {
 
         // Then
         assertTrue("Should set error message", stateAfterRemove?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -311,8 +315,10 @@ class BookshelfViewModelTest {
 
         // Then
         assertTrue("Should set error message", stateAfterAdd?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterAdd?.errorMessage?.contains("Failed to add book to shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterAdd?.errorMessage?.contains("Failed to add book to shelf") == true
+        )
         assertFalse("Should clear loading flag", stateAfterAdd?.isLoading == true)
         stateHelper.cleanup()
     }
@@ -329,8 +335,10 @@ class BookshelfViewModelTest {
 
         // Then
         assertTrue("Should set error message", initialState?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            initialState?.errorMessage?.contains("Failed to load shelf details") == true)
+        assertTrue(
+            "Should contain operation context",
+            initialState?.errorMessage?.contains("Failed to load shelf details") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -500,7 +508,12 @@ class BookshelfViewModelTest {
     }
 
     private class SimpleEditBookClubCommentUseCase : EditBookClubCommentUseCase {
-        override suspend fun invoke(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> =
+        override suspend fun invoke(
+            clubCode: String,
+            bookId: String,
+            commentId: String,
+            newText: String
+        ): Result<Unit, DataError.Sync> =
             Result.Success(Unit)
     }
 

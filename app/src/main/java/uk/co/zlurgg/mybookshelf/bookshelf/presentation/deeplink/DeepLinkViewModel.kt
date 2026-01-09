@@ -42,36 +42,44 @@ class DeepLinkViewModel(
 
     private fun importFromToken(token: String) {
         viewModelScope.launch {
-            _state.update { it.copy(
-                isLoading = true,
-                error = null,
-                conflictExistingName = null,
-                conflictJsonData = null
-            ) }
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    error = null,
+                    conflictExistingName = null,
+                    conflictJsonData = null
+                )
+            }
 
             when (val result = deepLinkImportUseCase.importBookshelfFromToken(token)) {
                 is Result.Success -> {
                     when (val importResult = result.data) {
                         is ImportResult.Success -> {
-                            _state.update { it.copy(
-                                isLoading = false,
-                                importSuccessful = true
-                            ) }
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    importSuccessful = true
+                                )
+                            }
                         }
                         is ImportResult.NameConflict -> {
-                            _state.update { it.copy(
-                                isLoading = false,
-                                conflictExistingName = importResult.existingName,
-                                conflictJsonData = importResult.jsonData
-                            ) }
+                            _state.update {
+                                it.copy(
+                                    isLoading = false,
+                                    conflictExistingName = importResult.existingName,
+                                    conflictJsonData = importResult.jsonData
+                                )
+                            }
                         }
                     }
                 }
                 is Result.Error -> {
-                    _state.update { it.copy(
-                        isLoading = false,
-                        error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
-                    ) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
+                        )
+                    }
                 }
             }
         }
@@ -79,38 +87,46 @@ class DeepLinkViewModel(
 
     private fun resolveNameConflict(jsonData: String, newName: String) {
         viewModelScope.launch {
-            _state.update { it.copy(
-                isLoading = true,
-                conflictError = null  // Clear previous error
-            ) }
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    conflictError = null // Clear previous error
+                )
+            }
 
             when (val result = deepLinkImportUseCase.importBookshelfWithCustomName(jsonData, newName)) {
                 is Result.Success -> {
-                    _state.update { it.copy(
-                        isLoading = false,
-                        importSuccessful = true,
-                        conflictExistingName = null,
-                        conflictJsonData = null,
-                        conflictError = null
-                    ) }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            importSuccessful = true,
+                            conflictExistingName = null,
+                            conflictJsonData = null,
+                            conflictError = null
+                        )
+                    }
                 }
                 is Result.Error -> {
                     // Check if it's a name conflict error (inline error) or general error (dismiss dialog)
                     if (result.error == DataError.Local.NAME_CONFLICT) {
                         // Show inline error in dialog, keep dialog open
-                        _state.update { it.copy(
-                            isLoading = false,
-                            conflictError = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
-                        ) }
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                conflictError = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
+                            )
+                        }
                     } else {
                         // General error - dismiss dialog and show error dialog
-                        _state.update { it.copy(
-                            isLoading = false,
-                            conflictExistingName = null,
-                            conflictJsonData = null,
-                            conflictError = null,
-                            error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
-                        ) }
+                        _state.update {
+                            it.copy(
+                                isLoading = false,
+                                conflictExistingName = null,
+                                conflictJsonData = null,
+                                conflictError = null,
+                                error = ErrorFormatter.formatDataErrorMessage(result.error, "import bookshelf")
+                            )
+                        }
                     }
                 }
             }
@@ -126,10 +142,12 @@ class DeepLinkViewModel(
     }
 
     private fun dismissNameConflict() {
-        _state.update { it.copy(
-            conflictExistingName = null,
-            conflictJsonData = null,
-            conflictError = null  // Clear inline error when dismissing
-        ) }
+        _state.update {
+            it.copy(
+                conflictExistingName = null,
+                conflictJsonData = null,
+                conflictError = null // Clear inline error when dismissing
+            )
+        }
     }
 }

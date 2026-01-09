@@ -48,4 +48,3 @@ sealed interface NavigationRoute {
         }
     }
 }
-

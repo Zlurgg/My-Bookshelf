@@ -36,7 +36,8 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         db.execSQL("ALTER TABLE BookshelfBookCrossRef ADD COLUMN lastModifiedAt INTEGER NOT NULL DEFAULT 0")
 
         // ========== New SyncMetadataEntity table ==========
-        db.execSQL("""
+        db.execSQL(
+            """
             CREATE TABLE IF NOT EXISTS SyncMetadataEntity (
                 userId TEXT PRIMARY KEY NOT NULL,
                 lastSyncTimestamp INTEGER NOT NULL,
@@ -44,7 +45,8 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
                 lastSyncError TEXT,
                 pendingOperationsCount INTEGER NOT NULL DEFAULT 0
             )
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         // ========== Indexes for efficient sync queries ==========
         db.execSQL("CREATE INDEX IF NOT EXISTS index_BookEntity_syncStatus ON BookEntity(syncStatus)")
@@ -52,6 +54,8 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_BookshelfEntity_syncStatus ON BookshelfEntity(syncStatus)")
         db.execSQL("CREATE INDEX IF NOT EXISTS index_BookshelfEntity_ownerId ON BookshelfEntity(ownerId)")
         db.execSQL("CREATE INDEX IF NOT EXISTS index_BookshelfEntity_shareCode ON BookshelfEntity(shareCode)")
-        db.execSQL("CREATE INDEX IF NOT EXISTS index_BookshelfBookCrossRef_syncStatus ON BookshelfBookCrossRef(syncStatus)")
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_BookshelfBookCrossRef_syncStatus ON BookshelfBookCrossRef(syncStatus)"
+        )
     }
 }

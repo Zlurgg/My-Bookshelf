@@ -2,7 +2,6 @@ package uk.co.zlurgg.mybookshelf.sync.di
 
 import android.content.Context
 import com.google.firebase.firestore.FirebaseFirestore
-import org.koin.dsl.bind
 import org.koin.dsl.module
 import uk.co.zlurgg.mybookshelf.sync.data.engine.SyncEngine
 import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource

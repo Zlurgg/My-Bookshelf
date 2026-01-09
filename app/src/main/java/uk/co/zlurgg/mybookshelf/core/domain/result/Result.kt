@@ -3,32 +3,32 @@ package uk.co.zlurgg.mybookshelf.core.domain.result
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.Error
 
-sealed interface Result<out D, out E: Error> {
-    data class Success<out D>(val data: D): Result<D, Nothing>
-    data class Error<out E: uk.co.zlurgg.mybookshelf.core.domain.error.Error>(val error: E):
+sealed interface Result<out D, out E : Error> {
+    data class Success<out D>(val data: D) : Result<D, Nothing>
+    data class Error<out E : uk.co.zlurgg.mybookshelf.core.domain.error.Error>(val error: E) :
         Result<Nothing, E>
 }
 
-inline fun <T, E: Error, R> Result<T, E>.map(map: (T) -> R): Result<R, E> {
-    return when(this) {
+inline fun <T, E : Error, R> Result<T, E>.map(map: (T) -> R): Result<R, E> {
+    return when (this) {
         is Result.Error -> Result.Error(error)
         is Result.Success -> Result.Success(map(data))
     }
 }
 
-inline fun <T, E: Error, R> Result<T, E>.flatMap(transform: (T) -> Result<R, E>): Result<R, E> {
-    return when(this) {
+inline fun <T, E : Error, R> Result<T, E>.flatMap(transform: (T) -> Result<R, E>): Result<R, E> {
+    return when (this) {
         is Result.Error -> Result.Error(error)
         is Result.Success -> transform(data)
     }
 }
 
-fun <T, E: Error> Result<T, E>.asEmptyDataResult(): EmptyResult<E> {
-    return map {  }
+fun <T, E : Error> Result<T, E>.asEmptyDataResult(): EmptyResult<E> {
+    return map { }
 }
 
-inline fun <T, E: Error> Result<T, E>.onSuccess(action: (T) -> Unit): Result<T, E> {
-    return when(this) {
+inline fun <T, E : Error> Result<T, E>.onSuccess(action: (T) -> Unit): Result<T, E> {
+    return when (this) {
         is Result.Error -> this
         is Result.Success -> {
             action(data)
@@ -36,8 +36,8 @@ inline fun <T, E: Error> Result<T, E>.onSuccess(action: (T) -> Unit): Result<T, 
         }
     }
 }
-inline fun <T, E: Error> Result<T, E>.onError(action: (E) -> Unit): Result<T, E> {
-    return when(this) {
+inline fun <T, E : Error> Result<T, E>.onError(action: (E) -> Unit): Result<T, E> {
+    return when (this) {
         is Result.Error -> {
             action(error)
             this
@@ -49,42 +49,42 @@ inline fun <T, E: Error> Result<T, E>.onError(action: (E) -> Unit): Result<T, E>
 typealias EmptyResult<E> = Result<Unit, E>
 
 // Utility functions for better ergonomics
-fun <T, E: Error> Result<T, E>.getOrNull(): T? {
-    return when(this) {
+fun <T, E : Error> Result<T, E>.getOrNull(): T? {
+    return when (this) {
         is Result.Success -> data
         is Result.Error -> null
     }
 }
 
-fun <T, E: Error> Result<T, E>.getOrThrow(): T {
-    return when(this) {
+fun <T, E : Error> Result<T, E>.getOrThrow(): T {
+    return when (this) {
         is Result.Success -> data
         is Result.Error -> throw Exception("Result failed with error: $error")
     }
 }
 
-fun <T, E: Error> Result<T, E>.getOrDefault(defaultValue: T): T {
-    return when(this) {
+fun <T, E : Error> Result<T, E>.getOrDefault(defaultValue: T): T {
+    return when (this) {
         is Result.Success -> data
         is Result.Error -> defaultValue
     }
 }
 
-inline fun <T, E: Error> Result<T, E>.getOrElse(onError: (E) -> T): T {
-    return when(this) {
+inline fun <T, E : Error> Result<T, E>.getOrElse(onError: (E) -> T): T {
+    return when (this) {
         is Result.Success -> data
         is Result.Error -> onError(error)
     }
 }
 
 // Combine multiple Results
-inline fun <T1, T2, E: Error, R> Result<T1, E>.combine(
+inline fun <T1, T2, E : Error, R> Result<T1, E>.combine(
     other: Result<T2, E>,
     transform: (T1, T2) -> R
 ): Result<R, E> {
-    return when(this) {
+    return when (this) {
         is Result.Error -> this
-        is Result.Success -> when(other) {
+        is Result.Success -> when (other) {
             is Result.Error -> other
             is Result.Success -> Result.Success(transform(data, other.data))
         }

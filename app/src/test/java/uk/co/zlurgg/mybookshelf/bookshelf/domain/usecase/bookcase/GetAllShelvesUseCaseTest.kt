@@ -145,5 +145,4 @@ class GetAllShelvesUseCaseTest {
             assertTrue("Should propagate exception", e is RuntimeException)
         }
     }
-
 }

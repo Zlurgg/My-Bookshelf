@@ -17,9 +17,9 @@ import androidx.room.PrimaryKey
 )
 data class BookClubMembershipEntity(
     @PrimaryKey val id: String,
-    val clubCode: String,              // Firestore book club code
-    val localShelfId: String,          // Local BookshelfEntity.id
-    val joinedAt: Long,                // When user joined the club
-    val lastSyncedAt: Long,            // Last successful sync timestamp
+    val clubCode: String, // Firestore book club code
+    val localShelfId: String, // Local BookshelfEntity.id
+    val joinedAt: Long, // When user joined the club
+    val lastSyncedAt: Long, // Last successful sync timestamp
     val syncStatus: String = "PENDING" // SYNCED, PENDING, DELETED
 )

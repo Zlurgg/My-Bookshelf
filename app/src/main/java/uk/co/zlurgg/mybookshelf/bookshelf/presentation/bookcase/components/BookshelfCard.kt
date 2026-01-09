@@ -15,10 +15,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
@@ -50,8 +50,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
@@ -262,12 +262,15 @@ fun BookshelfCard(
                             if (!isTutorialShelf) {
                                 DropdownMenuItem(
                                     text = {
-                                        Text(stringResource(
-                                            id = if (shelf.isBookClub)
-                                                R.string.menu_save_personal_copy
-                                            else
-                                                R.string.menu_duplicate_shelf
-                                        ))
+                                        Text(
+                                            stringResource(
+                                                id = if (shelf.isBookClub) {
+                                                    R.string.menu_save_personal_copy
+                                                } else {
+                                                    R.string.menu_duplicate_shelf
+                                                }
+                                            )
+                                        )
                                     },
                                     onClick = {
                                         menuExpanded = false

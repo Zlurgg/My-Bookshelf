@@ -16,9 +16,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailU
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class BookDetailViewModel(
     private val bookDetailUseCases: BookDetailUseCases,
@@ -33,6 +33,7 @@ class BookDetailViewModel(
 
     // Job for debounced auto-save of personal notes
     private var saveNotesJob: Job? = null
+
     // Job for debounced auto-save of club review
     private var saveReviewJob: Job? = null
 
@@ -142,7 +143,7 @@ class BookDetailViewModel(
 
     // Navigation callback
     private var onNavigateBack: (() -> Unit)? = null
-    
+
     fun setNavigationCallback(onBack: () -> Unit) {
         onNavigateBack = onBack
     }
@@ -182,7 +183,10 @@ class BookDetailViewModel(
                     val currentBook = state.value.book
                     if (currentBook != null) {
                         // Toggle: pass opposite of current purchased status
-                        when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(currentBook, !currentBook.purchased)) {
+                        when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(
+                            currentBook,
+                            !currentBook.purchased
+                        )) {
                             is Result.Success -> {
                                 // Update state immediately following renameShelf pattern
                                 _state.update { it.copy(book = purchaseResult.data) }
@@ -225,10 +229,12 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnReadingStatusChange -> {
                 viewModelScope.launch {
-                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
-                        bookId = bookId,
-                        readingStatus = action.status
-                    )) {
+                    when (
+                        val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                            bookId = bookId,
+                            readingStatus = action.status
+                        )
+                    ) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
                             _state.update { it.updateBook { book -> book?.copy(readingStatus = action.status) } }
@@ -241,10 +247,12 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnPersonalRatingChange -> {
                 viewModelScope.launch {
-                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
-                        bookId = bookId,
-                        personalRating = action.rating
-                    )) {
+                    when (
+                        val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                            bookId = bookId,
+                            personalRating = action.rating
+                        )
+                    ) {
                         is Result.Success -> {
                             // Update state immediately following renameShelf pattern
                             _state.update { it.updateBook { book -> book?.copy(personalRating = action.rating) } }
@@ -267,10 +275,12 @@ class BookDetailViewModel(
                     delay(2000) // Wait 2 seconds
 
                     // Execute actual save to database
-                    when (val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
-                        bookId = bookId,
-                        personalNotes = action.notes
-                    )) {
+                    when (
+                        val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                            bookId = bookId,
+                            personalNotes = action.notes
+                        )
+                    ) {
                         is Result.Success -> {
                             // Save successful - state already updated above
                         }
@@ -395,7 +405,11 @@ class BookDetailViewModel(
             is BookDetailAction.OnCommentDelete -> {
                 val clubCode = state.value.clubCode ?: return
                 viewModelScope.launch {
-                    when (val deleteResult = bookClubUseCases.deleteBookClubComment(clubCode, bookId, action.commentId)) {
+                    when (val deleteResult = bookClubUseCases.deleteBookClubComment(
+                        clubCode,
+                        bookId,
+                        action.commentId
+                    )) {
                         is Result.Success -> {
                             loadClubComments(clubCode)
                         }
@@ -410,12 +424,14 @@ class BookDetailViewModel(
 
     private fun submitClubReview(clubCode: String, rating: Float, reviewText: String) {
         viewModelScope.launch {
-            when (val upsertResult = bookClubUseCases.upsertBookClubReview(
-                clubCode = clubCode,
-                bookId = bookId,
-                rating = rating,
-                reviewText = reviewText
-            )) {
+            when (
+                val upsertResult = bookClubUseCases.upsertBookClubReview(
+                    clubCode = clubCode,
+                    bookId = bookId,
+                    rating = rating,
+                    reviewText = reviewText
+                )
+            ) {
                 is Result.Success -> {
                     // Reload reviews to get updated list
                     loadClubReviews(clubCode)
@@ -443,4 +459,3 @@ class BookDetailViewModel(
         return copy(onShelf = onShelf)
     }
 }
-

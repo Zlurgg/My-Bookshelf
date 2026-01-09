@@ -148,7 +148,11 @@ class NetworkIntegrationTest {
         assertEquals("Should return correct data", "Success!", (successResult as Result.Success).data)
 
         assertTrue("Failing operation should return error", failureResult is Result.Error)
-        assertEquals("Should map to correct local error", DataError.Local.INVALID_INPUT, (failureResult as Result.Error).error)
+        assertEquals(
+            "Should map to correct local error",
+            DataError.Local.INVALID_INPUT,
+            (failureResult as Result.Error).error
+        )
     }
 
     @Test
@@ -172,7 +176,6 @@ class NetworkIntegrationTest {
         }
     }
 
-
     @Test
     fun `ErrorMapper supports both Ktor and Java exceptions`() = runTest {
         // Given - Both Ktor and Java network exceptions
@@ -191,7 +194,11 @@ class NetworkIntegrationTest {
         assertEquals("Java timeout should map to REQUEST_TIMEOUT", DataError.Remote.REQUEST_TIMEOUT, javaTimeoutError)
         assertEquals("Ktor timeout should map to REQUEST_TIMEOUT", DataError.Remote.REQUEST_TIMEOUT, ktorTimeoutError)
         assertEquals("Java unknown host should map to NO_INTERNET", DataError.Remote.NO_INTERNET, javaHostError)
-        assertEquals("Ktor unresolved address should map to NO_INTERNET", DataError.Remote.NO_INTERNET, ktorAddressError)
+        assertEquals(
+            "Ktor unresolved address should map to NO_INTERNET",
+            DataError.Remote.NO_INTERNET,
+            ktorAddressError
+        )
     }
 
     @Test
@@ -208,7 +215,6 @@ class NetworkIntegrationTest {
         // Note: Ktor NoTransformationFoundException testing would require complex mocking
         // but the ErrorMapper correctly handles it in production code
     }
-
 
     @Test
     fun `Result pattern supports chaining operations`() = runTest {

@@ -18,7 +18,6 @@ class AndroidSystemLanguageProvider(
         return mapToOpenLibraryLanguageCode(locale.language)
     }
 
-
     private fun mapToOpenLibraryLanguageCode(languageCode: String): String {
         return when (languageCode) {
             "en" -> "eng"

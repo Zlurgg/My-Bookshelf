@@ -41,10 +41,12 @@ class BookshelfExportMapper(
             // Use search API with work key to find the book
             // Format: "key:/works/OL123W"
             val searchQuery = "key:/works/${bookId.workId}"
-            when (val searchResult = remoteBookDataSource.searchBooks(
-                query = searchQuery,
-                resultLimit = 1
-            )) {
+            when (
+                val searchResult = remoteBookDataSource.searchBooks(
+                    query = searchQuery,
+                    resultLimit = 1
+                )
+            ) {
                 is Result.Success -> {
                     val foundBook = searchResult.data.results.firstOrNull()
                     if (foundBook != null) {

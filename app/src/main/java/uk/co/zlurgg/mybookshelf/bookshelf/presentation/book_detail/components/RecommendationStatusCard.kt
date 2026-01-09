@@ -43,9 +43,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 @Composable
 fun RecommendationStatusCard(
     readingStatus: ReadingStatus,
-    personalRating: Float,                      // 0 = unrated, 1-5 = rated
+    personalRating: Float, // 0 = unrated, 1-5 = rated
     onReadingStatusChange: (ReadingStatus) -> Unit,
-    onPersonalRatingChange: (Float) -> Unit,    // Pass 0f to clear rating
+    onPersonalRatingChange: (Float) -> Unit, // Pass 0f to clear rating
     modifier: Modifier = Modifier
 ) {
     Card(

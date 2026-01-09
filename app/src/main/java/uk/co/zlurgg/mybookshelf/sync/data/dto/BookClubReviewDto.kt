@@ -26,11 +26,11 @@ data class BookClubReviewDto(
     @set:PropertyName("display_name")
     var displayName: String = "",
 
-    val rating: Float = 0f,         // 0 = no rating, 1-5 = rated
+    val rating: Float = 0f, // 0 = no rating, 1-5 = rated
 
     @get:PropertyName("review_text")
     @set:PropertyName("review_text")
-    var reviewText: String = "",    // "" = no review text
+    var reviewText: String = "", // "" = no review text
 
     @ServerTimestamp
     @get:PropertyName("created_at")

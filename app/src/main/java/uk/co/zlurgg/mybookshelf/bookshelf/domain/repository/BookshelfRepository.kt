@@ -8,7 +8,7 @@ interface BookshelfRepository {
     suspend fun addBookToShelf(shelfId: String, bookId: String)
     suspend fun removeBookFromShelf(shelfId: String, bookId: String)
     fun getBooksForShelf(shelfId: String): Flow<List<Book>>
-    
+
     // Book library membership queries
     fun isBookInAnyShelf(bookId: String): Flow<Boolean>
     fun isBookOnShelf(bookId: String, shelfId: String): Flow<Boolean>

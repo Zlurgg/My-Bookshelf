@@ -175,8 +175,11 @@ class KtorRemoteBookDataSourceTest {
 
         // Then
         assertTrue("Should return error", result is Result.Error)
-        assertEquals("Should return timeout error",
-            DataError.Remote.REQUEST_TIMEOUT, (result as Result.Error).error)
+        assertEquals(
+            "Should return timeout error",
+            DataError.Remote.REQUEST_TIMEOUT,
+            (result as Result.Error).error
+        )
     }
 
     @Test

@@ -9,9 +9,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
@@ -252,7 +252,12 @@ class MigrateLocalDataUseCaseImplTest {
         override suspend fun getPendingSyncCrossRefs(): List<BookshelfBookCrossRef> = emptyList()
         override suspend fun updateBookSyncStatus(id: String, status: String, timestamp: Long) {}
         override suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long) {}
-        override suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long) {}
+        override suspend fun updateCrossRefSyncStatus(
+            shelfId: String,
+            bookId: String,
+            status: String,
+            timestamp: Long
+        ) {}
         override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) {}
         override suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity? = null
         override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}

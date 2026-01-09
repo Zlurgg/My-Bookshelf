@@ -26,9 +26,9 @@ object ImageLoaderFactory {
                         httpClient = HttpClient(Android) {
                             install(HttpTimeout) {
                                 // Increased timeouts to accommodate slow Archive.org responses
-                                connectTimeoutMillis = 10_000L  // 10 seconds (doubled from 5s)
-                                requestTimeoutMillis = 30_000L  // 30 seconds (tripled from 10s)
-                                socketTimeoutMillis = 30_000L   // 30 seconds (tripled from 10s)
+                                connectTimeoutMillis = 10_000L // 10 seconds (doubled from 5s)
+                                requestTimeoutMillis = 30_000L // 30 seconds (tripled from 10s)
+                                socketTimeoutMillis = 30_000L // 30 seconds (tripled from 10s)
                             }
                         }
                     )

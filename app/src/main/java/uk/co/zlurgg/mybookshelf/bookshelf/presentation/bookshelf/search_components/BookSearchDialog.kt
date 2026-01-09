@@ -87,9 +87,9 @@ fun BookSearchDialog(
                 }
 
                 when {
-                    state.results.isEmpty() && state.query.isNotBlank()
-                            && !state.isTyping && !state.isLoading
-                            && state.hasSearched -> {
+                    state.results.isEmpty() && state.query.isNotBlank() &&
+                        !state.isTyping && !state.isLoading &&
+                        state.hasSearched -> {
                         // Enhanced empty state with icon and helpful messaging
                         Column(
                             modifier = Modifier
@@ -160,7 +160,9 @@ fun BookSearchDialog(
                                             IconButton(onClick = { callbacks.onRemoveBook(book) }) {
                                                 Icon(
                                                     Icons.Default.Delete,
-                                                    contentDescription = stringResource(id = R.string.action_remove_short)
+                                                    contentDescription = stringResource(
+                                                        id = R.string.action_remove_short
+                                                    )
                                                 )
                                             }
                                         } else {

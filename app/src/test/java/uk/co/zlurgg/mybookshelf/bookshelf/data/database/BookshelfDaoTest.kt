@@ -14,10 +14,10 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
-import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
 
 /**

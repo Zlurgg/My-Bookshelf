@@ -145,8 +145,10 @@ class DeepLinkViewModelTest {
 
         // Then
         assertNotNull("Should set error message", stateAfterResolve?.error)
-        assertTrue("Should contain operation context",
-            stateAfterResolve?.error?.contains("Failed to import bookshelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterResolve?.error?.contains("Failed to import bookshelf") == true
+        )
         assertFalse("Should clear loading flag", stateAfterResolve?.isLoading == true)
         assertFalse("Should not set success flag", stateAfterResolve?.importSuccessful == true)
         stateHelper.cleanup()

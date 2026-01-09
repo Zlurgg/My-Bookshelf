@@ -26,7 +26,9 @@ class ImportBookshelfUseCaseImpl(
     }
 
     override suspend fun execute(jsonData: String, customName: String?): Result<Unit, DataError.Local> {
-        Timber.tag(TAG).d("Starting bookshelf import%s", if (customName != null) " with custom name: $customName" else "")
+        Timber.tag(
+            TAG
+        ).d("Starting bookshelf import%s", if (customName != null) " with custom name: $customName" else "")
 
         val result = serializer.deserialize(jsonData)
             .flatMap { exportData ->

@@ -15,7 +15,7 @@ class BookcaseRepositoryImpl(
     private val dao: BookshelfDao,
     private val currentUserProvider: CurrentUserProvider,
     private val timeProvider: TimeProvider
-): BookcaseRepository {
+) : BookcaseRepository {
 
     override fun getAllShelves(): Flow<List<Bookshelf>> {
         val userId = currentUserProvider.getCurrentUserId()

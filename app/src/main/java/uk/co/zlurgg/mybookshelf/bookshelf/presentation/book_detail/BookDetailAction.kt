@@ -11,11 +11,11 @@ sealed interface BookDetailAction {
 
     // Personal metadata actions (NOT exported for privacy)
     data class OnReadingStatusChange(val status: ReadingStatus) : BookDetailAction
-    data class OnPersonalRatingChange(val rating: Float) : BookDetailAction    // 0 = clear rating
-    data class OnPersonalNotesChange(val notes: String) : BookDetailAction     // "" = clear notes
+    data class OnPersonalRatingChange(val rating: Float) : BookDetailAction // 0 = clear rating
+    data class OnPersonalNotesChange(val notes: String) : BookDetailAction // "" = clear notes
 
     // Club review actions (for ratings)
-    data class OnClubRatingChange(val rating: Float) : BookDetailAction        // 0 = clear rating
+    data class OnClubRatingChange(val rating: Float) : BookDetailAction // 0 = clear rating
     data class OnClubReviewTextChange(val text: String) : BookDetailAction
     data object OnClubReviewSubmit : BookDetailAction
     data object OnClubReviewDelete : BookDetailAction

@@ -5,5 +5,5 @@ enum class ShelfStyle {
     SilverMetal,
     WhiteMetal,
     GreyMetal,
-    DarkGreyMetal;
+    DarkGreyMetal
 }

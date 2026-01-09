@@ -11,12 +11,12 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
@@ -33,15 +33,17 @@ class BookshelfViewModel(
 
     companion object {
         private const val TAG = "BookshelfViewModel"
-        private const val SEARCH_DEBOUNCE_MS = 250L  // Reduced from 450ms for faster perceived response
+        private const val SEARCH_DEBOUNCE_MS = 250L // Reduced from 450ms for faster perceived response
         private const val MIN_SEARCH_QUERY_LENGTH = 2
     }
 
     // Initialize state flow with default value
-    private val _state = MutableStateFlow(BookshelfState(
-        shelfId = shelfId,
-        isTutorialShelf = shelfId == SystemOwnerIds.TUTORIAL_SHELF_ID
-    ))
+    private val _state = MutableStateFlow(
+        BookshelfState(
+            shelfId = shelfId,
+            isTutorialShelf = shelfId == SystemOwnerIds.TUTORIAL_SHELF_ID
+        )
+    )
     val state: StateFlow<BookshelfState> = _state.asStateFlow()
 
     // Debounced query flow
@@ -99,10 +101,12 @@ class BookshelfViewModel(
             }
             is BookshelfAction.OnSearchQueryChange -> {
                 // Update UI immediately with typing indicator; defer actual search via debounce
-                _state.update { it.copy(
-                    searchQuery = action.query,
-                    isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
-                ) }
+                _state.update {
+                    it.copy(
+                        searchQuery = action.query,
+                        isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
+                    )
+                }
                 queryFlow.value = action.query
             }
             BookshelfAction.OnToggleTidyMode -> {
@@ -119,7 +123,7 @@ class BookshelfViewModel(
                 // Re-trigger search via debounced flow for consistency
                 val currentQuery = _state.value.searchQuery
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery  // Triggers debounced search
+                    queryFlow.value = currentQuery // Triggers debounced search
                 }
             }
             BookshelfAction.OnToggleSearchByAuthor -> {
@@ -128,7 +132,7 @@ class BookshelfViewModel(
                 // Re-trigger search via debounced flow for consistency
                 val currentQuery = _state.value.searchQuery
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery  // Triggers debounced search
+                    queryFlow.value = currentQuery // Triggers debounced search
                 }
             }
             else -> Unit
@@ -149,8 +153,12 @@ class BookshelfViewModel(
             when (val result = bookcaseUseCases.getShelfById.execute(shelfId)) {
                 is Result.Success -> {
                     result.data?.let { shelf ->
-                        Timber.tag(TAG).d("Shelf loaded: name=%s, isBookClub=%s, clubCode=%s",
-                            shelf.name, shelf.isBookClub, shelf.clubCode)
+                        Timber.tag(TAG).d(
+                            "Shelf loaded: name=%s, isBookClub=%s, clubCode=%s",
+                            shelf.name,
+                            shelf.isBookClub,
+                            shelf.clubCode
+                        )
                         _state.update {
                             it.copy(
                                 shelfName = shelf.name,
@@ -183,18 +191,24 @@ class BookshelfViewModel(
             when (val syncResult = bookClubOperations.syncBooksFromClub(clubCode, shelfId)) {
                 is Result.Success -> {
                     val result = syncResult.data
-                    _state.update { it.copy(
-                        isSyncing = false,
-                        syncMessage = if (result.booksAdded > 0 || result.booksRemoved > 0) {
-                            "Synced: +${result.booksAdded} / -${result.booksRemoved} books"
-                        } else null
-                    ) }
+                    _state.update {
+                        it.copy(
+                            isSyncing = false,
+                            syncMessage = if (result.booksAdded > 0 || result.booksRemoved > 0) {
+                                "Synced: +${result.booksAdded} / -${result.booksRemoved} books"
+                            } else {
+                                null
+                            }
+                        )
+                    }
                 }
                 is Result.Error -> {
-                    _state.update { it.copy(
-                        isSyncing = false,
-                        errorMessage = ErrorFormatter.formatDataErrorMessage(syncResult.error, "sync book club")
-                    ) }
+                    _state.update {
+                        it.copy(
+                            isSyncing = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(syncResult.error, "sync book club")
+                        )
+                    }
                 }
             }
         }
@@ -249,11 +263,13 @@ class BookshelfViewModel(
     private suspend fun performSearch(query: String) {
         // Execute search directly (not in a new coroutine)
         // This allows collectLatest to cancel in-flight searches
-        _state.update { it.copy(
-            isSearchLoading = true,
-            isTyping = false,  // Debounce period complete, now actively searching
-            errorMessage = null
-        ) }
+        _state.update {
+            it.copy(
+                isSearchLoading = true,
+                isTyping = false, // Debounce period complete, now actively searching
+                errorMessage = null
+            )
+        }
 
         val currentState = _state.value
 
@@ -272,7 +288,7 @@ class BookshelfViewModel(
         bookshelfUseCases.searchBooks
             .execute(
                 query = generalQuery ?: "",
-                resultLimit = 15,  // First 15 results for performance
+                resultLimit = 15, // First 15 results for performance
                 language = null,
                 authorFilter = authorQuery,
                 titleFilter = titleQuery

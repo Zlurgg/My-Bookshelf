@@ -143,7 +143,11 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return error", result is Result.Error)
-        assertEquals("Should return INVALID_FORMAT error", DataError.Validation.INVALID_FORMAT, (result as Result.Error).error)
+        assertEquals(
+            "Should return INVALID_FORMAT error",
+            DataError.Validation.INVALID_FORMAT,
+            (result as Result.Error).error
+        )
         assertEquals("Should not call repository", 0, mockRepository.upsertBookCallCount)
     }
 
@@ -163,7 +167,11 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return error", result is Result.Error)
-        assertEquals("Should return INVALID_FORMAT error", DataError.Validation.INVALID_FORMAT, (result as Result.Error).error)
+        assertEquals(
+            "Should return INVALID_FORMAT error",
+            DataError.Validation.INVALID_FORMAT,
+            (result as Result.Error).error
+        )
         assertEquals("Should not call repository", 0, mockRepository.upsertBookCallCount)
     }
 

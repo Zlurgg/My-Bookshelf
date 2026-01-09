@@ -76,9 +76,11 @@ class JsonBookshelfSerializerTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return serialization error",
+        assertEquals(
+            "Should return serialization error",
             DataError.Local.SERIALIZATION_ERROR,
-            (result as Result.Error).error)
+            (result as Result.Error).error
+        )
     }
 
     @Test
@@ -125,10 +127,12 @@ class JsonBookshelfSerializerTest {
         val shelf = TestShelfBuilder()
             .withName("Fantasy")
             .withStyle(ShelfStyle.DarkWood)
-            .withBooks(listOf(
-                createExportedBook("book-1", "The Hobbit"),
-                createExportedBook("book-2", "Lord of the Rings")
-            ))
+            .withBooks(
+                listOf(
+                    createExportedBook("book-1", "The Hobbit"),
+                    createExportedBook("book-2", "Lord of the Rings")
+                )
+            )
             .build()
 
         // When

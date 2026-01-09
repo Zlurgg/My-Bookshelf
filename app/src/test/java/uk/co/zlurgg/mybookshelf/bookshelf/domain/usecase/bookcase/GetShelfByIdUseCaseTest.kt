@@ -216,11 +216,11 @@ class GetShelfByIdUseCaseTest {
     fun `execute with different position values`() = runTest {
         // Test different position scenarios
         val testCases = listOf(
-            0,      // First position
-            1,      // Second position
-            5,      // Middle position
-            999,    // High position
-            -1      // Invalid/edge case position
+            0, // First position
+            1, // Second position
+            5, // Middle position
+            999, // High position
+            -1 // Invalid/edge case position
         )
 
         for ((index, position) in testCases.withIndex()) {

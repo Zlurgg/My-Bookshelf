@@ -9,9 +9,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
@@ -298,7 +298,11 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should preserve spine color", 12345, upsertedBook.spineColor)
         assertEquals("Should preserve personal rating", 4.5f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
-        assertEquals("Should preserve reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ, upsertedBook.readingStatus)
+        assertEquals(
+            "Should preserve reading status",
+            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ,
+            upsertedBook.readingStatus
+        )
         assertEquals("Should preserve dateAdded", 1609459200000L, upsertedBook.dateAdded)
         assertEquals("Should preserve purchaseDate", 1609545600000L, upsertedBook.purchaseDate)
         assertTrue("Should preserve purchased flag", upsertedBook.purchased)
@@ -331,7 +335,11 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should use API title", "Brand New Book", upsertedBook.title)
         assertEquals("Should use default rating", 0f, upsertedBook.personalRating, 0.01f)
         assertEquals("Should use default notes", "", upsertedBook.personalNotes)
-        assertEquals("Should use default reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ, upsertedBook.readingStatus)
+        assertEquals(
+            "Should use default reading status",
+            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ,
+            upsertedBook.readingStatus
+        )
     }
 
     // Book Limit Tests

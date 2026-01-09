@@ -120,10 +120,11 @@ class BookshelfRepositoryImplTest {
         // Then
         assertEquals("Should have three books", 3, booksOnShelf.size)
         // Note: Order depends on DAO implementation - typically by addedAt timestamp
-        assertTrue("Should contain all added books",
+        assertTrue(
+            "Should contain all added books",
             booksOnShelf.any { it.id == "book-1" } &&
-            booksOnShelf.any { it.id == "book-2" } &&
-            booksOnShelf.any { it.id == "book-3" }
+                booksOnShelf.any { it.id == "book-2" } &&
+                booksOnShelf.any { it.id == "book-3" }
         )
     }
 

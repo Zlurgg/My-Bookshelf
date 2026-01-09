@@ -38,7 +38,9 @@ interface BookshelfDao {
      * Note: The system ownerId is hardcoded here because Room requires compile-time constants.
      * See SystemOwnerIds.TUTORIAL for the canonical constant.
      */
-    @Query("SELECT * FROM BookshelfEntity WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__') AND syncStatus != 'DELETED' ORDER BY position ASC")
+    @Query(
+        "SELECT * FROM BookshelfEntity WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__') AND syncStatus != 'DELETED' ORDER BY position ASC"
+    )
     fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>>
 
     @Query("SELECT * FROM BookshelfEntity WHERE id = :id")
@@ -95,10 +97,14 @@ interface BookshelfDao {
     @Query("UPDATE BookshelfEntity SET syncStatus = :status, lastModifiedAt = :timestamp WHERE id = :id")
     suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long)
 
-    @Query("UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId AND bookId = :bookId")
+    @Query(
+        "UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId AND bookId = :bookId"
+    )
     suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long)
 
-    @Query("UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId")
+    @Query(
+        "UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId"
+    )
     suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long)
 
     // Sharing queries
@@ -157,11 +163,13 @@ interface BookshelfDao {
             upsert(book.copy(lastModifiedAt = initialTimestamp))
         } else {
             // Existing book - preserve sync metadata, update lastModifiedAt
-            upsert(book.copy(
-                lastModifiedAt = initialTimestamp,
-                cloudId = existing.cloudId,
-                version = existing.version + 1
-            ))
+            upsert(
+                book.copy(
+                    lastModifiedAt = initialTimestamp,
+                    cloudId = existing.cloudId,
+                    version = existing.version + 1
+                )
+            )
         }
     }
 
@@ -179,22 +187,26 @@ interface BookshelfDao {
             upsertShelf(shelf.copy(lastModifiedAt = initialTimestamp))
         } else {
             // Existing shelf - preserve sync metadata and local-only fields, update lastModifiedAt
-            upsertShelf(shelf.copy(
-                lastModifiedAt = initialTimestamp,
-                cloudId = existing.cloudId,
-                version = existing.version + 1,
-                isShared = existing.isShared,
-                shareCode = existing.shareCode,
-                isBookClub = existing.isBookClub,
-                clubCode = existing.clubCode
-            ))
+            upsertShelf(
+                shelf.copy(
+                    lastModifiedAt = initialTimestamp,
+                    cloudId = existing.cloudId,
+                    version = existing.version + 1,
+                    isShared = existing.isShared,
+                    shareCode = existing.shareCode,
+                    isBookClub = existing.isBookClub,
+                    clubCode = existing.clubCode
+                )
+            )
         }
     }
 
     // ========== Sign-out cleanup queries ==========
     // Delete all user's data when signing out to prevent data leakage to other accounts
 
-    @Query("DELETE FROM BookshelfBookCrossRef WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :ownerId)")
+    @Query(
+        "DELETE FROM BookshelfBookCrossRef WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :ownerId)"
+    )
     suspend fun deleteAllCrossRefsForOwner(ownerId: String)
 
     @Query("DELETE FROM BookEntity WHERE ownerId = :ownerId")

@@ -10,15 +10,18 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -27,9 +30,6 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
@@ -436,7 +436,7 @@ class BookcaseViewModel(
                     // Update the shelf name in the current state
                     _state.update {
                         it.updateShelfInList(shelfId) { shelf -> shelf.copy(name = newName) }
-                          .closeRenameDialog()
+                            .closeRenameDialog()
                     }
                 }
                 is Result.Error -> {
@@ -454,7 +454,7 @@ class BookcaseViewModel(
                     // Update the shelf style in the current state
                     _state.update {
                         it.updateShelfInList(shelfId) { shelf -> shelf.copy(shelfStyle = newStyle) }
-                          .closeStyleDialog()
+                            .closeStyleDialog()
                     }
                 }
                 is Result.Error -> {
@@ -506,7 +506,7 @@ class BookcaseViewModel(
                         it.copy(
                             isLoading = false,
                             operationSuccess = true,
-                            switchToPersonalTab = shelf.isBookClub  // Switch tab if was a book club
+                            switchToPersonalTab = shelf.isBookClub // Switch tab if was a book club
                         )
                     }
                     // Shelf list will update automatically via reactive flow
@@ -612,7 +612,10 @@ class BookcaseViewModel(
                         _state.update {
                             it.copy(
                                 isCreatingBookClub = false,
-                                errorMessage = ErrorFormatter.formatDataErrorMessage(createResult.error, "create book club")
+                                errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                    createResult.error,
+                                    "create book club"
+                                )
                             )
                         }
                     }
@@ -657,7 +660,10 @@ class BookcaseViewModel(
                     _state.update {
                         it.copy(
                             joinLookupLoading = false,
-                            joinLookupError = ErrorFormatter.formatDataErrorMessage(lookupResult.error, "find book club")
+                            joinLookupError = ErrorFormatter.formatDataErrorMessage(
+                                lookupResult.error,
+                                "find book club"
+                            )
                         )
                     }
                 }
@@ -934,4 +940,3 @@ class BookcaseViewModel(
         private const val TAG = "BookcaseVM"
     }
 }
-

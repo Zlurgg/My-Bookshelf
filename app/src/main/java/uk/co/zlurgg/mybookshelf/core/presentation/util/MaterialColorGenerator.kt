@@ -15,8 +15,8 @@ object MaterialColorGenerator {
      */
     fun generateMatteColor(): Int {
         val hue = Random.Default.nextFloat() * 360f
-        val saturation = 0.25f + Random.Default.nextFloat() * 0.35f  // 0.25–0.6 for muted colors
-        val lightness = 0.15f + Random.Default.nextFloat() * 0.25f   // 0.15–0.4 for realistic darkness
+        val saturation = 0.25f + Random.Default.nextFloat() * 0.35f // 0.25–0.6 for muted colors
+        val lightness = 0.15f + Random.Default.nextFloat() * 0.25f // 0.15–0.4 for realistic darkness
 
         val baseColor = hslToArgb(hue, saturation, lightness)
         return applyMatteFinish(baseColor)

@@ -53,7 +53,7 @@ fun BookcaseShelf(
     if (displayState.isReorderMode) {
         // Drag and drop mode - use fresh position from database for each drag
         var offsetY by remember { mutableFloatStateOf(0f) }
-        
+
         Box(
             modifier = modifier
                 .fillMaxWidth()
@@ -175,7 +175,6 @@ fun BookcaseShelf(
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

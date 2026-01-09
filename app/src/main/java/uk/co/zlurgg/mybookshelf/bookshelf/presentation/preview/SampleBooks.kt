@@ -21,18 +21,18 @@ val sampleBooks = List(50) {
     )
 }
 val sampleBook =
-Book(
-    id = "sample-book-single",
-    title = "One Book with a longer title making it a bit too crazy",
-    authors = listOf("Author"),
-    imageUrl = "https://picsum.photos/200/300",
-    description = null,
-    purchased = false,
-    spineColor = BookColorGenerator.generateSpineColor(),
-    languages = listOf(""),
-    firstPublishYear = null,
-    averageRating = null,
-    ratingCount = null,
-    numPages = 1000,
-    numEditions = 1
-)
+    Book(
+        id = "sample-book-single",
+        title = "One Book with a longer title making it a bit too crazy",
+        authors = listOf("Author"),
+        imageUrl = "https://picsum.photos/200/300",
+        description = null,
+        purchased = false,
+        spineColor = BookColorGenerator.generateSpineColor(),
+        languages = listOf(""),
+        firstPublishYear = null,
+        averageRating = null,
+        ratingCount = null,
+        numPages = 1000,
+        numEditions = 1
+    )

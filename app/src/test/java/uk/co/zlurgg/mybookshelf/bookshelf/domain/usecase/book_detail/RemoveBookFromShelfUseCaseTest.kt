@@ -8,8 +8,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
@@ -82,7 +82,11 @@ class RemoveBookFromShelfUseCaseTest {
         assertTrue("Should return success", result is Result.Success)
         assertEquals("Should call removeBookFromShelf once", 1, mockBookshelfRepository.removeBookFromShelfCallCount)
         assertEquals("Should attempt to remove from correct shelf", shelfId, mockBookshelfRepository.lastRemovedShelfId)
-        assertEquals("Should attempt to remove correct book", nonExistentBookId, mockBookshelfRepository.lastRemovedBookId)
+        assertEquals(
+            "Should attempt to remove correct book",
+            nonExistentBookId,
+            mockBookshelfRepository.lastRemovedBookId
+        )
     }
 
     @Test
@@ -97,7 +101,11 @@ class RemoveBookFromShelfUseCaseTest {
         // Then
         assertTrue("Should return success", result is Result.Success)
         assertEquals("Should call removeBookFromShelf once", 1, mockBookshelfRepository.removeBookFromShelfCallCount)
-        assertEquals("Should attempt to remove from correct shelf", nonExistentShelfId, mockBookshelfRepository.lastRemovedShelfId)
+        assertEquals(
+            "Should attempt to remove from correct shelf",
+            nonExistentShelfId,
+            mockBookshelfRepository.lastRemovedShelfId
+        )
         assertEquals("Should attempt to remove correct book", bookId, mockBookshelfRepository.lastRemovedBookId)
     }
 

@@ -34,12 +34,14 @@ class UpsertBookClubReviewUseCaseImpl(
             return Result.Error(DataError.Sync.INVALID_INPUT)
         }
 
-        return when (val result = bookClubRepository.upsertBookReview(
-            code = clubCode,
-            bookId = bookId,
-            rating = rating,
-            reviewText = reviewText.trim()
-        )) {
+        return when (
+            val result = bookClubRepository.upsertBookReview(
+                code = clubCode,
+                bookId = bookId,
+                rating = rating,
+                reviewText = reviewText.trim()
+            )
+        ) {
             is Result.Success -> {
                 Timber.tag(TAG).d("Review upserted successfully")
                 Result.Success(Unit)

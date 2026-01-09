@@ -28,7 +28,7 @@ class MockBookClubRepository : BookClubRepository {
     var joinBookClubResult: Result<String, DataError.Sync> = Result.Success("local-shelf-id")
     var getClubBooksResult: Result<List<Book>, DataError.Sync> = Result.Success(emptyList())
     var localShelfForClub: Bookshelf? = null
-    var localShelfForClubAfterJoin: Bookshelf? = null  // Used to simulate shelf creation after join
+    var localShelfForClubAfterJoin: Bookshelf? = null // Used to simulate shelf creation after join
     var myBookClubs: List<BookClubMembership> = emptyList()
     var getRemoteClubMembershipsResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
     var restoreClubMembershipResult: Result<String, DataError.Sync> = Result.Success("restored-shelf-id")

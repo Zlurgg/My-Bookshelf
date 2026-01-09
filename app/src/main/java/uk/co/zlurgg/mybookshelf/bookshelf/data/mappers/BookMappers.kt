@@ -1,11 +1,10 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
-
 
 /**
  * Converts search result DTO to Book domain model.

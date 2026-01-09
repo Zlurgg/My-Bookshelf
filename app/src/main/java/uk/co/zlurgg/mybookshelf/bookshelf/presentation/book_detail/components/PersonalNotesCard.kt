@@ -27,8 +27,8 @@ import uk.co.zlurgg.mybookshelf.R
  */
 @Composable
 fun PersonalNotesCard(
-    notes: String,                        // "" = no notes
-    onNotesChange: (String) -> Unit,      // Pass "" to clear notes
+    notes: String, // "" = no notes
+    onNotesChange: (String) -> Unit, // Pass "" to clear notes
     modifier: Modifier = Modifier
 ) {
     Card(

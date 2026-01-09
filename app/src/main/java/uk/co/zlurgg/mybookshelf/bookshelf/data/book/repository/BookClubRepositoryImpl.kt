@@ -6,8 +6,8 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookClubBookDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookEntity
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
@@ -17,8 +17,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
@@ -143,7 +143,7 @@ class BookClubRepositoryImpl(
             position = 0, // Position at top
             isBookClub = true,
             clubCode = clubCode,
-            clubCreatorId = user.userId  // Creator is the current user
+            clubCreatorId = user.userId // Creator is the current user
         ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(clubShelfEntity)
@@ -176,7 +176,9 @@ class BookClubRepositoryImpl(
             // Non-critical, continue - local state is saved
         }
 
-        Timber.tag(TAG).d("Book club created successfully: %s with %d books, local shelf: %s", clubCode, bookCount, clubShelfId)
+        Timber.tag(
+            TAG
+        ).d("Book club created successfully: %s with %d books, local shelf: %s", clubCode, bookCount, clubShelfId)
         return Result.Success(clubCode)
     }
 
@@ -223,7 +225,9 @@ class BookClubRepositoryImpl(
 
         // 3. Permission check - only creator can delete
         if (club.createdBy != user.userId) {
-            Timber.tag(TAG).w("PERMISSION DENIED: User '%s' is not creator '%s' of club %s", user.userId, club.createdBy, code)
+            Timber.tag(
+                TAG
+            ).w("PERMISSION DENIED: User '%s' is not creator '%s' of club %s", user.userId, club.createdBy, code)
             return Result.Error(DataError.Sync.PERMISSION_DENIED)
         }
 
@@ -270,7 +274,9 @@ class BookClubRepositoryImpl(
 
         // Update Firestore
         val updateResult = remoteDataSource.updateBookClubName(
-            code, newName, timeProvider.currentTimeMillis()
+            code,
+            newName,
+            timeProvider.currentTimeMillis()
         )
         if (updateResult is Result.Error) {
             Timber.tag(TAG).e("Failed to update club name in Firestore: %s", updateResult.error)
@@ -311,7 +317,9 @@ class BookClubRepositoryImpl(
 
         // Update Firestore
         val updateResult = remoteDataSource.updateBookClubStyle(
-            code, style, timeProvider.currentTimeMillis()
+            code,
+            style,
+            timeProvider.currentTimeMillis()
         )
         if (updateResult is Result.Error) {
             Timber.tag(TAG).e("Failed to update club style in Firestore: %s", updateResult.error)
@@ -522,7 +530,7 @@ class BookClubRepositoryImpl(
             position = 0, // Will be positioned at top
             isBookClub = true,
             clubCode = code,
-            clubCreatorId = club.createdBy  // Store creator ID from club metadata
+            clubCreatorId = club.createdBy // Store creator ID from club metadata
         ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(shelfEntity)
@@ -636,7 +644,7 @@ class BookClubRepositoryImpl(
             position = 0,
             isBookClub = true,
             clubCode = code,
-            clubCreatorId = club.createdBy  // Store creator ID from club metadata
+            clubCreatorId = club.createdBy // Store creator ID from club metadata
         ).toEntity(user.userId)
 
         bookshelfDao.upsertShelf(shelfEntity)

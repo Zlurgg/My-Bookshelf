@@ -2,11 +2,11 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import android.content.Context
 import android.content.Intent
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ShareData
+import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import java.net.URLEncoder
 
 /**
@@ -20,8 +20,10 @@ class AndroidShareService(
 
     companion object {
         private const val TAG = "ShareService"
+
         // Conservative limit for maximum browser compatibility (IE, older browsers)
         private const val MAX_URL_LENGTH = 2000
+
         // Absolute maximum - definitely too large
         private const val ABSOLUTE_MAX_URL_LENGTH = 10000
     }
@@ -68,5 +70,4 @@ class AndroidShareService(
             Result.Error(DataError.Local.SHARE_FAILED)
         }
     }
-
 }

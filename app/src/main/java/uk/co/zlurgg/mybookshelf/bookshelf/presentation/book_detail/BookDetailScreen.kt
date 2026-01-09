@@ -25,27 +25,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import uk.co.zlurgg.mybookshelf.R
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.BookDetailImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.BookOverviewCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.RecommendationStatusCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PersonalNotesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubCommentsCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubRatingCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.CommunityRatingsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.DescriptionCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PublicationDetailsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.LanguagesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PersonalNotesCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PublicationDetailsCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.PurchasedToggleCard
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.RecommendationStatusCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ShelfActionsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubRatingCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubReviewsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.components.ClubCommentsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBook
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
-import org.koin.compose.koinInject
-import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
 
 @Composable
 fun BookDetailsScreenRoot(
@@ -152,7 +151,7 @@ fun BookDetailsScreen(
                     item {
                         DescriptionCard(
                             description = state.book.description,
-                            initiallyExpanded = true  // Show full tutorial content by default
+                            initiallyExpanded = true // Show full tutorial content by default
                         )
                     }
                 } else if (state.isBookClub) {

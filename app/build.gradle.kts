@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.detekt)
 }
 
 // Load keystore properties
@@ -136,5 +137,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Detekt formatting rules (ktlint wrapper)
+    detektPlugins(libs.detekt.formatting)
+}
 
+detekt {
+    config.setFrom("$projectDir/detekt.yml")
+    buildUponDefaultConfig = true
+    allRules = false
 }

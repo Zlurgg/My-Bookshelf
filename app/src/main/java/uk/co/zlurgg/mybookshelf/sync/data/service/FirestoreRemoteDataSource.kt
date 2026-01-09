@@ -9,7 +9,6 @@ import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto

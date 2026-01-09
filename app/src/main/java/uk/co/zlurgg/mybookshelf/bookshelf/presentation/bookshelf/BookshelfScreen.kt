@@ -8,10 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -23,10 +21,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
@@ -38,17 +38,17 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowConfig
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelf_components.BookshelfRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.search_components.BookSearchState
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCaseImpl
 
 @Composable
 fun BookshelfScreenRoot(
@@ -128,7 +128,13 @@ fun BookshelfScreen(
                     if (books.isNotEmpty()) {
                         IconButton(onClick = { onAction(BookshelfAction.OnToggleTidyMode) }) {
                             Icon(
-                                imageVector = if (state.isTidyMode) ImageVector.vectorResource(R.drawable.ic_untidy_books) else ImageVector.vectorResource(R.drawable.ic_tidy_books),
+                                imageVector = if (state.isTidyMode) {
+                                    ImageVector.vectorResource(
+                                        R.drawable.ic_untidy_books
+                                    )
+                                } else {
+                                    ImageVector.vectorResource(R.drawable.ic_tidy_books)
+                                },
                                 contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf",
                                 modifier = Modifier.size(28.dp)
                             )
@@ -258,7 +264,7 @@ fun BookshelfScreen(
                     var currentRowWidth = 0f
                     var booksInRow = 0
                     val rowBookStyles = mutableListOf<BookDisplayStyle>()
-                    
+
                     // First pass: determine how many books fit using simpler non-position-dependent styling
                     while (bookIndex + booksInRow < books.size) {
                         val book = books[bookIndex + booksInRow]
@@ -280,15 +286,15 @@ fun BookshelfScreen(
                             break
                         }
                     }
-                    
+
                     // Ensure at least one book per row
                     if (booksInRow == 0) booksInRow = 1
-                    
+
                     // Second pass: apply position-aware styling with consistent parameters
                     val endIndex = minOf(bookIndex + booksInRow, books.size)
                     val rowBooks = books.subList(bookIndex, endIndex)
                     val totalAvailableWidth = availableWidth.value
-                    
+
                     // Apply final styling with proper position context
                     rowBooks.forEachIndexed { index, book ->
                         val bookStyle = if (state.isTidyMode) {
@@ -299,9 +305,9 @@ fun BookshelfScreen(
                             // Apply position-based refinements
                             when {
                                 // First book in row: can't lean left (no support)
-                                index == 0 && baseStyle == BookDisplayStyle.LEANING_LEFT -> 
+                                index == 0 && baseStyle == BookDisplayStyle.LEANING_LEFT ->
                                     BookDisplayStyle.VERTICAL
-                                
+
                                 // Last book in row: check if there's enough space for right lean
                                 index == rowBooks.size - 1 && baseStyle == BookDisplayStyle.LEANING_RIGHT -> {
                                     val widthSoFar = rowBookStyles.mapIndexed { styleIndex, style ->
@@ -310,14 +316,14 @@ fun BookshelfScreen(
                                     val remainingSpace = totalAvailableWidth - widthSoFar
                                     if (remainingSpace > 30f) BookDisplayStyle.VERTICAL else baseStyle
                                 }
-                                
+
                                 // All other cases: use base style
                                 else -> baseStyle
                             }
                         }
                         rowBookStyles.add(bookStyle)
                     }
-                    
+
                     item(key = rowBooks.first().id) {
                         BookshelfRowDynamic(
                             books = rowBooks,
@@ -330,7 +336,7 @@ fun BookshelfScreen(
                             )
                         )
                     }
-                    
+
                     bookIndex = endIndex
                 }
             }
@@ -377,7 +383,6 @@ fun BookshelfScreen(
             }
         )
     }
-
 }
 
 @Preview(showBackground = true)

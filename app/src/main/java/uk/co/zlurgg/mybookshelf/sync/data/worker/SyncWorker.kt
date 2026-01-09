@@ -8,8 +8,8 @@ import org.koin.core.component.inject
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result as SyncResult
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result as SyncResult
 
 /**
  * WorkManager worker that performs background sync operations.

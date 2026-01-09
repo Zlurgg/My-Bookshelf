@@ -65,8 +65,10 @@ class UrlEncodedShareTokenServiceTest {
         // Then
         assertTrue("Result should be success", result is Result.Success)
         val token = (result as Result.Success).data
-        assertTrue("Token should be shorter than original JSON due to compression",
-            token.length < bookshelfJson.length)
+        assertTrue(
+            "Token should be shorter than original JSON due to compression",
+            token.length < bookshelfJson.length
+        )
     }
 
     @Test

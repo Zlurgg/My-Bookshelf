@@ -17,8 +17,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
 
 @Composable
 fun BookshelfRowDynamic(
@@ -40,7 +40,7 @@ fun BookshelfRowDynamic(
             contentScale = ContentScale.Crop,
             modifier = Modifier.matchParentSize()
         )
-        
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -93,7 +93,7 @@ fun BookshelfRowDynamic(
                         }
                     }
                 }
-                
+
                 if (config.showAddSlot && config.onAddClick != null) {
                     AddBookSpine(onClick = config.onAddClick)
                 }
@@ -101,4 +101,3 @@ fun BookshelfRowDynamic(
         }
     }
 }
-

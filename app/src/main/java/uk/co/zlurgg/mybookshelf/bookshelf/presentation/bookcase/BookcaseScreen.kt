@@ -35,11 +35,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose
 import uk.co.zlurgg.mybookshelf.BuildConfig
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
@@ -53,18 +52,19 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.Shelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfLimitDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.createShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
-import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
-import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
-import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
-import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
-import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
-import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.BookClubPreviewDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.DeleteBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.JoinBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.LeaveBookClubDialog
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
+import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
+import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
+import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
+import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
+import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose
 
 @Composable
 fun BookcaseScreenRoot(
@@ -277,8 +277,11 @@ fun BookcaseScreen(
                             Icon(
                                 imageVector = if (state.isReorderMode) Icons.Default.LockOpen else Icons.Default.Lock,
                                 contentDescription = stringResource(
-                                    if (state.isReorderMode) R.string.menu_lock_shelves
-                                    else R.string.menu_reorder_shelves
+                                    if (state.isReorderMode) {
+                                        R.string.menu_lock_shelves
+                                    } else {
+                                        R.string.menu_reorder_shelves
+                                    }
                                 )
                             )
                         }
@@ -313,15 +316,17 @@ fun BookcaseScreen(
                 }
             ) {
                 Icon(
-                    imageVector = if (selectedTab == BookcaseTab.BOOK_CLUBS)
+                    imageVector = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
                         Icons.Default.PersonAdd
-                    else
-                        Icons.Default.Add,
+                    } else {
+                        Icons.Default.Add
+                    },
                     contentDescription = stringResource(
-                        id = if (selectedTab == BookcaseTab.BOOK_CLUBS)
+                        id = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
                             R.string.fab_join_book_club
-                        else
+                        } else {
                             R.string.fab_add_shelf
+                        }
                     )
                 )
             }
@@ -351,10 +356,11 @@ fun BookcaseScreen(
                 item {
                     Text(
                         text = stringResource(
-                            id = if (selectedTab == BookcaseTab.BOOK_CLUBS)
+                            id = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
                                 R.string.bookcase_empty_book_clubs
-                            else
+                            } else {
                                 R.string.bookcase_empty_personal
+                            }
                         ),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                     )
@@ -545,7 +551,6 @@ fun BookcaseScreen(
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

@@ -9,8 +9,8 @@ data class BookClubReview(
     val bookId: String,
     val userId: String,
     val displayName: String,
-    val rating: Float,          // 0 = no rating, 1-5 = rated
-    val reviewText: String,     // "" = no review text
+    val rating: Float, // 0 = no rating, 1-5 = rated
+    val reviewText: String, // "" = no review text
     val createdAt: Long,
     val updatedAt: Long
 )

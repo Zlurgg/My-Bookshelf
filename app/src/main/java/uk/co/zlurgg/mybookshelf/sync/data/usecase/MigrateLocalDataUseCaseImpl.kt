@@ -74,7 +74,6 @@ class MigrateLocalDataUseCaseImpl(
             )
 
             Result.Success(result)
-
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Migration failed")
             Result.Error(DataError.Sync.MIGRATION_FAILED)

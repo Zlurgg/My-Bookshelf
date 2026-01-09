@@ -41,7 +41,7 @@ fun AddBookSpine(
     onClick: () -> Unit,
 ) {
     val cd = stringResource(id = R.string.cd_add_book_to_shelf)
-    
+
     // Bookend/bookstop design with decorative elements
     Box(
         modifier = Modifier
@@ -71,7 +71,7 @@ fun AddBookSpine(
                         shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
                     )
             )
-            
+
             // Main body with add icon
             Box(
                 modifier = Modifier
@@ -90,7 +90,7 @@ fun AddBookSpine(
                     modifier = Modifier.size(ICON_SIZE.dp)
                 )
             }
-            
+
             // Decorative base (bookend foot)
             Box(
                 modifier = Modifier
@@ -102,7 +102,7 @@ fun AddBookSpine(
                     )
             )
         }
-        
+
         // Subtle highlight line to simulate 3D depth
         Box(
             modifier = Modifier

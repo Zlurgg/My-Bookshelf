@@ -6,14 +6,14 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.helpers.TestIdGenerator
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
+import uk.co.zlurgg.mybookshelf.testutil.helpers.TestIdGenerator
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
 
 /**
  * Clean UseCase test demonstrating focused testing principles:
@@ -32,7 +32,12 @@ class CreateShelfUseCaseTest {
             return Result.Success("tutorial-book-id")
         }
     }
-    private val useCase = CreateShelfUseCaseImpl(mockRepository, testIdGenerator, mockGetOrCreateTutorialBook, mockSyncSchedulerService)
+    private val useCase = CreateShelfUseCaseImpl(
+        mockRepository,
+        testIdGenerator,
+        mockGetOrCreateTutorialBook,
+        mockSyncSchedulerService
+    )
 
     @Test
     fun `creates shelf with correct data when no existing shelves`() = runTest {
@@ -102,5 +107,4 @@ class CreateShelfUseCaseTest {
         val shelf2 = (result2 as Result.Success).data
         assertTrue("Should have different IDs", shelf1.id != shelf2.id)
     }
-
 }

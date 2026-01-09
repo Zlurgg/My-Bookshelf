@@ -56,7 +56,9 @@ class ValidateBookClubMembershipsUseCaseImpl(
                 is Result.Success -> {
                     if (clubResult.data == null) {
                         // Club was deleted - convert to personal shelf (keeps books)
-                        Timber.tag(TAG).d("Club '%s' (%s) was deleted, converting to personal shelf", shelfName, clubCode)
+                        Timber.tag(
+                            TAG
+                        ).d("Club '%s' (%s) was deleted, converting to personal shelf", shelfName, clubCode)
                         bookClubRepository.convertClubToPersonalShelf(clubCode)
                         convertedShelfNames.add(shelfName)
                     }
@@ -70,9 +72,13 @@ class ValidateBookClubMembershipsUseCaseImpl(
         }
 
         if (convertedShelfNames.isNotEmpty()) {
-            Timber.tag(TAG).d("Converted %d deleted clubs to personal shelves: %s", convertedShelfNames.size, convertedShelfNames)
+            Timber.tag(
+                TAG
+            ).d("Converted %d deleted clubs to personal shelves: %s", convertedShelfNames.size, convertedShelfNames)
             // Trigger sync to upload converted shelves to user's personal Firestore
-            Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: ValidateBookClubMemberships (converted %d clubs)", convertedShelfNames.size)
+            Timber.tag(
+                SyncConstants.TAG_SYNC_TRIGGER
+            ).d("Sync triggered by: ValidateBookClubMemberships (converted %d clubs)", convertedShelfNames.size)
             syncSchedulerService.triggerImmediateSync()
         }
 

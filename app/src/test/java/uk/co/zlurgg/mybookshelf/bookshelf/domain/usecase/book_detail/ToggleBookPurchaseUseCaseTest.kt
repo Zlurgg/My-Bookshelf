@@ -205,7 +205,11 @@ class ToggleBookPurchaseUseCaseTest {
         assertTrue("Should mark book as purchased", updatedBook.purchased)
         assertEquals("Should preserve special chars in title", bookWithSpecialChars.title, updatedBook.title)
         assertEquals("Should preserve special chars in authors", bookWithSpecialChars.authors, updatedBook.authors)
-        assertEquals("Should preserve special chars in description", bookWithSpecialChars.description, updatedBook.description)
+        assertEquals(
+            "Should preserve special chars in description",
+            bookWithSpecialChars.description,
+            updatedBook.description
+        )
     }
 
     @Test
@@ -305,7 +309,11 @@ class ToggleBookPurchaseUseCaseTest {
         // Personal metadata should be preserved from existing book
         assertEquals("Should preserve personal rating", 4.5f, updatedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Amazing read!", updatedBook.personalNotes)
-        assertEquals("Should preserve reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ, updatedBook.readingStatus)
+        assertEquals(
+            "Should preserve reading status",
+            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ,
+            updatedBook.readingStatus
+        )
         assertEquals("Should preserve dateAdded", 1609459200000L, updatedBook.dateAdded)
         assertEquals("Should preserve purchaseDate", 1609545600000L, updatedBook.purchaseDate)
     }
@@ -336,6 +344,10 @@ class ToggleBookPurchaseUseCaseTest {
         assertTrue("Should set purchased to true", updatedBook.purchased)
         assertEquals("Should use default rating", 0f, updatedBook.personalRating, 0.01f)
         assertEquals("Should use default notes", "", updatedBook.personalNotes)
-        assertEquals("Should use default reading status", uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ, updatedBook.readingStatus)
+        assertEquals(
+            "Should use default reading status",
+            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ,
+            updatedBook.readingStatus
+        )
     }
 }

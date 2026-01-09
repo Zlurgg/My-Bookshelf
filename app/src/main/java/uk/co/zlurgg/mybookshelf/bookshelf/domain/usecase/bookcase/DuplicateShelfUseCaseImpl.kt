@@ -1,10 +1,10 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import kotlinx.coroutines.flow.first
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

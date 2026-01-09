@@ -42,7 +42,6 @@ class BookshelfImportValidatorImplTest {
         assertTrue("Should succeed", result is Result.Success)
     }
 
-
     @Test
     fun `validateFormat rejects blank shelf name`() {
         // Given
@@ -53,9 +52,11 @@ class BookshelfImportValidatorImplTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return validation error",
+        assertEquals(
+            "Should return validation error",
             DataError.Local.VALIDATION_ERROR,
-            (result as Result.Error).error)
+            (result as Result.Error).error
+        )
     }
 
     @Test
@@ -68,9 +69,11 @@ class BookshelfImportValidatorImplTest {
 
         // Then
         assertTrue("Should fail", result is Result.Error)
-        assertEquals("Should return validation error",
+        assertEquals(
+            "Should return validation error",
             DataError.Local.VALIDATION_ERROR,
-            (result as Result.Error).error)
+            (result as Result.Error).error
+        )
     }
 
     @Test
@@ -102,9 +105,11 @@ class BookshelfImportValidatorImplTest {
 
         // Then
         assertTrue("Should succeed", result is Result.Success)
-        assertEquals("Should find conflict",
+        assertEquals(
+            "Should find conflict",
             "Fiction",
-            (result as Result.Success).data)
+            (result as Result.Success).data
+        )
     }
 
     @Test
@@ -120,9 +125,11 @@ class BookshelfImportValidatorImplTest {
 
         // Then
         assertTrue("Should succeed", result is Result.Success)
-        assertEquals("Should find exact match",
+        assertEquals(
+            "Should find exact match",
             "Non-Fiction",
-            (result as Result.Success).data)
+            (result as Result.Success).data
+        )
     }
 
     @Test
@@ -135,8 +142,10 @@ class BookshelfImportValidatorImplTest {
 
         // Then
         assertTrue("Should succeed", result is Result.Success)
-        assertNull("Should not find conflict in empty bookcase",
-            (result as Result.Success).data)
+        assertNull(
+            "Should not find conflict in empty bookcase",
+            (result as Result.Success).data
+        )
     }
 
     @Test

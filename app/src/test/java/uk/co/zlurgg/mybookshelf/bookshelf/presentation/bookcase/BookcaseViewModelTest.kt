@@ -12,46 +12,24 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
-import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
-import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDuplicateShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockShareBookshelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubReviewsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
@@ -63,11 +41,33 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClubReviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ValidateBookClubMembershipsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
+import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDuplicateShelfUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -159,7 +159,14 @@ class BookcaseViewModelTest {
         }
         val mockSyncRepository = MockSyncRepository()
         val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
-        val mockSignOut = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserData, mockCurrentUserProvider, mockSyncRepository)
+        val mockSignOut = SignOutUseCase(
+            mockAuthService,
+            mockAuthStateRepository,
+            mockSyncScheduler,
+            mockClearUserData,
+            mockCurrentUserProvider,
+            mockSyncRepository
+        )
 
         // Book Club operations handler
         val mockCreateBookClub = object : CreateBookClubUseCase {
@@ -199,11 +206,19 @@ class BookcaseViewModelTest {
                 Result.Success(emptyList())
         }
         val mockGetBookClubReviews = object : GetBookClubReviewsUseCase {
-            override suspend fun invoke(clubCode: String, bookId: String): Result<List<BookClubReview>, DataError.Sync> =
+            override suspend fun invoke(
+                clubCode: String,
+                bookId: String
+            ): Result<List<BookClubReview>, DataError.Sync> =
                 Result.Success(emptyList())
         }
         val mockUpsertBookClubReview = object : UpsertBookClubReviewUseCase {
-            override suspend fun invoke(clubCode: String, bookId: String, rating: Float, reviewText: String): Result<Unit, DataError.Sync> =
+            override suspend fun invoke(
+                clubCode: String,
+                bookId: String,
+                rating: Float,
+                reviewText: String
+            ): Result<Unit, DataError.Sync> =
                 Result.Success(Unit)
         }
         val mockDeleteBookClubReview = object : DeleteBookClubReviewUseCase {
@@ -211,19 +226,35 @@ class BookcaseViewModelTest {
                 Result.Success(Unit)
         }
         val mockGetBookClubComments = object : GetBookClubCommentsUseCase {
-            override suspend fun invoke(clubCode: String, bookId: String): Result<List<BookClubComment>, DataError.Sync> =
+            override suspend fun invoke(
+                clubCode: String,
+                bookId: String
+            ): Result<List<BookClubComment>, DataError.Sync> =
                 Result.Success(emptyList())
         }
         val mockAddBookClubComment = object : AddBookClubCommentUseCase {
-            override suspend fun invoke(clubCode: String, bookId: String, text: String): Result<String, DataError.Sync> =
+            override suspend fun invoke(
+                clubCode: String,
+                bookId: String,
+                text: String
+            ): Result<String, DataError.Sync> =
                 Result.Success("comment-id")
         }
         val mockEditBookClubComment = object : EditBookClubCommentUseCase {
-            override suspend fun invoke(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> =
+            override suspend fun invoke(
+                clubCode: String,
+                bookId: String,
+                commentId: String,
+                newText: String
+            ): Result<Unit, DataError.Sync> =
                 Result.Success(Unit)
         }
         val mockDeleteBookClubComment = object : DeleteBookClubCommentUseCase {
-            override suspend fun invoke(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> =
+            override suspend fun invoke(
+                clubCode: String,
+                bookId: String,
+                commentId: String
+            ): Result<Unit, DataError.Sync> =
                 Result.Success(Unit)
         }
         val bookClubUseCases = BookClubUseCases(
@@ -351,11 +382,15 @@ class BookcaseViewModelTest {
 
         // Then
         assertNotNull("Should set error message", stateAfterDelete?.errorMessage)
-        assertTrue("Should contain operation context",
-            stateAfterDelete?.errorMessage?.contains("Failed to remove shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterDelete?.errorMessage?.contains("Failed to remove shelf") == true
+        )
         // Shelf should be reverted back to the list
-        assertTrue("Should revert shelf removal",
-            stateAfterDelete?.bookshelves?.any { it.id == "shelf-1" } == true)
+        assertTrue(
+            "Should revert shelf removal",
+            stateAfterDelete?.bookshelves?.any { it.id == "shelf-1" } == true
+        )
         stateHelper.cleanup()
     }
 
@@ -388,8 +423,10 @@ class BookcaseViewModelTest {
 
         // Then
         assertNotNull("Should set error message", stateAfterRestore?.errorMessage)
-        assertTrue("Should contain operation context",
-            stateAfterRestore?.errorMessage?.contains("Failed to restore shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterRestore?.errorMessage?.contains("Failed to restore shelf") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -408,8 +445,10 @@ class BookcaseViewModelTest {
 
         // Then
         assertNotNull("Should set error message", stateAfterAdd?.errorMessage)
-        assertTrue("Should contain operation context",
-            stateAfterAdd?.errorMessage?.contains("Failed to add shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterAdd?.errorMessage?.contains("Failed to add shelf") == true
+        )
         assertFalse("Should clear loading flag", stateAfterAdd?.isLoading == true)
         stateHelper.cleanup()
     }
@@ -509,13 +548,15 @@ class BookcaseViewModelTest {
 
         // When - rename shelf with error
         val stateAfterRename = stateHelper.executeAndGetState {
-            viewModel.onAction(BookcaseAction.OnRenameShelf("shelf-1", ""))  // Empty name causes error
+            viewModel.onAction(BookcaseAction.OnRenameShelf("shelf-1", "")) // Empty name causes error
         }
 
         // Then - Error should be inline in dialog, not global snackbar
         assertNotNull("Should set inline rename error", stateAfterRename?.renameError)
-        assertTrue("Should contain operation context",
-            stateAfterRename?.renameError?.contains("Failed to rename shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterRename?.renameError?.contains("Failed to rename shelf") == true
+        )
         assertTrue("Dialog should stay open to show error", stateAfterRename?.showRenameDialog == true)
         val shelf = stateAfterRename?.bookshelves?.find { it.id == "shelf-1" }
         assertTrue("Should not change shelf name", shelf?.name == "Old Name")

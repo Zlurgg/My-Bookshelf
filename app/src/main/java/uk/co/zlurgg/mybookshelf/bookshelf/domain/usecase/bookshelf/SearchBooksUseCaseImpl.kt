@@ -48,7 +48,7 @@ class SearchBooksUseCaseImpl(
             language = language,
             authorFilter = authorFilter,
             titleFilter = titleFilter,
-            sort = null  // Always use API's default relevance sorting
+            sort = null // Always use API's default relevance sorting
         ).map { dto ->
             dto.results.map { it.toBook() }
         }

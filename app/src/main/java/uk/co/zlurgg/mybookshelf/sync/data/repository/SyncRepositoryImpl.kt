@@ -74,8 +74,11 @@ class SyncRepositoryImpl(
         conflict: SyncConflict,
         resolution: ConflictResolution
     ): Result<Unit, DataError.Sync> {
-        Timber.tag(TAG).d("Resolving conflict for entity: %s with resolution: %s",
-            conflict.entityId, resolution)
+        Timber.tag(TAG).d(
+            "Resolving conflict for entity: %s with resolution: %s",
+            conflict.entityId,
+            resolution
+        )
 
         // For now, we just mark it as resolved by updating the sync status
         // The actual resolution logic is handled by ConflictResolver during sync
@@ -107,8 +110,10 @@ class SyncRepositoryImpl(
                 }
                 EntityType.CROSS_REF -> {
                     // Cross-refs are synced as part of bookshelf, no direct handling needed
-                    Timber.tag(TAG).d("Cross-ref conflict for: %s - delegating to bookshelf sync",
-                        conflict.entityId)
+                    Timber.tag(TAG).d(
+                        "Cross-ref conflict for: %s - delegating to bookshelf sync",
+                        conflict.entityId
+                    )
                 }
             }
             Timber.tag(TAG).d("Conflict resolved successfully for: %s", conflict.entityId)

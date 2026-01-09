@@ -18,7 +18,8 @@ val MIGRATION_9_10 = object : Migration(9, 10) {
         db.execSQL("ALTER TABLE BookshelfEntity ADD COLUMN clubCode TEXT DEFAULT NULL")
 
         // ========== New book_club_memberships table ==========
-        db.execSQL("""
+        db.execSQL(
+            """
             CREATE TABLE IF NOT EXISTS book_club_memberships (
                 id TEXT PRIMARY KEY NOT NULL,
                 clubCode TEXT NOT NULL,
@@ -27,11 +28,16 @@ val MIGRATION_9_10 = object : Migration(9, 10) {
                 lastSyncedAt INTEGER NOT NULL,
                 syncStatus TEXT NOT NULL DEFAULT 'PENDING'
             )
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         // ========== Indexes for efficient queries ==========
-        db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS index_book_club_memberships_clubCode ON book_club_memberships(clubCode)")
-        db.execSQL("CREATE INDEX IF NOT EXISTS index_book_club_memberships_localShelfId ON book_club_memberships(localShelfId)")
+        db.execSQL(
+            "CREATE UNIQUE INDEX IF NOT EXISTS index_book_club_memberships_clubCode ON book_club_memberships(clubCode)"
+        )
+        db.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_book_club_memberships_localShelfId ON book_club_memberships(localShelfId)"
+        )
         db.execSQL("CREATE INDEX IF NOT EXISTS index_BookshelfEntity_clubCode ON BookshelfEntity(clubCode)")
     }
 }

@@ -11,10 +11,10 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRemoteBookDataSource

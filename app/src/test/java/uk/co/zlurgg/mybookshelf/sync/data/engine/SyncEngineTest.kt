@@ -7,14 +7,14 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
+import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
-import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
@@ -22,8 +22,8 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 
@@ -479,12 +479,21 @@ class SyncEngineTest {
         override fun getBookCountForShelf(shelfId: String): Flow<Int> = flowOf(0)
         override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = flowOf(false)
         override fun getShelvesForBook(bookId: String): Flow<List<String>> = flowOf(emptyList())
-        override suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long) {}
+        override suspend fun updateCrossRefSyncStatus(
+            shelfId: String,
+            bookId: String,
+            status: String,
+            timestamp: Long
+        ) {}
         override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) {}
         override suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity? = null
         override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}
-        override suspend fun getBooksByOwner(ownerId: String): List<BookEntity> = books.values.filter { it.ownerId == ownerId }
-        override suspend fun getShelvesByOwner(ownerId: String): List<BookshelfEntity> = shelves.values.filter { it.ownerId == ownerId }
+        override suspend fun getBooksByOwner(
+            ownerId: String
+        ): List<BookEntity> = books.values.filter { it.ownerId == ownerId }
+        override suspend fun getShelvesByOwner(
+            ownerId: String
+        ): List<BookshelfEntity> = shelves.values.filter { it.ownerId == ownerId }
         override suspend fun markAllBooksPending(ownerId: String) {}
         override suspend fun markAllShelvesPending(ownerId: String) {}
         override suspend fun deleteAllCrossRefsForOwner(ownerId: String) {}
@@ -548,46 +557,180 @@ class SyncEngineTest {
             return Result.Success(Unit)
         }
 
-        override suspend fun shareShelf(sharedShelf: SharedShelfDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun shareShelf(sharedShelf: SharedShelfDto): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
         override suspend fun unshareShelf(shareCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync> = Result.Success(null)
-        override suspend fun subscribeToShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun unsubscribeFromShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getSharedShelf(
+            shareCode: String
+        ): Result<SharedShelfDto?, DataError.Sync> = Result.Success(
+            null
+        )
+        override suspend fun subscribeToShelf(
+            shareCode: String,
+            userId: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun unsubscribeFromShelf(
+            shareCode: String,
+            userId: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
         override suspend fun uploadBooks(userId: String, books: List<BookFirestoreDto>): Result<Int, DataError.Sync> {
             books.forEach { uploadedBooks[it.id] = it }
             return Result.Success(books.size)
         }
-        override suspend fun uploadBookshelves(userId: String, shelves: List<BookshelfFirestoreDto>): Result<Int, DataError.Sync> {
+        override suspend fun uploadBookshelves(
+            userId: String,
+            shelves: List<BookshelfFirestoreDto>
+        ): Result<Int, DataError.Sync> {
             shelves.forEach { uploadedShelves[it.id] = it }
             return Result.Success(shelves.size)
         }
-        override suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync> = Result.Success(null)
-        override suspend fun setUserPreferences(userId: String, preferences: UserPreferencesFirestoreDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getUserPreferences(
+            userId: String
+        ): Result<UserPreferencesFirestoreDto?, DataError.Sync> = Result.Success(
+            null
+        )
+        override suspend fun setUserPreferences(
+            userId: String,
+            preferences: UserPreferencesFirestoreDto
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
 
         // Book Club methods (not used by SyncEngine, but required by interface)
-        override suspend fun createBookClub(code: String, metadata: BookClubMetadataDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync> = Result.Success(null)
-        override suspend fun addBookClubMember(code: String, member: BookClubMemberDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookClubMembers(code: String): Result<List<BookClubMemberDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync> = Result.Success(false)
-        override suspend fun addBookToClub(code: String, book: BookClubBookDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun updateBookClubCounts(code: String, bookCount: Int, memberCount: Int): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun updateBookClubName(code: String, name: String, lastModifiedAt: Long): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun updateBookClubStyle(code: String, style: String, lastModifiedAt: Long): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun createBookClub(
+            code: String,
+            metadata: BookClubMetadataDto
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun getBookClubMetadata(
+            code: String
+        ): Result<BookClubMetadataDto?, DataError.Sync> = Result.Success(
+            null
+        )
+        override suspend fun addBookClubMember(
+            code: String,
+            member: BookClubMemberDto
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun getBookClubMembers(
+            code: String
+        ): Result<List<BookClubMemberDto>, DataError.Sync> = Result.Success(
+            emptyList()
+        )
+        override suspend fun isMember(code: String, userId: String): Result<Boolean, DataError.Sync> = Result.Success(
+            false
+        )
+        override suspend fun addBookToClub(
+            code: String,
+            book: BookClubBookDto
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun getClubBooks(code: String): Result<List<BookClubBookDto>, DataError.Sync> = Result.Success(
+            emptyList()
+        )
+        override suspend fun updateBookClubCounts(
+            code: String,
+            bookCount: Int,
+            memberCount: Int
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun updateBookClubName(
+            code: String,
+            name: String,
+            lastModifiedAt: Long
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun updateBookClubStyle(
+            code: String,
+            style: String,
+            lastModifiedAt: Long
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
         override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun addClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeBookFromClub(code: String, bookId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeBookClubMember(code: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookReviews(clubCode: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun upsertBookReview(clubCode: String, bookId: String, review: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun deleteBookReview(clubCode: String, bookId: String, userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun addClubMembership(
+            userId: String,
+            clubCode: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun removeClubMembership(
+            userId: String,
+            clubCode: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun removeBookFromClub(
+            code: String,
+            bookId: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun removeBookClubMember(
+            code: String,
+            userId: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun getBookReviews(
+            clubCode: String,
+            bookId: String
+        ): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto>, DataError.Sync> = Result.Success(
+            emptyList()
+        )
+        override suspend fun upsertBookReview(
+            clubCode: String,
+            bookId: String,
+            review: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun deleteBookReview(
+            clubCode: String,
+            bookId: String,
+            userId: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
 
         // Comment methods (not used by SyncEngine, but required by interface)
-        override suspend fun getBookComments(clubCode: String, bookId: String): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun addBookComment(clubCode: String, bookId: String, comment: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto): Result<String, DataError.Sync> = Result.Success("comment-id")
-        override suspend fun editBookComment(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun deleteBookComment(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getBookComments(
+            clubCode: String,
+            bookId: String
+        ): Result<List<uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto>, DataError.Sync> = Result.Success(
+            emptyList()
+        )
+        override suspend fun addBookComment(
+            clubCode: String,
+            bookId: String,
+            comment: uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
+        ): Result<String, DataError.Sync> = Result.Success(
+            "comment-id"
+        )
+        override suspend fun editBookComment(
+            clubCode: String,
+            bookId: String,
+            commentId: String,
+            newText: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
+        override suspend fun deleteBookComment(
+            clubCode: String,
+            bookId: String,
+            commentId: String
+        ): Result<Unit, DataError.Sync> = Result.Success(
+            Unit
+        )
     }
 }

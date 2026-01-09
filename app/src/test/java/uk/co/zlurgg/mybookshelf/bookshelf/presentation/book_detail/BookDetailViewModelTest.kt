@@ -14,14 +14,14 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookDetailsWithShelfStatus
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookDetailsWithShelfStatus
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
@@ -36,8 +36,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubReviewsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
@@ -227,10 +227,16 @@ class BookDetailViewModelTest {
         }
 
         // Then - Error case: state should not change since save failed
-        assertEquals("Should keep original reading status", ReadingStatus.WANT_TO_READ, stateAfterUpdate?.book?.readingStatus)
+        assertEquals(
+            "Should keep original reading status",
+            ReadingStatus.WANT_TO_READ,
+            stateAfterUpdate?.book?.readingStatus
+        )
         assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterUpdate?.errorMessage?.contains("Failed to update reading status") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterUpdate?.errorMessage?.contains("Failed to update reading status") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -255,8 +261,10 @@ class BookDetailViewModelTest {
         // Then - Error case: state should not change since save failed
         assertEquals("Should keep original rating as 0f", 0f, stateAfterUpdate?.book?.personalRating)
         assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterUpdate?.errorMessage?.contains("Failed to update personal rating") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterUpdate?.errorMessage?.contains("Failed to update personal rating") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -281,8 +289,10 @@ class BookDetailViewModelTest {
         // Then
         assertFalse("Should keep onShelf as false", stateAfterAdd?.onShelf == true)
         assertTrue("Should set error message", stateAfterAdd?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterAdd?.errorMessage?.contains("Failed to add book to shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterAdd?.errorMessage?.contains("Failed to add book to shelf") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -307,8 +317,10 @@ class BookDetailViewModelTest {
         // Then
         assertTrue("Should keep onShelf as true", stateAfterRemove?.onShelf == true)
         assertTrue("Should set error message", stateAfterRemove?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -333,8 +345,10 @@ class BookDetailViewModelTest {
         // Then
         assertFalse("Should keep book purchased status as false", stateAfterToggle?.book?.purchased == true)
         assertTrue("Should set error message", stateAfterToggle?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterToggle?.errorMessage?.contains("Failed to toggle book purchase") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterToggle?.errorMessage?.contains("Failed to toggle book purchase") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -359,8 +373,10 @@ class BookDetailViewModelTest {
         // Then
         assertTrue("Should keep onShelf as true", stateAfterRemove?.onShelf == true)
         assertTrue("Should set error message", stateAfterRemove?.errorMessage != null)
-        assertTrue("Should contain operation context",
-            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true)
+        assertTrue(
+            "Should contain operation context",
+            stateAfterRemove?.errorMessage?.contains("Failed to remove book from shelf") == true
+        )
         stateHelper.cleanup()
     }
 
@@ -524,7 +540,12 @@ class BookDetailViewModelTest {
     }
 
     private class SimpleEditBookClubCommentUseCase : EditBookClubCommentUseCase {
-        override suspend fun invoke(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> =
+        override suspend fun invoke(
+            clubCode: String,
+            bookId: String,
+            commentId: String,
+            newText: String
+        ): Result<Unit, DataError.Sync> =
             Result.Success(Unit)
     }
 

@@ -21,6 +21,8 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -31,8 +33,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -71,7 +71,9 @@ class SignInViewModelTest {
         override fun cancelAllSync() {}
     }
 
-    private var mockMigrationResult: Result<MigrationResult, DataError.Sync> = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
+    private var mockMigrationResult: Result<MigrationResult, DataError.Sync> = Result.Success(
+        MigrationResult.NO_MIGRATION_NEEDED
+    )
     private val mockMigrateLocalDataUseCase = object : MigrateLocalDataUseCase {
         override suspend fun execute(): Result<MigrationResult, DataError.Sync> = mockMigrationResult
     }
@@ -108,7 +110,15 @@ class SignInViewModelTest {
 
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
-        val signOutUseCase = SignOutUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler, mockClearUserDataUseCase, mockCurrentUserProvider, mockSyncRepository)
+        val signOutUseCase =
+            SignOutUseCase(
+                mockAuthService,
+                mockAuthStateRepository,
+                mockSyncScheduler,
+                mockClearUserDataUseCase,
+                mockCurrentUserProvider,
+                mockSyncRepository
+            )
         val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
 
         val useCases = SignInUseCases(
@@ -246,8 +256,10 @@ class SignInViewModelTest {
 
         val state = viewModel.state.value
         assertFalse("Should not be signed in", state.isSignInSuccessful)
-        assertTrue("Should mention Google account",
-            state.errorMessage?.contains("Google account") == true)
+        assertTrue(
+            "Should mention Google account",
+            state.errorMessage?.contains("Google account") == true
+        )
     }
 
     @Test

@@ -3,7 +3,6 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 
-
 sealed interface BookcaseAction {
     data class OnBookshelfClick(val bookshelf: Bookshelf) : BookcaseAction
     data class OnAddBookshelfClick(val name: String, val style: ShelfStyle) : BookcaseAction

@@ -53,7 +53,10 @@ fun ChangeStyleDialog(
                         val style = ShelfStyle.entries[index]
                         Card(
                             onClick = { selectedStyle = style },
-                            border = if (selectedStyle == style) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null,
+                            border = if (selectedStyle == style) BorderStroke(
+                                2.dp,
+                                MaterialTheme.colorScheme.primary
+                            ) else null,
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                         ) {
                             Image(

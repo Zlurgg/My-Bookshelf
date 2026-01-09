@@ -18,7 +18,6 @@ class AndroidBookshelfExportService(
     private val androidShareService: AndroidShareService
 ) : BookshelfExportService {
 
-
     override suspend fun shareBookshelf(shelfId: String): Result<Unit, DataError.Local> {
         return exportBookshelfUseCase.execute(shelfId)
             .flatMap { shareData ->
@@ -37,5 +36,4 @@ class AndroidBookshelfExportService(
     override suspend fun importBookshelfWithName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
         return importBookshelfUseCase.execute(jsonData, customName)
     }
-
 }

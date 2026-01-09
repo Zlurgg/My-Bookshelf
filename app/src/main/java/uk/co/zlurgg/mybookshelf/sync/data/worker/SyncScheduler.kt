@@ -138,7 +138,7 @@ class SyncScheduler(
             .map { workInfos ->
                 workInfos.any {
                     it.state == WorkInfo.State.ENQUEUED ||
-                            it.state == WorkInfo.State.RUNNING
+                        it.state == WorkInfo.State.RUNNING
                 }
             }
     }
