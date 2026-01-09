@@ -22,6 +22,7 @@ class RemoveBookFromShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : RemoveBookFromShelfUseCase {
 
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local> {
         return try {
             // Check if this is a book club shelf BEFORE removing
@@ -48,10 +49,9 @@ class RemoveBookFromShelfUseCaseImpl(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(
-                ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
-            )
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Remove book from shelf failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 

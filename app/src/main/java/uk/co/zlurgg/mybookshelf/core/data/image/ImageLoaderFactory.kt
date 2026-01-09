@@ -11,11 +11,7 @@ import io.ktor.client.plugins.HttpTimeout
 /**
  * Factory for creating Coil ImageLoader with optimized settings for book cover loading.
  *
- * Timeout Strategy:
- * - OpenLibrary redirects all cover requests to Archive.org CDN
- * - Archive.org has unreliable performance (some images load <1s, others timeout >20s)
- * - Increased timeouts give slow Archive.org responses more time to complete
- * - See IMAGE_LOADING_INVESTIGATION.md for detailed analysis
+ * @see ImageLoaderConfig for timeout configuration and rationale
  */
 object ImageLoaderFactory {
     fun create(context: Context): ImageLoader {
@@ -25,10 +21,9 @@ object ImageLoaderFactory {
                     KtorNetworkFetcherFactory(
                         httpClient = HttpClient(Android) {
                             install(HttpTimeout) {
-                                // Increased timeouts to accommodate slow Archive.org responses
-                                connectTimeoutMillis = 10_000L // 10 seconds (doubled from 5s)
-                                requestTimeoutMillis = 30_000L // 30 seconds (tripled from 10s)
-                                socketTimeoutMillis = 30_000L // 30 seconds (tripled from 10s)
+                                connectTimeoutMillis = ImageLoaderConfig.CONNECT_TIMEOUT_MS
+                                requestTimeoutMillis = ImageLoaderConfig.REQUEST_TIMEOUT_MS
+                                socketTimeoutMillis = ImageLoaderConfig.SOCKET_TIMEOUT_MS
                             }
                         }
                     )

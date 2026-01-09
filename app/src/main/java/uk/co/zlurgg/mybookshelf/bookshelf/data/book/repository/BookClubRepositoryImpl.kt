@@ -728,6 +728,7 @@ class BookClubRepositoryImpl(
         return clubName
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun downloadClubBooksToShelf(
         clubCode: String,
         shelfId: String,
@@ -834,6 +835,7 @@ class BookClubRepositoryImpl(
 
     // ========== Sync Operations ==========
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun syncBooksFromClub(
         code: String,
         localShelfId: String

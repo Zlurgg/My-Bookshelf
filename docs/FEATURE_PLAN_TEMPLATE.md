@@ -70,6 +70,7 @@ Brief description of the feature and its purpose.
 ### Step 2: Repository Interface
 - Define repository interface in domain layer
 - All methods return `Result<T, DataError>`
+- **Design repositories to NEVER throw exceptions** - handle errors internally and return Result
 
 ### Step 3: Use Cases
 - Create individual use cases for each operation
@@ -198,6 +199,47 @@ private fun FeatureContent(...) {
         state.error != null -> ErrorState(...)
         state.data == null -> EmptyState(...)
         else -> { /* Main content */ }
+    }
+}
+```
+
+### Error Handling Pattern (ENFORCED)
+
+**Repository Implementation:**
+```kotlin
+// ✅ CORRECT: Repository never throws, always returns Result
+class FeatureRepositoryImpl(...) : FeatureRepository {
+    override suspend fun getData(): Result<Data, DataError.Local> {
+        return try {
+            Result.Success(dao.getData())
+        } catch (e: Exception) {
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "getData failed - Mapped to: %s", error)
+            Result.Error(error)
+        }
+    }
+}
+```
+
+**UseCase Implementation:**
+```kotlin
+// ✅ IDEAL: UseCase doesn't need try-catch when repository returns Result
+class GetDataUseCaseImpl(private val repository: FeatureRepository) : GetDataUseCase {
+    override suspend fun execute(): Result<Data, DataError.Local> {
+        return repository.getData() // Repository already handles exceptions
+    }
+}
+
+// ✅ PRAGMATIC: When repository might throw, use safeSuspendCall
+class GetDataUseCaseImpl(private val repository: FeatureRepository) : GetDataUseCase {
+    override suspend fun execute(): Result<Data?, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            repository.getData()
+        }
+    }
+
+    companion object {
+        private const val TAG = "GetData"
     }
 }
 ```

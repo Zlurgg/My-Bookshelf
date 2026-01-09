@@ -183,10 +183,12 @@ class BookDetailViewModel(
                     val currentBook = state.value.book
                     if (currentBook != null) {
                         // Toggle: pass opposite of current purchased status
-                        when (val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(
-                            currentBook,
-                            !currentBook.purchased
-                        )) {
+                        when (
+                            val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(
+                                currentBook,
+                                !currentBook.purchased
+                            )
+                        ) {
                             is Result.Success -> {
                                 // Update state immediately following renameShelf pattern
                                 _state.update { it.copy(book = purchaseResult.data) }
@@ -405,11 +407,13 @@ class BookDetailViewModel(
             is BookDetailAction.OnCommentDelete -> {
                 val clubCode = state.value.clubCode ?: return
                 viewModelScope.launch {
-                    when (val deleteResult = bookClubUseCases.deleteBookClubComment(
-                        clubCode,
-                        bookId,
-                        action.commentId
-                    )) {
+                    when (
+                        val deleteResult = bookClubUseCases.deleteBookClubComment(
+                            clubCode,
+                            bookId,
+                            action.commentId
+                        )
+                    ) {
                         is Result.Success -> {
                             loadClubComments(clubCode)
                         }

@@ -24,6 +24,7 @@ class UpdateShelfStyleUseCaseImpl(
         private const val TAG = "UpdateShelfStyle"
     }
 
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
         return try {
             // Get the shelf to update
@@ -54,7 +55,9 @@ class UpdateShelfStyleUseCaseImpl(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Update shelf style failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 }

@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
@@ -18,11 +19,16 @@ class JsonBookshelfSerializer(
     private val exportMapper: BookshelfExportMapper
 ) : BookshelfSerializer {
 
+    companion object {
+        private const val TAG = "JsonBookshelfSerializer"
+    }
+
     private val json = Json {
         prettyPrint = false // Minified JSON for smaller URL size with GZip compression
         ignoreUnknownKeys = true
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override fun serialize(shelf: Bookshelf): Result<String, DataError.Local> {
         return try {
             val exportData = exportMapper.toExportData(shelf)
@@ -31,10 +37,13 @@ class JsonBookshelfSerializer(
         } catch (_: SerializationException) {
             Result.Error(DataError.Local.SERIALIZATION_ERROR)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Serialization failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override fun deserialize(jsonData: String): Result<BookshelfExportData, DataError.Local> {
         return try {
             val exportData = json.decodeFromString<BookshelfExportData>(jsonData)
@@ -42,7 +51,9 @@ class JsonBookshelfSerializer(
         } catch (_: SerializationException) {
             Result.Error(DataError.Local.SERIALIZATION_ERROR)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Deserialization failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 }

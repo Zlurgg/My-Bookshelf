@@ -18,6 +18,7 @@ class RenameShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : RenameShelfUseCase {
 
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local> {
         return try {
             // Trim whitespace from new name
@@ -44,7 +45,13 @@ class RenameShelfUseCaseImpl(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Rename shelf failed - Mapped to: %s", error)
+            Result.Error(error)
         }
+    }
+
+    companion object {
+        private const val TAG = "RenameShelf"
     }
 }

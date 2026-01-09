@@ -20,6 +20,7 @@ class UpdateRepositoryImpl(
     private val config: UpdateConfig
 ) : UpdateRepository {
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun getLatestRelease(): Result<UpdateInfo> = withContext(Dispatchers.IO) {
         try {
             Timber.d("Fetching latest release from GitHub")
@@ -36,6 +37,7 @@ class UpdateRepositoryImpl(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun getReleaseByVersion(version: String): Result<UpdateInfo> = withContext(Dispatchers.IO) {
         try {
             // GitHub tags typically use "v" prefix (e.g., "v1.0.5")

@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -10,6 +11,11 @@ class ToggleBookPurchaseUseCaseImpl(
     private val bookRepository: BookRepository
 ) : ToggleBookPurchaseUseCase {
 
+    companion object {
+        private const val TAG = "ToggleBookPurchase"
+    }
+
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun execute(book: Book, purchased: Boolean): Result<Book, DataError.Local> {
         return try {
             // Check if book already exists to preserve personal metadata
@@ -33,7 +39,9 @@ class ToggleBookPurchaseUseCaseImpl(
             bookRepository.upsertBook(updatedBook)
             Result.Success(updatedBook)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Toggle book purchase failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 }

@@ -7,6 +7,7 @@ import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.SerializationException
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.core.data.network.HttpStatusCodes
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -39,23 +40,58 @@ object ErrorMapper {
 
     fun mapHttpStatusToDataError(statusCode: Int): DataError.Remote {
         return when (statusCode) {
-            400 -> DataError.Remote.CLIENT_ERROR
-            401 -> DataError.Remote.UNAUTHORIZED
-            403 -> DataError.Remote.FORBIDDEN
-            404 -> DataError.Remote.NOT_FOUND
-            408 -> DataError.Remote.REQUEST_TIMEOUT
-            422 -> DataError.Remote.MALFORMED_REQUEST
-            429 -> DataError.Remote.TOO_MANY_REQUESTS
-            in 500..599 -> DataError.Remote.SERVER_ERROR
+            HttpStatusCodes.BAD_REQUEST -> DataError.Remote.CLIENT_ERROR
+            HttpStatusCodes.UNAUTHORIZED -> DataError.Remote.UNAUTHORIZED
+            HttpStatusCodes.FORBIDDEN -> DataError.Remote.FORBIDDEN
+            HttpStatusCodes.NOT_FOUND -> DataError.Remote.NOT_FOUND
+            HttpStatusCodes.REQUEST_TIMEOUT -> DataError.Remote.REQUEST_TIMEOUT
+            HttpStatusCodes.UNPROCESSABLE_ENTITY -> DataError.Remote.MALFORMED_REQUEST
+            HttpStatusCodes.TOO_MANY_REQUESTS -> DataError.Remote.TOO_MANY_REQUESTS
+            in HttpStatusCodes.SERVER_ERROR_RANGE -> DataError.Remote.SERVER_ERROR
             else -> DataError.Remote.UNKNOWN
         }
     }
 
-    inline fun <T> safeCall(action: () -> T): Result<T, DataError.Local> {
+    /**
+     * Wraps a synchronous operation with exception handling and logging.
+     * Converts any exception to a typed DataError.Local.
+     *
+     * @param tag Identifier for logging (e.g., class or operation name)
+     * @param action The operation to execute
+     */
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error
+    inline fun <T> safeCall(
+        tag: String = "ErrorMapper",
+        action: () -> T
+    ): Result<T, DataError.Local> {
         return try {
             Result.Success(action())
         } catch (e: Exception) {
-            Result.Error(mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(tag).e(e, "Operation failed - Mapped to: %s", error)
+            Result.Error(error)
+        }
+    }
+
+    /**
+     * Wraps a suspend operation with exception handling and logging.
+     * Use this for coroutine-based operations (database, network, etc.)
+     *
+     * @param tag Identifier for logging (e.g., class or operation name)
+     * @param action The suspend operation to execute
+     */
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error
+    suspend inline fun <T> safeSuspendCall(
+        tag: String = "ErrorMapper",
+        action: () -> T
+    ): Result<T, DataError.Local> {
+        return try {
+            Result.Success(action())
+        } catch (e: Exception) {
+            coroutineContext.ensureActive()
+            val error = mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(tag).e(e, "Operation failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 
@@ -63,6 +99,7 @@ object ErrorMapper {
      * HTTP-specific network call that handles Ktor HTTP operations.
      * Combines exception handling with HTTP status code analysis.
      */
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error
     suspend inline fun <reified T> httpNetworkCall(
         execute: () -> HttpResponse
     ): Result<T, DataError.Remote> {
@@ -85,11 +122,12 @@ object ErrorMapper {
      * Converts HTTP response to Result based on status code and response body.
      * Integrates with mapHttpStatusToDataError for comprehensive status handling.
      */
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts deserialization errors to Result.Error
     suspend inline fun <reified T> responseToResult(
         response: HttpResponse
     ): Result<T, DataError.Remote> {
         return when (response.status.value) {
-            in 200..299 -> {
+            in HttpStatusCodes.SUCCESS_RANGE -> {
                 try {
                     Result.Success(response.body<T>())
                 } catch (e: Exception) {

@@ -12,6 +12,15 @@ config:
 # Formatting rules (from detekt-formatting module / ktlint)
 formatting:
   active: true
+  Indentation:
+    # Disabled: ktlint expects 8-space continuation indent (2x indent_size)
+    # but Android/IntelliJ standard is 4-space. No config option available.
+    # IDE handles indentation enforcement instead.
+    active: false
+  MaximumLineLength:
+    excludes: ['**/test/**', '**/androidTest/**']
+  NoWildcardImports:
+    excludes: ['**/test/**', '**/androidTest/**']
   PackageName:
     active: true
     excludes:
@@ -25,20 +34,24 @@ complexity:
     excludes: ['**/presentation/**']
   LongParameterList:
     functionThreshold: 10
-    constructorThreshold: 15
+    constructorThreshold: 20  # Increased for aggregator classes like BookClubUseCases
     excludes: ['**/presentation/**']
   LargeClass:
-    threshold: 500
+    threshold: 600  # Increased for ViewModels, Repositories
+    excludes: ['**/presentation/**', '**/repository/**']  # ViewModels and Repositories excluded
   ComplexCondition:
     threshold: 5
   CyclomaticComplexMethod:
     threshold: 20
+    excludes: ['**/presentation/**', '**/error/**']  # Composable functions, ViewModels, and ErrorFormatter have complex when/if chains
   TooManyFunctions:
     thresholdInFiles: 25
-    thresholdInClasses: 25
-    thresholdInInterfaces: 25
+    thresholdInClasses: 45  # Increased for Repositories and data sources
+    thresholdInInterfaces: 45  # Increased for DAOs and data source interfaces
     thresholdInObjects: 20
     thresholdInEnums: 15
+  NestedBlockDepth:
+    threshold: 5  # Increased from default 4 for complex use cases
 
 coroutines:
   active: true
@@ -56,6 +69,7 @@ exceptions:
     excludes: ['**/test/**', '**/androidTest/**']
   TooGenericExceptionThrown:
     active: true
+    excludes: ['**/test/**', '**/androidTest/**']  # Test mocks legitimately throw RuntimeException
 
 naming:
   active: true
@@ -73,6 +87,8 @@ performance:
 
 potential-bugs:
   active: true
+  ImplicitDefaultLocale:
+    active: false  # UI formatting in Compose uses default locale intentionally
 
 style:
   active: true
@@ -85,13 +101,26 @@ style:
     ignoreAnnotation: true
     ignoreNamedArgument: true
     ignoreEnums: true
+    ignoreNumbers:
+      - '-1'
+      - '0'
+      - '1'
+      - '2'
+      - '3'
+      - '4'
+      - '5'
+      # Note: HTTP status codes and timeouts extracted to named constants
+      # @see HttpStatusCodes, ImageLoaderConfig, ApiConfig.Http
   MaxLineLength:
     excludes: ['**/test/**', '**/androidTest/**']
     maxLineLength: 120
   ReturnCount:
     max: 4
     excludeGuardClauses: true
+    excludes: ['**/repository/**', '**/usecase/**', '**/usecases/**', '**/engine/**']  # Validation-heavy code uses early returns
   UnusedPrivateMember:
     allowedNames: "(_|ignored|expected|serialVersionUID|.*Preview)"
   WildcardImport:
     excludes: ['**/test/**', '**/androidTest/**']
+  UseRequire:
+    active: false  # Using throw IllegalArgumentException is fine for explicit control

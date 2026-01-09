@@ -20,6 +20,7 @@ class DeleteShelfUseCaseImpl(
         private const val TAG = "DeleteShelf"
     }
 
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> {
         return try {
             // Get shelf to check if it has a book club
@@ -55,10 +56,13 @@ class DeleteShelfUseCaseImpl(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Delete shelf failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun restore(shelf: Bookshelf): Result<Unit, DataError.Local> {
         return try {
             repository.addShelf(shelf)
@@ -69,7 +73,9 @@ class DeleteShelfUseCaseImpl(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Restore shelf failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 }

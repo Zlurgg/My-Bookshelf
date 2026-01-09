@@ -57,7 +57,10 @@ class DeepLinkImportUseCaseImpl(
         }
     }
 
-    override suspend fun importBookshelfWithCustomName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
+    override suspend fun importBookshelfWithCustomName(
+        jsonData: String,
+        customName: String
+    ): Result<Unit, DataError.Local> {
         Timber.tag(TAG).d("Importing bookshelf with custom name: '%s'", customName)
 
         // First check if the custom name also conflicts

@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookDetailsWithShelfStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
@@ -43,6 +44,7 @@ class GetBookDetailsUseCaseImpl(
             }
     }
 
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local> {
         return try {
             // Load description from remote and update the book
@@ -58,10 +60,13 @@ class GetBookDetailsUseCaseImpl(
                 }
             }
         } catch (e: Exception) {
-            Result.Error(
-                ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
-            )
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Load book description failed - Mapped to: %s", error)
+            Result.Error(error)
         }
+    }
+
+    companion object {
+        private const val TAG = "GetBookDetails"
     }
 }

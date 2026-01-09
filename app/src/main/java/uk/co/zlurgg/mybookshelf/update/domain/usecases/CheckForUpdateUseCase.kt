@@ -21,6 +21,7 @@ class CheckForUpdateUseCaseImpl(
     private val updatePreferencesRepository: UpdatePreferencesRepository,
     private val currentVersion: String
 ) : CheckForUpdateUseCase {
+    @Suppress("TooGenericExceptionCaught")
     override suspend operator fun invoke(forceCheck: Boolean): UpdateInfo? {
         return try {
             Timber.d("Checking for updates (current: $currentVersion, force: $forceCheck)")

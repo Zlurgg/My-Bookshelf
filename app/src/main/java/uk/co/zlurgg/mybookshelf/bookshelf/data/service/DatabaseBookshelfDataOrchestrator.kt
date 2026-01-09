@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import kotlinx.coroutines.flow.first
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
@@ -20,6 +21,11 @@ class DatabaseBookshelfDataOrchestrator(
     private val bookRepository: BookRepository
 ) : BookshelfDataOrchestrator {
 
+    companion object {
+        private const val TAG = "BookshelfDataOrchestrator"
+    }
+
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun loadShelfForExport(shelfId: String): Result<Bookshelf, DataError.Local> {
         return try {
             val allShelves = bookcaseRepository.getAllShelves().first()
@@ -29,10 +35,13 @@ class DatabaseBookshelfDataOrchestrator(
             val books = bookshelfRepository.getBooksForShelf(shelfId).first()
             Result.Success(shelf.copy(books = books))
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Load shelf for export failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun importShelfToDatabase(shelf: Bookshelf): Result<Unit, DataError.Local> {
         return try {
             // Add all books to the repository first
@@ -50,7 +59,9 @@ class DatabaseBookshelfDataOrchestrator(
 
             Result.Success(Unit)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Import shelf to database failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 }

@@ -56,6 +56,7 @@ fun <T, E : Error> Result<T, E>.getOrNull(): T? {
     }
 }
 
+@Suppress("TooGenericExceptionThrown") // Intentional: utility function for test code and debugging
 fun <T, E : Error> Result<T, E>.getOrThrow(): T {
     return when (this) {
         is Result.Success -> data

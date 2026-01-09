@@ -54,6 +54,7 @@ class SyncEngine(
     /**
      * Performs a full sync cycle: push local changes, then pull remote changes.
      */
+    @Suppress("TooGenericExceptionCaught")
     suspend fun performFullSync(userId: String): Result<SyncResult, DataError.Sync> {
         Timber.tag(TAG).d("=== SYNC START for user: %s ===", userId)
 

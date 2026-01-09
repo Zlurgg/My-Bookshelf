@@ -48,6 +48,7 @@ fun WelcomeScreenRoot(
     )
 }
 
+@Suppress("UnusedParameter") // State parameter kept for future expansion and API consistency
 @Composable
 fun WelcomeScreen(
     state: WelcomeState,

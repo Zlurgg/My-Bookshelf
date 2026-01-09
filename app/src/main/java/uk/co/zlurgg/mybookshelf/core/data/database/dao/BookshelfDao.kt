@@ -39,7 +39,12 @@ interface BookshelfDao {
      * See SystemOwnerIds.TUTORIAL for the canonical constant.
      */
     @Query(
-        "SELECT * FROM BookshelfEntity WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__') AND syncStatus != 'DELETED' ORDER BY position ASC"
+        """
+        SELECT * FROM BookshelfEntity
+        WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__')
+        AND syncStatus != 'DELETED'
+        ORDER BY position ASC
+        """
     )
     fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>>
 
@@ -64,7 +69,12 @@ interface BookshelfDao {
 
     // Queries
     @Query(
-        "SELECT b.* FROM BookEntity b INNER JOIN BookshelfBookCrossRef s ON b.id = s.bookId WHERE s.shelfId = :shelfId AND s.syncStatus != 'DELETED' ORDER BY s.addedAt DESC"
+        """
+        SELECT b.* FROM BookEntity b
+        INNER JOIN BookshelfBookCrossRef s ON b.id = s.bookId
+        WHERE s.shelfId = :shelfId AND s.syncStatus != 'DELETED'
+        ORDER BY s.addedAt DESC
+        """
     )
     fun getBooksForShelf(shelfId: String): Flow<List<BookEntity>>
 
@@ -98,7 +108,11 @@ interface BookshelfDao {
     suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long)
 
     @Query(
-        "UPDATE BookshelfBookCrossRef SET syncStatus = :status, lastModifiedAt = :timestamp WHERE shelfId = :shelfId AND bookId = :bookId"
+        """
+        UPDATE BookshelfBookCrossRef
+        SET syncStatus = :status, lastModifiedAt = :timestamp
+        WHERE shelfId = :shelfId AND bookId = :bookId
+        """
     )
     suspend fun updateCrossRefSyncStatus(shelfId: String, bookId: String, status: String, timestamp: Long)
 

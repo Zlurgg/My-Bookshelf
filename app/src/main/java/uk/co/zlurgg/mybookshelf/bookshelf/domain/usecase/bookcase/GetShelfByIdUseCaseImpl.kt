@@ -11,11 +11,12 @@ class GetShelfByIdUseCaseImpl(
 ) : GetShelfByIdUseCase {
 
     override suspend fun execute(shelfId: String): Result<Bookshelf?, DataError.Local> {
-        return try {
-            val shelf = bookcaseRepository.getShelfById(shelfId)
-            Result.Success(shelf)
-        } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+        return ErrorMapper.safeSuspendCall(TAG) {
+            bookcaseRepository.getShelfById(shelfId)
         }
+    }
+
+    companion object {
+        private const val TAG = "GetShelfById"
     }
 }

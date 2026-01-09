@@ -25,6 +25,7 @@ class ClearUserDataUseCaseImpl(
         private const val TAG = "ClearUserData"
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun execute(userId: String): Result<Int, DataError.Local> {
         Timber.tag(TAG).d("=== CLEARING USER DATA ===")
         Timber.tag(TAG).d("User ID: %s", userId)
@@ -59,7 +60,7 @@ class ClearUserDataUseCaseImpl(
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Failed to clear user data")
             val error = ErrorMapper.mapExceptionToDataError(e)
-            Result.Error(if (error is DataError.Local) error else DataError.Local.DATABASE_ERROR)
+            Result.Error(error as? DataError.Local ?: DataError.Local.DATABASE_ERROR)
         }
     }
 }

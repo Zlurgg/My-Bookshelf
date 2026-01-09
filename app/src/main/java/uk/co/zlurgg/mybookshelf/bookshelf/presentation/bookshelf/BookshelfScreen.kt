@@ -135,7 +135,11 @@ fun BookshelfScreen(
                                 } else {
                                     ImageVector.vectorResource(R.drawable.ic_tidy_books)
                                 },
-                                contentDescription = if (state.isTidyMode) "Switch to natural arrangement" else "Tidy shelf",
+                                contentDescription = if (state.isTidyMode) {
+                                    "Switch to natural arrangement"
+                                } else {
+                                    "Tidy shelf"
+                                },
                                 modifier = Modifier.size(28.dp)
                             )
                         }

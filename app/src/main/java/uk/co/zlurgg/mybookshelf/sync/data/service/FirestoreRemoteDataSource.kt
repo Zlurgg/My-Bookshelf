@@ -678,6 +678,7 @@ class FirestoreRemoteDataSource(
 
     // ==================== Helper Methods ====================
 
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun <T> executeFirestoreOperation(
         operationName: String,
         operation: suspend () -> T

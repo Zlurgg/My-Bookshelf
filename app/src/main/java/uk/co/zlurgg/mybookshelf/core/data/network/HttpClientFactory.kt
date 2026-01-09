@@ -53,7 +53,7 @@ object HttpClientFactory {
                 }
                 exponentialDelay(
                     base = 1.0,
-                    maxDelayMs = 10_000L
+                    maxDelayMs = ApiConfig.Http.MAX_RETRY_DELAY_MS
                 )
             }
             install(Logging) {

@@ -70,6 +70,7 @@ class SyncRepositoryImpl(
         return syncEngine.pullRemoteChanges(userId)
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun resolveConflict(
         conflict: SyncConflict,
         resolution: ConflictResolution

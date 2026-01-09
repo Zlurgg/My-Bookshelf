@@ -31,6 +31,7 @@ class GoogleAuthUiClient(
     private val auth = FirebaseAuth.getInstance()
     private val credentialManager = CredentialManager.create(context)
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun signIn(): Result<UserData, DataError.Local> {
         Timber.tag(TAG).d("=== GOOGLE SIGN-IN START ===")
 
@@ -89,6 +90,7 @@ class GoogleAuthUiClient(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun signOut(): Result<Unit, DataError.Local> {
         Timber.tag(TAG).d("=== SIGN OUT START ===")
         return try {

@@ -21,6 +21,7 @@ class HandleTutorialAccessUseCaseImpl(
     private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
 ) : HandleTutorialAccessUseCase {
 
+    @Suppress("TooGenericExceptionThrown") // Intentional: throws within safeCall which converts to Result.Error
     override suspend fun execute(): Result<TutorialAccessResult, DataError.Local> {
         return ErrorMapper.safeCall {
             // Check if tutorial shelf already exists

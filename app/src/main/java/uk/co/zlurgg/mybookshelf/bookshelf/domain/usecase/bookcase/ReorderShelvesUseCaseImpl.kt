@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -10,6 +11,7 @@ class ReorderShelvesUseCaseImpl(
     private val repository: BookcaseRepository
 ) : ReorderShelvesUseCase {
 
+    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(
         shelfToMove: Bookshelf,
         newPosition: Int,
@@ -45,7 +47,13 @@ class ReorderShelvesUseCaseImpl(
 
             Result.Success(updatedShelves)
         } catch (e: Exception) {
-            Result.Error(ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN)
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Reorder shelves failed - Mapped to: %s", error)
+            Result.Error(error)
         }
+    }
+
+    companion object {
+        private const val TAG = "ReorderShelves"
     }
 }

@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -20,21 +21,26 @@ import uk.co.zlurgg.mybookshelf.core.util.Base64Encoder
  */
 class UrlEncodedShareTokenService : ShareTokenService {
 
+    companion object {
+        private const val TAG = "UrlEncodedShareToken"
+    }
+
     /**
      * Generates a "token" by encoding the shelf JSON data with GZip compression and Base64.
      *
      * @param shelfJsonData The JSON representation of the bookshelf to share
      * @return Success with encoded data string, or Error if encoding fails
      */
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun generateToken(shelfJsonData: String): Result<String, DataError.Local> {
         return try {
             val encoded = Base64Encoder.encode(shelfJsonData)
             Result.Success(encoded)
         } catch (e: Exception) {
-            Result.Error(
-                ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
-            )
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
+                ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Token generation failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 
@@ -44,15 +50,16 @@ class UrlEncodedShareTokenService : ShareTokenService {
      * @param token The Base64-encoded GZip-compressed shelf data
      * @return Success with decoded JSON string, or Error if decoding fails
      */
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun getShelfDataByToken(token: String): Result<String, DataError.Local> {
         return try {
             val decoded = Base64Encoder.decode(token)
             Result.Success(decoded)
         } catch (e: Exception) {
-            Result.Error(
-                ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
-                    ?: DataError.Local.UNKNOWN
-            )
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local
+                ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "Token decoding failed - Mapped to: %s", error)
+            Result.Error(error)
         }
     }
 

@@ -138,6 +138,71 @@ when (val deleteResult = deleteBookUseCase(id)) {
 }
 ```
 
+### Error Handling Best Practices (ENFORCED)
+
+**Repository Layer - The Exception Boundary:**
+- Repositories should **never throw exceptions** to UseCases
+- All repository methods that can fail should return `Result<T, DataError>`
+- Catch exceptions at the repository level, log them, and convert to typed errors
+
+```kotlin
+// ✅ CORRECT: Repository handles exceptions internally
+class BookRepositoryImpl(...) : BookRepository {
+    @Suppress("TooGenericExceptionCaught") // Intentional: repository is the exception boundary
+    override suspend fun getBookById(id: String): Result<Book?, DataError.Local> {
+        return try {
+            Result.Success(dao.getById(id)?.toDomain())
+        } catch (e: Exception) {
+            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
+            Timber.tag(TAG).e(e, "getBookById failed - Mapped to: %s", error)
+            Result.Error(error)
+        }
+    }
+}
+
+// ❌ WRONG: Repository throws exceptions
+class BookRepositoryImpl(...) : BookRepository {
+    override suspend fun getBookById(id: String): Book? {
+        return dao.getById(id)?.toDomain() // Throws if database fails!
+    }
+}
+```
+
+**UseCase Layer - Clean Business Logic:**
+- When repositories return Result, UseCases don't need try-catch
+- For simple delegation, use `ErrorMapper.safeSuspendCall(TAG)` as a safety net
+- For complex logic with early returns, use `@Suppress("TooGenericExceptionCaught")` with logging
+
+```kotlin
+// ✅ IDEAL: No try-catch needed when repository returns Result
+class DeleteBookUseCaseImpl(private val repository: BookRepository) : DeleteBookUseCase {
+    override suspend fun execute(id: String): Result<Unit, DataError.Local> {
+        return repository.deleteBook(id) // Already returns Result
+    }
+}
+
+// ✅ PRAGMATIC: Use safeSuspendCall when repository might throw
+class GetBookUseCaseImpl(private val repository: BookRepository) : GetBookUseCase {
+    override suspend fun execute(id: String): Result<Book?, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            repository.getBookById(id)
+        }
+    }
+
+    companion object {
+        private const val TAG = "GetBook"
+    }
+}
+```
+
+**Key Rules:**
+- ✅ Log ALL caught exceptions with Timber (include TAG for filtering)
+- ✅ Map exceptions to typed errors using `ErrorMapper.mapExceptionToDataError()`
+- ✅ Add `@Suppress("TooGenericExceptionCaught")` with explanatory comment
+- ✅ Always add `companion object { private const val TAG = "ClassName" }`
+- ❌ Never silently catch exceptions without logging
+- ❌ Never let exceptions propagate from repository to UseCase
+
 ### Service Abstraction Pattern
 
 Abstract system dependencies for testability:

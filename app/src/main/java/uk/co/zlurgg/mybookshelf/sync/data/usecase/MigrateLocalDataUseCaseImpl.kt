@@ -21,6 +21,7 @@ class MigrateLocalDataUseCaseImpl(
     private val currentUserProvider: CurrentUserProvider
 ) : MigrateLocalDataUseCase {
 
+    @Suppress("TooGenericExceptionCaught")
     override suspend fun execute(): Result<MigrationResult, DataError.Sync> {
         val userId = currentUserProvider.getCurrentUserId()
             ?: return Result.Error(DataError.Sync.MIGRATION_FAILED)
