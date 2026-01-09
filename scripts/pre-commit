@@ -1,0 +1,14 @@
+#!/bin/bash
+# Pre-commit hook for MyBookshelf
+# Runs detekt (includes formatting checks via detekt-formatting)
+
+echo "Running detekt..."
+./gradlew detekt --daemon
+
+if [ $? -ne 0 ]; then
+    echo "❌ Detekt found issues. Please fix them before committing."
+    exit 1
+fi
+
+echo "✅ All checks passed!"
+exit 0
