@@ -56,7 +56,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-1")
+        val updatedBook = mockRepository.getStoredBook("book-1")
         assertEquals("Should update reading status", ReadingStatus.CURRENTLY_READING, updatedBook?.readingStatus)
     }
 
@@ -77,7 +77,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-2")
+        val updatedBook = mockRepository.getStoredBook("book-2")
         assertEquals("Should update personal rating", 4.5f, updatedBook?.personalRating ?: 0f, 0.01f)
     }
 
@@ -100,7 +100,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-3")
+        val updatedBook = mockRepository.getStoredBook("book-3")
         assertEquals("Should update personal notes", notes, updatedBook?.personalNotes)
     }
 
@@ -123,7 +123,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-4")
+        val updatedBook = mockRepository.getStoredBook("book-4")
         assertEquals("Should update purchase date", purchaseDate, updatedBook?.purchaseDate)
     }
 
@@ -232,7 +232,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-8")
+        val updatedBook = mockRepository.getStoredBook("book-8")
         assertEquals("Should auto-set dateAdded", 1700000000000L, updatedBook?.dateAdded)
     }
 
@@ -256,18 +256,18 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-9")
+        val updatedBook = mockRepository.getStoredBook("book-9")
         assertEquals("Should preserve original dateAdded", originalDateAdded, updatedBook?.dateAdded)
     }
 
     @Test
-    fun `returns error when repository throws exception`() = runTest {
+    fun `returns error when repository returns error`() = runTest {
         // Given
         val existingBook = TestBookBuilder()
             .withId("book-10")
             .build()
         mockRepository.addBook(existingBook)
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
         // When
         val result = useCase.execute(
@@ -277,7 +277,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return error", result is Result.Error)
-        assertTrue("Should return DataError.Local", (result as Result.Error).error is DataError.Local)
+        assertEquals(DataError.Local.DATABASE_ERROR, (result as Result.Error).error)
     }
 
     @Test
@@ -308,7 +308,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-11")!!
+        val updatedBook = mockRepository.getStoredBook("book-11")!!
         assertEquals("Should update reading status", ReadingStatus.READ, updatedBook.readingStatus)
         assertEquals("Should update personal rating", 4.8f, updatedBook.personalRating, 0.01f)
         assertEquals("Should update personal notes", notes, updatedBook.personalNotes)
@@ -334,7 +334,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success for exactly 5000 characters", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-12")
+        val updatedBook = mockRepository.getStoredBook("book-12")
         assertEquals("Should accept 5000 character notes", 5000, updatedBook?.personalNotes?.length)
     }
 
@@ -354,7 +354,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success for rating 1.0", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-13")
+        val updatedBook = mockRepository.getStoredBook("book-13")
         assertEquals("Should accept rating of 1.0", 1.0f, updatedBook?.personalRating ?: 0f, 0.01f)
     }
 
@@ -374,7 +374,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success for rating 5.0", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-14")
+        val updatedBook = mockRepository.getStoredBook("book-14")
         assertEquals("Should accept rating of 5.0", 5.0f, updatedBook?.personalRating ?: 0f, 0.01f)
     }
 
@@ -395,7 +395,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success for rating 0.0", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-16")
+        val updatedBook = mockRepository.getStoredBook("book-16")
         assertEquals("Should accept rating of 0.0 (unrated)", 0.0f, updatedBook?.personalRating ?: 0f, 0.01f)
     }
 
@@ -419,7 +419,7 @@ class UpdateBookMetadataUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = mockRepository.getBookById("book-15")!!
+        val updatedBook = mockRepository.getStoredBook("book-15")!!
         assertEquals("Should update reading status", ReadingStatus.READ, updatedBook.readingStatus)
         assertEquals("Should preserve personal rating", 3.5f, updatedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Original notes", updatedBook.personalNotes)

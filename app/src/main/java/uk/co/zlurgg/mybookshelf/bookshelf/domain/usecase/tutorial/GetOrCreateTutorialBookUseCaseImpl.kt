@@ -8,7 +8,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
@@ -24,58 +23,68 @@ class GetOrCreateTutorialBookUseCaseImpl(
 ) : GetOrCreateTutorialBookUseCase {
 
     override suspend fun execute(tutorialShelfId: String): Result<String, DataError.Local> {
-        return ErrorMapper.safeCall {
-            // Check if tutorial book already exists
-            val existingBook = bookRepository.getBookById(BookDetailConstants.TUTORIAL_BOOK_ID)
+        // Check if tutorial book already exists
+        val existingBook = when (val getResult = bookRepository.getBookById(BookDetailConstants.TUTORIAL_BOOK_ID)) {
+            is Result.Success -> getResult.data
+            is Result.Error -> return getResult
+        }
 
-            val bookId = if (existingBook != null) {
-                // Tutorial book exists, ensure it's on the tutorial shelf
-                val isOnShelf = bookshelfRepository
-                    .isBookOnShelf(existingBook.id, tutorialShelfId)
-                    .first()
+        val bookId = if (existingBook != null) {
+            // Tutorial book exists, ensure it's on the tutorial shelf
+            val isOnShelf = bookshelfRepository
+                .isBookOnShelf(existingBook.id, tutorialShelfId)
+                .first()
 
-                if (!isOnShelf) {
-                    bookshelfRepository.addBookToShelf(tutorialShelfId, existingBook.id)
+            if (!isOnShelf) {
+                when (val addResult = bookshelfRepository.addBookToShelf(tutorialShelfId, existingBook.id)) {
+                    is Result.Success -> { /* continue */ }
+                    is Result.Error -> return addResult
                 }
-
-                existingBook.id
-            } else {
-                // Create new tutorial book
-                val tutorialBook = Book(
-                    id = BookDetailConstants.TUTORIAL_BOOK_ID,
-                    title = BookDetailConstants.TUTORIAL_BOOK_TITLE,
-                    authors = listOf(BookDetailConstants.TUTORIAL_BOOK_AUTHOR),
-                    imageUrl = "", // No cover image for tutorial book
-                    description = BookDetailConstants.TUTORIAL_BOOK_DESCRIPTION,
-                    languages = listOf("en"),
-                    firstPublishYear = null,
-                    averageRating = 5.0,
-                    ratingCount = 1,
-                    numPages = null,
-                    numEditions = 1,
-                    purchased = false,
-                    spineColor = BookColorGenerator.generateSpineColor(),
-                    readingStatus = ReadingStatus.READ,
-                    personalRating = 5f,
-                    personalNotes = "Welcome to My Bookshelf! Read this book to learn how to use the app.",
-                    dateAdded = timeProvider.currentTimeMillis(),
-                    purchaseDate = null,
-                    isbn = null,
-                    publisher = BookDetailConstants.TUTORIAL_BOOK_PUBLISHER,
-                    publishDate = null,
-                    internetArchiveId = null
-                )
-
-                // Persist the tutorial book as a system entity (not synced to cloud)
-                bookRepository.upsertSystemBook(tutorialBook)
-
-                // Add it to the tutorial shelf
-                bookshelfRepository.addBookToShelf(tutorialShelfId, tutorialBook.id)
-
-                tutorialBook.id
             }
 
-            bookId
+            existingBook.id
+        } else {
+            // Create new tutorial book
+            val tutorialBook = Book(
+                id = BookDetailConstants.TUTORIAL_BOOK_ID,
+                title = BookDetailConstants.TUTORIAL_BOOK_TITLE,
+                authors = listOf(BookDetailConstants.TUTORIAL_BOOK_AUTHOR),
+                imageUrl = "", // No cover image for tutorial book
+                description = BookDetailConstants.TUTORIAL_BOOK_DESCRIPTION,
+                languages = listOf("en"),
+                firstPublishYear = null,
+                averageRating = 5.0,
+                ratingCount = 1,
+                numPages = null,
+                numEditions = 1,
+                purchased = false,
+                spineColor = BookColorGenerator.generateSpineColor(),
+                readingStatus = ReadingStatus.READ,
+                personalRating = 5f,
+                personalNotes = "Welcome to My Bookshelf! Read this book to learn how to use the app.",
+                dateAdded = timeProvider.currentTimeMillis(),
+                purchaseDate = null,
+                isbn = null,
+                publisher = BookDetailConstants.TUTORIAL_BOOK_PUBLISHER,
+                publishDate = null,
+                internetArchiveId = null
+            )
+
+            // Persist the tutorial book as a system entity (not synced to cloud)
+            when (val upsertResult = bookRepository.upsertSystemBook(tutorialBook)) {
+                is Result.Success -> { /* continue */ }
+                is Result.Error -> return upsertResult
+            }
+
+            // Add it to the tutorial shelf
+            when (val addResult = bookshelfRepository.addBookToShelf(tutorialShelfId, tutorialBook.id)) {
+                is Result.Success -> { /* continue */ }
+                is Result.Error -> return addResult
+            }
+
+            tutorialBook.id
         }
+
+        return Result.Success(bookId)
     }
 }

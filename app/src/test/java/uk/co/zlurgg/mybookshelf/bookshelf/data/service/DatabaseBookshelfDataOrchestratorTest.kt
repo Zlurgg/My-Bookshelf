@@ -117,8 +117,8 @@ class DatabaseBookshelfDataOrchestratorTest {
         assertTrue("Should succeed", result is Result.Success)
 
         // Verify all books were saved
-        assertEquals("Should save book 1", book1, mockBookRepository.getBookById("book-1"))
-        assertEquals("Should save book 2", book2, mockBookRepository.getBookById("book-2"))
+        assertEquals("Should save book 1", book1, mockBookRepository.getStoredBook("book-1"))
+        assertEquals("Should save book 2", book2, mockBookRepository.getStoredBook("book-2"))
 
         // Verify shelf was saved
         assertTrue("Should call addShelf", mockBookcaseRepository.addShelfCalled)
@@ -150,13 +150,13 @@ class DatabaseBookshelfDataOrchestratorTest {
     }
 
     @Test
-    fun `importShelfToDatabase handles repository exception`() = runTest {
+    fun `importShelfToDatabase handles repository error`() = runTest {
         // Given
         val shelf = TestShelfBuilder()
             .withId("shelf-1")
             .withName("Test Shelf")
             .build()
-        mockBookcaseRepository.shouldThrowException = true
+        mockBookcaseRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = orchestrator.importShelfToDatabase(shelf)
@@ -189,7 +189,7 @@ class DatabaseBookshelfDataOrchestratorTest {
 
         // Then
         assertTrue("Should succeed", result is Result.Success)
-        val savedBook = mockBookRepository.getBookById("book-1")
+        val savedBook = mockBookRepository.getStoredBook("book-1")
         assertEquals("Should upsert with new title", "New Title", savedBook?.title)
     }
 

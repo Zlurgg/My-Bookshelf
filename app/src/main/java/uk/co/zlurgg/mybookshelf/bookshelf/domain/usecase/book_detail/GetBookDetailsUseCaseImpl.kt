@@ -2,13 +2,11 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookDetailsWithShelfStatus
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
@@ -23,7 +21,10 @@ class GetBookDetailsUseCaseImpl(
 
     override suspend fun execute(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> {
         // Get shelf info to check if it's a book club
-        val shelf = bookcaseRepository.getShelfById(shelfId)
+        val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+            is Result.Success -> getResult.data
+            is Result.Error -> null
+        }
         val isBookClub = shelf?.isBookClub ?: false
         val clubCode = shelf?.clubCode
 
@@ -32,7 +33,12 @@ class GetBookDetailsUseCaseImpl(
             .combine(
                 // Convert single book fetch to Flow behavior by getting book once
                 kotlinx.coroutines.flow.flow {
-                    emit(bookRepository.getBookById(bookId))
+                    val bookResult = bookRepository.getBookById(bookId)
+                    val book = when (bookResult) {
+                        is Result.Success -> bookResult.data
+                        is Result.Error -> null // Handle error gracefully in UI
+                    }
+                    emit(book)
                 }
             ) { isOnShelf, book ->
                 BookDetailsWithShelfStatus(
@@ -44,29 +50,12 @@ class GetBookDetailsUseCaseImpl(
             }
     }
 
-    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local> {
-        return try {
-            // Load description from remote and update the book
-            val descriptionResult = bookRepository.getBookDescription(bookId)
-            when (descriptionResult) {
-                is Result.Success -> {
-                    // The repository handles updating the book with the description
-                    Result.Success(Unit)
-                }
-                is Result.Error -> {
-                    // Convert remote error to local error for this context
-                    Result.Error(DataError.Local.UNKNOWN)
-                }
-            }
-        } catch (e: Exception) {
-            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
-            Timber.tag(TAG).e(e, "Load book description failed - Mapped to: %s", error)
-            Result.Error(error)
+        // Load description from remote and update the book
+        val descriptionResult = bookRepository.getBookDescription(bookId)
+        return when (descriptionResult) {
+            is Result.Success -> Result.Success(Unit)
+            is Result.Error -> Result.Error(DataError.Local.UNKNOWN)
         }
-    }
-
-    companion object {
-        private const val TAG = "GetBookDetails"
     }
 }

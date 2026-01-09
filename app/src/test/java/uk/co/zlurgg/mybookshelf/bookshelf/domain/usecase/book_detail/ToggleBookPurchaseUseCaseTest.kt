@@ -172,7 +172,7 @@ class ToggleBookPurchaseUseCaseTest {
     fun `execute returns error when repository fails`() = runTest {
         // Given
         val book = TestBookBuilder().withId("test-book").build()
-        mockBookRepository.shouldThrowException = true
+        mockBookRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
         // When
         val result = useCase.execute(book, true)
@@ -180,8 +180,8 @@ class ToggleBookPurchaseUseCaseTest {
         // Then
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
-        assertEquals(DataError.Local.UNKNOWN, error)
-        // getBookById throws exception first, so upsertBook is never called
+        assertEquals(DataError.Local.DATABASE_ERROR, error)
+        // getBookById returns error first, so upsertBook is never called
         assertEquals("Should not call upsertBook", 0, mockBookRepository.upsertBookCallCount)
     }
 

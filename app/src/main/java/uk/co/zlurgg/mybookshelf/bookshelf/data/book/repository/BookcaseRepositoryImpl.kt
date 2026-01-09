@@ -8,7 +8,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 class BookcaseRepositoryImpl(
@@ -25,44 +28,61 @@ class BookcaseRepositoryImpl(
     override fun getBookCountForShelf(shelfId: String): Flow<Int> =
         dao.getBookCountForShelf(shelfId)
 
-    override suspend fun getShelfById(shelfId: String): Bookshelf? =
-        dao.getShelfById(shelfId)?.toDomain()
-
-    override suspend fun addShelf(shelf: Bookshelf) {
-        val ownerId = currentUserProvider.getCurrentUserId()
-        dao.upsertShelfWithSyncInit(
-            shelf.toEntity(ownerId),
-            timeProvider.currentTimeMillis()
-        )
+    override suspend fun getShelfById(shelfId: String): Result<Bookshelf?, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.getShelfById(shelfId)?.toDomain()
+        }
     }
 
-    override suspend fun removeShelf(shelfId: String) {
-        val timestamp = timeProvider.currentTimeMillis()
-        // Soft delete: mark as DELETED so SyncEngine can push delete to Firestore
-        // SyncEngine will hard delete after successful remote delete
-        dao.markAllCrossRefsForShelfAs(shelfId, "DELETED", timestamp)
-        dao.updateShelfSyncStatus(shelfId, "DELETED", timestamp)
+    override suspend fun addShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            val ownerId = currentUserProvider.getCurrentUserId()
+            dao.upsertShelfWithSyncInit(
+                shelf.toEntity(ownerId),
+                timeProvider.currentTimeMillis()
+            )
+        }
     }
 
-    override suspend fun hardDeleteShelf(shelfId: String) {
-        // Hard delete: immediately remove from Room database
-        // Use for book clubs where Firestore is source of truth
-        dao.deleteAllCrossRefsForShelf(shelfId)
-        dao.deleteShelf(shelfId)
+    override suspend fun removeShelf(shelfId: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            val timestamp = timeProvider.currentTimeMillis()
+            // Soft delete: mark as DELETED so SyncEngine can push delete to Firestore
+            // SyncEngine will hard delete after successful remote delete
+            dao.markAllCrossRefsForShelfAs(shelfId, "DELETED", timestamp)
+            dao.updateShelfSyncStatus(shelfId, "DELETED", timestamp)
+        }
     }
 
-    override suspend fun updateShelf(shelf: Bookshelf) {
-        val ownerId = currentUserProvider.getCurrentUserId()
-        dao.upsertShelfWithSyncInit(
-            shelf.toEntity(ownerId),
-            timeProvider.currentTimeMillis()
-        )
+    override suspend fun hardDeleteShelf(shelfId: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            // Hard delete: immediately remove from Room database
+            // Use for book clubs where Firestore is source of truth
+            dao.deleteAllCrossRefsForShelf(shelfId)
+            dao.deleteShelf(shelfId)
+        }
     }
 
-    override suspend fun addSystemShelf(shelf: Bookshelf) {
-        // System shelves are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
-        val entity = shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL)
-            .copy(syncStatus = "SYNCED")
-        dao.upsertShelf(entity)
+    override suspend fun updateShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            val ownerId = currentUserProvider.getCurrentUserId()
+            dao.upsertShelfWithSyncInit(
+                shelf.toEntity(ownerId),
+                timeProvider.currentTimeMillis()
+            )
+        }
+    }
+
+    override suspend fun addSystemShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            // System shelves are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
+            val entity = shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL)
+                .copy(syncStatus = "SYNCED")
+            dao.upsertShelf(entity)
+        }
+    }
+
+    companion object {
+        private const val TAG = "BookcaseRepository"
     }
 }

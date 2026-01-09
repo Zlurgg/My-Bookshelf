@@ -9,7 +9,8 @@ class MockBookRepository : BookRepository {
 
     private val books = mutableMapOf<String, Book>()
 
-    var shouldThrowException = false
+    var errorToReturn: DataError.Local? = null
+    var remoteErrorToReturn: DataError.Remote? = null
     var upsertBookCallCount = 0
     var upsertSystemBookCallCount = 0
     var deleteBookCallCount = 0
@@ -21,7 +22,8 @@ class MockBookRepository : BookRepository {
 
     fun reset() {
         books.clear()
-        shouldThrowException = false
+        errorToReturn = null
+        remoteErrorToReturn = null
         upsertBookCallCount = 0
         upsertSystemBookCallCount = 0
         deleteBookCallCount = 0
@@ -38,56 +40,43 @@ class MockBookRepository : BookRepository {
 
     fun getAllBooks(): List<Book> = books.values.toList()
 
-    override suspend fun getBookById(bookId: String): Book? {
+    /** Direct access for test verification - bypasses Result wrapping */
+    fun getStoredBook(bookId: String): Book? = books[bookId]
+
+    override suspend fun getBookById(bookId: String): Result<Book?, DataError.Local> {
         getBookByIdCallCount++
         lastQueriedBookId = bookId
-
-        if (shouldThrowException) {
-            throw RuntimeException("Mock repository error")
-        }
-
-        return books[bookId]
+        errorToReturn?.let { return Result.Error(it) }
+        return Result.Success(books[bookId])
     }
 
-    override suspend fun upsertBook(book: Book) {
+    override suspend fun upsertBook(book: Book): Result<Unit, DataError.Local> {
         upsertBookCallCount++
         lastUpsertedBook = book
-
-        if (shouldThrowException) {
-            throw RuntimeException("Mock repository error")
-        }
-
+        errorToReturn?.let { return Result.Error(it) }
         books[book.id] = book
+        return Result.Success(Unit)
     }
 
-    override suspend fun deleteBook(bookId: String) {
+    override suspend fun deleteBook(bookId: String): Result<Unit, DataError.Local> {
         deleteBookCallCount++
         lastDeletedBookId = bookId
-
-        if (shouldThrowException) {
-            throw RuntimeException("Mock repository error")
-        }
-
+        errorToReturn?.let { return Result.Error(it) }
         books.remove(bookId)
+        return Result.Success(Unit)
     }
 
     override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
-        if (shouldThrowException) {
-            return Result.Error(DataError.Remote.REQUEST_TIMEOUT)
-        }
-
+        remoteErrorToReturn?.let { return Result.Error(it) }
         val book = books[bookId]
         return Result.Success(book?.description)
     }
 
-    override suspend fun upsertSystemBook(book: Book) {
+    override suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local> {
         upsertSystemBookCallCount++
         lastUpsertedSystemBook = book
-
-        if (shouldThrowException) {
-            throw RuntimeException("Mock repository error")
-        }
-
+        errorToReturn?.let { return Result.Error(it) }
         books[book.id] = book
+        return Result.Success(Unit)
     }
 }

@@ -1,5 +1,8 @@
 package uk.co.zlurgg.mybookshelf.update.domain.repository
 
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+
 /**
  * Repository interface for update-related preferences.
  * Minimal interface following Interface Segregation Principle.
@@ -11,14 +14,15 @@ interface UpdatePreferencesRepository {
     /**
      * Get the version the user has dismissed (opted out of updating to).
      *
-     * @return version string that was dismissed, or null if none
+     * @return Result containing version string that was dismissed, or null if none
      */
-    suspend fun getDismissedVersion(): String?
+    suspend fun getDismissedVersion(): Result<String?, DataError.Local>
 
     /**
      * Set the version the user has dismissed.
      *
      * @param version the version string to mark as dismissed
+     * @return Result indicating success or failure
      */
-    suspend fun setDismissedVersion(version: String)
+    suspend fun setDismissedVersion(version: String): Result<Unit, DataError.Local>
 }

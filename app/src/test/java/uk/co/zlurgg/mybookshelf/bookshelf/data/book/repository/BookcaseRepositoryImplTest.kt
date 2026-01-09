@@ -14,10 +14,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
@@ -119,7 +121,7 @@ class BookcaseRepositoryImplTest {
         repository.addShelf(shelf)
 
         // When
-        val retrievedShelf = repository.getShelfById("test-shelf-123")
+        val retrievedShelf = getShelfOrNull("test-shelf-123")
 
         // Then
         assertEquals("Should return correct shelf ID", "test-shelf-123", retrievedShelf?.id)
@@ -131,7 +133,7 @@ class BookcaseRepositoryImplTest {
     @Test
     fun `getShelfById returns null when shelf does not exist`() = runTest {
         // When
-        val retrievedShelf = repository.getShelfById("non-existent-shelf")
+        val retrievedShelf = getShelfOrNull("non-existent-shelf")
 
         // Then
         assertNull("Should return null for non-existent shelf", retrievedShelf)
@@ -159,7 +161,7 @@ class BookcaseRepositoryImplTest {
         repository.updateShelf(updatedShelf)
 
         // Then
-        val retrievedShelf = repository.getShelfById("update-shelf")!!
+        val retrievedShelf = getShelfOrFail("update-shelf")
         assertEquals("Should preserve ID", "update-shelf", retrievedShelf.id)
         assertEquals("Should update name", "Updated Name", retrievedShelf.name)
         assertEquals("Should update style", ShelfStyle.SilverMetal, retrievedShelf.shelfStyle)
@@ -179,7 +181,7 @@ class BookcaseRepositoryImplTest {
         repository.updateShelf(newShelf)
 
         // Then
-        val retrievedShelf = repository.getShelfById("upsert-shelf")
+        val retrievedShelf = getShelfOrNull("upsert-shelf")
         assertEquals("Should create new shelf with correct ID", "upsert-shelf", retrievedShelf?.id)
         assertEquals("Should create new shelf with correct name", "Upserted Shelf", retrievedShelf?.name)
         assertEquals("Should create new shelf with correct style", ShelfStyle.WhiteMetal, retrievedShelf?.shelfStyle)
@@ -196,7 +198,7 @@ class BookcaseRepositoryImplTest {
         repository.addShelf(shelf)
 
         // Verify shelf exists
-        val beforeDeletion = repository.getShelfById("delete-shelf")
+        val beforeDeletion = getShelfOrNull("delete-shelf")
         assertEquals("Shelf should exist before deletion", "delete-shelf", beforeDeletion?.id)
 
         // When
@@ -339,8 +341,8 @@ class BookcaseRepositoryImplTest {
         val allShelves = repository.getAllShelves().first()
         assertEquals("Should have two visible shelves remaining", 2, allShelves.size)
 
-        val remainingShelf1 = repository.getShelfById("multi-2")
-        val remainingShelf2 = repository.getShelfById("multi-3")
+        val remainingShelf1 = getShelfOrNull("multi-2")
+        val remainingShelf2 = getShelfOrNull("multi-3")
 
         assertEquals("Should update shelf name", "Updated Second", remainingShelf1?.name)
         assertEquals("Should preserve other shelf", "Third", remainingShelf2?.name)
@@ -375,9 +377,9 @@ class BookcaseRepositoryImplTest {
         repository.addShelf(whiteMetalShelf)
 
         // Then
-        val retrievedDarkWood = repository.getShelfById("dark-wood")
-        val retrievedSilverMetal = repository.getShelfById("silver-metal")
-        val retrievedWhiteMetal = repository.getShelfById("white-metal")
+        val retrievedDarkWood = getShelfOrNull("dark-wood")
+        val retrievedSilverMetal = getShelfOrNull("silver-metal")
+        val retrievedWhiteMetal = getShelfOrNull("white-metal")
 
         assertEquals("Should preserve DarkWood style", ShelfStyle.DarkWood, retrievedDarkWood?.shelfStyle)
         assertEquals("Should preserve SilverMetal style", ShelfStyle.SilverMetal, retrievedSilverMetal?.shelfStyle)
@@ -409,6 +411,19 @@ class BookcaseRepositoryImplTest {
         assertEquals("Position 1 should be pos-3", "pos-3", allShelves[1].id)
         assertEquals("Position 2 should be pos-1", "pos-1", allShelves[2].id)
     }
+
+    // Helper functions to unwrap Result types
+    private suspend fun getShelfOrNull(shelfId: String): Bookshelf? =
+        when (val result = repository.getShelfById(shelfId)) {
+            is Result.Success -> result.data
+            is Result.Error -> null
+        }
+
+    private suspend fun getShelfOrFail(shelfId: String): Bookshelf =
+        when (val result = repository.getShelfById(shelfId)) {
+            is Result.Success -> result.data ?: throw AssertionError("Shelf not found: $shelfId")
+            is Result.Error -> throw AssertionError("Expected shelf but got error: ${result.error}")
+        }
 }
 
 // Extension function to convert test builder to entity

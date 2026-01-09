@@ -10,7 +10,10 @@ import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdatePreferencesRepository
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "welcome_preferences")
@@ -53,13 +56,21 @@ class WelcomePreferencesImpl(
         }
     }
 
-    override suspend fun getDismissedVersion(): String? {
-        return dataStore.data.first()[PreferencesKeys.DISMISSED_UPDATE_VERSION]
+    override suspend fun getDismissedVersion(): Result<String?, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dataStore.data.first()[PreferencesKeys.DISMISSED_UPDATE_VERSION]
+        }
     }
 
-    override suspend fun setDismissedVersion(version: String) {
-        dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DISMISSED_UPDATE_VERSION] = version
+    override suspend fun setDismissedVersion(version: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dataStore.edit { preferences ->
+                preferences[PreferencesKeys.DISMISSED_UPDATE_VERSION] = version
+            }
         }
+    }
+
+    companion object {
+        private const val TAG = "WelcomePreferences"
     }
 }

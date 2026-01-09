@@ -22,10 +22,18 @@ class LeaveBookClubUseCaseImpl(
         Timber.tag(TAG).d("Attempting to leave book club for shelf: %s", shelfId)
 
         // 1. Get the shelf to find the club code
-        val shelf = bookcaseRepository.getShelfById(shelfId)
-        if (shelf == null) {
-            Timber.tag(TAG).e("Shelf not found: %s", shelfId)
-            return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
+        val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+            is Result.Success -> {
+                if (getResult.data == null) {
+                    Timber.tag(TAG).e("Shelf not found: %s", shelfId)
+                    return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
+                }
+                getResult.data
+            }
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to get shelf: %s", getResult.error)
+                return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
+            }
         }
 
         if (!shelf.isBookClub) {

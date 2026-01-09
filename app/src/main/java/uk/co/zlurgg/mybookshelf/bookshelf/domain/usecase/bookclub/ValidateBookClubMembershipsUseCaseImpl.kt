@@ -48,7 +48,10 @@ class ValidateBookClubMembershipsUseCaseImpl(
             val localShelfId = membership.localShelfId
 
             // Get the local shelf to get its name for the notification
-            val localShelf = bookcaseRepository.getShelfById(localShelfId)
+            val localShelf = when (val getResult = bookcaseRepository.getShelfById(localShelfId)) {
+                is Result.Success -> getResult.data
+                is Result.Error -> null
+            }
             val shelfName = localShelf?.name ?: "Unknown Club"
 
             // Check if club still exists in Firestore

@@ -143,8 +143,9 @@ class BookcaseViewModelTest {
             override fun getSignedInUser() = null
         }
         val mockAuthStateRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository {
-            override suspend fun isSignedIn() = false
-            override suspend fun setSignedInState(isSignedIn: Boolean) = Unit
+            override suspend fun isSignedIn(): Result<Boolean, DataError.Local> = Result.Success(false)
+            override suspend fun setSignedInState(isSignedIn: Boolean): Result<Unit, DataError.Local> =
+                Result.Success(Unit)
         }
         val mockSyncScheduler = object : SyncSchedulerService {
             override fun schedulePeriodicSync() = Unit

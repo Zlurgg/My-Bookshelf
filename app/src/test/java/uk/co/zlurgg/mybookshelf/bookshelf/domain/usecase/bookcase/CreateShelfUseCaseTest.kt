@@ -80,9 +80,9 @@ class CreateShelfUseCaseTest {
     }
 
     @Test
-    fun `returns error when repository throws exception`() = runTest {
+    fun `returns error when repository fails`() = runTest {
         // Given
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute("Test", ShelfStyle.DarkWood, emptyList())

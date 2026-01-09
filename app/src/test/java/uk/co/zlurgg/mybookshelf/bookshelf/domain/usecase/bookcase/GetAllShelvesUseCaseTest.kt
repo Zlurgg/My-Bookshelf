@@ -133,7 +133,7 @@ class GetAllShelvesUseCaseTest {
     @Test
     fun `handles repository exception gracefully`() = runTest {
         // Given
-        mockRepository.shouldThrowException = true
+        mockRepository.shouldThrowFlowException = true
 
         // When/Then - Flow-based, so exception would be thrown on collect
         // This test documents that exceptions propagate through Flow

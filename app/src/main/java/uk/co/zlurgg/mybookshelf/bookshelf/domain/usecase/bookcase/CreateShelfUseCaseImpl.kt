@@ -7,7 +7,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTut
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
@@ -25,28 +24,29 @@ class CreateShelfUseCaseImpl(
         style: ShelfStyle,
         existingShelves: List<Bookshelf>
     ): Result<Bookshelf, DataError.Local> {
-        return ErrorMapper.safeCall {
-            val nextPosition = existingShelves.maxOfOrNull { it.position }?.plus(1) ?: 0
-            val newShelf = Bookshelf(
-                id = idGenerator.generateId(),
-                name = name,
-                books = emptyList(),
-                shelfStyle = style,
-                position = nextPosition
-            )
+        val nextPosition = existingShelves.maxOfOrNull { it.position }?.plus(1) ?: 0
+        val newShelf = Bookshelf(
+            id = idGenerator.generateId(),
+            name = name,
+            books = emptyList(),
+            shelfStyle = style,
+            position = nextPosition
+        )
 
-            repository.addShelf(newShelf)
-
-            // If this is the tutorial shelf, ensure the tutorial book is added
-            if (name == BookshelfConstants.TUTORIAL_SHELF_NAME) {
-                getOrCreateTutorialBook.execute(newShelf.id)
-            }
-
-            // Trigger sync after successful shelf creation
-            Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: CreateShelf")
-            syncSchedulerService.triggerImmediateSync()
-
-            newShelf
+        when (val addResult = repository.addShelf(newShelf)) {
+            is Result.Success -> { /* continue */ }
+            is Result.Error -> return addResult
         }
+
+        // If this is the tutorial shelf, ensure the tutorial book is added
+        if (name == BookshelfConstants.TUTORIAL_SHELF_NAME) {
+            getOrCreateTutorialBook.execute(newShelf.id)
+        }
+
+        // Trigger sync after successful shelf creation
+        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: CreateShelf")
+        syncSchedulerService.triggerImmediateSync()
+
+        return Result.Success(newShelf)
     }
 }

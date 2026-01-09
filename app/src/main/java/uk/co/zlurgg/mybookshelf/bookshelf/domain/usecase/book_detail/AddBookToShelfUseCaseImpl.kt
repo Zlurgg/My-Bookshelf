@@ -8,7 +8,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
@@ -27,63 +26,67 @@ class AddBookToShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : AddBookToShelfUseCase {
 
-    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> {
-        return try {
-            // Check shelf book limit before adding
-            val shelf = bookcaseRepository.getShelfById(shelfId)
-                ?: return Result.Error(DataError.Local.NOT_FOUND)
-
-            if (shelf.books.size >= MAX_BOOKS_PER_SHELF) {
-                Timber.tag(TAG).w("Shelf %s has reached maximum of %d books", shelfId, MAX_BOOKS_PER_SHELF)
-                return Result.Error(DataError.Local.MAX_BOOKS_REACHED)
-            }
-
-            // Check if book already exists to preserve personal metadata
-            val existingBook = bookRepository.getBookById(book.id)
-
-            val bookToUpsert = if (existingBook != null) {
-                // Book exists - preserve ALL existing data including spine color
-                book.copy(
-                    spineColor = existingBook.spineColor,
-                    readingStatus = existingBook.readingStatus,
-                    personalRating = existingBook.personalRating,
-                    personalNotes = existingBook.personalNotes,
-                    dateAdded = existingBook.dateAdded,
-                    purchaseDate = existingBook.purchaseDate,
-                    purchased = existingBook.purchased
-                )
-            } else {
-                // New book - generate spine color now (not during search)
-                book.copy(spineColor = BookColorGenerator.generateSpineColor())
-            }
-
-            // Persist the book (with preserved metadata if it existed)
-            bookRepository.upsertBook(bookToUpsert)
-
-            // Then create the shelf association
-            bookshelfRepository.addBookToShelf(shelfId, book.id)
-
-            // If this is a book club shelf, also sync to Firestore club collection
-            if (shelf.isBookClub && !shelf.clubCode.isNullOrEmpty()) {
-                Timber.tag(TAG).d("Syncing book %s to book club %s", book.id, shelf.clubCode)
-                val syncResult = bookClubRepository.syncBookToClub(shelf.clubCode, bookToUpsert)
-                if (syncResult is Result.Error) {
-                    Timber.tag(TAG).w("Failed to sync book to club: %s", syncResult.error)
-                    // Don't fail the whole operation - local add succeeded
-                }
-            }
-
-            // Trigger sync after successful book addition
-            Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: AddBookToShelf")
-            syncSchedulerService.triggerImmediateSync()
-
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
-            Timber.tag(TAG).e(e, "Add book to shelf failed - Mapped to: %s", error)
-            Result.Error(error)
+        // Check shelf book limit before adding
+        val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+            is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)
+            is Result.Error -> return getResult
         }
+
+        if (shelf.books.size >= MAX_BOOKS_PER_SHELF) {
+            Timber.tag(TAG).w("Shelf %s has reached maximum of %d books", shelfId, MAX_BOOKS_PER_SHELF)
+            return Result.Error(DataError.Local.MAX_BOOKS_REACHED)
+        }
+
+        // Check if book already exists to preserve personal metadata
+        val existingBook = when (val getResult = bookRepository.getBookById(book.id)) {
+            is Result.Success -> getResult.data
+            is Result.Error -> return getResult
+        }
+
+        val bookToUpsert = if (existingBook != null) {
+            // Book exists - preserve ALL existing data including spine color
+            book.copy(
+                spineColor = existingBook.spineColor,
+                readingStatus = existingBook.readingStatus,
+                personalRating = existingBook.personalRating,
+                personalNotes = existingBook.personalNotes,
+                dateAdded = existingBook.dateAdded,
+                purchaseDate = existingBook.purchaseDate,
+                purchased = existingBook.purchased
+            )
+        } else {
+            // New book - generate spine color now (not during search)
+            book.copy(spineColor = BookColorGenerator.generateSpineColor())
+        }
+
+        // Persist the book (with preserved metadata if it existed)
+        when (val upsertResult = bookRepository.upsertBook(bookToUpsert)) {
+            is Result.Success -> { /* continue */ }
+            is Result.Error -> return upsertResult
+        }
+
+        // Then create the shelf association
+        when (val addResult = bookshelfRepository.addBookToShelf(shelfId, book.id)) {
+            is Result.Success -> { /* continue */ }
+            is Result.Error -> return addResult
+        }
+
+        // If this is a book club shelf, also sync to Firestore club collection
+        if (shelf.isBookClub && !shelf.clubCode.isNullOrEmpty()) {
+            Timber.tag(TAG).d("Syncing book %s to book club %s", book.id, shelf.clubCode)
+            val syncResult = bookClubRepository.syncBookToClub(shelf.clubCode, bookToUpsert)
+            if (syncResult is Result.Error) {
+                Timber.tag(TAG).w("Failed to sync book to club: %s", syncResult.error)
+                // Don't fail the whole operation - local add succeeded
+            }
+        }
+
+        // Trigger sync after successful book addition
+        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: AddBookToShelf")
+        syncSchedulerService.triggerImmediateSync()
+
+        return Result.Success(Unit)
     }
 
     companion object {

@@ -5,6 +5,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * Reusable mock BookcaseRepository for testing.
@@ -15,7 +17,8 @@ class MockBookcaseRepository : BookcaseRepository {
     private val shelves = mutableMapOf<String, Bookshelf>()
 
     // Configuration properties
-    var shouldThrowException = false
+    var errorToReturn: DataError.Local? = null
+    var shouldThrowFlowException = false // For Flow methods that don't return Result
     var shelvesToReturn = emptyList<Bookshelf>()
     var shelfByIdToReturn: Bookshelf? = null
     var shelfById: Map<String, Bookshelf> = emptyMap() // Map-based lookup (takes priority over shelfByIdToReturn)
@@ -38,69 +41,79 @@ class MockBookcaseRepository : BookcaseRepository {
     var lastUpdatedShelf: Bookshelf? = null
 
     override fun getAllShelves(): Flow<List<Bookshelf>> = flow {
-        if (shouldThrowException) throw RuntimeException("Test exception")
+        if (shouldThrowFlowException) {
+            throw RuntimeException("Test exception from Flow")
+        }
         emit(shelvesToReturn)
     }
 
     override fun getBookCountForShelf(shelfId: String): Flow<Int> =
         flowOf(bookCountsToReturn[shelfId] ?: 0)
 
-    override suspend fun getShelfById(shelfId: String): Bookshelf? {
-        if (shouldThrowException) throw RuntimeException("Test exception")
+    override suspend fun getShelfById(shelfId: String): Result<Bookshelf?, DataError.Local> {
+        errorToReturn?.let { return Result.Error(it) }
         // Map-based lookup takes priority for multi-shelf tests
-        return shelfById[shelfId] ?: shelfByIdToReturn
+        return Result.Success(shelfById[shelfId] ?: shelfByIdToReturn)
     }
 
-    override suspend fun addShelf(shelf: Bookshelf) {
+    override suspend fun addShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
         addShelfCalled = true
         addShelfCallCount++
         lastAddedShelf = shelf
 
-        if (shouldThrowException) throw RuntimeException("Test exception")
+        errorToReturn?.let { return Result.Error(it) }
 
         shelves[shelf.id] = shelf
+        return Result.Success(Unit)
     }
 
-    override suspend fun removeShelf(shelfId: String) {
+    override suspend fun removeShelf(shelfId: String): Result<Unit, DataError.Local> {
         removeShelfCalled = true
         removeShelfCallCount++
         lastRemovedShelfId = shelfId
 
-        if (shouldThrowException) throw RuntimeException("Test exception")
+        errorToReturn?.let { return Result.Error(it) }
 
         shelves.remove(shelfId)
+        return Result.Success(Unit)
     }
 
-    override suspend fun hardDeleteShelf(shelfId: String) {
+    override suspend fun hardDeleteShelf(shelfId: String): Result<Unit, DataError.Local> {
         hardDeleteShelfCalled = true
         hardDeleteShelfCallCount++
         lastHardDeletedShelfId = shelfId
 
-        if (shouldThrowException) throw RuntimeException("Test exception")
+        errorToReturn?.let { return Result.Error(it) }
 
         shelves.remove(shelfId)
+        return Result.Success(Unit)
     }
 
-    override suspend fun updateShelf(shelf: Bookshelf) {
-        if (shouldThrowException) throw RuntimeException("Test exception")
+    override suspend fun updateShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
         updateShelfCalled = true
         lastUpdatedShelf = shelf
+
+        errorToReturn?.let { return Result.Error(it) }
+
+        return Result.Success(Unit)
     }
 
-    override suspend fun addSystemShelf(shelf: Bookshelf) {
+    override suspend fun addSystemShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
         addSystemShelfCalled = true
         addSystemShelfCallCount++
         lastAddedSystemShelf = shelf
 
-        if (shouldThrowException) throw RuntimeException("Test exception")
+        errorToReturn?.let { return Result.Error(it) }
 
         shelves[shelf.id] = shelf
+        return Result.Success(Unit)
     }
 
     // Helper methods for test setup
     fun reset() {
         shelves.clear()
-        shouldThrowException = false
+        errorToReturn = null
+        shouldThrowFlowException = false
         shelvesToReturn = emptyList()
         shelfByIdToReturn = null
         shelfById = emptyMap()

@@ -26,8 +26,10 @@ class CheckSignInStatusUseCaseTest {
     }
 
     private val mockAuthStateRepository = object : AuthStateRepository {
-        override suspend fun isSignedIn(): Boolean = mockIsSignedIn
-        override suspend fun setSignedInState(isSignedIn: Boolean) = Unit
+        override suspend fun isSignedIn(): Result<Boolean, DataError.Local> =
+            Result.Success(mockIsSignedIn)
+        override suspend fun setSignedInState(isSignedIn: Boolean): Result<Unit, DataError.Local> =
+            Result.Success(Unit)
     }
 
     private lateinit var useCase: CheckSignInStatusUseCase

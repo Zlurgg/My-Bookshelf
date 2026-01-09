@@ -118,7 +118,7 @@ class AddBookToShelfUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val storedBook = mockBookRepository.getBookById("existing-book")
+        val storedBook = mockBookRepository.getStoredBook("existing-book")
         assertEquals("Should update book title", "Updated Title", storedBook?.title)
         // Personal metadata (purchased) should be preserved from existing book
         assertEquals("Should preserve purchased status", false, storedBook?.purchased)
@@ -163,7 +163,7 @@ class AddBookToShelfUseCaseTest {
         val book = TestBookBuilder().withId("test-book").build()
         val shelfId = "test-shelf"
         setUpDefaultShelf(shelfId)
-        mockBookRepository.shouldThrowException = true
+        mockBookRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute(book, shelfId)
@@ -183,7 +183,7 @@ class AddBookToShelfUseCaseTest {
         val book = TestBookBuilder().withId("test-book").build()
         val shelfId = "test-shelf"
         setUpDefaultShelf(shelfId)
-        mockBookshelfRepository.shouldThrowException = true
+        mockBookshelfRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute(book, shelfId)

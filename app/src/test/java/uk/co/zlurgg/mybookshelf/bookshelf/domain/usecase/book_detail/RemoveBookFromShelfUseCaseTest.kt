@@ -146,7 +146,7 @@ class RemoveBookFromShelfUseCaseTest {
         // Given
         val bookId = "test-book"
         val shelfId = "test-shelf"
-        mockBookshelfRepository.shouldThrowException = true
+        mockBookshelfRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute(bookId, shelfId)

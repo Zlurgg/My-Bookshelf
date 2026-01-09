@@ -151,7 +151,7 @@ class BookshelfImportValidatorImplTest {
     @Test
     fun `checkNameConflict handles repository exception`() = runTest {
         // Given
-        mockBookcaseRepository.shouldThrowException = true
+        mockBookcaseRepository.shouldThrowFlowException = true
 
         // When
         val result = validator.checkNameConflict("Fiction")

@@ -245,7 +245,7 @@ class ReorderShelvesUseCaseTest {
             TestShelfBuilder().withId("shelf-1").withPosition(1).build()
         )
         val shelfToMove = shelves[0]
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute(shelfToMove, 1, shelves)

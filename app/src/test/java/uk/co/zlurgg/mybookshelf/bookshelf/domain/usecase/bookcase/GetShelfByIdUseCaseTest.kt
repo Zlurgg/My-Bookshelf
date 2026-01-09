@@ -128,7 +128,7 @@ class GetShelfByIdUseCaseTest {
     fun `execute returns error when repository fails`() = runTest {
         // Given
         val shelfId = "test-shelf"
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute(shelfId)

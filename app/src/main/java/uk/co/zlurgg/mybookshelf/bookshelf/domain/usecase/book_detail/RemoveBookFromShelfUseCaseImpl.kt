@@ -5,7 +5,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
@@ -22,37 +21,36 @@ class RemoveBookFromShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : RemoveBookFromShelfUseCase {
 
-    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local> {
-        return try {
-            // Check if this is a book club shelf BEFORE removing
-            val shelf = bookcaseRepository.getShelfById(shelfId)
-            val clubCode = shelf?.clubCode?.takeIf { it.isNotEmpty() }
-            val isBookClub = shelf?.isBookClub == true && clubCode != null
-
-            // Remove the book-shelf association
-            bookshelfRepository.removeBookFromShelf(shelfId, bookId)
-
-            // If this is a book club shelf, also remove from Firestore club collection
-            if (isBookClub) {
-                Timber.tag(TAG).d("Removing book %s from book club %s", bookId, clubCode)
-                val syncResult = bookClubRepository.removeBookFromClub(clubCode, bookId)
-                if (syncResult is Result.Error) {
-                    Timber.tag(TAG).w("Failed to remove book from club: %s", syncResult.error)
-                    // Don't fail the whole operation - local remove succeeded
-                }
-            }
-
-            // Trigger sync after successful book removal
-            Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: RemoveBookFromShelf")
-            syncSchedulerService.triggerImmediateSync()
-
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
-            Timber.tag(TAG).e(e, "Remove book from shelf failed - Mapped to: %s", error)
-            Result.Error(error)
+        // Check if this is a book club shelf BEFORE removing
+        val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+            is Result.Success -> getResult.data
+            is Result.Error -> return getResult
         }
+        val clubCode = shelf?.clubCode?.takeIf { it.isNotEmpty() }
+        val isBookClub = shelf?.isBookClub == true && clubCode != null
+
+        // Remove the book-shelf association
+        when (val removeResult = bookshelfRepository.removeBookFromShelf(shelfId, bookId)) {
+            is Result.Success -> { /* continue */ }
+            is Result.Error -> return removeResult
+        }
+
+        // If this is a book club shelf, also remove from Firestore club collection
+        if (isBookClub && clubCode != null) {
+            Timber.tag(TAG).d("Removing book %s from book club %s", bookId, clubCode)
+            val syncResult = bookClubRepository.removeBookFromClub(clubCode, bookId)
+            if (syncResult is Result.Error) {
+                Timber.tag(TAG).w("Failed to remove book from club: %s", syncResult.error)
+                // Don't fail the whole operation - local remove succeeded
+            }
+        }
+
+        // Trigger sync after successful book removal
+        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: RemoveBookFromShelf")
+        syncSchedulerService.triggerImmediateSync()
+
+        return Result.Success(Unit)
     }
 
     companion object {

@@ -31,6 +31,30 @@ class BookRepositoryImplTest {
         override fun getCurrentUserId(): String = "test-user-id"
     }
 
+    /** Helper to unwrap Result for test assertions */
+    private suspend fun getBookOrNull(bookId: String) = when (val r = repository.getBookById(bookId)) {
+        is Result.Success -> r.data
+        is Result.Error -> null
+    }
+
+    /** Helper to unwrap Result - throws on error */
+    private suspend fun getBookOrFail(bookId: String) = when (val r = repository.getBookById(bookId)) {
+        is Result.Success -> r.data!!
+        is Result.Error -> throw AssertionError("Expected book but got error: ${r.error}")
+    }
+
+    /** Helper to save book and throw on error */
+    private suspend fun saveBook(book: uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book) {
+        val result = repository.upsertBook(book)
+        if (result is Result.Error) throw AssertionError("Failed to save book: ${result.error}")
+    }
+
+    /** Helper to delete book and throw on error */
+    private suspend fun removeBook(bookId: String) {
+        val result = repository.deleteBook(bookId)
+        if (result is Result.Error) throw AssertionError("Failed to delete book: ${result.error}")
+    }
+
     @Before
     fun setup() {
         // Create in-memory database for testing
@@ -55,7 +79,7 @@ class BookRepositoryImplTest {
         val nonExistentBookId = "non-existent-book"
 
         // When
-        val result = repository.getBookById(nonExistentBookId)
+        val result = getBookOrNull(nonExistentBookId)
 
         // Then
         assertNull("Should return null for non-existent book", result)
@@ -71,10 +95,10 @@ class BookRepositoryImplTest {
             .build()
 
         // Insert book first
-        repository.upsertBook(book)
+        saveBook(book)
 
         // When
-        val result = repository.getBookById("test-book-123")
+        val result = getBookOrNull("test-book-123")
 
         // Then
         assertEquals("Should return the stored book", book.id, result?.id)
@@ -94,10 +118,10 @@ class BookRepositoryImplTest {
             .build()
 
         // When
-        repository.upsertBook(newBook)
+        saveBook(newBook)
 
         // Then
-        val retrievedBook = repository.getBookById("new-book")
+        val retrievedBook = getBookOrNull("new-book")
         assertEquals("Should store book with correct ID", newBook.id, retrievedBook?.id)
         assertEquals("Should store book with correct title", newBook.title, retrievedBook?.title)
         assertEquals("Should store book with correct description", newBook.description, retrievedBook?.description)
@@ -119,13 +143,13 @@ class BookRepositoryImplTest {
         )
 
         // Insert original book
-        repository.upsertBook(originalBook)
+        saveBook(originalBook)
 
         // When - Update the book
-        repository.upsertBook(updatedBook)
+        saveBook(updatedBook)
 
         // Then
-        val retrievedBook = repository.getBookById("update-book")
+        val retrievedBook = getBookOrNull("update-book")
         assertEquals("Should have updated title", "Updated Title", retrievedBook?.title)
         assertTrue("Should have updated purchase status", retrievedBook?.purchased == true)
         assertEquals("Should preserve ID", originalBook.id, retrievedBook?.id)
@@ -137,10 +161,10 @@ class BookRepositoryImplTest {
         val completeBook = TestBookBuilder.completeBook()
 
         // When
-        repository.upsertBook(completeBook)
+        saveBook(completeBook)
 
         // Then
-        val retrievedBook = repository.getBookById(completeBook.id)!!
+        val retrievedBook = getBookOrFail(completeBook.id)
         assertEquals("Should preserve ID", completeBook.id, retrievedBook.id)
         assertEquals("Should preserve title", completeBook.title, retrievedBook.title)
         assertEquals("Should preserve image URL", completeBook.imageUrl, retrievedBook.imageUrl)
@@ -164,17 +188,17 @@ class BookRepositoryImplTest {
             .withTitle("Book for Deletion")
             .build()
 
-        repository.upsertBook(book)
+        saveBook(book)
 
         // Verify book exists
-        val beforeDeletion = repository.getBookById("book-to-delete")
+        val beforeDeletion = getBookOrNull("book-to-delete")
         assertEquals("Book should exist before deletion", book.id, beforeDeletion?.id)
 
         // When
-        repository.deleteBook("book-to-delete")
+        removeBook("book-to-delete")
 
         // Then
-        val afterDeletion = repository.getBookById("book-to-delete")
+        val afterDeletion = getBookOrNull("book-to-delete")
         assertNull("Book should not exist after deletion", afterDeletion)
     }
 
@@ -184,10 +208,10 @@ class BookRepositoryImplTest {
         val nonExistentBookId = "does-not-exist"
 
         // When - Should not throw exception
-        repository.deleteBook(nonExistentBookId)
+        removeBook(nonExistentBookId)
 
         // Then - Should complete successfully
-        val result = repository.getBookById(nonExistentBookId)
+        val result = getBookOrNull(nonExistentBookId)
         assertNull("Should return null for non-existent book", result)
     }
 
@@ -201,10 +225,10 @@ class BookRepositoryImplTest {
             .build()
 
         // When
-        repository.upsertBook(bookWithNulls)
+        saveBook(bookWithNulls)
 
         // Then
-        val retrievedBook = repository.getBookById("book-with-nulls")!!
+        val retrievedBook = getBookOrFail("book-with-nulls")
         assertEquals("Should preserve title", bookWithNulls.title, retrievedBook.title)
         assertEquals("Should handle null rating", null, retrievedBook.averageRating)
     }
@@ -220,10 +244,10 @@ class BookRepositoryImplTest {
             .build()
 
         // When
-        repository.upsertBook(bookWithEmptyCollections)
+        saveBook(bookWithEmptyCollections)
 
         // Then
-        val retrievedBook = repository.getBookById("empty-collections")!!
+        val retrievedBook = getBookOrFail("empty-collections")
         assertTrue("Should handle empty authors", retrievedBook.authors.isEmpty())
         assertTrue("Should handle empty languages", retrievedBook.languages.isEmpty())
     }
@@ -247,14 +271,14 @@ class BookRepositoryImplTest {
             .build()
 
         // When
-        repository.upsertBook(book1)
-        repository.upsertBook(book2)
-        repository.upsertBook(book3)
+        saveBook(book1)
+        saveBook(book2)
+        saveBook(book3)
 
         // Then
-        val retrieved1 = repository.getBookById("book-1")
-        val retrieved2 = repository.getBookById("book-2")
-        val retrieved3 = repository.getBookById("book-3")
+        val retrieved1 = getBookOrNull("book-1")
+        val retrieved2 = getBookOrNull("book-2")
+        val retrieved3 = getBookOrNull("book-3")
 
         assertEquals("Should retrieve first book correctly", "First Book", retrieved1?.title)
         assertEquals("Should retrieve second book correctly", "Second Book", retrieved2?.title)
@@ -328,10 +352,10 @@ class BookRepositoryImplTest {
             .build()
 
         // When
-        repository.upsertBook(bookWithLongData)
+        saveBook(bookWithLongData)
 
         // Then
-        val retrievedBook = repository.getBookById("long-data-book")!!
+        val retrievedBook = getBookOrFail("long-data-book")
         assertEquals("Should handle long title", longString, retrievedBook.title)
         assertEquals("Should handle long description", longString, retrievedBook.description)
     }

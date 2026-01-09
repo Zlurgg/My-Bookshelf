@@ -2,11 +2,13 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.repository
 
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 interface BookshelfRepository {
     // Book-shelf relationship operations
-    suspend fun addBookToShelf(shelfId: String, bookId: String)
-    suspend fun removeBookFromShelf(shelfId: String, bookId: String)
+    suspend fun addBookToShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local>
+    suspend fun removeBookFromShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local>
     fun getBooksForShelf(shelfId: String): Flow<List<Book>>
 
     // Book library membership queries

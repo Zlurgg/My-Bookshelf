@@ -7,6 +7,9 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 class BookshelfRepositoryImpl(
@@ -14,23 +17,31 @@ class BookshelfRepositoryImpl(
     private val timeProvider: TimeProvider
 ) : BookshelfRepository {
 
-    override suspend fun addBookToShelf(shelfId: String, bookId: String) {
-        val now = timeProvider.currentTimeMillis()
-        dao.upsertCrossRef(
-            BookshelfBookCrossRef(
-                shelfId = shelfId,
-                bookId = bookId,
-                addedAt = now
+    override suspend fun addBookToShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            val now = timeProvider.currentTimeMillis()
+            dao.upsertCrossRef(
+                BookshelfBookCrossRef(
+                    shelfId = shelfId,
+                    bookId = bookId,
+                    addedAt = now
+                )
             )
-        )
-        // Mark shelf as pending sync so bookIds list gets updated in Firestore
-        dao.updateShelfSyncStatus(shelfId, "PENDING", now)
+            // Mark shelf as pending sync so bookIds list gets updated in Firestore
+            dao.updateShelfSyncStatus(shelfId, "PENDING", now)
+        }
     }
 
-    override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
-        dao.deleteCrossRef(shelfId, bookId)
-        // Mark shelf as pending sync so bookIds list gets updated in Firestore
-        dao.updateShelfSyncStatus(shelfId, "PENDING", timeProvider.currentTimeMillis())
+    override suspend fun removeBookFromShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.deleteCrossRef(shelfId, bookId)
+            // Mark shelf as pending sync so bookIds list gets updated in Firestore
+            dao.updateShelfSyncStatus(shelfId, "PENDING", timeProvider.currentTimeMillis())
+        }
+    }
+
+    companion object {
+        private const val TAG = "BookshelfRepository"
     }
 
     override fun getBooksForShelf(shelfId: String): Flow<List<Book>> {

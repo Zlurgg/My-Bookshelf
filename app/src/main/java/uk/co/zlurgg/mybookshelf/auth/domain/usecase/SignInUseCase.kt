@@ -23,7 +23,13 @@ class SignInUseCase(
         return when (val signInResult = authService.signIn()) {
             is Result.Success -> {
                 Timber.tag(TAG).d("Sign-in successful, saving state")
-                authStateRepository.setSignedInState(true)
+                when (val stateResult = authStateRepository.setSignedInState(true)) {
+                    is Result.Success -> { /* State saved successfully */ }
+                    is Result.Error -> {
+                        Timber.tag(TAG).w("Failed to save auth state: %s", stateResult.error)
+                        // Continue anyway - Firebase auth succeeded
+                    }
+                }
 
                 // Note: Guest data migration is handled separately by the ViewModel
                 // after asking the user if they want to import guest data

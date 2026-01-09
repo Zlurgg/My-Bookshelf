@@ -119,7 +119,6 @@ class GetBookDetailsUseCaseTest {
             .build()
 
         mockBookRepository.addBook(book)
-        mockBookRepository.shouldThrowException = false
 
         // When
         val result = useCase.loadBookDescription(bookId)
@@ -132,7 +131,7 @@ class GetBookDetailsUseCaseTest {
     fun `loadBookDescription returns error when repository fails`() = runTest {
         // Given
         val bookId = "book-1"
-        mockBookRepository.shouldThrowException = true
+        mockBookRepository.remoteErrorToReturn = uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote.UNKNOWN
 
         // When
         val result = useCase.loadBookDescription(bookId)

@@ -1,47 +1,39 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail
 
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class ToggleBookPurchaseUseCaseImpl(
     private val bookRepository: BookRepository
 ) : ToggleBookPurchaseUseCase {
 
-    companion object {
-        private const val TAG = "ToggleBookPurchase"
-    }
-
-    @Suppress("TooGenericExceptionCaught")
     override suspend fun execute(book: Book, purchased: Boolean): Result<Book, DataError.Local> {
-        return try {
-            // Check if book already exists to preserve personal metadata
-            val existingBook = bookRepository.getBookById(book.id)
+        // Check if book already exists to preserve personal metadata
+        val existingBook = when (val getResult = bookRepository.getBookById(book.id)) {
+            is Result.Success -> getResult.data
+            is Result.Error -> return getResult
+        }
 
-            val updatedBook = if (existingBook != null) {
-                // Book exists - preserve personal metadata, update purchased status and other API data
-                book.copy(
-                    purchased = purchased,
-                    readingStatus = existingBook.readingStatus,
-                    personalRating = existingBook.personalRating,
-                    personalNotes = existingBook.personalNotes,
-                    dateAdded = existingBook.dateAdded,
-                    purchaseDate = existingBook.purchaseDate
-                )
-            } else {
-                // New book - use as-is with purchased status
-                book.copy(purchased = purchased)
-            }
+        val updatedBook = if (existingBook != null) {
+            // Book exists - preserve personal metadata, update purchased status and other API data
+            book.copy(
+                purchased = purchased,
+                readingStatus = existingBook.readingStatus,
+                personalRating = existingBook.personalRating,
+                personalNotes = existingBook.personalNotes,
+                dateAdded = existingBook.dateAdded,
+                purchaseDate = existingBook.purchaseDate
+            )
+        } else {
+            // New book - use as-is with purchased status
+            book.copy(purchased = purchased)
+        }
 
-            bookRepository.upsertBook(updatedBook)
-            Result.Success(updatedBook)
-        } catch (e: Exception) {
-            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
-            Timber.tag(TAG).e(e, "Toggle book purchase failed - Mapped to: %s", error)
-            Result.Error(error)
+        return when (val upsertResult = bookRepository.upsertBook(updatedBook)) {
+            is Result.Success -> Result.Success(updatedBook)
+            is Result.Error -> upsertResult
         }
     }
 }

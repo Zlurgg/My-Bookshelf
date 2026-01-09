@@ -6,6 +6,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
@@ -66,24 +67,24 @@ class UpsertBookUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val storedBook = mockRepository.getBookById("existing-book")
+        val storedBook = mockRepository.getStoredBook("existing-book")
         assertEquals("Should update title", "Updated Title", storedBook?.title)
         // Personal metadata (purchased) should be preserved from existing book
         assertEquals("Should preserve purchased status", false, storedBook?.purchased)
     }
 
     @Test
-    fun `returns error when repository throws exception`() = runTest {
+    fun `returns error when repository returns error`() = runTest {
         // Given
         val book = TestBookBuilder().build()
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
         // When
         val result = useCase.execute(book)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
-        // Error is correctly typed as DataError.Local after unwrapping Result.Error
+        assertEquals(DataError.Local.DATABASE_ERROR, (result as Result.Error).error)
     }
 
     @Test
@@ -140,9 +141,9 @@ class UpsertBookUseCaseTest {
         // Then
         assertEquals("Should call upsert 3 times", 3, mockRepository.upsertBookCallCount)
         assertEquals("Should have all books", 3, mockRepository.getAllBooks().size)
-        assertTrue("Should have book 1", mockRepository.getBookById("book-1") != null)
-        assertTrue("Should have book 2", mockRepository.getBookById("book-2") != null)
-        assertTrue("Should have book 3", mockRepository.getBookById("book-3") != null)
+        assertTrue("Should have book 1", mockRepository.getStoredBook("book-1") != null)
+        assertTrue("Should have book 2", mockRepository.getStoredBook("book-2") != null)
+        assertTrue("Should have book 3", mockRepository.getStoredBook("book-3") != null)
     }
 
     @Test
@@ -180,7 +181,7 @@ class UpsertBookUseCaseTest {
         // Then
         assertTrue("Should return success", result is Result.Success)
         // Personal metadata (purchased) should be preserved from existing book
-        assertEquals("Should preserve purchased status", false, mockRepository.getBookById("toggle-book")?.purchased)
+        assertEquals("Should preserve purchased status", false, mockRepository.getStoredBook("toggle-book")?.purchased)
     }
 
     @Test

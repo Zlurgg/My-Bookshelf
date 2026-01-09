@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.update.domain.usecases
 
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdatePreferencesRepository
 
 /**
@@ -18,6 +19,12 @@ class DismissUpdateUseCaseImpl(
 ) : DismissUpdateUseCase {
     override suspend operator fun invoke(version: String) {
         Timber.i("User dismissed update version: $version")
-        updatePreferencesRepository.setDismissedVersion(version)
+        when (val result = updatePreferencesRepository.setDismissedVersion(version)) {
+            is Result.Success -> { /* Successfully saved */ }
+            is Result.Error -> {
+                Timber.w("Failed to save dismissed version: %s", result.error)
+                // Non-critical - continue anyway
+            }
+        }
     }
 }

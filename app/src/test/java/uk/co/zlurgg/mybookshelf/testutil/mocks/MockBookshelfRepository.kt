@@ -4,13 +4,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class MockBookshelfRepository : BookshelfRepository {
 
     private val shelfBookRelations = mutableMapOf<String, MutableSet<String>>() // shelfId -> bookIds
     private val configuredBooks = mutableMapOf<String, Book>() // bookId -> Book
 
-    var shouldThrowException = false
+    var errorToReturn: DataError.Local? = null
     var addBookToShelfCallCount = 0
     var removeBookFromShelfCallCount = 0
     var lastAddedBookId: String? = null
@@ -21,7 +23,7 @@ class MockBookshelfRepository : BookshelfRepository {
     fun reset() {
         shelfBookRelations.clear()
         configuredBooks.clear()
-        shouldThrowException = false
+        errorToReturn = null
         addBookToShelfCallCount = 0
         removeBookFromShelfCallCount = 0
         lastAddedBookId = null
@@ -47,28 +49,26 @@ class MockBookshelfRepository : BookshelfRepository {
         return shelfBookRelations.mapValues { it.value.toSet() }
     }
 
-    override suspend fun addBookToShelf(shelfId: String, bookId: String) {
+    override suspend fun addBookToShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
         addBookToShelfCallCount++
         lastAddedShelfId = shelfId
         lastAddedBookId = bookId
 
-        if (shouldThrowException) {
-            throw RuntimeException("Mock repository error")
-        }
+        errorToReturn?.let { return Result.Error(it) }
 
         shelfBookRelations.getOrPut(shelfId) { mutableSetOf() }.add(bookId)
+        return Result.Success(Unit)
     }
 
-    override suspend fun removeBookFromShelf(shelfId: String, bookId: String) {
+    override suspend fun removeBookFromShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
         removeBookFromShelfCallCount++
         lastRemovedShelfId = shelfId
         lastRemovedBookId = bookId
 
-        if (shouldThrowException) {
-            throw RuntimeException("Mock repository error")
-        }
+        errorToReturn?.let { return Result.Error(it) }
 
         shelfBookRelations[shelfId]?.remove(bookId)
+        return Result.Success(Unit)
     }
 
     override fun getBooksForShelf(shelfId: String): Flow<List<Book>> {

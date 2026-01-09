@@ -167,7 +167,7 @@ class DeleteShelfUseCaseTest {
     fun `execute returns error when repository fails`() = runTest {
         // Given
         val shelfId = "test-shelf"
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute(shelfId)
@@ -176,7 +176,7 @@ class DeleteShelfUseCaseTest {
         assertTrue("Should return error", result is Result.Error)
         val error = (result as Result.Error).error
         assertEquals(DataError.Local.UNKNOWN, error)
-        // Note: getShelfById throws first, so removeShelf may not be called
+        // Note: getShelfById returns error first, so removeShelf may not be called
     }
 
     @Test
@@ -259,7 +259,7 @@ class DeleteShelfUseCaseTest {
     fun `restore returns error when repository fails`() = runTest {
         // Given
         val shelf = TestShelfBuilder().withId("test-shelf").build()
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.restore(shelf)

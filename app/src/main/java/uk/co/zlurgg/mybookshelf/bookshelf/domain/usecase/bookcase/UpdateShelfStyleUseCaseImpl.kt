@@ -6,7 +6,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
@@ -24,40 +23,33 @@ class UpdateShelfStyleUseCaseImpl(
         private const val TAG = "UpdateShelfStyle"
     }
 
-    @Suppress("TooGenericExceptionCaught") // Intentional: converts all exceptions to Result.Error with logging
     override suspend fun execute(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
-        return try {
-            // Get the shelf to update
-            val shelfToUpdate = bookcaseRepository.getShelfById(shelfId)
-                ?: return Result.Error(DataError.Local.NOT_FOUND)
+        // Get the shelf to update
+        val shelfToUpdate = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+            is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)
+            is Result.Error -> return getResult
+        }
 
-            // Permission check for book clubs - only creator can change style
-            if (shelfToUpdate.isBookClub) {
-                val currentUser = authService.getSignedInUser()
-                if (currentUser == null || shelfToUpdate.clubCreatorId != currentUser.userId) {
-                    return Result.Error(DataError.Local.PERMISSION_DENIED)
-                }
-
-                // Update Firestore for book clubs
-                val clubCode = shelfToUpdate.clubCode
-                if (clubCode != null) {
-                    val updateResult = bookClubRepository.updateClubStyle(clubCode, newStyle.name)
-                    if (updateResult is Result.Error) {
-                        Timber.tag(TAG).w("Failed to sync style to Firestore: %s", updateResult.error)
-                        // Continue with local update even if Firestore fails
-                    }
-                }
+        // Permission check for book clubs - only creator can change style
+        if (shelfToUpdate.isBookClub) {
+            val currentUser = authService.getSignedInUser()
+            if (currentUser == null || shelfToUpdate.clubCreatorId != currentUser.userId) {
+                return Result.Error(DataError.Local.PERMISSION_DENIED)
             }
 
-            // Update the shelf with new style locally
-            val updatedShelf = shelfToUpdate.copy(shelfStyle = newStyle)
-            bookcaseRepository.updateShelf(updatedShelf)
-
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
-            Timber.tag(TAG).e(e, "Update shelf style failed - Mapped to: %s", error)
-            Result.Error(error)
+            // Update Firestore for book clubs
+            val clubCode = shelfToUpdate.clubCode
+            if (clubCode != null) {
+                val updateResult = bookClubRepository.updateClubStyle(clubCode, newStyle.name)
+                if (updateResult is Result.Error) {
+                    Timber.tag(TAG).w("Failed to sync style to Firestore: %s", updateResult.error)
+                    // Continue with local update even if Firestore fails
+                }
+            }
         }
+
+        // Update the shelf with new style locally
+        val updatedShelf = shelfToUpdate.copy(shelfStyle = newStyle)
+        return bookcaseRepository.updateShelf(updatedShelf)
     }
 }

@@ -182,8 +182,8 @@ class RenameShelfUseCaseTest {
     }
 
     @Test
-    fun `returns error when repository throws exception`() = runTest {
-        // Given - Repository configured to throw
+    fun `returns error when repository fails`() = runTest {
+        // Given - Repository configured to return error
         val existingShelf = TestShelfBuilder()
             .withId("shelf-1")
             .withName("Old Name")
@@ -191,7 +191,7 @@ class RenameShelfUseCaseTest {
 
         mockRepository.shelfByIdToReturn = existingShelf
         mockRepository.configureShelves(listOf(existingShelf))
-        mockRepository.shouldThrowException = true
+        mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
         val result = useCase.execute("shelf-1", "New Name")

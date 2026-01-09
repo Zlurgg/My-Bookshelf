@@ -36,9 +36,11 @@ class SignOutUseCaseTest {
     }
 
     private val mockAuthStateRepository = object : AuthStateRepository {
-        override suspend fun isSignedIn(): Boolean = true
-        override suspend fun setSignedInState(isSignedIn: Boolean) {
+        override suspend fun isSignedIn(): Result<Boolean, DataError.Local> =
+            Result.Success(true)
+        override suspend fun setSignedInState(isSignedIn: Boolean): Result<Unit, DataError.Local> {
             signedInStateSet = isSignedIn
+            return Result.Success(Unit)
         }
     }
 

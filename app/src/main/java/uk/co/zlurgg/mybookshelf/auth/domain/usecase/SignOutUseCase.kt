@@ -52,7 +52,13 @@ class SignOutUseCase(
 
         return when (val result = authService.signOut()) {
             is Result.Success -> {
-                authStateRepository.setSignedInState(false)
+                when (val stateResult = authStateRepository.setSignedInState(false)) {
+                    is Result.Success -> { /* State saved successfully */ }
+                    is Result.Error -> {
+                        Timber.tag(TAG).w("Failed to save auth state: %s", stateResult.error)
+                        // Continue anyway - Firebase sign-out succeeded
+                    }
+                }
                 Timber.tag(TAG).d("=== SIGN-OUT COMPLETE ===")
                 Result.Success(Unit)
             }

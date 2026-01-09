@@ -41,27 +41,29 @@ class DatabaseBookshelfDataOrchestrator(
         }
     }
 
-    @Suppress("TooGenericExceptionCaught")
     override suspend fun importShelfToDatabase(shelf: Bookshelf): Result<Unit, DataError.Local> {
-        return try {
-            // Add all books to the repository first
-            shelf.books.forEach { book ->
-                bookRepository.upsertBook(book)
+        // Add all books to the repository first
+        for (book in shelf.books) {
+            when (val upsertResult = bookRepository.upsertBook(book)) {
+                is Result.Success -> { /* continue */ }
+                is Result.Error -> return upsertResult
             }
-
-            // Then add the shelf
-            bookcaseRepository.addShelf(shelf)
-
-            // Link each book to the imported shelf
-            shelf.books.forEach { book ->
-                bookshelfRepository.addBookToShelf(shelf.id, book.id)
-            }
-
-            Result.Success(Unit)
-        } catch (e: Exception) {
-            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
-            Timber.tag(TAG).e(e, "Import shelf to database failed - Mapped to: %s", error)
-            Result.Error(error)
         }
+
+        // Then add the shelf
+        when (val addShelfResult = bookcaseRepository.addShelf(shelf)) {
+            is Result.Success -> { /* continue */ }
+            is Result.Error -> return addShelfResult
+        }
+
+        // Link each book to the imported shelf
+        for (book in shelf.books) {
+            when (val linkResult = bookshelfRepository.addBookToShelf(shelf.id, book.id)) {
+                is Result.Success -> { /* continue */ }
+                is Result.Error -> return linkResult
+            }
+        }
+
+        return Result.Success(Unit)
     }
 }
