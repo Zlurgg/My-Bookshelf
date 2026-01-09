@@ -130,7 +130,7 @@ class BookcaseViewModelTest {
             override fun invoke(updateInfo: UpdateInfo): Long? = null
         }
         val mockDismissUpdate = object : DismissUpdateUseCase {
-            override suspend fun invoke(version: String) {}
+            override suspend fun invoke(version: String) = Unit
         }
         val mockGetCurrentVersionInfo = object : GetCurrentVersionInfoUseCase {
             override suspend fun invoke(): UpdateInfo? = null
@@ -144,12 +144,12 @@ class BookcaseViewModelTest {
         }
         val mockAuthStateRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository {
             override suspend fun isSignedIn() = false
-            override suspend fun setSignedInState(isSignedIn: Boolean) {}
+            override suspend fun setSignedInState(isSignedIn: Boolean) = Unit
         }
         val mockSyncScheduler = object : SyncSchedulerService {
-            override fun schedulePeriodicSync() {}
-            override fun triggerImmediateSync() {}
-            override fun cancelAllSync() {}
+            override fun schedulePeriodicSync() = Unit
+            override fun triggerImmediateSync() = Unit
+            override fun cancelAllSync() = Unit
         }
         val mockClearUserData = object : ClearUserDataUseCase {
             override suspend fun execute(userId: String): Result<Int, DataError.Local> = Result.Success(0)

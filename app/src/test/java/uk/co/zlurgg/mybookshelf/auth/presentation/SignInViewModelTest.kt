@@ -66,9 +66,9 @@ class SignInViewModelTest {
     }
 
     private val mockSyncScheduler = object : SyncSchedulerService {
-        override fun schedulePeriodicSync() {}
-        override fun triggerImmediateSync() {}
-        override fun cancelAllSync() {}
+        override fun schedulePeriodicSync() = Unit
+        override fun triggerImmediateSync() = Unit
+        override fun cancelAllSync() = Unit
     }
 
     private var mockMigrationResult: Result<MigrationResult, DataError.Sync> = Result.Success(

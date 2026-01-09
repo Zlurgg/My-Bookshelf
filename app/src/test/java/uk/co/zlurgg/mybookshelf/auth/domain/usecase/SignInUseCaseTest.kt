@@ -42,7 +42,7 @@ class SignInUseCaseTest {
         override fun triggerImmediateSync() {
             immediateSyncTriggered = true
         }
-        override fun cancelAllSync() {}
+        override fun cancelAllSync() = Unit
     }
 
     private lateinit var useCase: SignInUseCase

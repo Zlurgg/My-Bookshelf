@@ -467,15 +467,15 @@ class SyncEngineTest {
 
         override suspend fun countOrphanBooks(): Int = books.values.count { it.ownerId == null }
         override suspend fun countOrphanShelves(): Int = shelves.values.count { it.ownerId == null }
-        override suspend fun assignOwnerToOrphanBooks(userId: String) {}
-        override suspend fun assignOwnerToOrphanShelves(userId: String) {}
+        override suspend fun assignOwnerToOrphanBooks(userId: String) = Unit
+        override suspend fun assignOwnerToOrphanShelves(userId: String) = Unit
 
         override fun getAllShelves(): Flow<List<BookshelfEntity>> = flowOf(shelves.values.toList())
         override fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>> =
             flowOf(shelves.values.filter { it.ownerId == userId || it.ownerId == null }.toList())
-        override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) {}
-        override suspend fun deleteCrossRef(shelfId: String, bookId: String) {}
-        override suspend fun deleteAllCrossRefsForShelf(shelfId: String) {}
+        override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) = Unit
+        override suspend fun deleteCrossRef(shelfId: String, bookId: String) = Unit
+        override suspend fun deleteAllCrossRefsForShelf(shelfId: String) = Unit
         override fun getBookCountForShelf(shelfId: String): Flow<Int> = flowOf(0)
         override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = flowOf(false)
         override fun getShelvesForBook(bookId: String): Flow<List<String>> = flowOf(emptyList())
@@ -484,19 +484,19 @@ class SyncEngineTest {
             bookId: String,
             status: String,
             timestamp: Long
-        ) {}
-        override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) {}
+        ) = Unit
+        override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) = Unit
         override suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity? = null
-        override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}
+        override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) = Unit
         override suspend fun getBooksByOwner(
             ownerId: String
         ): List<BookEntity> = books.values.filter { it.ownerId == ownerId }
         override suspend fun getShelvesByOwner(
             ownerId: String
         ): List<BookshelfEntity> = shelves.values.filter { it.ownerId == ownerId }
-        override suspend fun markAllBooksPending(ownerId: String) {}
-        override suspend fun markAllShelvesPending(ownerId: String) {}
-        override suspend fun deleteAllCrossRefsForOwner(ownerId: String) {}
+        override suspend fun markAllBooksPending(ownerId: String) = Unit
+        override suspend fun markAllShelvesPending(ownerId: String) = Unit
+        override suspend fun deleteAllCrossRefsForOwner(ownerId: String) = Unit
         override suspend fun deleteAllBooksForOwner(ownerId: String) {
             books.entries.removeIf { it.value.ownerId == ownerId }
         }

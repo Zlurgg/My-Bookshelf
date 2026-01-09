@@ -189,11 +189,11 @@ class MigrateLocalDataUseCaseImplTest {
     private class FakeSyncScheduler : SyncSchedulerService {
         var syncTriggered = false
 
-        override fun schedulePeriodicSync() {}
+        override fun schedulePeriodicSync() = Unit
         override fun triggerImmediateSync() {
             syncTriggered = true
         }
-        override fun cancelAllSync() {}
+        override fun cancelAllSync() = Unit
     }
 
     private class FakeBookshelfDao : BookshelfDao {
@@ -231,18 +231,18 @@ class MigrateLocalDataUseCaseImplTest {
         }
 
         // Unused methods for this test
-        override suspend fun upsert(book: BookEntity) {}
+        override suspend fun upsert(book: BookEntity) = Unit
         override suspend fun getBookById(id: String): BookEntity? = null
-        override suspend fun deleteBook(id: String) {}
-        override suspend fun upsertShelf(shelf: BookshelfEntity) {}
+        override suspend fun deleteBook(id: String) = Unit
+        override suspend fun upsertShelf(shelf: BookshelfEntity) = Unit
         override fun getAllShelves(): Flow<List<BookshelfEntity>> = flowOf(emptyList())
         override fun getShelvesForUser(userId: String?): Flow<List<BookshelfEntity>> = flowOf(emptyList())
         override suspend fun getShelfById(id: String): BookshelfEntity? = null
         override suspend fun getShelfByName(name: String): BookshelfEntity? = null
-        override suspend fun deleteShelf(id: String) {}
-        override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) {}
-        override suspend fun deleteCrossRef(shelfId: String, bookId: String) {}
-        override suspend fun deleteAllCrossRefsForShelf(shelfId: String) {}
+        override suspend fun deleteShelf(id: String) = Unit
+        override suspend fun upsertCrossRef(crossRef: BookshelfBookCrossRef) = Unit
+        override suspend fun deleteCrossRef(shelfId: String, bookId: String) = Unit
+        override suspend fun deleteAllCrossRefsForShelf(shelfId: String) = Unit
         override fun getBooksForShelf(shelfId: String): Flow<List<BookEntity>> = flowOf(emptyList())
         override fun getBookCountForShelf(shelfId: String): Flow<Int> = flowOf(0)
         override fun isBookInAnyShelf(bookId: String): Flow<Boolean> = flowOf(false)
@@ -250,21 +250,21 @@ class MigrateLocalDataUseCaseImplTest {
         override suspend fun getPendingSyncBooks(): List<BookEntity> = emptyList()
         override suspend fun getPendingSyncShelves(): List<BookshelfEntity> = emptyList()
         override suspend fun getPendingSyncCrossRefs(): List<BookshelfBookCrossRef> = emptyList()
-        override suspend fun updateBookSyncStatus(id: String, status: String, timestamp: Long) {}
-        override suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long) {}
+        override suspend fun updateBookSyncStatus(id: String, status: String, timestamp: Long) = Unit
+        override suspend fun updateShelfSyncStatus(id: String, status: String, timestamp: Long) = Unit
         override suspend fun updateCrossRefSyncStatus(
             shelfId: String,
             bookId: String,
             status: String,
             timestamp: Long
-        ) {}
-        override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) {}
+        ) = Unit
+        override suspend fun markAllCrossRefsForShelfAs(shelfId: String, status: String, timestamp: Long) = Unit
         override suspend fun getShelfByShareCode(shareCode: String): BookshelfEntity? = null
-        override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) {}
+        override suspend fun updateShelfSharingStatus(id: String, isShared: Boolean, shareCode: String?) = Unit
         override suspend fun getBooksByOwner(ownerId: String): List<BookEntity> = emptyList()
         override suspend fun getShelvesByOwner(ownerId: String): List<BookshelfEntity> = emptyList()
-        override suspend fun deleteAllCrossRefsForOwner(ownerId: String) {}
-        override suspend fun deleteAllBooksForOwner(ownerId: String) {}
-        override suspend fun deleteAllShelvesForOwner(ownerId: String) {}
+        override suspend fun deleteAllCrossRefsForOwner(ownerId: String) = Unit
+        override suspend fun deleteAllBooksForOwner(ownerId: String) = Unit
+        override suspend fun deleteAllShelvesForOwner(ownerId: String) = Unit
     }
 }

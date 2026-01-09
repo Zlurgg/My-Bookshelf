@@ -180,16 +180,16 @@ fun BookcaseShelf(
 @Composable
 fun BookcaseShelfPreview() {
     val previewCallbacks = object : ShelfCallbacks {
-        override fun onRemoveBookshelf(shelf: Bookshelf) {}
-        override fun onBookshelfClick(shelf: Bookshelf) {}
-        override fun onLongClick(shelf: Bookshelf) {}
-        override fun onChangeStyle(shelf: Bookshelf) {}
-        override fun onDelete(shelf: Bookshelf) {}
-        override fun onCreateBookClub(shelf: Bookshelf) {}
-        override fun onInviteToClub(shelf: Bookshelf) {}
-        override fun onDuplicateShelf(shelf: Bookshelf) {}
-        override fun onReorderShelf(shelf: Bookshelf, position: Int) {}
-        override fun onLeaveBookClub(shelf: Bookshelf) {}
+        override fun onRemoveBookshelf(shelf: Bookshelf) = Unit
+        override fun onBookshelfClick(shelf: Bookshelf) = Unit
+        override fun onLongClick(shelf: Bookshelf) = Unit
+        override fun onChangeStyle(shelf: Bookshelf) = Unit
+        override fun onDelete(shelf: Bookshelf) = Unit
+        override fun onCreateBookClub(shelf: Bookshelf) = Unit
+        override fun onInviteToClub(shelf: Bookshelf) = Unit
+        override fun onDuplicateShelf(shelf: Bookshelf) = Unit
+        override fun onReorderShelf(shelf: Bookshelf, position: Int) = Unit
+        override fun onLeaveBookClub(shelf: Bookshelf) = Unit
     }
 
     MyBookshelfTheme {

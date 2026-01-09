@@ -39,7 +39,7 @@ class MockSyncRepository : SyncRepository {
 
     override suspend fun getPendingChangesCount(userId: String): Int = 0
 
-    override suspend fun cancelSync() {}
+    override suspend fun cancelSync() = Unit
 
     override suspend fun clearSyncData(userId: String) {
         clearedSyncDataForUserId = userId

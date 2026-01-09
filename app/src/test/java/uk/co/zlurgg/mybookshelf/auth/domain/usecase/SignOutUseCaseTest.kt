@@ -43,8 +43,8 @@ class SignOutUseCaseTest {
     }
 
     private val mockSyncScheduler = object : SyncSchedulerService {
-        override fun schedulePeriodicSync() {}
-        override fun triggerImmediateSync() {}
+        override fun schedulePeriodicSync() = Unit
+        override fun triggerImmediateSync() = Unit
         override fun cancelAllSync() {
             syncCancelled = true
         }
