@@ -10,8 +10,6 @@ import uk.co.zlurgg.mybookshelf.sync.data.repository.UserPreferencesRepositoryIm
 import uk.co.zlurgg.mybookshelf.sync.data.service.AndroidConnectivityMonitor
 import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreRemoteDataSource
-import uk.co.zlurgg.mybookshelf.sync.data.usecase.HasGuestDataUseCaseImpl
-import uk.co.zlurgg.mybookshelf.sync.data.usecase.SyncUserPreferencesUseCaseImpl
 import uk.co.zlurgg.mybookshelf.sync.data.worker.SyncScheduler
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
@@ -19,9 +17,11 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.ConflictResolver
 import uk.co.zlurgg.mybookshelf.sync.domain.service.ConnectivityMonitor
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
+import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCaseImpl
 
 val syncModule = module {
     // Services

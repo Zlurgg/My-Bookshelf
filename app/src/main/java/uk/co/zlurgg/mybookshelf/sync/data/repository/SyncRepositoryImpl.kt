@@ -13,6 +13,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.engine.SyncEngine
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
 import uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType
+import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo
 import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncPhase
@@ -259,6 +260,14 @@ class SyncRepositoryImpl(
         return when (migrationResult) {
             is Result.Success -> migrationResult
             is Result.Error -> Result.Error(DataError.Sync.MIGRATION_FAILED)
+        }
+    }
+
+    override suspend fun getOrphanDataCounts(): Result<GuestDataInfo, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            val bookCount = bookshelfDao.countOrphanBooks()
+            val shelfCount = bookshelfDao.countOrphanShelves()
+            GuestDataInfo(bookCount = bookCount, shelfCount = shelfCount)
         }
     }
 

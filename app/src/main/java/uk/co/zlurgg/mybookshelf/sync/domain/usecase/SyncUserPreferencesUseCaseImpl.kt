@@ -1,11 +1,10 @@
-package uk.co.zlurgg.mybookshelf.sync.data.usecase
+package uk.co.zlurgg.mybookshelf.sync.domain.usecase
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
-import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 
 /**
  * Implementation of SyncUserPreferencesUseCase.

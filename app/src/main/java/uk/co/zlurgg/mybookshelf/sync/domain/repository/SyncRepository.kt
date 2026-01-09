@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
+import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo
 import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncResult
@@ -116,4 +117,12 @@ interface SyncRepository {
      * @return Result containing migration statistics or error
      */
     suspend fun migrateOrphanData(userId: String): Result<MigrationResult, DataError.Sync>
+
+    /**
+     * Gets counts of orphan (guest) data in the local database.
+     * Used to determine if there's data to import after sign-in.
+     *
+     * @return GuestDataInfo with orphan book and shelf counts
+     */
+    suspend fun getOrphanDataCounts(): Result<GuestDataInfo, DataError.Local>
 }
