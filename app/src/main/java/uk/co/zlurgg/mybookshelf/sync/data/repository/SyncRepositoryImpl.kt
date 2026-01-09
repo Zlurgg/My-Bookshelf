@@ -6,12 +6,14 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.SyncDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.engine.SyncEngine
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
 import uk.co.zlurgg.mybookshelf.sync.domain.model.EntityType
+import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncPhase
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncResult
@@ -205,6 +207,59 @@ class SyncRepositoryImpl(
     override suspend fun clearSyncData(userId: String) {
         Timber.tag(TAG).d("Clearing sync data for user: %s", userId)
         syncDao.deleteSyncMetadata(userId)
+    }
+
+    override suspend fun migrateOrphanData(userId: String): Result<MigrationResult, DataError.Sync> {
+        Timber.tag(TAG).d("=== MIGRATION START for user: %s ===", userId)
+
+        val migrationResult = ErrorMapper.safeSuspendCall(TAG) {
+            // Step 1: Count orphan entities
+            val orphanBookCount = bookshelfDao.countOrphanBooks()
+            val orphanShelfCount = bookshelfDao.countOrphanShelves()
+
+            Timber.tag(TAG).d(
+                "Found orphan entities - Books: %d, Shelves: %d",
+                orphanBookCount,
+                orphanShelfCount
+            )
+
+            // If no orphan data, no migration needed
+            if (orphanBookCount == 0 && orphanShelfCount == 0) {
+                Timber.tag(TAG).d("No orphan data to migrate")
+                return@safeSuspendCall MigrationResult.NO_MIGRATION_NEEDED
+            }
+
+            // Step 2: Assign owner to orphan entities
+            Timber.tag(TAG).d("Assigning owner to orphan books...")
+            bookshelfDao.assignOwnerToOrphanBooks(userId)
+
+            Timber.tag(TAG).d("Assigning owner to orphan shelves...")
+            bookshelfDao.assignOwnerToOrphanShelves(userId)
+
+            // Step 3: Mark all entities as pending sync
+            Timber.tag(TAG).d("Marking all entities as pending sync...")
+            bookshelfDao.markAllBooksPending(userId)
+            bookshelfDao.markAllShelvesPending(userId)
+
+            Timber.tag(TAG).d(
+                "=== MIGRATION DATA COMPLETE === Books: %d, Shelves: %d",
+                orphanBookCount,
+                orphanShelfCount
+            )
+
+            MigrationResult(
+                booksAssigned = orphanBookCount,
+                shelvesAssigned = orphanShelfCount,
+                hadDataToMigrate = true,
+                syncTriggered = false // UseCase will set this after triggering sync
+            )
+        }
+
+        // Convert DataError.Local to DataError.Sync for consistency with interface
+        return when (migrationResult) {
+            is Result.Success -> migrationResult
+            is Result.Error -> Result.Error(DataError.Sync.MIGRATION_FAILED)
+        }
     }
 
     private fun isRetryableError(error: String?): Boolean {

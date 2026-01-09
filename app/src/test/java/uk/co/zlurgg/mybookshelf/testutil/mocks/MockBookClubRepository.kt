@@ -278,6 +278,16 @@ class MockBookClubRepository : BookClubRepository {
         return deleteBookCommentResult
     }
 
+    // Local data management
+    var clearAllMembershipsResult: Result<Unit, DataError.Local> = Result.Success(Unit)
+    var clearAllMembershipsCalled = false
+
+    override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> {
+        clearAllMembershipsCalled = true
+        myBookClubs = emptyList()
+        return clearAllMembershipsResult
+    }
+
     // Helper methods for test setup
     fun reset() {
         createBookClubResult = Result.Success("TEST1234")
@@ -358,6 +368,8 @@ class MockBookClubRepository : BookClubRepository {
         addBookCommentResult = Result.Success("comment-id")
         editBookCommentResult = Result.Success(Unit)
         deleteBookCommentResult = Result.Success(Unit)
+        clearAllMembershipsResult = Result.Success(Unit)
+        clearAllMembershipsCalled = false
     }
 
     fun configureBookClub(bookClub: BookClub) {

@@ -109,6 +109,21 @@ class MockBookcaseRepository : BookcaseRepository {
         return Result.Success(Unit)
     }
 
+    override suspend fun clearUserData(userId: String): Result<Int, DataError.Local> {
+        clearUserDataCalled = true
+        lastClearedUserId = userId
+
+        errorToReturn?.let { return Result.Error(it) }
+
+        val count = shelves.size
+        shelves.clear()
+        return Result.Success(count)
+    }
+
+    // Tracking properties for clearUserData
+    var clearUserDataCalled = false
+    var lastClearedUserId: String? = null
+
     // Helper methods for test setup
     fun reset() {
         shelves.clear()
@@ -132,6 +147,8 @@ class MockBookcaseRepository : BookcaseRepository {
         lastRemovedShelfId = null
         lastHardDeletedShelfId = null
         lastUpdatedShelf = null
+        clearUserDataCalled = false
+        lastClearedUserId = null
     }
 
     fun configureShelves(shelves: List<Bookshelf>) {

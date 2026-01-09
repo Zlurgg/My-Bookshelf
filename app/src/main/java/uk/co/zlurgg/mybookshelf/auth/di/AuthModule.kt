@@ -18,8 +18,8 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.data.usecase.ClearUserDataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCaseImpl
 
 val authModule = module {
     // Config

@@ -25,4 +25,11 @@ interface BookcaseRepository {
      * System shelves are visible to all users and not synced to cloud.
      */
     suspend fun addSystemShelf(shelf: Bookshelf): Result<Unit, DataError.Local>
+
+    /**
+     * Clears all local data for a user during sign-out.
+     * Deletes cross-refs, books, and shelves owned by the user.
+     * @return The total count of items deleted (shelves + books)
+     */
+    suspend fun clearUserData(userId: String): Result<Int, DataError.Local>
 }

@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
+import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncResult
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncState
@@ -99,4 +100,20 @@ interface SyncRepository {
      * @param userId Firebase UID of the user
      */
     suspend fun clearSyncData(userId: String)
+
+    /**
+     * Migrates orphan local data to a user's account.
+     *
+     * This assigns ownership to all books and shelves that have no owner,
+     * and marks them as pending sync. Used when a guest user signs in and
+     * chooses to keep their local data.
+     *
+     * Note: The returned MigrationResult has syncTriggered=false since
+     * the repository doesn't trigger sync. The calling UseCase should
+     * trigger sync and update the flag accordingly.
+     *
+     * @param userId Firebase UID of the user to assign ownership to
+     * @return Result containing migration statistics or error
+     */
+    suspend fun migrateOrphanData(userId: String): Result<MigrationResult, DataError.Sync>
 }

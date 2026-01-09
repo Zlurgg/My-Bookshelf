@@ -105,6 +105,7 @@ class DeleteShelfUseCaseTest {
             bookId: String,
             commentId: String
         ): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> = Result.Success(Unit)
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockBookClubRepository, mockSyncSchedulerService)

@@ -82,6 +82,25 @@ class BookcaseRepositoryImpl(
         }
     }
 
+    override suspend fun clearUserData(userId: String): Result<Int, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            // Count items before deletion
+            val shelves = dao.getShelvesByOwner(userId)
+            val books = dao.getBooksByOwner(userId)
+            val totalItems = shelves.size + books.size
+
+            // Delete in correct order to respect foreign key constraints:
+            // 1. Cross-refs first (references both shelves and books)
+            // 2. Books second
+            // 3. Shelves last
+            dao.deleteAllCrossRefsForOwner(userId)
+            dao.deleteAllBooksForOwner(userId)
+            dao.deleteAllShelvesForOwner(userId)
+
+            totalItems
+        }
+    }
+
     companion object {
         private const val TAG = "BookcaseRepository"
     }

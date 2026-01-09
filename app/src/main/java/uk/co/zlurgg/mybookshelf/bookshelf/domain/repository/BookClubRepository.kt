@@ -256,6 +256,15 @@ interface BookClubRepository {
         bookId: String,
         commentId: String
     ): Result<Unit, DataError.Sync>
+
+    // ========== Local Data Management ==========
+
+    /**
+     * Clears all local book club membership records.
+     * Used during sign-out to prevent data leakage between accounts.
+     * This is a local-only operation (no Firestore interaction).
+     */
+    suspend fun clearAllMemberships(): Result<Unit, DataError.Local>
 }
 
 /**

@@ -23,6 +23,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
@@ -1118,6 +1119,14 @@ class BookClubRepositoryImpl(
                 Timber.tag(TAG).e("Failed to delete comment: %s", result.error)
                 Result.Error(result.error)
             }
+        }
+    }
+
+    // ========== Local Data Management ==========
+
+    override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            bookClubDao.deleteAllMemberships()
         }
     }
 }

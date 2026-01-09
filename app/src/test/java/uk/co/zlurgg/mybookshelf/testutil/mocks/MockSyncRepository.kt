@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.flowOf
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.model.ConflictResolution
+import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncConflict
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncResult
 import uk.co.zlurgg.mybookshelf.sync.domain.model.SyncState
@@ -45,7 +46,22 @@ class MockSyncRepository : SyncRepository {
         clearedSyncDataForUserId = userId
     }
 
+    // Migration support
+    var migrateOrphanDataResult: Result<MigrationResult, DataError.Sync> =
+        Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
+    var migrateOrphanDataCalled = false
+    var lastMigrateOrphanDataUserId: String? = null
+
+    override suspend fun migrateOrphanData(userId: String): Result<MigrationResult, DataError.Sync> {
+        migrateOrphanDataCalled = true
+        lastMigrateOrphanDataUserId = userId
+        return migrateOrphanDataResult
+    }
+
     fun reset() {
         clearedSyncDataForUserId = null
+        migrateOrphanDataResult = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
+        migrateOrphanDataCalled = false
+        lastMigrateOrphanDataUserId = null
     }
 }
