@@ -27,9 +27,6 @@ class RemoveBookFromShelfUseCaseImpl(
             is Result.Success -> getResult.data
             is Result.Error -> return getResult
         }
-        val clubCode = shelf?.clubCode?.takeIf { it.isNotEmpty() }
-        val isBookClub = shelf?.isBookClub == true && clubCode != null
-
         // Remove the book-shelf association
         when (val removeResult = bookshelfRepository.removeBookFromShelf(shelfId, bookId)) {
             is Result.Success -> { /* continue */ }
@@ -37,9 +34,9 @@ class RemoveBookFromShelfUseCaseImpl(
         }
 
         // If this is a book club shelf, also remove from Firestore club collection
-        if (isBookClub && clubCode != null) {
-            Timber.tag(TAG).d("Removing book %s from book club %s", bookId, clubCode)
-            val syncResult = bookClubRepository.removeBookFromClub(clubCode, bookId)
+        shelf?.takeIf { it.isBookClub }?.clubCode?.takeIf { it.isNotEmpty() }?.let { code ->
+            Timber.tag(TAG).d("Removing book %s from book club %s", bookId, code)
+            val syncResult = bookClubRepository.removeBookFromClub(code, bookId)
             if (syncResult is Result.Error) {
                 Timber.tag(TAG).w("Failed to remove book from club: %s", syncResult.error)
                 // Don't fail the whole operation - local remove succeeded

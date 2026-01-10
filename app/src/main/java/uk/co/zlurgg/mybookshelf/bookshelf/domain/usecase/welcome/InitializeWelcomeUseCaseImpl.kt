@@ -25,7 +25,10 @@ class InitializeWelcomeUseCaseImpl(
             }
 
             // Check if tutorial shelf already exists (from previous install or help icon)
-            val existingShelf = bookcaseRepository.getShelfById(SystemOwnerIds.TUTORIAL_SHELF_ID)
+            val existingShelf = when (val result = bookcaseRepository.getShelfById(SystemOwnerIds.TUTORIAL_SHELF_ID)) {
+                is Result.Success -> result.data
+                is Result.Error -> null
+            }
 
             if (existingShelf == null) {
                 // Create tutorial shelf with fixed ID and system owner
