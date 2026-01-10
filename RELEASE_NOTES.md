@@ -13,6 +13,7 @@
 - **Shared Ratings** - Rate books and see your club's average ratings
 - **Discussion Threads** - Comment on books with messaging-style conversations
 - **Real-time Sync** - Books added by any member sync to everyone instantly
+- **New App Icon** - Fresh modern icon design
 
 ### Features
 - Create book clubs from any shelf with 8-character invite codes
@@ -28,6 +29,12 @@
 - Share via `mybookshelf://club/{code}` deep links
 - Web landing page at mybookshelf.co.uk/club/{code}
 - Automatic app launch and join flow
+
+### Code Quality
+- **Detekt Integration** - Static analysis with ktlint formatting rules
+- **Zero tolerance policy** - All code quality issues must be resolved
+- **Feature-scoped DI modules** - Replaced 435-line monolithic AppModule with 6 focused Koin modules
+- **Architecture improvements** - UseCases moved to domain layer, Result pattern for all repositories
 
 ### Technical
 - 597 total tests (542 unit + 55 instrumented)
