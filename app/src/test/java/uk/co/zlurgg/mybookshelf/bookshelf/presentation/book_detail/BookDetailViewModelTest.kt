@@ -14,8 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
-import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
@@ -86,7 +85,7 @@ class BookDetailViewModelTest {
         mockUpdateBookMetadata.reset()
     }
 
-    private val mockAuthService = SimpleAuthService()
+    private val mockGetCurrentUserIdUseCase = SimpleGetCurrentUserIdUseCase()
 
     private fun createViewModel(): BookDetailViewModel {
         val useCases = BookDetailUseCases(
@@ -115,7 +114,7 @@ class BookDetailViewModelTest {
             editBookClubComment = SimpleEditBookClubCommentUseCase(),
             deleteBookClubComment = SimpleDeleteBookClubCommentUseCase()
         )
-        return BookDetailViewModel(useCases, bookClubUseCases, mockAuthService, "book-1", "test-shelf")
+        return BookDetailViewModel(useCases, bookClubUseCases, mockGetCurrentUserIdUseCase, "book-1", "test-shelf")
     }
 
     @Test
@@ -457,11 +456,8 @@ class BookDetailViewModelTest {
     }
 
     // Book Club Use Case mocks
-    private class SimpleAuthService : AuthService {
-        override suspend fun signIn(): Result<UserData, DataError.Local> =
-            Result.Success(UserData("test-user", "Test User", null))
-        override suspend fun signOut(): Result<Unit, DataError.Local> = Result.Success(Unit)
-        override fun getSignedInUser(): UserData? = UserData("test-user", "Test User", null)
+    private class SimpleGetCurrentUserIdUseCase : GetCurrentUserIdUseCase {
+        override fun execute(): String? = "test-user"
     }
 
     private class SimpleCreateBookClubUseCase : CreateBookClubUseCase {

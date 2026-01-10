@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
@@ -23,7 +23,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 class BookDetailViewModel(
     private val bookDetailUseCases: BookDetailUseCases,
     private val bookClubUseCases: BookClubUseCases,
-    private val authService: AuthService,
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase,
     private val bookId: String,
     private val shelfId: String
 ) : ViewModel() {
@@ -84,7 +84,7 @@ class BookDetailViewModel(
             when (val reviewsResult = bookClubUseCases.getBookClubReviews(clubCode, bookId)) {
                 is Result.Success -> {
                     val reviews = reviewsResult.data
-                    val currentUserId = authService.getSignedInUser()?.userId
+                    val currentUserId = getCurrentUserIdUseCase.execute()
 
                     // Find current user's review to pre-populate their rating/text
                     val userReview = reviews.find { it.userId == currentUserId }
@@ -329,7 +329,7 @@ class BookDetailViewModel(
                                     userClubReviewText = "",
                                     // Remove user's review from the list
                                     clubReviews = it.clubReviews.filter { review ->
-                                        review.userId != authService.getSignedInUser()?.userId
+                                        review.userId != getCurrentUserIdUseCase.execute()
                                     }
                                 )
                             }

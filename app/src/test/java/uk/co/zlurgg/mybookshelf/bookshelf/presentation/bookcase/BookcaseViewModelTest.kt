@@ -14,6 +14,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
@@ -158,6 +159,9 @@ class BookcaseViewModelTest {
         val mockCurrentUserProvider = object : CurrentUserProvider {
             override fun getCurrentUserId(): String = "test-user-id"
         }
+        val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
+            override fun execute(): String = "test-user-id"
+        }
         val mockSyncRepository = MockSyncRepository()
         val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
         val mockSignOut = SignOutUseCase(
@@ -289,7 +293,7 @@ class BookcaseViewModelTest {
             mockGetCurrentVersionInfo,
             mockCheckSignInStatus,
             mockSignOut,
-            mockCurrentUserProvider
+            mockGetCurrentUserIdUseCase
         )
     }
 

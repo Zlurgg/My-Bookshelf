@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
@@ -43,7 +43,7 @@ class BookcaseViewModel(
     private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase,
     private val checkSignInStatusUseCase: CheckSignInStatusUseCase,
     private val signOutUseCase: SignOutUseCase,
-    private val currentUserProvider: CurrentUserProvider
+    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -58,7 +58,7 @@ class BookcaseViewModel(
     private fun checkSignInStatus() {
         viewModelScope.launch {
             val isSignedIn = checkSignInStatusUseCase.execute()
-            val currentUserId = currentUserProvider.getCurrentUserId()
+            val currentUserId = getCurrentUserIdUseCase.execute()
             _state.update { it.copy(isSignedIn = isSignedIn, currentUserId = currentUserId) }
         }
     }

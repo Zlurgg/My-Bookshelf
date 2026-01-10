@@ -224,7 +224,7 @@ val bookshelfModule = module {
             getCurrentVersionInfoUseCase = get(),
             checkSignInStatusUseCase = get(),
             signOutUseCase = get(),
-            currentUserProvider = get()
+            getCurrentUserIdUseCase = get()
         )
     }
 
@@ -232,7 +232,7 @@ val bookshelfModule = module {
         BookDetailViewModel(
             bookDetailUseCases = get(),
             bookClubUseCases = get(),
-            authService = get(),
+            getCurrentUserIdUseCase = get(),
             bookId = bookId,
             shelfId = shelfId
         )
