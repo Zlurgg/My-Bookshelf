@@ -218,13 +218,8 @@ val bookshelfModule = module {
             shelfManagement = get(),
             bookcaseUseCases = get(),
             bookClubOperations = get(),
-            checkForUpdateUseCase = get(),
-            downloadUpdateUseCase = get(),
-            dismissUpdateUseCase = get(),
-            getCurrentVersionInfoUseCase = get(),
-            checkSignInStatusUseCase = get(),
-            signOutUseCase = get(),
-            getCurrentUserIdUseCase = get()
+            updateUseCases = get(),
+            authUseCases = get()
         )
     }
 
@@ -232,7 +227,7 @@ val bookshelfModule = module {
         BookDetailViewModel(
             bookDetailUseCases = get(),
             bookClubUseCases = get(),
-            getCurrentUserIdUseCase = get(),
+            authUseCases = get(),
             bookId = bookId,
             shelfId = shelfId
         )

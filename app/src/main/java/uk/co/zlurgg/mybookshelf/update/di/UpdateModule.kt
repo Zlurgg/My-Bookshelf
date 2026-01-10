@@ -18,6 +18,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCaseImpl
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCaseImpl
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.UpdateUseCases
 
 private const val GITHUB_OWNER = "Zlurgg"
 private const val GITHUB_REPO = "My-Bookshelf"
@@ -45,4 +46,5 @@ val updateModule = module {
     single<DismissUpdateUseCase> { DismissUpdateUseCaseImpl(get()) }
     single<DownloadUpdateUseCase> { DownloadUpdateUseCaseImpl(get(), get()) }
     single<GetCurrentVersionInfoUseCase> { GetCurrentVersionInfoUseCaseImpl(get(), BuildConfig.VERSION_NAME) }
+    single { UpdateUseCases(get(), get(), get(), get()) }
 }

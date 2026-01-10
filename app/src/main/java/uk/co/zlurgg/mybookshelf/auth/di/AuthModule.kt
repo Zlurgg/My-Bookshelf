@@ -18,7 +18,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
@@ -49,12 +49,12 @@ val authModule = module {
     single { SignOutUseCase(get(), get(), get(), get(), get(), get()) }
     single { CheckSignInStatusUseCase(get(), get()) }
     single<GetCurrentUserIdUseCase> { GetCurrentUserIdUseCaseImpl(get()) }
-    single { SignInUseCases(get(), get(), get()) }
+    single { AuthUseCases(get(), get(), get(), get()) }
 
     // ViewModel
     viewModel {
         SignInViewModel(
-            signInUseCases = get(),
+            authUseCases = get(),
             shouldShowWelcome = get(),
             hasGuestDataUseCase = get(),
             migrateLocalDataUseCase = get(),

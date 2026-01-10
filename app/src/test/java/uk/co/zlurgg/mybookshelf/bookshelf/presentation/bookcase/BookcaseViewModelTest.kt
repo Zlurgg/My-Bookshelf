@@ -13,8 +13,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
@@ -69,6 +71,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
 import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.UpdateUseCases
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -159,10 +162,8 @@ class BookcaseViewModelTest {
         val mockCurrentUserProvider = object : CurrentUserProvider {
             override fun getCurrentUserId(): String = "test-user-id"
         }
-        val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
-            override fun execute(): String = "test-user-id"
-        }
         val mockSyncRepository = MockSyncRepository()
+        val mockSignIn = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
         val mockSignOut = SignOutUseCase(
             mockAuthService,
@@ -171,6 +172,23 @@ class BookcaseViewModelTest {
             mockClearUserData,
             mockCurrentUserProvider,
             mockSyncRepository
+        )
+        val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
+            override fun execute(): String = "test-user-id"
+        }
+
+        // Facades
+        val updateUseCases = UpdateUseCases(
+            checkForUpdate = mockCheckForUpdate,
+            downloadUpdate = mockDownloadUpdate,
+            dismissUpdate = mockDismissUpdate,
+            getCurrentVersionInfo = mockGetCurrentVersionInfo
+        )
+        val authUseCases = AuthUseCases(
+            signIn = mockSignIn,
+            signOut = mockSignOut,
+            checkSignInStatus = mockCheckSignInStatus,
+            getCurrentUserId = mockGetCurrentUserIdUseCase
         )
 
         // Book Club operations handler
@@ -287,13 +305,8 @@ class BookcaseViewModelTest {
             shelfManagement,
             useCases,
             bookClubOperations,
-            mockCheckForUpdate,
-            mockDownloadUpdate,
-            mockDismissUpdate,
-            mockGetCurrentVersionInfo,
-            mockCheckSignInStatus,
-            mockSignOut,
-            mockGetCurrentUserIdUseCase
+            updateUseCases,
+            authUseCases
         )
     }
 

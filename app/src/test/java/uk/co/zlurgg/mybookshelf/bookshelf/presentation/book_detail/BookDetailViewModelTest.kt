@@ -14,7 +14,18 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
+import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
+import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
@@ -85,7 +96,49 @@ class BookDetailViewModelTest {
         mockUpdateBookMetadata.reset()
     }
 
-    private val mockGetCurrentUserIdUseCase = SimpleGetCurrentUserIdUseCase()
+    // Auth mock dependencies
+    private val mockAuthService = object : AuthService {
+        override suspend fun signIn() = Result.Success(UserData("test", "Test", null))
+        override suspend fun signOut() = Result.Success(Unit)
+        override fun getSignedInUser() = null
+    }
+    private val mockAuthStateRepository = object : AuthStateRepository {
+        override suspend fun isSignedIn() = Result.Success(false)
+        override suspend fun setSignedInState(isSignedIn: Boolean) = Result.Success(Unit)
+    }
+    private val mockSyncScheduler = object : SyncSchedulerService {
+        override fun schedulePeriodicSync() = Unit
+        override fun triggerImmediateSync() = Unit
+        override fun cancelAllSync() = Unit
+    }
+    private val mockClearUserData = object : ClearUserDataUseCase {
+        override suspend fun execute(userId: String) = Result.Success(0)
+    }
+    private val mockCurrentUserProvider = object : CurrentUserProvider {
+        override fun getCurrentUserId() = "test-user"
+    }
+    private val mockSyncRepository = MockSyncRepository()
+
+    private val mockSignInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+    private val mockSignOutUseCase = SignOutUseCase(
+        mockAuthService,
+        mockAuthStateRepository,
+        mockSyncScheduler,
+        mockClearUserData,
+        mockCurrentUserProvider,
+        mockSyncRepository
+    )
+    private val mockCheckSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
+    private val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
+        override fun execute(): String? = "test-user"
+    }
+
+    private val mockAuthUseCases = AuthUseCases(
+        signIn = mockSignInUseCase,
+        signOut = mockSignOutUseCase,
+        checkSignInStatus = mockCheckSignInStatusUseCase,
+        getCurrentUserId = mockGetCurrentUserIdUseCase
+    )
 
     private fun createViewModel(): BookDetailViewModel {
         val useCases = BookDetailUseCases(
@@ -114,7 +167,7 @@ class BookDetailViewModelTest {
             editBookClubComment = SimpleEditBookClubCommentUseCase(),
             deleteBookClubComment = SimpleDeleteBookClubCommentUseCase()
         )
-        return BookDetailViewModel(useCases, bookClubUseCases, mockGetCurrentUserIdUseCase, "book-1", "test-shelf")
+        return BookDetailViewModel(useCases, bookClubUseCases, mockAuthUseCases, "book-1", "test-shelf")
     }
 
     @Test
@@ -456,9 +509,6 @@ class BookDetailViewModelTest {
     }
 
     // Book Club Use Case mocks
-    private class SimpleGetCurrentUserIdUseCase : GetCurrentUserIdUseCase {
-        override fun execute(): String? = "test-user"
-    }
 
     private class SimpleCreateBookClubUseCase : CreateBookClubUseCase {
         override suspend fun execute(shelfId: String): Result<String, DataError.Sync> =

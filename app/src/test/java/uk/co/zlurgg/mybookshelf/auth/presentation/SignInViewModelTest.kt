@@ -18,7 +18,9 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
@@ -122,11 +124,13 @@ class SignInViewModelTest {
                 mockSyncRepository
             )
         val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
+        val getCurrentUserIdUseCase = GetCurrentUserIdUseCaseImpl(mockCurrentUserProvider)
 
-        val useCases = SignInUseCases(
+        val useCases = AuthUseCases(
             signIn = signInUseCase,
             signOut = signOutUseCase,
-            checkSignInStatus = checkSignInStatusUseCase
+            checkSignInStatus = checkSignInStatusUseCase,
+            getCurrentUserId = getCurrentUserIdUseCase
         )
 
         return SignInViewModel(

@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DevSignInUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
@@ -20,7 +20,7 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 
 class SignInViewModel(
-    private val signInUseCases: SignInUseCases,
+    private val authUseCases: AuthUseCases,
     private val shouldShowWelcome: ShouldShowWelcomeUseCase,
     private val hasGuestDataUseCase: HasGuestDataUseCase,
     private val migrateLocalDataUseCase: MigrateLocalDataUseCase,
@@ -109,7 +109,7 @@ class SignInViewModel(
 
     private fun checkSignInStatus() {
         viewModelScope.launch {
-            val isSignedIn = signInUseCases.checkSignInStatus.execute()
+            val isSignedIn = authUseCases.checkSignInStatus.execute()
             if (isSignedIn) {
                 // Sync user preferences from cloud (handles offline gracefully)
                 syncUserPreferencesUseCase.execute()
@@ -132,7 +132,7 @@ class SignInViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-            when (val result = signInUseCases.signIn.execute()) {
+            when (val result = authUseCases.signIn.execute()) {
                 is Result.Success -> {
                     // Sync user preferences from cloud (handles offline gracefully)
                     syncUserPreferencesUseCase.execute()

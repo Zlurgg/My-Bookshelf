@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
@@ -26,10 +24,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
+import uk.co.zlurgg.mybookshelf.update.domain.usecases.UpdateUseCases
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
@@ -37,13 +32,8 @@ class BookcaseViewModel(
     private val shelfManagement: ShelfManagementHandler,
     private val bookcaseUseCases: BookcaseUseCases,
     private val bookClubOperations: BookClubOperationsHandler,
-    private val checkForUpdateUseCase: CheckForUpdateUseCase,
-    private val downloadUpdateUseCase: DownloadUpdateUseCase,
-    private val dismissUpdateUseCase: DismissUpdateUseCase,
-    private val getCurrentVersionInfoUseCase: GetCurrentVersionInfoUseCase,
-    private val checkSignInStatusUseCase: CheckSignInStatusUseCase,
-    private val signOutUseCase: SignOutUseCase,
-    private val getCurrentUserIdUseCase: GetCurrentUserIdUseCase
+    private val updateUseCases: UpdateUseCases,
+    private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookcaseState())
@@ -57,8 +47,8 @@ class BookcaseViewModel(
 
     private fun checkSignInStatus() {
         viewModelScope.launch {
-            val isSignedIn = checkSignInStatusUseCase.execute()
-            val currentUserId = getCurrentUserIdUseCase.execute()
+            val isSignedIn = authUseCases.checkSignInStatus.execute()
+            val currentUserId = authUseCases.getCurrentUserId.execute()
             _state.update { it.copy(isSignedIn = isSignedIn, currentUserId = currentUserId) }
         }
     }
@@ -842,7 +832,7 @@ class BookcaseViewModel(
             _state.update { it.copy(isCheckingForUpdates = true) }
 
             // Always force check for manual updates (ignores dismissed versions)
-            val updateInfo = checkForUpdateUseCase(forceCheck = true)
+            val updateInfo = updateUseCases.checkForUpdate(forceCheck = true)
 
             if (updateInfo != null) {
                 Timber.i("Update available: %s", updateInfo.versionName)
@@ -856,7 +846,7 @@ class BookcaseViewModel(
             } else {
                 // No update available - show "up to date" dialog
                 Timber.d("No update available, fetching current version info")
-                val currentInfo = getCurrentVersionInfoUseCase()
+                val currentInfo = updateUseCases.getCurrentVersionInfo()
                 _state.update {
                     it.copy(
                         currentVersionInfo = currentInfo,
@@ -873,7 +863,7 @@ class BookcaseViewModel(
             val updateInfo = _state.value.availableUpdate ?: return@launch
             Timber.i("Starting download for version %s", updateInfo.versionName)
 
-            val downloadId = downloadUpdateUseCase(updateInfo)
+            val downloadId = updateUseCases.downloadUpdate(updateInfo)
             if (downloadId != null) {
                 _state.update {
                     it.copy(
@@ -894,7 +884,7 @@ class BookcaseViewModel(
             val updateInfo = _state.value.availableUpdate ?: return@launch
             Timber.d("User dismissed update %s", updateInfo.versionName)
 
-            dismissUpdateUseCase(updateInfo.versionName)
+            updateUseCases.dismissUpdate(updateInfo.versionName)
             _state.update {
                 it.copy(
                     showUpdateDialog = false,
@@ -913,7 +903,7 @@ class BookcaseViewModel(
             Timber.tag(TAG).d("User confirmed sign out")
             _state.update { it.copy(isLoading = true) }
 
-            when (val result = signOutUseCase.execute()) {
+            when (val result = authUseCases.signOut.execute()) {
                 is Result.Success -> {
                     _state.update {
                         it.copy(
