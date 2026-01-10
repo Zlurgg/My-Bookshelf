@@ -16,8 +16,8 @@ keystore.properties
 # Firebase config (contains API keys)
 app/google-services.json
 
-# Personal Development Files
-CLAUDE.md
+# Template/Planning Docs (not part of project)
 docs/TESTING_PATTERNS.md
 docs/FEATURE_PLAN_TEMPLATE.md
 docs/PROJECT_STANDARDS_TEMPLATE.md
+docs/DETEKT_SETUP_PLAN.md

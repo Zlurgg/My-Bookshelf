@@ -50,6 +50,7 @@
 - **Dependency Injection**: Koin
 - **Navigation**: Jetpack Navigation Compose
 - **Sharing**: Deep link sharing system
+- **Code Quality**: Detekt with ktlint formatting
 
 ---
 
