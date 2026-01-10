@@ -18,6 +18,7 @@ import uk.co.zlurgg.mybookshelf.update.di.updateModule
  * - updateModule: In-app updates (GitHub release checking, APK download)
  * - bookClubModule: Book club feature (16 use cases, handler)
  * - bookshelfModule: Main bookshelf feature (repositories, use cases, ViewModels)
+ * - debugModule: Debug-only dependencies (only in debug builds via DebugModuleProvider)
  */
 val appModule = module {
     includes(
@@ -28,4 +29,5 @@ val appModule = module {
         bookClubModule,
         bookshelfModule
     )
+    DebugModuleProvider.getModules().forEach { includes(it) }
 }

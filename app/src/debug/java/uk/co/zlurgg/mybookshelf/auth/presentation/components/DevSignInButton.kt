@@ -29,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.auth.data.service.DevAuthService
 
 // Dev-only UI constants - not extracted to theme since this component only exists in debug builds
@@ -43,7 +42,7 @@ private const val CARD_BACKGROUND_ALPHA = 0.1f
 /**
  * Development-only sign-in section for use with Firebase Auth Emulator.
  * Shows buttons for multiple test users to enable multi-user testing.
- * Only visible in debug builds.
+ * This component only exists in debug builds.
  */
 @Composable
 fun DevSignInButton(
@@ -51,9 +50,6 @@ fun DevSignInButton(
     enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
-    // Only show in debug builds
-    if (!BuildConfig.DEBUG) return
-
     var expanded by remember { mutableStateOf(false) }
 
     Column(modifier = modifier.fillMaxWidth()) {

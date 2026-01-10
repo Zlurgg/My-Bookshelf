@@ -5,7 +5,7 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.BuildConfig
-import uk.co.zlurgg.mybookshelf.core.data.firebase.FirebaseEmulatorConfig
+import uk.co.zlurgg.mybookshelf.di.DebugInitializer
 import uk.co.zlurgg.mybookshelf.di.appModule
 
 class MyBookshelfApplication : Application() {
@@ -17,9 +17,9 @@ class MyBookshelfApplication : Application() {
             Timber.plant(Timber.DebugTree())
         }
 
-        // Configure Firebase emulators BEFORE Koin (debug builds only)
-        // Start emulators with: firebase emulators:start
-        FirebaseEmulatorConfig.configureEmulators()
+        // Initialize debug-only components (emulators, etc.)
+        // In release builds, this is a no-op
+        DebugInitializer.initialize()
 
         startKoin {
             androidContext(this@MyBookshelfApplication)

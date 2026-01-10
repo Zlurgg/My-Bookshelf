@@ -10,14 +10,11 @@ import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.auth.data.config.AuthConfig
 import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthStateRepositoryImpl
 import uk.co.zlurgg.mybookshelf.auth.data.service.CurrentUserProviderImpl
-import uk.co.zlurgg.mybookshelf.auth.data.service.DevAuthService
 import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleAuthUiClient
-import uk.co.zlurgg.mybookshelf.auth.data.usecase.DevSignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DevSignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
@@ -45,13 +42,8 @@ val authModule = module {
     single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }
     single<CurrentUserProvider> { CurrentUserProviderImpl(get()) }
 
-    // Dev sign-in (debug builds only - uses Firebase Auth Emulator)
-    if (BuildConfig.DEBUG) {
-        single { DevAuthService() }
-        single<DevSignInUseCase> { DevSignInUseCaseImpl(get(), get()) }
-    }
-
     // UseCases
+    // Note: DevSignInUseCase is provided by DebugModule in debug builds
     single { SignInUseCase(get(), get(), get()) }
     singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
     single { SignOutUseCase(get(), get(), get(), get(), get(), get()) }
