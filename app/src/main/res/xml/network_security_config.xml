@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    RELEASE network security configuration.
+    Enforces HTTPS for all connections - NO cleartext HTTP allowed.
+    Debug builds use a separate config that allows emulator connections.
+-->
 <network-security-config>
-    <!-- Base configuration for all connections -->
+    <!-- Base configuration: block all cleartext traffic -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
-            <!-- Trust system certificate authorities -->
+            <!-- Trust only system certificate authorities -->
             <certificates src="system" />
         </trust-anchors>
     </base-config>
 
-    <!-- Domain-specific configurations -->
+    <!-- Domain-specific configurations for APIs -->
     <domain-config cleartextTrafficPermitted="false">
         <!-- Open Library API - HTTPS only -->
         <domain includeSubdomains="true">openlibrary.org</domain>
@@ -16,13 +21,4 @@
         <!-- GitHub Pages (share links) - HTTPS only -->
         <domain includeSubdomains="true">zlurgg.github.io</domain>
     </domain-config>
-
-    <!-- Debug configuration for localhost testing (excluded in release builds) -->
-    <debug-overrides>
-        <trust-anchors>
-            <!-- Allow localhost for debugging -->
-            <certificates src="system" />
-            <certificates src="user" />
-        </trust-anchors>
-    </debug-overrides>
 </network-security-config>
