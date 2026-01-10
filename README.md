@@ -62,11 +62,12 @@ Instructions for setting up the project locally will be added here.
 
 ## 🚀 Planned Features
 
-- Search and filter books within shelves
+- Enhanced search and filtering (by genre, rating, reading status)
+- Books page to browse your collection directly, not just on shelves
+- Book Club improvements (password protection, anonymous mode, member management)
 - Manga & comic support via AniList/ComicVine APIs
 - Reading habit reminders and progress tracking
 - Advanced shelf themes and customization
-- Enhanced search filters and book recommendations
 
 ---
 
