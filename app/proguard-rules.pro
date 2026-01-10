@@ -38,13 +38,19 @@
 }
 
 # ====== Firestore DTOs (for Firebase serialization) ======
-# These must preserve field names for Firestore document mapping
--keep class uk.co.zlurgg.mybookshelf.sync.data.dto.** {
-    <fields>;
-    <init>();
-}
--keepclassmembers class uk.co.zlurgg.mybookshelf.sync.data.dto.** {
-    @com.google.firebase.firestore.PropertyName <methods>;
+# These must preserve field names AND getters/setters for Firestore document mapping
+# Firestore uses reflection to match property names - ALL members must be kept
+-keep class uk.co.zlurgg.mybookshelf.sync.data.dto.** { *; }
+-keepclassmembers class uk.co.zlurgg.mybookshelf.sync.data.dto.** { *; }
+
+# Keep Firebase annotations from being stripped
+-keep class com.google.firebase.firestore.PropertyName
+-keep class com.google.firebase.firestore.DocumentId
+-keep class com.google.firebase.firestore.ServerTimestamp
+-keepclassmembers class * {
+    @com.google.firebase.firestore.PropertyName *;
+    @com.google.firebase.firestore.DocumentId *;
+    @com.google.firebase.firestore.ServerTimestamp *;
 }
 
 # ====== ViewModels ======

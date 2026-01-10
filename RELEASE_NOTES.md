@@ -4,6 +4,13 @@
 
 ---
 
+## v1.2.1 - Hotfix (January 2026)
+
+### Bug Fix
+- **Fixed Book Club data not loading** - ProGuard was stripping Firestore DTO getters/setters, causing club names and books to not deserialize properly in release builds
+
+---
+
 ## v1.2.0 - Book Clubs (January 2026)
 
 👥 **Collaborative Book Clubs!**
