@@ -14,10 +14,10 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
@@ -128,16 +128,16 @@ class BookcaseViewModelTest {
 
         // No-op update use cases for testing
         val mockCheckForUpdate = object : CheckForUpdateUseCase {
-            override suspend fun invoke(forceCheck: Boolean): UpdateInfo? = null
+            override suspend fun execute(forceCheck: Boolean): UpdateInfo? = null
         }
         val mockDownloadUpdate = object : DownloadUpdateUseCase {
-            override fun invoke(updateInfo: UpdateInfo): Long? = null
+            override fun execute(updateInfo: UpdateInfo): Long? = null
         }
         val mockDismissUpdate = object : DismissUpdateUseCase {
-            override suspend fun invoke(version: String) = Unit
+            override suspend fun execute(version: String) = Unit
         }
         val mockGetCurrentVersionInfo = object : GetCurrentVersionInfoUseCase {
-            override suspend fun invoke(): UpdateInfo? = null
+            override suspend fun execute(): UpdateInfo? = null
         }
         val mockAuthService = object : uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService {
             override suspend fun signIn() = Result.Success(
@@ -163,9 +163,9 @@ class BookcaseViewModelTest {
             override fun getCurrentUserId(): String = "test-user-id"
         }
         val mockSyncRepository = MockSyncRepository()
-        val mockSignIn = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
-        val mockCheckSignInStatus = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
-        val mockSignOut = SignOutUseCase(
+        val mockSignIn = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        val mockCheckSignInStatus = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
+        val mockSignOut = SignOutUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,
             mockSyncScheduler,

@@ -19,13 +19,10 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
@@ -40,6 +37,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookF
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.ToggleBookPurchaseUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpdateBookMetadataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
@@ -61,8 +59,10 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ValidateBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -119,8 +119,8 @@ class BookDetailViewModelTest {
     }
     private val mockSyncRepository = MockSyncRepository()
 
-    private val mockSignInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
-    private val mockSignOutUseCase = SignOutUseCase(
+    private val mockSignInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+    private val mockSignOutUseCase = SignOutUseCaseImpl(
         mockAuthService,
         mockAuthStateRepository,
         mockSyncScheduler,
@@ -128,7 +128,7 @@ class BookDetailViewModelTest {
         mockCurrentUserProvider,
         mockSyncRepository
     )
-    private val mockCheckSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
+    private val mockCheckSignInStatusUseCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
     private val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
         override fun execute(): String? = "test-user"
     }

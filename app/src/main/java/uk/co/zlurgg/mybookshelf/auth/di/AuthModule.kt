@@ -14,12 +14,15 @@ import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleAuthUiClient
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCaseImpl
@@ -44,10 +47,10 @@ val authModule = module {
 
     // UseCases
     // Note: DevSignInUseCase is provided by DebugModule in debug builds
-    single { SignInUseCase(get(), get(), get()) }
+    single<SignInUseCase> { SignInUseCaseImpl(get(), get(), get()) }
     singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
-    single { SignOutUseCase(get(), get(), get(), get(), get(), get()) }
-    single { CheckSignInStatusUseCase(get(), get()) }
+    single<SignOutUseCase> { SignOutUseCaseImpl(get(), get(), get(), get(), get(), get()) }
+    single<CheckSignInStatusUseCase> { CheckSignInStatusUseCaseImpl(get(), get()) }
     single<GetCurrentUserIdUseCase> { GetCurrentUserIdUseCaseImpl(get()) }
     single { AuthUseCases(get(), get(), get(), get()) }
 

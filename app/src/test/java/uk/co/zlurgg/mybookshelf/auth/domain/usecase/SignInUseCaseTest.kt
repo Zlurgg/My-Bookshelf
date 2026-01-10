@@ -55,7 +55,7 @@ class SignInUseCaseTest {
         periodicSyncScheduled = false
         immediateSyncTriggered = false
         mockSignInResult = Result.Success(UserData("test-user-id", "Test User", null))
-        useCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        useCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
     }
 
     @Test

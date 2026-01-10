@@ -74,7 +74,7 @@ class SignOutUseCaseTest {
         mockSignOutResult = Result.Success(Unit)
         mockCurrentUserId = "test-user-id"
         mockClearResult = Result.Success(5)
-        useCase = SignOutUseCase(
+        useCase = SignOutUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,
             mockSyncScheduler,

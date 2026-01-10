@@ -16,12 +16,11 @@ import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
@@ -113,9 +112,9 @@ class SignInViewModelTest {
     }
 
     private fun createViewModel(): SignInViewModel {
-        val signInUseCase = SignInUseCase(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        val signInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
         val signOutUseCase =
-            SignOutUseCase(
+            SignOutUseCaseImpl(
                 mockAuthService,
                 mockAuthStateRepository,
                 mockSyncScheduler,
@@ -123,7 +122,7 @@ class SignInViewModelTest {
                 mockCurrentUserProvider,
                 mockSyncRepository
             )
-        val checkSignInStatusUseCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
+        val checkSignInStatusUseCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
         val getCurrentUserIdUseCase = GetCurrentUserIdUseCaseImpl(mockCurrentUserProvider)
 
         val useCases = AuthUseCases(

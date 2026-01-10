@@ -38,7 +38,7 @@ class CheckSignInStatusUseCaseTest {
     fun setup() {
         mockIsSignedIn = false
         mockCurrentUser = null
-        useCase = CheckSignInStatusUseCase(mockAuthService, mockAuthStateRepository)
+        useCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
     }
 
     @Test

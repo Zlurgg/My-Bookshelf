@@ -832,7 +832,7 @@ class BookcaseViewModel(
             _state.update { it.copy(isCheckingForUpdates = true) }
 
             // Always force check for manual updates (ignores dismissed versions)
-            val updateInfo = updateUseCases.checkForUpdate(forceCheck = true)
+            val updateInfo = updateUseCases.checkForUpdate.execute(forceCheck = true)
 
             if (updateInfo != null) {
                 Timber.i("Update available: %s", updateInfo.versionName)
@@ -846,7 +846,7 @@ class BookcaseViewModel(
             } else {
                 // No update available - show "up to date" dialog
                 Timber.d("No update available, fetching current version info")
-                val currentInfo = updateUseCases.getCurrentVersionInfo()
+                val currentInfo = updateUseCases.getCurrentVersionInfo.execute()
                 _state.update {
                     it.copy(
                         currentVersionInfo = currentInfo,
@@ -863,7 +863,7 @@ class BookcaseViewModel(
             val updateInfo = _state.value.availableUpdate ?: return@launch
             Timber.i("Starting download for version %s", updateInfo.versionName)
 
-            val downloadId = updateUseCases.downloadUpdate(updateInfo)
+            val downloadId = updateUseCases.downloadUpdate.execute(updateInfo)
             if (downloadId != null) {
                 _state.update {
                     it.copy(
@@ -884,7 +884,7 @@ class BookcaseViewModel(
             val updateInfo = _state.value.availableUpdate ?: return@launch
             Timber.d("User dismissed update %s", updateInfo.versionName)
 
-            updateUseCases.dismissUpdate(updateInfo.versionName)
+            updateUseCases.dismissUpdate.execute(updateInfo.versionName)
             _state.update {
                 it.copy(
                     showUpdateDialog = false,

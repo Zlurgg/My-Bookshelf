@@ -1,81 +1,10 @@
 package uk.co.zlurgg.mybookshelf.update.domain.usecases
 
-import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
-import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdatePreferencesRepository
-import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdateRepository
 
 /**
  * Use case to check for available app updates.
  */
 interface CheckForUpdateUseCase {
-    suspend operator fun invoke(forceCheck: Boolean = false): UpdateInfo?
-}
-
-/**
- * Implementation that compares current version with latest GitHub release.
- * Respects user's dismissal of specific versions.
- */
-class CheckForUpdateUseCaseImpl(
-    private val updateRepository: UpdateRepository,
-    private val updatePreferencesRepository: UpdatePreferencesRepository,
-    private val currentVersion: String
-) : CheckForUpdateUseCase {
-    override suspend operator fun invoke(forceCheck: Boolean): UpdateInfo? {
-        Timber.d("Checking for updates (current: $currentVersion, force: $forceCheck)")
-
-        val result = updateRepository.getLatestRelease()
-        val updateInfo = result.getOrNull() ?: run {
-            Timber.d("Failed to get release info")
-            return null
-        }
-
-        // Check if newer version
-        if (!isNewerVersion(updateInfo.versionName, currentVersion)) {
-            Timber.d("Current version $currentVersion is up to date")
-            return null
-        }
-
-        // Check if user dismissed this version (skip if force check)
-        if (!forceCheck) {
-            val dismissedVersion = when (val prefResult = updatePreferencesRepository.getDismissedVersion()) {
-                is Result.Success -> prefResult.data
-                is Result.Error -> {
-                    Timber.w("Failed to get dismissed version: %s", prefResult.error)
-                    null
-                }
-            }
-            if (dismissedVersion == updateInfo.versionName) {
-                Timber.d("User dismissed version ${updateInfo.versionName}")
-                return null
-            }
-        }
-
-        // Check if APK is available
-        if (updateInfo.apkDownloadUrl == null) {
-            Timber.w("Update available but no APK asset found")
-            return null
-        }
-
-        Timber.i("Update available: ${updateInfo.versionName}")
-        return updateInfo
-    }
-
-    /**
-     * Compares semantic versions (e.g., 1.0.4 vs 1.0.3).
-     * Returns true if remote version is newer than current.
-     */
-    internal fun isNewerVersion(remote: String, current: String): Boolean {
-        val remoteParts = remote.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
-        val currentParts = current.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
-
-        for (i in 0 until maxOf(remoteParts.size, currentParts.size)) {
-            val r = remoteParts.getOrElse(i) { 0 }
-            val c = currentParts.getOrElse(i) { 0 }
-            if (r > c) return true
-            if (r < c) return false
-        }
-        return false
-    }
+    suspend fun execute(forceCheck: Boolean = false): UpdateInfo?
 }
