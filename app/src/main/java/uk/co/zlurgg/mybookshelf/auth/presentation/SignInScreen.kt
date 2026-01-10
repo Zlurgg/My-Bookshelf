@@ -18,7 +18,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.ContinueAsGuestButton
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.DevSignInButton
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.ImportGuestDataDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInButton
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.WelcomeHeader
@@ -61,6 +63,7 @@ fun SignInScreenRoot(
         state = state,
         snackbarHostState = snackbarHostState,
         onSignInClick = { viewModel.onAction(SignInAction.SignIn) },
+        onDevSignInClick = { userNumber -> viewModel.onAction(SignInAction.DevSignIn(userNumber)) },
         onContinueAsGuestClick = { viewModel.onAction(SignInAction.ContinueAsGuest) }
     )
 }
@@ -70,6 +73,7 @@ private fun SignInScreen(
     state: SignInState,
     snackbarHostState: SnackbarHostState,
     onSignInClick: () -> Unit,
+    onDevSignInClick: (userNumber: Int) -> Unit,
     onContinueAsGuestClick: () -> Unit
 ) {
     Scaffold(
@@ -87,9 +91,19 @@ private fun SignInScreen(
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            SignInButton(
-                onClick = onSignInClick,
-                isLoading = state.isLoading
+            // Google sign-in (release builds only - doesn't work with emulator)
+            if (!BuildConfig.DEBUG) {
+                SignInButton(
+                    onClick = onSignInClick,
+                    isLoading = state.isLoading
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // Dev sign-in button (debug builds only)
+            DevSignInButton(
+                onClick = onDevSignInClick,
+                enabled = !state.isLoading
             )
 
             Spacer(modifier = Modifier.height(16.dp))

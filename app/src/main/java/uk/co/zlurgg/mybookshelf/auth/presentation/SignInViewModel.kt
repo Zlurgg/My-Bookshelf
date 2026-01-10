@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.BuildConfig
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DevSignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
@@ -23,7 +25,8 @@ class SignInViewModel(
     private val hasGuestDataUseCase: HasGuestDataUseCase,
     private val migrateLocalDataUseCase: MigrateLocalDataUseCase,
     private val syncUserPreferencesUseCase: SyncUserPreferencesUseCase,
-    private val restoreBookClubMembershipsUseCase: RestoreBookClubMembershipsUseCase
+    private val restoreBookClubMembershipsUseCase: RestoreBookClubMembershipsUseCase,
+    private val devSignInUseCase: DevSignInUseCase? = null // Only injected in debug builds
 ) : ViewModel() {
 
     companion object {
@@ -40,10 +43,55 @@ class SignInViewModel(
     fun onAction(action: SignInAction) {
         when (action) {
             is SignInAction.SignIn -> signIn()
+            is SignInAction.DevSignIn -> devSignIn(action.userNumber)
             is SignInAction.ContinueAsGuest -> continueAsGuest()
             is SignInAction.ResetState -> resetState()
             is SignInAction.ImportGuestData -> importGuestData()
             is SignInAction.SkipGuestDataImport -> skipGuestDataImport()
+        }
+    }
+
+    /**
+     * Development-only sign-in using the Auth Emulator.
+     * Creates/signs-in a test user with email/password.
+     *
+     * @param userNumber Which test user to sign in as (1=Alice, 2=Bob, 3=Charlie)
+     */
+    private fun devSignIn(userNumber: Int) {
+        if (!BuildConfig.DEBUG || devSignInUseCase == null) {
+            Timber.tag(TAG).w("Dev sign-in attempted in release build or use case not available")
+            return
+        }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
+
+            when (val result = devSignInUseCase.execute(userNumber)) {
+                is Result.Success -> {
+                    Timber.tag(TAG).d("Dev sign-in successful: %s", result.data.userId)
+
+                    // Perform same post-sign-in steps as regular sign-in
+                    syncUserPreferencesUseCase.execute()
+                    restoreBookClubMemberships()
+
+                    val destination = determineDestination()
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            isSignInSuccessful = true,
+                            navigateToDestination = destination
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = "Dev sign-in failed. Is the Auth emulator running?"
+                        )
+                    }
+                }
+            }
         }
     }
 
