@@ -20,6 +20,53 @@ When planning new features or implementation strategies, read `docs/FEATURE_PLAN
 - **List available tasks**: `./gradlew tasks`
 - **Clean compilation cache**: `./gradlew clean` (needed after major dependency changes)
 
+### Firebase Emulator (Local Development)
+
+Debug builds automatically connect to the Firebase Emulator Suite instead of production. This keeps development data separate from production.
+
+#### Starting the Emulator
+```bash
+# Start emulators (run from project root)
+firebase emulators:start
+
+# Start with data persistence (saves data between sessions)
+firebase emulators:start --export-on-exit=./emulator-data --import=./emulator-data
+```
+
+#### Emulator URLs
+- **Emulator UI**: http://localhost:4000 (view/edit Firestore and Auth data)
+- **Firestore**: http://localhost:4000/firestore
+- **Auth**: http://localhost:4000/auth
+
+#### How It Works
+- **Debug builds**: Auto-connect to emulators at `10.0.2.2` (Android emulator's localhost)
+- **Release builds**: Connect to production Firebase (no change)
+- **Configuration**: `FirebaseEmulatorConfig.kt` handles the switch based on `BuildConfig.DEBUG`
+
+#### Physical Device Testing
+For physical devices connected via USB:
+```bash
+# Forward emulator ports to device
+adb reverse tcp:8080 tcp:8080
+adb reverse tcp:9099 tcp:9099
+```
+
+#### Seeding Test Data
+You can add test data via the Emulator UI at http://localhost:4000/firestore, or export/import data:
+```bash
+# Export current emulator data
+firebase emulators:export ./emulator-data
+
+# Import on next start
+firebase emulators:start --import=./emulator-data
+```
+
+#### Logging
+Filter emulator connection logs:
+```bash
+adb logcat -s FirebaseEmulator
+```
+
 ### Testing
 - **Run all tests**: `./gradlew test`
 - **Run unit tests only**: `./gradlew testDebugUnitTest` (542 tests, ~60 seconds)
