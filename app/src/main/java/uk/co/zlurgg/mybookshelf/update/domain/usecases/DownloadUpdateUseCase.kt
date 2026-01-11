@@ -6,5 +6,5 @@ import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
  * Use case to download an APK update.
  */
 interface DownloadUpdateUseCase {
-    fun execute(updateInfo: UpdateInfo): Long?
+    operator fun invoke(updateInfo: UpdateInfo): Long?
 }

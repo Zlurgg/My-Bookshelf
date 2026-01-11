@@ -15,7 +15,7 @@ class CheckForUpdateUseCaseImpl(
     private val updatePreferencesRepository: UpdatePreferencesRepository,
     private val currentVersion: String
 ) : CheckForUpdateUseCase {
-    override suspend fun execute(forceCheck: Boolean): UpdateInfo? {
+    override suspend operator fun invoke(forceCheck: Boolean): UpdateInfo? {
         Timber.d("Checking for updates (current: $currentVersion, force: $forceCheck)")
 
         val result = updateRepository.getLatestRelease()

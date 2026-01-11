@@ -13,7 +13,7 @@ class DownloadUpdateUseCaseImpl(
     private val updateRepository: UpdateRepository,
     private val config: UpdateConfig
 ) : DownloadUpdateUseCase {
-    override fun execute(updateInfo: UpdateInfo): Long? {
+    override operator fun invoke(updateInfo: UpdateInfo): Long? {
         val downloadUrl = updateInfo.apkDownloadUrl ?: run {
             Timber.e("No APK download URL available")
             return null

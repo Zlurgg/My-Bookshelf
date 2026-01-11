@@ -12,7 +12,7 @@ class GetCurrentVersionInfoUseCaseImpl(
     private val updateRepository: UpdateRepository,
     private val currentVersion: String
 ) : GetCurrentVersionInfoUseCase {
-    override suspend fun execute(): UpdateInfo? {
+    override suspend operator fun invoke(): UpdateInfo? {
         Timber.d("Fetching release info for current version: $currentVersion")
         return updateRepository.getReleaseByVersion(currentVersion).getOrNull()
     }

@@ -6,5 +6,5 @@ import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
  * Use case to check for available app updates.
  */
 interface CheckForUpdateUseCase {
-    suspend fun execute(forceCheck: Boolean = false): UpdateInfo?
+    suspend operator fun invoke(forceCheck: Boolean = false): UpdateInfo?
 }

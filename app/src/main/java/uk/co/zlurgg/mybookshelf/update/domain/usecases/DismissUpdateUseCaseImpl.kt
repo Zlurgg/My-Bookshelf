@@ -10,7 +10,7 @@ import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdatePreferencesReposi
 class DismissUpdateUseCaseImpl(
     private val updatePreferencesRepository: UpdatePreferencesRepository
 ) : DismissUpdateUseCase {
-    override suspend fun execute(version: String) {
+    override suspend operator fun invoke(version: String) {
         Timber.i("User dismissed update version: $version")
         when (val result = updatePreferencesRepository.setDismissedVersion(version)) {
             is Result.Success -> { /* Successfully saved */ }
