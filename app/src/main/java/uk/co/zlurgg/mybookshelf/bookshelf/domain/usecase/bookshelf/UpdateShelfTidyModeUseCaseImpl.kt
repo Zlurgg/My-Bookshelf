@@ -12,7 +12,7 @@ class UpdateShelfTidyModeUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository
 ) : UpdateShelfTidyModeUseCase {
 
-    override suspend fun execute(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError> {
+    override suspend operator fun invoke(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError> {
         // Get current shelf
         val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)

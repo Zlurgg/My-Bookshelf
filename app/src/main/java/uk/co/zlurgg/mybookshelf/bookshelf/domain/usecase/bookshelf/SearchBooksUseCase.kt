@@ -9,7 +9,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Results are sorted by the API's default relevance algorithm.
  */
 interface SearchBooksUseCase {
-    suspend fun execute(
+    suspend operator fun invoke(
         query: String,
         resultLimit: Int? = null,
         language: String? = null,

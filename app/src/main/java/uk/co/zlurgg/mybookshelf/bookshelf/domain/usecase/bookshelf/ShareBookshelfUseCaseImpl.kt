@@ -8,7 +8,7 @@ class ShareBookshelfUseCaseImpl(
     private val bookshelfExportService: BookshelfExportService
 ) : ShareBookshelfUseCase {
 
-    override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local> {
         return bookshelfExportService.shareBookshelf(shelfId)
     }
 }

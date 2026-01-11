@@ -8,5 +8,5 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
  * Provides reactive updates when books are added or removed from the shelf.
  */
 interface GetShelfBooksUseCase {
-    suspend fun execute(shelfId: String): Flow<List<Book>>
+    suspend operator fun invoke(shelfId: String): Flow<List<Book>>
 }

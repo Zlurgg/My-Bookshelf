@@ -8,5 +8,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles the export and sharing functionality for bookshelves.
  */
 interface ShareBookshelfUseCase {
-    suspend fun execute(shelfId: String): Result<Unit, DataError.Local>
+    suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local>
 }

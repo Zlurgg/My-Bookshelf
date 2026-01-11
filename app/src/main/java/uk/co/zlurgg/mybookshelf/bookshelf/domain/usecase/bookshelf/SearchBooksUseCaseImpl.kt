@@ -22,7 +22,7 @@ class SearchBooksUseCaseImpl(
         private const val MAX_TITLE_FILTER_LENGTH = 200
     }
 
-    override suspend fun execute(
+    override suspend operator fun invoke(
         query: String,
         resultLimit: Int?,
         language: String?,

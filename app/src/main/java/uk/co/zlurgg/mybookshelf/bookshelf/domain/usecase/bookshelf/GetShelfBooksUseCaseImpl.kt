@@ -12,7 +12,7 @@ class GetShelfBooksUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository
 ) : GetShelfBooksUseCase {
 
-    override suspend fun execute(shelfId: String): Flow<List<Book>> {
+    override suspend operator fun invoke(shelfId: String): Flow<List<Book>> {
         return bookshelfRepository.getBooksForShelf(shelfId)
     }
 }

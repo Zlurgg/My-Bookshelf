@@ -8,5 +8,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * This persists the user's choice between tidy and messy view modes.
  */
 interface UpdateShelfTidyModeUseCase {
-    suspend fun execute(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError>
+    suspend operator fun invoke(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError>
 }
