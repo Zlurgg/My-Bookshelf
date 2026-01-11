@@ -17,7 +17,7 @@ class SignInUseCaseImpl(
         private const val TAG = "SignIn"
     }
 
-    override suspend fun execute(): Result<UserData, DataError.Local> {
+    override suspend operator fun invoke(): Result<UserData, DataError.Local> {
         Timber.tag(TAG).d("=== SIGN-IN START ===")
 
         return when (val signInResult = authService.signIn()) {

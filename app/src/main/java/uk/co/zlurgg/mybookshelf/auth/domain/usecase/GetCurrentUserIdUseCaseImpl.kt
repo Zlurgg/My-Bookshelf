@@ -5,5 +5,5 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 class GetCurrentUserIdUseCaseImpl(
     private val currentUserProvider: CurrentUserProvider
 ) : GetCurrentUserIdUseCase {
-    override fun execute(): String? = currentUserProvider.getCurrentUserId()
+    override operator fun invoke(): String? = currentUserProvider.getCurrentUserId()
 }

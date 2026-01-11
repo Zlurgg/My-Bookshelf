@@ -15,5 +15,5 @@ interface DevSignInUseCase {
      * @param userNumber Which test user to sign in as (1=Alice, 2=Bob, 3=Charlie)
      * @return Result containing UserData on success or DataError on failure
      */
-    suspend fun execute(userNumber: Int = 1): Result<UserData, DataError.Local>
+    suspend operator fun invoke(userNumber: Int = 1): Result<UserData, DataError.Local>
 }

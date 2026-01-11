@@ -13,7 +13,7 @@ class CheckSignInStatusUseCaseImpl(
         private const val TAG = "AuthStatus"
     }
 
-    override suspend fun execute(): Boolean {
+    override suspend operator fun invoke(): Boolean {
         val localState = when (val result = authStateRepository.isSignedIn()) {
             is Result.Success -> result.data
             is Result.Error -> {

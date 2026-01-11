@@ -22,7 +22,7 @@ class SignOutUseCaseImpl(
         private const val TAG = "SignOut"
     }
 
-    override suspend fun execute(): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(): Result<Unit, DataError.Local> {
         Timber.tag(TAG).d("=== SIGN-OUT START ===")
 
         // Cancel all sync work before signing out
@@ -33,7 +33,7 @@ class SignOutUseCaseImpl(
         val userId = currentUserProvider.getCurrentUserId()
         if (userId != null) {
             Timber.tag(TAG).d("Clearing user data for: %s", userId)
-            when (val clearResult = clearUserData.execute(userId)) {
+            when (val clearResult = clearUserData(userId)) {
                 is Result.Success -> {
                     Timber.tag(TAG).d("Cleared %d items", clearResult.data)
                 }

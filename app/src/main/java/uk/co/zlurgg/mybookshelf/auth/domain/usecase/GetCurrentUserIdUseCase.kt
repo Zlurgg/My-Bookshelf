@@ -5,5 +5,5 @@ package uk.co.zlurgg.mybookshelf.auth.domain.usecase
  * Returns null if no user is signed in (guest mode).
  */
 interface GetCurrentUserIdUseCase {
-    fun execute(): String?
+    operator fun invoke(): String?
 }

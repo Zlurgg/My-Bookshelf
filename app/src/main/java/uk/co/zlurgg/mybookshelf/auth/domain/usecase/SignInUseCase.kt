@@ -5,5 +5,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 interface SignInUseCase {
-    suspend fun execute(): Result<UserData, DataError.Local>
+    suspend operator fun invoke(): Result<UserData, DataError.Local>
 }
