@@ -13,7 +13,7 @@ class SyncBookClubUseCaseImpl(
     private val bookClubRepository: BookClubRepository
 ) : SyncBookClubUseCase {
 
-    override suspend fun execute(
+    override suspend operator fun invoke(
         clubCode: String,
         localShelfId: String
     ): Result<SyncResult, DataError.Sync> {

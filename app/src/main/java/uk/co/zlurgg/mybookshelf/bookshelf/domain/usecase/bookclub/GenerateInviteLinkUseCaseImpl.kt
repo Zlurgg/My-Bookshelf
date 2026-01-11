@@ -22,7 +22,7 @@ class GenerateInviteLinkUseCaseImpl(
         private const val PARAM_NAME = "name"
     }
 
-    override fun execute(clubCode: String, clubName: String?): String {
+    override operator fun invoke(clubCode: String, clubName: String?): String {
         val builder = StringBuilder(shareBaseUrl)
             .append("/")
             .append(CLUB_PATH)

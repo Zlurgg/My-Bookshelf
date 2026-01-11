@@ -17,5 +17,5 @@ interface CreateBookClubUseCase {
      * @param shelfId The ID of the shelf to create a book club from
      * @return The generated club code on success
      */
-    suspend fun execute(shelfId: String): Result<String, DataError.Sync>
+    suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync>
 }

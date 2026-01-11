@@ -14,5 +14,5 @@ interface GenerateInviteLinkUseCase {
      * @param clubName Optional club name to include in the link for display purposes
      * @return A shareable URL string
      */
-    fun execute(clubCode: String, clubName: String? = null): String
+    operator fun invoke(clubCode: String, clubName: String? = null): String
 }

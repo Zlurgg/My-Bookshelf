@@ -21,7 +21,7 @@ class CreateBookClubUseCaseImpl(
         const val MAX_BOOK_CLUBS = 5
     }
 
-    override suspend fun execute(shelfId: String): Result<String, DataError.Sync> {
+    override suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync> {
         Timber.tag(TAG).d("Creating book club from shelf: %s", shelfId)
 
         // Check book club limit before creating

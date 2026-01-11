@@ -16,5 +16,5 @@ interface SyncBookClubUseCase {
      * @param localShelfId The local shelf ID to sync to
      * @return SyncResult with number of books added/removed
      */
-    suspend fun execute(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync>
+    suspend operator fun invoke(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync>
 }
