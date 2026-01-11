@@ -66,12 +66,12 @@ class SignInViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-            when (val result = devSignInUseCase.execute(userNumber)) {
+            when (val result = devSignInUseCase(userNumber)) {
                 is Result.Success -> {
                     Timber.tag(TAG).d("Dev sign-in successful: %s", result.data.userId)
 
                     // Perform same post-sign-in steps as regular sign-in
-                    syncUserPreferencesUseCase.execute()
+                    syncUserPreferencesUseCase()
                     restoreBookClubMemberships()
 
                     val destination = determineDestination()
@@ -109,10 +109,10 @@ class SignInViewModel(
 
     private fun checkSignInStatus() {
         viewModelScope.launch {
-            val isSignedIn = authUseCases.checkSignInStatus.execute()
+            val isSignedIn = authUseCases.checkSignInStatus()
             if (isSignedIn) {
                 // Sync user preferences from cloud (handles offline gracefully)
-                syncUserPreferencesUseCase.execute()
+                syncUserPreferencesUseCase()
 
                 // Restore book club memberships from Firestore
                 restoreBookClubMemberships()
@@ -132,16 +132,16 @@ class SignInViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-            when (val result = authUseCases.signIn.execute()) {
+            when (val result = authUseCases.signIn()) {
                 is Result.Success -> {
                     // Sync user preferences from cloud (handles offline gracefully)
-                    syncUserPreferencesUseCase.execute()
+                    syncUserPreferencesUseCase()
 
                     // Restore book club memberships from Firestore
                     restoreBookClubMemberships()
 
                     // Check for guest data before navigating
-                    val guestDataInfo = hasGuestDataUseCase.execute()
+                    val guestDataInfo = hasGuestDataUseCase()
                     Timber.tag(TAG).d("Guest data check: %s", guestDataInfo)
 
                     if (guestDataInfo.hasData) {
@@ -181,7 +181,7 @@ class SignInViewModel(
     }
 
     private suspend fun determineDestination(): PostSignInDestination {
-        return if (shouldShowWelcome.execute()) {
+        return if (shouldShowWelcome()) {
             PostSignInDestination.Welcome
         } else {
             PostSignInDestination.Bookcase
@@ -193,7 +193,7 @@ class SignInViewModel(
             Timber.tag(TAG).d("User chose to import guest data")
             _state.update { it.copy(isLoading = true) }
 
-            when (val result = migrateLocalDataUseCase.execute()) {
+            when (val result = migrateLocalDataUseCase()) {
                 is Result.Success -> {
                     Timber.tag(TAG).d("Guest data imported successfully")
                     val destination = determineDestination()

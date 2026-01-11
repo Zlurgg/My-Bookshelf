@@ -45,7 +45,7 @@ class BookDetailViewModel(
         viewModelScope.launch {
             // Load book details once - no continuous collection to avoid race conditions
             // Manual state updates in action handlers keep UI synchronized
-            val bookDetails = bookDetailUseCases.getBookDetails.execute(bookId, shelfId).first()
+            val bookDetails = bookDetailUseCases.getBookDetails(bookId, shelfId).first()
             _state.update { currentState ->
                 currentState.copy(
                     book = bookDetails.book,
@@ -68,7 +68,7 @@ class BookDetailViewModel(
             bookDetailUseCases.getBookDetails.loadBookDescription(bookId)
                 .onSuccess {
                     // Reload book data once to get updated description
-                    val bookDetails = bookDetailUseCases.getBookDetails.execute(bookId, shelfId).first()
+                    val bookDetails = bookDetailUseCases.getBookDetails(bookId, shelfId).first()
                     _state.update { it.copy(book = bookDetails.book) }
                 }
                 .onError {
@@ -84,7 +84,7 @@ class BookDetailViewModel(
             when (val reviewsResult = bookClubUseCases.getBookClubReviews(clubCode, bookId)) {
                 is Result.Success -> {
                     val reviews = reviewsResult.data
-                    val currentUserId = authUseCases.getCurrentUserId.execute()
+                    val currentUserId = authUseCases.getCurrentUserId()
 
                     // Find current user's review to pre-populate their rating/text
                     val userReview = reviews.find { it.userId == currentUserId }
@@ -156,7 +156,7 @@ class BookDetailViewModel(
                     val book: Book = action.book
 
                     if (onShelf) {
-                        when (val removeResult = bookDetailUseCases.removeBookFromShelf.execute(book.id, shelfId)) {
+                        when (val removeResult = bookDetailUseCases.removeBookFromShelf(book.id, shelfId)) {
                             is Result.Success -> {
                                 _state.update { it.toggleShelfStatus(false) }
                                 onNavigateBack?.invoke()
@@ -166,7 +166,7 @@ class BookDetailViewModel(
                             }
                         }
                     } else {
-                        when (val addResult = bookDetailUseCases.addBookToShelf.execute(book, shelfId)) {
+                        when (val addResult = bookDetailUseCases.addBookToShelf(book, shelfId)) {
                             is Result.Success -> {
                                 _state.update { it.toggleShelfStatus(true) }
                                 onNavigateBack?.invoke()
@@ -184,7 +184,7 @@ class BookDetailViewModel(
                     if (currentBook != null) {
                         // Toggle: pass opposite of current purchased status
                         when (
-                            val purchaseResult = bookDetailUseCases.toggleBookPurchase.execute(
+                            val purchaseResult = bookDetailUseCases.toggleBookPurchase(
                                 currentBook,
                                 !currentBook.purchased
                             )
@@ -206,7 +206,7 @@ class BookDetailViewModel(
                     saveNotesJob?.cancel()
 
                     // Always save current notes state before navigating (idempotent operation)
-                    bookDetailUseCases.updateBookMetadata.execute(
+                    bookDetailUseCases.updateBookMetadata(
                         bookId = bookId,
                         personalNotes = state.value.book?.personalNotes
                     )
@@ -218,7 +218,7 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnRemoveBookClick -> {
                 viewModelScope.launch {
-                    when (val removeResult = bookDetailUseCases.removeBookFromShelf.execute(bookId, shelfId)) {
+                    when (val removeResult = bookDetailUseCases.removeBookFromShelf(bookId, shelfId)) {
                         is Result.Success -> {
                             _state.update { it.toggleShelfStatus(false) }
                             onNavigateBack?.invoke()
@@ -232,7 +232,7 @@ class BookDetailViewModel(
             is BookDetailAction.OnReadingStatusChange -> {
                 viewModelScope.launch {
                     when (
-                        val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                        val metadataResult = bookDetailUseCases.updateBookMetadata(
                             bookId = bookId,
                             readingStatus = action.status
                         )
@@ -250,7 +250,7 @@ class BookDetailViewModel(
             is BookDetailAction.OnPersonalRatingChange -> {
                 viewModelScope.launch {
                     when (
-                        val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                        val metadataResult = bookDetailUseCases.updateBookMetadata(
                             bookId = bookId,
                             personalRating = action.rating
                         )
@@ -278,7 +278,7 @@ class BookDetailViewModel(
 
                     // Execute actual save to database
                     when (
-                        val metadataResult = bookDetailUseCases.updateBookMetadata.execute(
+                        val metadataResult = bookDetailUseCases.updateBookMetadata(
                             bookId = bookId,
                             personalNotes = action.notes
                         )
@@ -329,7 +329,7 @@ class BookDetailViewModel(
                                     userClubReviewText = "",
                                     // Remove user's review from the list
                                     clubReviews = it.clubReviews.filter { review ->
-                                        review.userId != authUseCases.getCurrentUserId.execute()
+                                        review.userId != authUseCases.getCurrentUserId()
                                     }
                                 )
                             }

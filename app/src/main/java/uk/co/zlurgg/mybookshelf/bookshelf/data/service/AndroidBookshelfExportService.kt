@@ -19,21 +19,21 @@ class AndroidBookshelfExportService(
 ) : BookshelfExportService {
 
     override suspend fun shareBookshelf(shelfId: String): Result<Unit, DataError.Local> {
-        return exportBookshelfUseCase.execute(shelfId)
+        return exportBookshelfUseCase(shelfId)
             .flatMap { shareData ->
                 androidShareService.shareBookshelf(shareData)
             }
     }
 
     override suspend fun importBookshelf(jsonData: String): Result<Unit, DataError.Local> {
-        return importBookshelfUseCase.execute(jsonData)
+        return importBookshelfUseCase(jsonData)
     }
 
     override suspend fun checkImportNameConflict(jsonData: String): Result<String?, DataError.Local> {
-        return checkImportConflictUseCase.execute(jsonData)
+        return checkImportConflictUseCase(jsonData)
     }
 
     override suspend fun importBookshelfWithName(jsonData: String, customName: String): Result<Unit, DataError.Local> {
-        return importBookshelfUseCase.execute(jsonData, customName)
+        return importBookshelfUseCase(jsonData, customName)
     }
 }

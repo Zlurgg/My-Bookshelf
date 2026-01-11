@@ -45,7 +45,7 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
 
         // Initialize welcome on first app launch
         LaunchedEffect(Unit) {
-            initializeWelcome.execute()
+            initializeWelcome()
         }
 
         // Handle deep links at the app composition level

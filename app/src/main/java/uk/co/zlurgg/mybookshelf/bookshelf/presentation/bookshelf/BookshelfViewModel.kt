@@ -68,7 +68,7 @@ class BookshelfViewModel(
             is BookshelfAction.OnBookClick -> {
                 // Persist clicked book so details screen can load it by ID safely
                 viewModelScope.launch {
-                    when (val cacheResult = bookshelfUseCases.upsertBook.execute(action.book)) {
+                    when (val cacheResult = bookshelfUseCases.upsertBook(action.book)) {
                         is Result.Success -> {
                             // Success - book cached successfully
                         }
@@ -86,7 +86,7 @@ class BookshelfViewModel(
                 _state.update { it.withBookRemoved(action.book) }
 
                 viewModelScope.launch {
-                    when (val removeResult = bookshelfUseCases.removeBookFromShelf.execute(action.book.id, shelfId)) {
+                    when (val removeResult = bookshelfUseCases.removeBookFromShelf(action.book.id, shelfId)) {
                         is Result.Success -> {
                             // Success - optimistic update already applied
                         }
@@ -141,7 +141,7 @@ class BookshelfViewModel(
 
     private fun loadBooks() {
         viewModelScope.launch {
-            bookshelfUseCases.getShelfBooks.execute(shelfId).collect { books ->
+            bookshelfUseCases.getShelfBooks(shelfId).collect { books ->
                 _state.update { it.copy(books = books, isLoading = false) }
             }
         }
@@ -150,7 +150,7 @@ class BookshelfViewModel(
     private fun loadShelfDetails() {
         viewModelScope.launch {
             Timber.tag(TAG).d("Loading shelf details for: %s", shelfId)
-            when (val result = bookcaseUseCases.getShelfById.execute(shelfId)) {
+            when (val result = bookcaseUseCases.getShelfById(shelfId)) {
                 is Result.Success -> {
                     result.data?.let { shelf ->
                         Timber.tag(TAG).d(
@@ -216,7 +216,7 @@ class BookshelfViewModel(
 
     private fun persistTidyMode(isTidyMode: Boolean) {
         viewModelScope.launch {
-            bookshelfUseCases.updateShelfTidyMode.execute(shelfId, isTidyMode)
+            bookshelfUseCases.updateShelfTidyMode(shelfId, isTidyMode)
         }
     }
 
@@ -249,7 +249,7 @@ class BookshelfViewModel(
 
     private fun addBookToShelf(book: Book) {
         viewModelScope.launch {
-            when (val addResult = bookshelfUseCases.addBookToShelf.execute(book, shelfId)) {
+            when (val addResult = bookshelfUseCases.addBookToShelf(book, shelfId)) {
                 is Result.Success -> {
                     // Success - book added successfully
                 }
@@ -285,14 +285,13 @@ class BookshelfViewModel(
             else -> Triple(null, null, query)
         }
 
-        bookshelfUseCases.searchBooks
-            .execute(
-                query = generalQuery ?: "",
-                resultLimit = 15, // First 15 results for performance
-                language = null,
-                authorFilter = authorQuery,
-                titleFilter = titleQuery
-            )
+        bookshelfUseCases.searchBooks(
+            query = generalQuery ?: "",
+            resultLimit = 15, // First 15 results for performance
+            language = null,
+            authorFilter = authorQuery,
+            titleFilter = titleQuery
+        )
             .onSuccess { searchResults ->
                 _state.update { it.withSearchResults(searchResults) }
             }
@@ -305,7 +304,7 @@ class BookshelfViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isShareLoading = true, errorMessage = null) }
 
-            when (val shareResult = bookshelfUseCases.shareBookshelf.execute(shelfId)) {
+            when (val shareResult = bookshelfUseCases.shareBookshelf(shelfId)) {
                 is Result.Success -> {
                     // Share sheet opened successfully - no success dialog needed
                     _state.update { it.copy(isShareLoading = false) }

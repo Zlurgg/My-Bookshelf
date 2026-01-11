@@ -25,7 +25,7 @@ class WelcomeViewModel(
 
     private fun markWelcomeAsShown() {
         viewModelScope.launch {
-            markWelcomeShownUseCase.execute()
+            markWelcomeShownUseCase()
         }
     }
 }
