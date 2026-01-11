@@ -8,5 +8,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles the business logic of removing the shelf association while keeping the book in the database.
  */
 interface RemoveBookFromShelfUseCase {
-    suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local>
+    suspend operator fun invoke(bookId: String, shelfId: String): Result<Unit, DataError.Local>
 }

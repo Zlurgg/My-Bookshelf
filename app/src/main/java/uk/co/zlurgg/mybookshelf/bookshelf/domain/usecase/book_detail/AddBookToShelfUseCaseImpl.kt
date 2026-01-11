@@ -26,7 +26,7 @@ class AddBookToShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : AddBookToShelfUseCase {
 
-    override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(book: Book, shelfId: String): Result<Unit, DataError.Local> {
         // Check shelf book limit before adding
         val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)

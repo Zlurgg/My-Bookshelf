@@ -9,7 +9,7 @@ class ToggleBookPurchaseUseCaseImpl(
     private val bookRepository: BookRepository
 ) : ToggleBookPurchaseUseCase {
 
-    override suspend fun execute(book: Book, purchased: Boolean): Result<Book, DataError.Local> {
+    override suspend operator fun invoke(book: Book, purchased: Boolean): Result<Book, DataError.Local> {
         // Check if book already exists to preserve personal metadata
         val existingBook = when (val getResult = bookRepository.getBookById(book.id)) {
             is Result.Success -> getResult.data

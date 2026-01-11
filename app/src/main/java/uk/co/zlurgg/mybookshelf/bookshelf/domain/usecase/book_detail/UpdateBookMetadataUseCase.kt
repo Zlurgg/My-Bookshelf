@@ -11,7 +11,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * This data is NOT exported/shared - it stays local to the user's device.
  */
 interface UpdateBookMetadataUseCase {
-    suspend fun execute(
+    suspend operator fun invoke(
         bookId: String,
         readingStatus: ReadingStatus? = null,
         personalRating: Float? = null,

@@ -9,7 +9,7 @@ class UpsertBookUseCaseImpl(
     private val bookRepository: BookRepository
 ) : UpsertBookUseCase {
 
-    override suspend fun execute(book: Book): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> {
         // Check if book already exists to preserve personal metadata
         val existingBook = when (val getResult = bookRepository.getBookById(book.id)) {
             is Result.Success -> getResult.data

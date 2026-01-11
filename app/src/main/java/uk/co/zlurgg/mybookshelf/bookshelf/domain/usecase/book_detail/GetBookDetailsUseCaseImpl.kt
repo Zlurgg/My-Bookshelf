@@ -19,7 +19,7 @@ class GetBookDetailsUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository
 ) : GetBookDetailsUseCase {
 
-    override suspend fun execute(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> {
+    override suspend operator fun invoke(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> {
         // Get shelf info to check if it's a book club
         val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data

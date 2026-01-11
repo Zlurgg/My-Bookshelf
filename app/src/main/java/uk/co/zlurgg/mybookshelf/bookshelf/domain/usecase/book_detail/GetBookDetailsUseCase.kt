@@ -10,6 +10,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles the orchestration of loading book data, description, and shelf status.
  */
 interface GetBookDetailsUseCase {
-    suspend fun execute(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus>
+    suspend operator fun invoke(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus>
     suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local>
 }

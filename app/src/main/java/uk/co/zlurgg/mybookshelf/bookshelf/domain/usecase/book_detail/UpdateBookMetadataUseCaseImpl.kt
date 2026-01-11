@@ -27,7 +27,7 @@ class UpdateBookMetadataUseCaseImpl(
         private const val MAX_NOTES_LENGTH = 5000
     }
 
-    override suspend fun execute(
+    override suspend operator fun invoke(
         bookId: String,
         readingStatus: ReadingStatus?,
         personalRating: Float?,

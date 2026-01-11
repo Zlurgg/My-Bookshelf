@@ -9,5 +9,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Updates the book's purchased field and persists the change.
  */
 interface ToggleBookPurchaseUseCase {
-    suspend fun execute(book: Book, purchased: Boolean): Result<Book, DataError.Local>
+    suspend operator fun invoke(book: Book, purchased: Boolean): Result<Book, DataError.Local>
 }

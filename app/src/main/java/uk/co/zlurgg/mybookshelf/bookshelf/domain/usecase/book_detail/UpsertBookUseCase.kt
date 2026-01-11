@@ -9,5 +9,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Used when user clicks on a book to ensure it's available for the detail screen.
  */
 interface UpsertBookUseCase {
-    suspend fun execute(book: Book): Result<Unit, DataError.Local>
+    suspend operator fun invoke(book: Book): Result<Unit, DataError.Local>
 }

@@ -21,7 +21,7 @@ class RemoveBookFromShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : RemoveBookFromShelfUseCase {
 
-    override suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(bookId: String, shelfId: String): Result<Unit, DataError.Local> {
         // Check if this is a book club shelf BEFORE removing
         val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data

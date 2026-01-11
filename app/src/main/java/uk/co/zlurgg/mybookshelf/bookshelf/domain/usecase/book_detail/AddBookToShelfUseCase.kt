@@ -9,5 +9,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles the business logic of both persisting the book and creating the shelf association.
  */
 interface AddBookToShelfUseCase {
-    suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local>
+    suspend operator fun invoke(book: Book, shelfId: String): Result<Unit, DataError.Local>
 }
