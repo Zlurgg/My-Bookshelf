@@ -30,7 +30,7 @@ class DeepLinkImportUseCaseImpl(
         val result = shareTokenService.getShelfDataByToken(token)
             .flatMap { jsonData ->
                 Timber.tag(TAG).d("Successfully fetched shelf data, checking for conflicts...")
-                checkImportConflictUseCase.execute(jsonData)
+                checkImportConflictUseCase(jsonData)
                     .flatMap { conflictingName ->
                         if (conflictingName != null) {
                             // Name conflict exists, return conflict info
@@ -39,7 +39,7 @@ class DeepLinkImportUseCaseImpl(
                         } else {
                             // No conflict, proceed with import
                             Timber.tag(TAG).d("No conflicts found, proceeding with import...")
-                            importBookshelfUseCase.execute(jsonData)
+                            importBookshelfUseCase(jsonData)
                                 .map {
                                     Timber.tag(TAG).d("Import successful")
                                     ImportResult.Success
@@ -73,7 +73,7 @@ class DeepLinkImportUseCaseImpl(
                 } else {
                     // No conflict - proceed with import
                     Timber.tag(TAG).d("Custom name '%s' is available, proceeding with import...", customName)
-                    importBookshelfUseCase.execute(jsonData, customName)
+                    importBookshelfUseCase(jsonData, customName)
                 }
             }
 
