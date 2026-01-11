@@ -10,5 +10,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Contains all business logic for welcome initialization.
  */
 interface InitializeWelcomeUseCase {
-    suspend fun execute(): Result<Unit, DataError>
+    suspend operator fun invoke(): Result<Unit, DataError>
 }

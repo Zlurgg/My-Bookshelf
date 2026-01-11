@@ -9,7 +9,7 @@ class ShouldShowWelcomeUseCaseImpl(
     private val currentUserProvider: CurrentUserProvider
 ) : ShouldShowWelcomeUseCase {
 
-    override suspend fun execute(): Boolean {
+    override suspend operator fun invoke(): Boolean {
         val userId = currentUserProvider.getCurrentUserId()
         val hasShown = welcomePreferences.hasShownWelcome(userId).first()
         return !hasShown

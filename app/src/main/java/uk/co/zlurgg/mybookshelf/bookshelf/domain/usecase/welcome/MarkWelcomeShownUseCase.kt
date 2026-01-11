@@ -11,5 +11,5 @@ interface MarkWelcomeShownUseCase {
      *
      * Writes to local DataStore immediately, and to Firestore for signed-in users.
      */
-    suspend fun execute()
+    suspend operator fun invoke()
 }

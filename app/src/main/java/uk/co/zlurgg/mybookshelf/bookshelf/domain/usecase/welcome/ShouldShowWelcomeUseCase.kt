@@ -12,5 +12,5 @@ interface ShouldShowWelcomeUseCase {
      *
      * @return true if welcome should be shown, false if already shown to this user
      */
-    suspend fun execute(): Boolean
+    suspend operator fun invoke(): Boolean
 }

@@ -15,7 +15,7 @@ class MarkWelcomeShownUseCaseImpl(
         private const val TAG = "MarkWelcomeShown"
     }
 
-    override suspend fun execute() {
+    override suspend operator fun invoke() {
         val userId = currentUserProvider.getCurrentUserId()
 
         // Write to local DataStore (immediate)

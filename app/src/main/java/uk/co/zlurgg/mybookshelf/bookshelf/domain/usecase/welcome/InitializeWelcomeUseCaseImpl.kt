@@ -17,7 +17,7 @@ class InitializeWelcomeUseCaseImpl(
     private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
 ) : InitializeWelcomeUseCase {
 
-    override suspend fun execute(): Result<Unit, DataError> {
+    override suspend operator fun invoke(): Result<Unit, DataError> {
         return ErrorMapper.safeCall {
             // Check if this is first launch
             if (!welcomeService.isFirstLaunch()) {
@@ -45,7 +45,7 @@ class InitializeWelcomeUseCaseImpl(
                 bookcaseRepository.addSystemShelf(tutorialShelf)
 
                 // Create and add tutorial book to the shelf
-                getOrCreateTutorialBook.execute(tutorialShelf.id)
+                getOrCreateTutorialBook(tutorialShelf.id)
             }
 
             // Mark welcome complete
