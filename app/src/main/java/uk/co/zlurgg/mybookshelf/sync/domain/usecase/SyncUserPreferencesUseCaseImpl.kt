@@ -17,7 +17,7 @@ class SyncUserPreferencesUseCaseImpl(
     private val currentUserProvider: CurrentUserProvider
 ) : SyncUserPreferencesUseCase {
 
-    override suspend fun execute(): Result<Unit, DataError.Sync> {
+    override suspend operator fun invoke(): Result<Unit, DataError.Sync> {
         val userId = currentUserProvider.getCurrentUserId()
 
         if (userId == null) {

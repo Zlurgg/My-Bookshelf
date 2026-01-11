@@ -26,5 +26,5 @@ interface MigrateLocalDataUseCase {
      *
      * @return Result containing migration statistics or error
      */
-    suspend fun execute(): Result<MigrationResult, DataError.Sync>
+    suspend operator fun invoke(): Result<MigrationResult, DataError.Sync>
 }

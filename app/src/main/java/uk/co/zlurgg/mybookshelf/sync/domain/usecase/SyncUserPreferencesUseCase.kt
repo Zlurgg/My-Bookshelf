@@ -18,5 +18,5 @@ interface SyncUserPreferencesUseCase {
      *
      * @return Success if sync completed (or skipped for offline), Error only for critical failures
      */
-    suspend fun execute(): Result<Unit, DataError.Sync>
+    suspend operator fun invoke(): Result<Unit, DataError.Sync>
 }

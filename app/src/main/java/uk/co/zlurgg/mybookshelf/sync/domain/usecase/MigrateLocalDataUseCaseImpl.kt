@@ -20,7 +20,7 @@ class MigrateLocalDataUseCaseImpl(
     private val currentUserProvider: CurrentUserProvider
 ) : MigrateLocalDataUseCase {
 
-    override suspend fun execute(): Result<MigrationResult, DataError.Sync> {
+    override suspend operator fun invoke(): Result<MigrationResult, DataError.Sync> {
         val userId = currentUserProvider.getCurrentUserId()
             ?: return Result.Error(DataError.Sync.MIGRATION_FAILED)
 

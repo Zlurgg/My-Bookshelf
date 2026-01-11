@@ -15,5 +15,5 @@ interface HasGuestDataUseCase {
      *
      * @return GuestDataInfo containing counts of orphan books and shelves
      */
-    suspend fun execute(): GuestDataInfo
+    suspend operator fun invoke(): GuestDataInfo
 }

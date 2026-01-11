@@ -14,7 +14,7 @@ class HasGuestDataUseCaseImpl(
     private val syncRepository: SyncRepository
 ) : HasGuestDataUseCase {
 
-    override suspend fun execute(): GuestDataInfo {
+    override suspend operator fun invoke(): GuestDataInfo {
         return when (val result = syncRepository.getOrphanDataCounts()) {
             is Result.Success -> result.data
             is Result.Error -> GuestDataInfo(bookCount = 0, shelfCount = 0)
