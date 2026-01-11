@@ -17,7 +17,7 @@ class RenameShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : RenameShelfUseCase {
 
-    override suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String, newName: String): Result<Unit, DataError.Local> {
         // Trim whitespace from new name
         val trimmedName = newName.trim()
 

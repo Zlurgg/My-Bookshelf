@@ -23,7 +23,7 @@ class UpdateShelfStyleUseCaseImpl(
         private const val TAG = "UpdateShelfStyle"
     }
 
-    override suspend fun execute(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
         // Get the shelf to update
         val shelfToUpdate = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)

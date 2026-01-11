@@ -8,5 +8,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Used during sign-out to prevent data leakage between accounts.
  */
 interface ClearUserDataUseCase {
-    suspend fun execute(userId: String): Result<Int, DataError.Local>
+    suspend operator fun invoke(userId: String): Result<Int, DataError.Local>
 }

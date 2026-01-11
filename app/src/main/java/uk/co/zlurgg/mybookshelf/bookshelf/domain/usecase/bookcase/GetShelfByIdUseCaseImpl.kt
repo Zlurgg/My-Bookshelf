@@ -9,7 +9,7 @@ class GetShelfByIdUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository
 ) : GetShelfByIdUseCase {
 
-    override suspend fun execute(shelfId: String): Result<Bookshelf?, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Bookshelf?, DataError.Local> {
         return bookcaseRepository.getShelfById(shelfId)
     }
 }

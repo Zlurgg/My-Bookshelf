@@ -9,7 +9,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles position recalculation and batch updates for affected shelves.
  */
 interface ReorderShelvesUseCase {
-    suspend fun execute(
+    suspend operator fun invoke(
         shelfToMove: Bookshelf,
         newPosition: Int,
         currentShelves: List<Bookshelf>

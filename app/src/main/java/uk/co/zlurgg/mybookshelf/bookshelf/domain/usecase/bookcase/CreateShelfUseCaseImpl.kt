@@ -19,7 +19,7 @@ class CreateShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : CreateShelfUseCase {
 
-    override suspend fun execute(
+    override suspend operator fun invoke(
         name: String,
         style: ShelfStyle,
         existingShelves: List<Bookshelf>
@@ -40,7 +40,7 @@ class CreateShelfUseCaseImpl(
 
         // If this is the tutorial shelf, ensure the tutorial book is added
         if (name == BookshelfConstants.TUTORIAL_SHELF_NAME) {
-            getOrCreateTutorialBook.execute(newShelf.id)
+            getOrCreateTutorialBook(newShelf.id)
         }
 
         // Trigger sync after successful shelf creation

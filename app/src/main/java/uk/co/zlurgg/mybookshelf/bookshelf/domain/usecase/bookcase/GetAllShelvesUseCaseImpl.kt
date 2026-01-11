@@ -14,7 +14,7 @@ class GetAllShelvesUseCaseImpl(
     private val repository: BookcaseRepository
 ) : GetAllShelvesUseCase {
 
-    override suspend fun execute(): Flow<Bookcase> {
+    override suspend operator fun invoke(): Flow<Bookcase> {
         return repository.getAllShelves()
             .flatMapLatest { shelves ->
                 if (shelves.isEmpty()) {

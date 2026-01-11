@@ -19,7 +19,7 @@ class DeleteShelfUseCaseImpl(
         private const val TAG = "DeleteShelf"
     }
 
-    override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local> {
         // Get shelf to check if it has a book club
         val shelf = when (val getResult = repository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data

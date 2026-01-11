@@ -9,5 +9,5 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
  * Returns the bookcase with populated book counts for display purposes.
  */
 interface GetAllShelvesUseCase {
-    suspend fun execute(): Flow<Bookcase>
+    suspend operator fun invoke(): Flow<Bookcase>
 }

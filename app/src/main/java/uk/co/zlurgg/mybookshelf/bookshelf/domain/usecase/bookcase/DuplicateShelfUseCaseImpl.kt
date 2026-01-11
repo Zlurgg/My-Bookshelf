@@ -18,7 +18,7 @@ class DuplicateShelfUseCaseImpl(
     private val syncSchedulerService: SyncSchedulerService
 ) : DuplicateShelfUseCase {
 
-    override suspend fun execute(shelfId: String): Result<Bookshelf, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Bookshelf, DataError.Local> {
         // Get the original shelf
         val originalShelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)

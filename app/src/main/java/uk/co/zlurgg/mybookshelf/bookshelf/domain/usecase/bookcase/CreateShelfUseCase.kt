@@ -10,7 +10,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Handles position calculation and shelf creation logic.
  */
 interface CreateShelfUseCase {
-    suspend fun execute(
+    suspend operator fun invoke(
         name: String,
         style: ShelfStyle,
         existingShelves: List<Bookshelf>

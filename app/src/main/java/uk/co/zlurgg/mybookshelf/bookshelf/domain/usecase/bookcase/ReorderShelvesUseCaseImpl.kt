@@ -9,7 +9,7 @@ class ReorderShelvesUseCaseImpl(
     private val repository: BookcaseRepository
 ) : ReorderShelvesUseCase {
 
-    override suspend fun execute(
+    override suspend operator fun invoke(
         shelfToMove: Bookshelf,
         newPosition: Int,
         currentShelves: List<Bookshelf>

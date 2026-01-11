@@ -9,5 +9,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Creates a complete copy of the shelf with a new ID and auto-generated name.
  */
 interface DuplicateShelfUseCase {
-    suspend fun execute(shelfId: String): Result<Bookshelf, DataError.Local>
+    suspend operator fun invoke(shelfId: String): Result<Bookshelf, DataError.Local>
 }

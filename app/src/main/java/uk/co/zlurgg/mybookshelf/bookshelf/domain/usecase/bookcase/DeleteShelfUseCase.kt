@@ -9,6 +9,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Provides both delete and restore functionality for undo operations.
  */
 interface DeleteShelfUseCase {
-    suspend fun execute(shelfId: String): Result<Unit, DataError.Local>
+    suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local>
     suspend fun restore(shelf: Bookshelf): Result<Unit, DataError.Local>
 }

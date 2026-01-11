@@ -15,7 +15,7 @@ class ClearUserDataUseCaseImpl(
     private val bookClubRepository: BookClubRepository
 ) : ClearUserDataUseCase {
 
-    override suspend fun execute(userId: String): Result<Int, DataError.Local> {
+    override suspend operator fun invoke(userId: String): Result<Int, DataError.Local> {
         Timber.tag(TAG).d("=== CLEARING USER DATA ===")
         Timber.tag(TAG).d("User ID: %s", userId)
 
