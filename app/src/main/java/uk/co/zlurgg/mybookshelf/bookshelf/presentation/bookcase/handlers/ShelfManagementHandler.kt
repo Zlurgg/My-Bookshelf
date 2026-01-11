@@ -20,7 +20,7 @@ class ShelfManagementHandler(
         newPosition: Int,
         currentShelves: List<Bookshelf>
     ): Result<List<Bookshelf>, DataError> {
-        return bookcaseUseCases.reorderShelves.execute(shelf, newPosition, currentShelves)
+        return bookcaseUseCases.reorderShelves(shelf, newPosition, currentShelves)
     }
 
     suspend fun renameShelf(shelfId: String, newName: String): Result<Unit, DataError> {
@@ -30,7 +30,7 @@ class ShelfManagementHandler(
         }
 
         // Check if this is a book club shelf - if so, use book club rename
-        val shelfResult = bookcaseUseCases.getShelfById.execute(shelfId)
+        val shelfResult = bookcaseUseCases.getShelfById(shelfId)
         if (shelfResult is Result.Success) {
             val shelf = shelfResult.data
             if (shelf != null && shelf.isBookClub && !shelf.clubCode.isNullOrEmpty()) {
@@ -38,14 +38,14 @@ class ShelfManagementHandler(
             }
         }
 
-        return bookcaseUseCases.renameShelf.execute(shelfId, newName)
+        return bookcaseUseCases.renameShelf(shelfId, newName)
     }
 
     suspend fun updateShelfStyle(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError> {
-        return bookcaseUseCases.updateShelfStyle.execute(shelfId, newStyle)
+        return bookcaseUseCases.updateShelfStyle(shelfId, newStyle)
     }
 
     suspend fun accessTutorialShelf(): Result<TutorialAccessResult, DataError> {
-        return handleTutorialAccess.execute()
+        return handleTutorialAccess()
     }
 }

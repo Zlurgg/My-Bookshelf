@@ -23,7 +23,7 @@ class MockGetAllShelvesUseCase(
     )
 ) : GetAllShelvesUseCase {
 
-    override suspend fun execute(): Flow<Bookcase> = flowOf(bookcaseToReturn)
+    override suspend operator fun invoke(): Flow<Bookcase> = flowOf(bookcaseToReturn)
 
     fun configureBookcase(bookcase: Bookcase) {
         bookcaseToReturn = bookcase
@@ -38,7 +38,7 @@ class MockCreateShelfUseCase : CreateShelfUseCase {
     var shouldReturnError = false
     var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
 
-    override suspend fun execute(
+    override suspend operator fun invoke(
         name: String,
         style: ShelfStyle,
         existingShelves: List<Bookshelf>
@@ -77,7 +77,7 @@ class MockDeleteShelfUseCase : DeleteShelfUseCase {
     var lastRestoredShelf: Bookshelf? = null
     var shouldReturnError = false
 
-    override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local> {
         executeCallCount++
         lastDeletedShelfId = shelfId
         return if (shouldReturnError) {
@@ -114,7 +114,7 @@ class MockReorderShelvesUseCase : ReorderShelvesUseCase {
     var shouldReturnError = false
     var reorderedShelvesToReturn: List<Bookshelf> = emptyList()
 
-    override suspend fun execute(
+    override suspend operator fun invoke(
         shelfToMove: Bookshelf,
         newPosition: Int,
         currentShelves: List<Bookshelf>
@@ -147,7 +147,7 @@ class MockGetShelfByIdUseCase : GetShelfByIdUseCase {
     var shelfToReturn: Bookshelf? = null
     var shouldReturnError = false
 
-    override suspend fun execute(shelfId: String): Result<Bookshelf?, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Bookshelf?, DataError.Local> {
         callCount++
         lastRequestedShelfId = shelfId
         return if (shouldReturnError) {
@@ -172,7 +172,7 @@ class MockRenameShelfUseCase : RenameShelfUseCase {
     var shouldReturnError = false
     var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
 
-    override suspend fun execute(shelfId: String, newName: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String, newName: String): Result<Unit, DataError.Local> {
         callCount++
         lastShelfId = shelfId
         lastNewName = newName
@@ -199,7 +199,7 @@ class MockUpdateShelfStyleUseCase : UpdateShelfStyleUseCase {
     var shouldReturnError = false
     var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
 
-    override suspend fun execute(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String, newStyle: ShelfStyle): Result<Unit, DataError.Local> {
         callCount++
         lastShelfId = shelfId
         lastNewStyle = newStyle
@@ -226,7 +226,7 @@ class MockDuplicateShelfUseCase : DuplicateShelfUseCase {
     var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
     var shelfToReturn: Bookshelf? = null
 
-    override suspend fun execute(shelfId: String): Result<Bookshelf, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Bookshelf, DataError.Local> {
         callCount++
         lastShelfId = shelfId
         return if (shouldReturnError) {
@@ -255,7 +255,7 @@ class MockShareBookshelfUseCase : uk.co.zlurgg.mybookshelf.bookshelf.domain.usec
     var shouldReturnError = false
     var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
 
-    override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local> {
         callCount++
         lastShelfId = shelfId
         return if (shouldReturnError) {

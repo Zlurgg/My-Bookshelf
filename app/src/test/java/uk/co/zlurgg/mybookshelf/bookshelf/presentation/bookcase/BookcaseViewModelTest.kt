@@ -117,7 +117,7 @@ class BookcaseViewModelTest {
             shareShelf = MockShareBookshelfUseCase()
         )
         val mockHandleTutorialAccess = object : HandleTutorialAccessUseCase {
-            override suspend fun execute(): Result<TutorialAccessResult, DataError.Local> {
+            override suspend operator fun invoke(): Result<TutorialAccessResult, DataError.Local> {
                 return Result.Success(TutorialAccessResult.DoNotNavigate)
             }
         }
@@ -128,16 +128,16 @@ class BookcaseViewModelTest {
 
         // No-op update use cases for testing
         val mockCheckForUpdate = object : CheckForUpdateUseCase {
-            override suspend fun execute(forceCheck: Boolean): UpdateInfo? = null
+            override suspend operator fun invoke(forceCheck: Boolean): UpdateInfo? = null
         }
         val mockDownloadUpdate = object : DownloadUpdateUseCase {
-            override fun execute(updateInfo: UpdateInfo): Long? = null
+            override operator fun invoke(updateInfo: UpdateInfo): Long? = null
         }
         val mockDismissUpdate = object : DismissUpdateUseCase {
-            override suspend fun execute(version: String) = Unit
+            override suspend operator fun invoke(version: String) = Unit
         }
         val mockGetCurrentVersionInfo = object : GetCurrentVersionInfoUseCase {
-            override suspend fun execute(): UpdateInfo? = null
+            override suspend operator fun invoke(): UpdateInfo? = null
         }
         val mockAuthService = object : uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService {
             override suspend fun signIn() = Result.Success(
@@ -157,7 +157,7 @@ class BookcaseViewModelTest {
             override fun cancelAllSync() = Unit
         }
         val mockClearUserData = object : ClearUserDataUseCase {
-            override suspend fun execute(userId: String): Result<Int, DataError.Local> = Result.Success(0)
+            override suspend operator fun invoke(userId: String): Result<Int, DataError.Local> = Result.Success(0)
         }
         val mockCurrentUserProvider = object : CurrentUserProvider {
             override fun getCurrentUserId(): String = "test-user-id"
@@ -174,7 +174,7 @@ class BookcaseViewModelTest {
             mockSyncRepository
         )
         val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
-            override fun execute(): String = "test-user-id"
+            override operator fun invoke(): String = "test-user-id"
         }
 
         // Facades
@@ -193,11 +193,11 @@ class BookcaseViewModelTest {
 
         // Book Club operations handler
         val mockCreateBookClub = object : CreateBookClubUseCase {
-            override suspend fun execute(shelfId: String): Result<String, DataError.Sync> =
+            override suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync> =
                 Result.Success("ABC12345")
         }
         val mockGenerateInviteLink = object : GenerateInviteLinkUseCase {
-            override fun execute(clubCode: String, clubName: String?): String =
+            override operator fun invoke(clubCode: String, clubName: String?): String =
                 "https://mybookshelf.app/join/$clubCode"
         }
         val mockParseClubCode = object : ParseClubCodeUseCase {
@@ -217,8 +217,10 @@ class BookcaseViewModelTest {
                 Result.Success(RestoreResult(0, 0))
         }
         val mockSyncBookClub = object : SyncBookClubUseCase {
-            override suspend fun execute(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync> =
-                Result.Success(SyncResult(0, 0))
+            override suspend operator fun invoke(
+                clubCode: String,
+                localShelfId: String,
+            ): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
         }
         val mockLeaveBookClub = object : LeaveBookClubUseCase {
             override suspend fun invoke(shelfId: String): Result<Unit, DataError.Sync> =

@@ -34,7 +34,7 @@ class GetAllShelvesUseCaseTest {
         mockRepository.configureShelves(emptyList())
 
         // When
-        val result = useCase.execute().first()
+        val result = useCase().first()
 
         // Then
         assertEquals("Should have default ID", "default", result.id)
@@ -55,7 +55,7 @@ class GetAllShelvesUseCaseTest {
         mockRepository.configureBookCounts(mapOf("fiction-1" to 5))
 
         // When
-        val result = useCase.execute().first()
+        val result = useCase().first()
 
         // Then
         assertEquals("Should have default ID", "default", result.id)
@@ -83,7 +83,7 @@ class GetAllShelvesUseCaseTest {
         mockRepository.configureBookCounts(bookCounts)
 
         // When
-        val result = useCase.execute().first()
+        val result = useCase().first()
 
         // Then
         assertEquals("Should have 3 shelves", 3, result.bookshelves.size)
@@ -103,7 +103,7 @@ class GetAllShelvesUseCaseTest {
         mockRepository.configureBookCounts(mapOf("empty-shelf" to 0))
 
         // When
-        val result = useCase.execute().first()
+        val result = useCase().first()
 
         // Then
         assertEquals("Should have 1 shelf", 1, result.bookshelves.size)
@@ -123,7 +123,7 @@ class GetAllShelvesUseCaseTest {
         mockRepository.configureBookCounts(emptyMap())
 
         // When
-        val result = useCase.execute().first()
+        val result = useCase().first()
 
         // Then
         assertEquals("Should have 3 shelves", 3, result.bookshelves.size)
@@ -138,7 +138,7 @@ class GetAllShelvesUseCaseTest {
         // When/Then - Flow-based, so exception would be thrown on collect
         // This test documents that exceptions propagate through Flow
         try {
-            useCase.execute().first()
+            useCase().first()
             // If we get here without exception, that's also valid behavior
         } catch (e: Exception) {
             // Expected - exception propagates through Flow

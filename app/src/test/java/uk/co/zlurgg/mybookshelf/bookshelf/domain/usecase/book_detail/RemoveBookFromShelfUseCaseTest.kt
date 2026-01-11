@@ -41,7 +41,7 @@ class RemoveBookFromShelfUseCaseTest {
         val shelfId = "shelf-456"
 
         // When
-        val result = useCase.execute(bookId, shelfId)
+        val result = useCase(bookId, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -58,7 +58,7 @@ class RemoveBookFromShelfUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId, "other-book"))
 
         // When
-        val result = useCase.execute(bookId, shelfId)
+        val result = useCase(bookId, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -76,7 +76,7 @@ class RemoveBookFromShelfUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf("existing-book"))
 
         // When
-        val result = useCase.execute(nonExistentBookId, shelfId)
+        val result = useCase(nonExistentBookId, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -96,7 +96,7 @@ class RemoveBookFromShelfUseCaseTest {
         val nonExistentShelfId = "non-existent-shelf"
 
         // When
-        val result = useCase.execute(bookId, nonExistentShelfId)
+        val result = useCase(bookId, nonExistentShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -116,7 +116,7 @@ class RemoveBookFromShelfUseCaseTest {
         val shelfId = "test-shelf"
 
         // When
-        val result = useCase.execute(emptyBookId, shelfId)
+        val result = useCase(emptyBookId, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -132,7 +132,7 @@ class RemoveBookFromShelfUseCaseTest {
         val emptyShelfId = ""
 
         // When
-        val result = useCase.execute(bookId, emptyShelfId)
+        val result = useCase(bookId, emptyShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -149,7 +149,7 @@ class RemoveBookFromShelfUseCaseTest {
         mockBookshelfRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute(bookId, shelfId)
+        val result = useCase(bookId, shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -165,7 +165,7 @@ class RemoveBookFromShelfUseCaseTest {
         val complexShelfId = "complex_shelf_id_with_underscores_456"
 
         // When
-        val result = useCase.execute(complexBookId, complexShelfId)
+        val result = useCase(complexBookId, complexShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -185,7 +185,7 @@ class RemoveBookFromShelfUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(secondShelf, listOf(bookId, "other-book-2"))
 
         // When - Remove from first shelf only
-        val result = useCase.execute(bookId, firstShelf)
+        val result = useCase(bookId, firstShelf)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -212,7 +212,7 @@ class RemoveBookFromShelfUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId, allBooks)
 
         // When
-        val result = useCase.execute(bookToRemove, shelfId)
+        val result = useCase(bookToRemove, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)

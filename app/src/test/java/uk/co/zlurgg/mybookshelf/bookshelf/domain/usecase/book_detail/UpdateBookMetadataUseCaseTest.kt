@@ -49,7 +49,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-1",
             readingStatus = ReadingStatus.CURRENTLY_READING
         )
@@ -70,7 +70,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-2",
             personalRating = 4.5f
         )
@@ -93,7 +93,7 @@ class UpdateBookMetadataUseCaseTest {
         val notes = "Really enjoyed this book! The characters were well-developed."
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-3",
             personalNotes = notes
         )
@@ -116,7 +116,7 @@ class UpdateBookMetadataUseCaseTest {
         val purchaseDate = 1609459200000L // 2021-01-01
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-4",
             purchaseDate = purchaseDate
         )
@@ -136,7 +136,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-5",
             personalRating = -0.5f
         )
@@ -160,7 +160,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-6",
             personalRating = 5.1f
         )
@@ -186,7 +186,7 @@ class UpdateBookMetadataUseCaseTest {
         val tooLongNotes = "a".repeat(5001)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-7",
             personalNotes = tooLongNotes
         )
@@ -202,7 +202,7 @@ class UpdateBookMetadataUseCaseTest {
         // Given - no book in repository
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "non-existent-book",
             readingStatus = ReadingStatus.READ
         )
@@ -225,7 +225,7 @@ class UpdateBookMetadataUseCaseTest {
         testTimeProvider.setTime(1700000000000L)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-8",
             readingStatus = ReadingStatus.READ
         )
@@ -249,7 +249,7 @@ class UpdateBookMetadataUseCaseTest {
         testTimeProvider.setTime(1700000000000L)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-9",
             personalRating = 5.0f
         )
@@ -270,7 +270,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-10",
             readingStatus = ReadingStatus.READ
         )
@@ -298,7 +298,7 @@ class UpdateBookMetadataUseCaseTest {
         val purchaseDate = 1640000000000L
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-11",
             readingStatus = ReadingStatus.READ,
             personalRating = 4.8f,
@@ -327,7 +327,7 @@ class UpdateBookMetadataUseCaseTest {
         val maxLengthNotes = "a".repeat(5000)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-12",
             personalNotes = maxLengthNotes
         )
@@ -347,7 +347,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-13",
             personalRating = 1.0f
         )
@@ -367,7 +367,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-14",
             personalRating = 5.0f
         )
@@ -388,7 +388,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When - Clear rating by setting to 0.0f
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-16",
             personalRating = 0.0f
         )
@@ -412,7 +412,7 @@ class UpdateBookMetadataUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When - only update reading status
-        val result = useCase.execute(
+        val result = useCase(
             bookId = "book-15",
             readingStatus = ReadingStatus.READ
         )

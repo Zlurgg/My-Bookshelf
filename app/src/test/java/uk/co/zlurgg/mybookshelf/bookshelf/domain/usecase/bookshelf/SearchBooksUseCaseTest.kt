@@ -30,7 +30,7 @@ class SearchBooksUseCaseTest {
         val titleFilter = "Effective"
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             query = query,
             language = language,
             authorFilter = authorFilter,
@@ -67,7 +67,7 @@ class SearchBooksUseCaseTest {
         mockRemoteDataSource.configureSearchResponse(SearchResponseDto(numFound = testBooks.size, results = testBooks))
 
         // When
-        val result = useCase.execute("test query")
+        val result = useCase("test query")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -85,7 +85,7 @@ class SearchBooksUseCaseTest {
         mockRemoteDataSource.returnEmptyResults = true
 
         // When
-        val result = useCase.execute("nonexistent book")
+        val result = useCase("nonexistent book")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -100,7 +100,7 @@ class SearchBooksUseCaseTest {
         mockRemoteDataSource.networkError = DataError.Remote.NO_INTERNET
 
         // When
-        val result = useCase.execute("test query")
+        val result = useCase("test query")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -115,7 +115,7 @@ class SearchBooksUseCaseTest {
         mockRemoteDataSource.networkError = DataError.Remote.REQUEST_TIMEOUT
 
         // When
-        val result = useCase.execute("test query")
+        val result = useCase("test query")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -129,7 +129,7 @@ class SearchBooksUseCaseTest {
         val longQuery = "a".repeat(201)
 
         // When
-        val result = useCase.execute(query = longQuery)
+        val result = useCase(query = longQuery)
 
         // Then
         assertTrue("Should return error for long query", result is Result.Error)
@@ -144,7 +144,7 @@ class SearchBooksUseCaseTest {
         val maxQuery = "a".repeat(200)
 
         // When
-        val result = useCase.execute(query = maxQuery)
+        val result = useCase(query = maxQuery)
 
         // Then
         assertTrue("Should return success for max length query", result is Result.Success)
@@ -157,7 +157,7 @@ class SearchBooksUseCaseTest {
         val longAuthor = "a".repeat(101)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             query = "test",
             authorFilter = longAuthor
         )
@@ -175,7 +175,7 @@ class SearchBooksUseCaseTest {
         val maxAuthor = "a".repeat(100)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             query = "test",
             authorFilter = maxAuthor
         )
@@ -191,7 +191,7 @@ class SearchBooksUseCaseTest {
         val longTitle = "a".repeat(201)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             query = "test",
             titleFilter = longTitle
         )
@@ -209,7 +209,7 @@ class SearchBooksUseCaseTest {
         val maxTitle = "a".repeat(200)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             query = "test",
             titleFilter = maxTitle
         )
@@ -227,7 +227,7 @@ class SearchBooksUseCaseTest {
         val longTitle = "c".repeat(201)
 
         // When
-        val result = useCase.execute(
+        val result = useCase(
             query = longQuery,
             authorFilter = longAuthor,
             titleFilter = longTitle

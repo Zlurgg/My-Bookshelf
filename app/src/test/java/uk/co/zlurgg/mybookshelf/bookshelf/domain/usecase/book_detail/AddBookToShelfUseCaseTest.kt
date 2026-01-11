@@ -61,7 +61,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -86,7 +86,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -114,7 +114,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When
-        val result = useCase.execute(updatedBook, shelfId)
+        val result = useCase(updatedBook, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -136,7 +136,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(firstShelf)
 
         // When - Add to first shelf
-        val firstResult = useCase.execute(book, firstShelf)
+        val firstResult = useCase(book, firstShelf)
         // Set up second shelf
         mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
             .withId(secondShelf)
@@ -144,7 +144,7 @@ class AddBookToShelfUseCaseTest {
             .withBooks(emptyList())
             .build()
         // When - Add to second shelf
-        val secondResult = useCase.execute(book, secondShelf)
+        val secondResult = useCase(book, secondShelf)
 
         // Then
         assertTrue("First addition should succeed", firstResult is Result.Success)
@@ -166,7 +166,7 @@ class AddBookToShelfUseCaseTest {
         mockBookRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -186,7 +186,7 @@ class AddBookToShelfUseCaseTest {
         mockBookshelfRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -207,7 +207,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -224,7 +224,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -241,7 +241,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -285,7 +285,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When - Add fresh API book to shelf
-        val result = useCase.execute(freshBookFromApi, shelfId)
+        val result = useCase(freshBookFromApi, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -325,7 +325,7 @@ class AddBookToShelfUseCaseTest {
         setUpDefaultShelf(shelfId)
 
         // When
-        val result = useCase.execute(newBookFromApi, shelfId)
+        val result = useCase(newBookFromApi, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -366,7 +366,7 @@ class AddBookToShelfUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(newBook, shelfId)
+        val result = useCase(newBook, shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -398,7 +398,7 @@ class AddBookToShelfUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(newBook, shelfId)
+        val result = useCase(newBook, shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -428,7 +428,7 @@ class AddBookToShelfUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(book20, shelfId)
+        val result = useCase(book20, shelfId)
 
         // Then
         assertTrue("Should return success for 20th book", result is Result.Success)
@@ -444,7 +444,7 @@ class AddBookToShelfUseCaseTest {
         val shelfId = "non-existent-shelf"
 
         // When
-        val result = useCase.execute(book, shelfId)
+        val result = useCase(book, shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)

@@ -49,7 +49,7 @@ class GetBookDetailsUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
 
         // When
-        val result = useCase.execute(bookId, shelfId).first()
+        val result = useCase(bookId, shelfId).first()
 
         // Then
         assertEquals("Should return book", book, result.book)
@@ -67,7 +67,7 @@ class GetBookDetailsUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId, emptyList())
 
         // When
-        val result = useCase.execute(bookId, shelfId).first()
+        val result = useCase(bookId, shelfId).first()
 
         // Then
         assertEquals("Should return book", book, result.book)
@@ -81,7 +81,7 @@ class GetBookDetailsUseCaseTest {
         val shelfId = "fiction-shelf"
 
         // When
-        val result = useCase.execute(bookId, shelfId).first()
+        val result = useCase(bookId, shelfId).first()
 
         // Then
         assertNull("Should return null book", result.book)
@@ -101,8 +101,8 @@ class GetBookDetailsUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId2, emptyList())
 
         // When
-        val result1 = useCase.execute(bookId, shelfId1).first()
-        val result2 = useCase.execute(bookId, shelfId2).first()
+        val result1 = useCase(bookId, shelfId1).first()
+        val result2 = useCase(bookId, shelfId2).first()
 
         // Then
         assertTrue("Should be on fiction shelf", result1.isOnShelf)
@@ -165,7 +165,7 @@ class GetBookDetailsUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
 
         // When
-        useCase.execute(bookId, shelfId).first()
+        useCase(bookId, shelfId).first()
 
         // Then
         assertEquals("Should query book repository", bookId, mockBookRepository.lastQueriedBookId)
@@ -183,7 +183,7 @@ class GetBookDetailsUseCaseTest {
         mockBookshelfRepository.configureShelfWithBooks(shelfId, listOf(bookId))
 
         // When
-        val result = useCase.execute(bookId, shelfId).first()
+        val result = useCase(bookId, shelfId).first()
 
         // Then
         assertTrue("Should preserve purchased status", result.book?.purchased == true)

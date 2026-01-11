@@ -47,10 +47,10 @@ class BookClubOperationsHandler(
         shelfId: String,
         shelfName: String
     ): Result<BookClubCreationResult, DataError.Sync> {
-        return when (val createResult = bookClubUseCases.createBookClub.execute(shelfId)) {
+        return when (val createResult = bookClubUseCases.createBookClub(shelfId)) {
             is Result.Success -> {
                 val clubCode = createResult.data
-                val inviteLink = bookClubUseCases.generateInviteLink.execute(clubCode, shelfName)
+                val inviteLink = bookClubUseCases.generateInviteLink(clubCode, shelfName)
                 Result.Success(BookClubCreationResult(clubCode, inviteLink))
             }
             is Result.Error -> Result.Error(createResult.error)
@@ -126,7 +126,7 @@ class BookClubOperationsHandler(
      * @return The invite link URL
      */
     fun generateInviteLink(clubCode: String, shelfName: String = "Book Club"): String {
-        return bookClubUseCases.generateInviteLink.execute(clubCode, shelfName)
+        return bookClubUseCases.generateInviteLink(clubCode, shelfName)
     }
 
     /**
@@ -141,7 +141,7 @@ class BookClubOperationsHandler(
         clubCode: String,
         localShelfId: String
     ): Result<SyncResult, DataError.Sync> {
-        return bookClubUseCases.syncBookClub.execute(clubCode, localShelfId)
+        return bookClubUseCases.syncBookClub(clubCode, localShelfId)
     }
 
     /**

@@ -28,7 +28,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Success(SyncResult(booksAdded = 0, booksRemoved = 0))
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -43,7 +43,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Success(SyncResult(booksAdded = 5, booksRemoved = 0))
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -58,7 +58,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Success(SyncResult(booksAdded = 0, booksRemoved = 3))
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -73,7 +73,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Success(SyncResult(booksAdded = 7, booksRemoved = 2))
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -88,7 +88,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Success(SyncResult(0, 0))
 
         // When
-        useCase.execute("MYCLUB99", "shelf-abc-123")
+        useCase("MYCLUB99", "shelf-abc-123")
 
         // Then
         assertTrue("Should call syncBooksFromClub on repository", mockRepository.syncBooksFromClubCalled)
@@ -104,7 +104,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Error(DataError.Sync.NETWORK_ERROR)
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -117,7 +117,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -130,7 +130,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Error(DataError.Sync.CLUB_NOT_FOUND)
 
         // When
-        val result = useCase.execute("INVALID1", "local-shelf-id")
+        val result = useCase("INVALID1", "local-shelf-id")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -143,7 +143,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Error(DataError.Sync.PERMISSION_DENIED)
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -156,7 +156,7 @@ class SyncBookClubUseCaseImplTest {
         mockRepository.syncBooksFromClubResult = Result.Error(DataError.Sync.NOT_MEMBER)
 
         // When
-        val result = useCase.execute("CLUB1234", "local-shelf-id")
+        val result = useCase("CLUB1234", "local-shelf-id")
 
         // Then
         assertTrue("Should return error", result is Result.Error)

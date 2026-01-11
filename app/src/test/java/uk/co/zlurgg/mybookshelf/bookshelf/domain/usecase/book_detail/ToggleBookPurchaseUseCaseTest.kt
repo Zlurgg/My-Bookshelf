@@ -31,7 +31,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(unpurchasedBook, true)
+        val result = useCase(unpurchasedBook, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -55,7 +55,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(purchasedBook, false)
+        val result = useCase(purchasedBook, false)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -76,7 +76,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When - Set to purchased again (same status)
-        val result = useCase.execute(purchasedBook, true)
+        val result = useCase(purchasedBook, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -91,7 +91,7 @@ class ToggleBookPurchaseUseCaseTest {
         val originalBook = TestBookBuilder.completeBook()
 
         // When
-        val result = useCase.execute(originalBook, !originalBook.purchased)
+        val result = useCase(originalBook, !originalBook.purchased)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -121,7 +121,7 @@ class ToggleBookPurchaseUseCaseTest {
         val minimalBook = TestBookBuilder.minimalBook()
 
         // When
-        val result = useCase.execute(minimalBook, true)
+        val result = useCase(minimalBook, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -140,7 +140,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(bookWithNullRating, true)
+        val result = useCase(bookWithNullRating, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -159,7 +159,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(bookWithNoAuthors, true)
+        val result = useCase(bookWithNoAuthors, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -175,7 +175,7 @@ class ToggleBookPurchaseUseCaseTest {
         mockBookRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
         // When
-        val result = useCase.execute(book, true)
+        val result = useCase(book, true)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -197,7 +197,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(bookWithSpecialChars, true)
+        val result = useCase(bookWithSpecialChars, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -225,7 +225,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(bookWithExtremeValues, true)
+        val result = useCase(bookWithExtremeValues, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -246,17 +246,17 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When - Toggle to purchased
-        val firstResult = useCase.execute(originalBook, true)
+        val firstResult = useCase(originalBook, true)
         assertTrue("First toggle should succeed", firstResult is Result.Success)
         val firstUpdatedBook = (firstResult as Result.Success).data
 
         // When - Toggle back to unpurchased
-        val secondResult = useCase.execute(firstUpdatedBook, false)
+        val secondResult = useCase(firstUpdatedBook, false)
         assertTrue("Second toggle should succeed", secondResult is Result.Success)
         val secondUpdatedBook = (secondResult as Result.Success).data
 
         // When - Toggle to purchased again
-        val thirdResult = useCase.execute(secondUpdatedBook, true)
+        val thirdResult = useCase(secondUpdatedBook, true)
 
         // Then
         assertTrue("Third toggle should succeed", thirdResult is Result.Success)
@@ -296,7 +296,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When - Toggle purchased on fresh API book
-        val result = useCase.execute(freshBookFromApi, true)
+        val result = useCase(freshBookFromApi, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -333,7 +333,7 @@ class ToggleBookPurchaseUseCaseTest {
             .build()
 
         // When - Toggle purchased on new book
-        val result = useCase.execute(newBookFromApi, true)
+        val result = useCase(newBookFromApi, true)
 
         // Then
         assertTrue("Should return success", result is Result.Success)

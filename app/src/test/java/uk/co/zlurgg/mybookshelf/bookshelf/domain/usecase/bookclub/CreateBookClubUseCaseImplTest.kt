@@ -28,7 +28,7 @@ class CreateBookClubUseCaseImplTest {
         mockRepository.createBookClubResult = Result.Success("CLUB1234")
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -42,7 +42,7 @@ class CreateBookClubUseCaseImplTest {
         mockRepository.createBookClubResult = Result.Success("TEST5678")
 
         // When
-        useCase.execute(shelfId)
+        useCase(shelfId)
 
         // Then
         assertTrue("Should call createBookClub on repository", mockRepository.createBookClubCalled)
@@ -58,7 +58,7 @@ class CreateBookClubUseCaseImplTest {
         mockRepository.createBookClubResult = Result.Error(DataError.Sync.NOT_SIGNED_IN)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -72,7 +72,7 @@ class CreateBookClubUseCaseImplTest {
         mockRepository.createBookClubResult = Result.Error(DataError.Sync.NETWORK_ERROR)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -86,7 +86,7 @@ class CreateBookClubUseCaseImplTest {
         mockRepository.createBookClubResult = Result.Error(DataError.Sync.QUOTA_EXCEEDED)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -100,7 +100,7 @@ class CreateBookClubUseCaseImplTest {
         mockRepository.createBookClubResult = Result.Error(DataError.Sync.PERMISSION_DENIED)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -116,7 +116,7 @@ class CreateBookClubUseCaseImplTest {
         mockRepository.createBookClubResult = Result.Success("CODE1234")
 
         // When
-        val result = useCase.execute(emptyShelfId)
+        val result = useCase(emptyShelfId)
 
         // Then
         assertTrue("Should call repository", mockRepository.createBookClubCalled)

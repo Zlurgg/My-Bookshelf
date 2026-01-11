@@ -28,7 +28,7 @@ class CreateShelfUseCaseTest {
     private val testIdGenerator = TestIdGenerator()
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val mockGetOrCreateTutorialBook = object : GetOrCreateTutorialBookUseCase {
-        override suspend fun execute(tutorialShelfId: String): Result<String, DataError.Local> {
+        override suspend operator fun invoke(tutorialShelfId: String): Result<String, DataError.Local> {
             return Result.Success("tutorial-book-id")
         }
     }
@@ -47,7 +47,7 @@ class CreateShelfUseCaseTest {
         val existingShelves = emptyList<Bookshelf>()
 
         // When
-        val result = useCase.execute(name, style, existingShelves)
+        val result = useCase(name, style, existingShelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -71,7 +71,7 @@ class CreateShelfUseCaseTest {
         )
 
         // When
-        val result = useCase.execute("New Shelf", ShelfStyle.SilverMetal, existingShelves)
+        val result = useCase("New Shelf", ShelfStyle.SilverMetal, existingShelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -85,7 +85,7 @@ class CreateShelfUseCaseTest {
         mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute("Test", ShelfStyle.DarkWood, emptyList())
+        val result = useCase("Test", ShelfStyle.DarkWood, emptyList())
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -99,8 +99,8 @@ class CreateShelfUseCaseTest {
         testIdGenerator.reset()
 
         // When
-        val result1 = useCase.execute("Shelf 1", ShelfStyle.DarkWood, emptyList())
-        val result2 = useCase.execute("Shelf 2", ShelfStyle.SilverMetal, emptyList())
+        val result1 = useCase("Shelf 1", ShelfStyle.DarkWood, emptyList())
+        val result2 = useCase("Shelf 2", ShelfStyle.SilverMetal, emptyList())
 
         // Then
         val shelf1 = (result1 as Result.Success).data

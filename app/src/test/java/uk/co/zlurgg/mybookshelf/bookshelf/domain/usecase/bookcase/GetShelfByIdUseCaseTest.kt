@@ -36,7 +36,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.shelfByIdToReturn = expectedShelf
 
         // When
-        val result = useCase.execute("test-shelf-123")
+        val result = useCase("test-shelf-123")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -51,7 +51,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.shelfByIdToReturn = null
 
         // When
-        val result = useCase.execute(nonExistentShelfId)
+        val result = useCase(nonExistentShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -77,7 +77,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.shelfByIdToReturn = completeShelf
 
         // When
-        val result = useCase.execute("complete-shelf")
+        val result = useCase("complete-shelf")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -96,7 +96,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.shelfByIdToReturn = null
 
         // When
-        val result = useCase.execute(emptyShelfId)
+        val result = useCase(emptyShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -116,7 +116,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.shelfByIdToReturn = specialShelf
 
         // When
-        val result = useCase.execute(specialCharsShelfId)
+        val result = useCase(specialCharsShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -131,7 +131,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -156,7 +156,7 @@ class GetShelfByIdUseCaseTest {
             mockRepository.shelfByIdToReturn = shelf
 
             // When
-            val result = useCase.execute(shelfId)
+            val result = useCase(shelfId)
 
             // Then
             assertTrue("Should return success for $style", result is Result.Success)
@@ -177,7 +177,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.shelfByIdToReturn = emptyShelf
 
         // When
-        val result = useCase.execute("empty-shelf")
+        val result = useCase("empty-shelf")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -203,7 +203,7 @@ class GetShelfByIdUseCaseTest {
         mockRepository.shelfByIdToReturn = shelfWithOneBook
 
         // When
-        val result = useCase.execute("single-book-shelf")
+        val result = useCase("single-book-shelf")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -235,7 +235,7 @@ class GetShelfByIdUseCaseTest {
             mockRepository.shelfByIdToReturn = shelf
 
             // When
-            val result = useCase.execute(shelfId)
+            val result = useCase(shelfId)
 
             // Then
             assertTrue("Should return success for position $position", result is Result.Success)

@@ -78,21 +78,21 @@ class SignInViewModelTest {
         MigrationResult.NO_MIGRATION_NEEDED
     )
     private val mockMigrateLocalDataUseCase = object : MigrateLocalDataUseCase {
-        override suspend fun execute(): Result<MigrationResult, DataError.Sync> = mockMigrationResult
+        override suspend operator fun invoke(): Result<MigrationResult, DataError.Sync> = mockMigrationResult
     }
 
     private var mockShouldShowWelcome = false
     private val mockShouldShowWelcomeUseCase = object : ShouldShowWelcomeUseCase {
-        override suspend fun execute(): Boolean = mockShouldShowWelcome
+        override suspend operator fun invoke(): Boolean = mockShouldShowWelcome
     }
 
     private var mockGuestDataInfo = GuestDataInfo(bookCount = 0, shelfCount = 0)
     private val mockHasGuestDataUseCase = object : HasGuestDataUseCase {
-        override suspend fun execute(): GuestDataInfo = mockGuestDataInfo
+        override suspend operator fun invoke(): GuestDataInfo = mockGuestDataInfo
     }
 
     private val mockClearUserDataUseCase = object : ClearUserDataUseCase {
-        override suspend fun execute(userId: String): Result<Int, DataError.Local> = Result.Success(0)
+        override suspend operator fun invoke(userId: String): Result<Int, DataError.Local> = Result.Success(0)
     }
 
     private val mockCurrentUserProvider = object : CurrentUserProvider {
@@ -103,7 +103,7 @@ class SignInViewModelTest {
 
     private var mockSyncUserPreferencesResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
     private val mockSyncUserPreferencesUseCase = object : SyncUserPreferencesUseCase {
-        override suspend fun execute(): Result<Unit, DataError.Sync> = mockSyncUserPreferencesResult
+        override suspend operator fun invoke(): Result<Unit, DataError.Sync> = mockSyncUserPreferencesResult
     }
 
     private var mockRestoreResult: Result<RestoreResult, DataError.Sync> = Result.Success(RestoreResult(0, 0))

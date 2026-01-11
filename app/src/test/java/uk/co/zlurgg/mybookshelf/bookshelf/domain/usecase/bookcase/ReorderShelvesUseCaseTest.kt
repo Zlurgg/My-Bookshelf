@@ -32,7 +32,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[0] // Move "Shelf A" from position 0
 
         // When
-        val result = useCase.execute(shelfToMove, 2, shelves)
+        val result = useCase(shelfToMove, 2, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -60,7 +60,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[2] // Move "Shelf C" from position 2
 
         // When
-        val result = useCase.execute(shelfToMove, 0, shelves)
+        val result = useCase(shelfToMove, 0, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -84,7 +84,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[1] // Move "Shelf B" from position 1 to position 3
 
         // When
-        val result = useCase.execute(shelfToMove, 3, shelves)
+        val result = useCase(shelfToMove, 3, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -109,7 +109,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[1] // Move "Shelf B" to same position (1)
 
         // When
-        val result = useCase.execute(shelfToMove, 1, shelves)
+        val result = useCase(shelfToMove, 1, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -132,7 +132,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[0]
 
         // When - Try to move to position 10 (should clamp to max valid position)
-        val result = useCase.execute(shelfToMove, 10, shelves)
+        val result = useCase(shelfToMove, 10, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -154,7 +154,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[2]
 
         // When - Try to move to position -5 (should clamp to 0)
-        val result = useCase.execute(shelfToMove, -5, shelves)
+        val result = useCase(shelfToMove, -5, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -175,7 +175,7 @@ class ReorderShelvesUseCaseTest {
         val nonExistentShelf = TestShelfBuilder().withId("non-existent").withPosition(0).build()
 
         // When
-        val result = useCase.execute(nonExistentShelf, 1, currentShelves)
+        val result = useCase(nonExistentShelf, 1, currentShelves)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -203,7 +203,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[0]
 
         // When
-        val result = useCase.execute(shelfToMove, 1, shelves)
+        val result = useCase(shelfToMove, 1, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -228,7 +228,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = shelves[1] // Move shelf from position 1 to position 3
 
         // When
-        val result = useCase.execute(shelfToMove, 3, shelves)
+        val result = useCase(shelfToMove, 3, shelves)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -248,7 +248,7 @@ class ReorderShelvesUseCaseTest {
         mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute(shelfToMove, 1, shelves)
+        val result = useCase(shelfToMove, 1, shelves)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -265,7 +265,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = singleShelf[0]
 
         // When
-        val result = useCase.execute(shelfToMove, 0, singleShelf)
+        val result = useCase(shelfToMove, 0, singleShelf)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -283,7 +283,7 @@ class ReorderShelvesUseCaseTest {
         val shelfToMove = TestShelfBuilder().withId("orphaned-shelf").build()
 
         // When
-        val result = useCase.execute(shelfToMove, 0, emptyShelves)
+        val result = useCase(shelfToMove, 0, emptyShelves)
 
         // Then
         assertTrue("Should return error", result is Result.Error)

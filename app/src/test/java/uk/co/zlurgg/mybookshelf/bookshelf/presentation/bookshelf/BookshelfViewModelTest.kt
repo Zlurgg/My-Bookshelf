@@ -350,7 +350,7 @@ class BookshelfViewModelTest {
         var searchResultsToReturn: List<Book> = emptyList()
         var shouldFail = false
 
-        override suspend fun execute(
+        override suspend operator fun invoke(
             query: String,
             resultLimit: Int?,
             language: String?,
@@ -368,7 +368,7 @@ class BookshelfViewModelTest {
     private class SimpleGetShelfBooksUseCase : GetShelfBooksUseCase {
         var booksToReturn: List<Book> = emptyList()
 
-        override suspend fun execute(shelfId: String): Flow<List<Book>> = flowOf(booksToReturn)
+        override suspend operator fun invoke(shelfId: String): Flow<List<Book>> = flowOf(booksToReturn)
 
         fun reset() {
             booksToReturn = emptyList()
@@ -378,7 +378,7 @@ class BookshelfViewModelTest {
     private class SimpleAddBookToShelfUseCase : AddBookToShelfUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> =
+        override suspend operator fun invoke(book: Book, shelfId: String): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -389,7 +389,7 @@ class BookshelfViewModelTest {
     private class SimpleRemoveBookFromShelfUseCase : RemoveBookFromShelfUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local> =
+        override suspend operator fun invoke(bookId: String, shelfId: String): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -400,7 +400,7 @@ class BookshelfViewModelTest {
     private class SimpleUpsertBookUseCase : UpsertBookUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(book: Book): Result<Unit, DataError.Local> =
+        override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -411,7 +411,7 @@ class BookshelfViewModelTest {
     private class SimpleShareBookshelfUseCase : ShareBookshelfUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(shelfId: String): Result<Unit, DataError.Local> =
+        override suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -420,7 +420,7 @@ class BookshelfViewModelTest {
     }
 
     private class SimpleUpdateShelfTidyModeUseCase : UpdateShelfTidyModeUseCase {
-        override suspend fun execute(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError> =
+        override suspend operator fun invoke(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError> =
             Result.Success(Unit)
     }
 
@@ -428,7 +428,7 @@ class BookshelfViewModelTest {
         var shouldSucceed = true
         var codeToReturn = "ABC12345"
 
-        override suspend fun execute(shelfId: String): Result<String, DataError.Sync> =
+        override suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync> =
             if (shouldSucceed) Result.Success(codeToReturn) else Result.Error(DataError.Sync.GENERATION_FAILED)
 
         fun reset() {
@@ -438,7 +438,7 @@ class BookshelfViewModelTest {
     }
 
     private class SimpleGenerateInviteLinkUseCase : GenerateInviteLinkUseCase {
-        override fun execute(clubCode: String, clubName: String?): String =
+        override operator fun invoke(clubCode: String, clubName: String?): String =
             "https://mybookshelf.app/join/$clubCode"
     }
 
@@ -463,8 +463,10 @@ class BookshelfViewModelTest {
     }
 
     private class SimpleSyncBookClubUseCase : SyncBookClubUseCase {
-        override suspend fun execute(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync> =
-            Result.Success(SyncResult(0, 0))
+        override suspend operator fun invoke(
+            clubCode: String,
+            localShelfId: String,
+        ): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
     }
 
     private class SimpleLeaveBookClubUseCase : LeaveBookClubUseCase {

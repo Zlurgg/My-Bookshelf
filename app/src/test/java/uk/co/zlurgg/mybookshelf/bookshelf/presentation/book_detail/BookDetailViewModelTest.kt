@@ -112,7 +112,7 @@ class BookDetailViewModelTest {
         override fun cancelAllSync() = Unit
     }
     private val mockClearUserData = object : ClearUserDataUseCase {
-        override suspend fun execute(userId: String) = Result.Success(0)
+        override suspend operator fun invoke(userId: String) = Result.Success(0)
     }
     private val mockCurrentUserProvider = object : CurrentUserProvider {
         override fun getCurrentUserId() = "test-user"
@@ -130,7 +130,7 @@ class BookDetailViewModelTest {
     )
     private val mockCheckSignInStatusUseCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
     private val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
-        override fun execute(): String? = "test-user"
+        override operator fun invoke(): String? = "test-user"
     }
 
     private val mockAuthUseCases = AuthUseCases(
@@ -436,7 +436,7 @@ class BookDetailViewModelTest {
     private class SimpleGetBookDetailsUseCase : GetBookDetailsUseCase {
         var bookDetailsToReturn: BookDetailsWithShelfStatus = BookDetailsWithShelfStatus(null, false)
 
-        override suspend fun execute(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> =
+        override suspend operator fun invoke(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> =
             flowOf(bookDetailsToReturn)
 
         override suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local> =
@@ -450,7 +450,7 @@ class BookDetailViewModelTest {
     private class SimpleAddBookToShelfUseCase : AddBookToShelfUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(book: Book, shelfId: String): Result<Unit, DataError.Local> =
+        override suspend operator fun invoke(book: Book, shelfId: String): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -461,7 +461,7 @@ class BookDetailViewModelTest {
     private class SimpleRemoveBookFromShelfUseCase : RemoveBookFromShelfUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(bookId: String, shelfId: String): Result<Unit, DataError.Local> =
+        override suspend operator fun invoke(bookId: String, shelfId: String): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -472,7 +472,7 @@ class BookDetailViewModelTest {
     private class SimpleUpsertBookUseCase : UpsertBookUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(book: Book): Result<Unit, DataError.Local> =
+        override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -483,7 +483,7 @@ class BookDetailViewModelTest {
     private class SimpleToggleBookPurchaseUseCase : ToggleBookPurchaseUseCase {
         var bookToReturn: Book? = null
 
-        override suspend fun execute(book: Book, purchased: Boolean): Result<Book, DataError.Local> =
+        override suspend operator fun invoke(book: Book, purchased: Boolean): Result<Book, DataError.Local> =
             bookToReturn?.let { Result.Success(it) } ?: Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
@@ -494,7 +494,7 @@ class BookDetailViewModelTest {
     private class SimpleUpdateBookMetadataUseCase : UpdateBookMetadataUseCase {
         var shouldSucceed = true
 
-        override suspend fun execute(
+        override suspend operator fun invoke(
             bookId: String,
             readingStatus: ReadingStatus?,
             personalRating: Float?,
@@ -511,12 +511,12 @@ class BookDetailViewModelTest {
     // Book Club Use Case mocks
 
     private class SimpleCreateBookClubUseCase : CreateBookClubUseCase {
-        override suspend fun execute(shelfId: String): Result<String, DataError.Sync> =
+        override suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync> =
             Result.Success("ABC12345")
     }
 
     private class SimpleGenerateInviteLinkUseCase : GenerateInviteLinkUseCase {
-        override fun execute(clubCode: String, clubName: String?): String =
+        override operator fun invoke(clubCode: String, clubName: String?): String =
             "https://mybookshelf.app/join/$clubCode"
     }
 
@@ -541,8 +541,10 @@ class BookDetailViewModelTest {
     }
 
     private class SimpleSyncBookClubUseCase : SyncBookClubUseCase {
-        override suspend fun execute(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync> =
-            Result.Success(SyncResult(0, 0))
+        override suspend operator fun invoke(
+            clubCode: String,
+            localShelfId: String,
+        ): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
     }
 
     private class SimpleLeaveBookClubUseCase : LeaveBookClubUseCase {

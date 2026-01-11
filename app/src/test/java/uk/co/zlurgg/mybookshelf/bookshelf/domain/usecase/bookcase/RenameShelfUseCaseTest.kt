@@ -50,7 +50,7 @@ class RenameShelfUseCaseTest {
         val newName = "New Name"
 
         // When
-        val result = useCase.execute("shelf-1", newName)
+        val result = useCase("shelf-1", newName)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -69,7 +69,7 @@ class RenameShelfUseCaseTest {
         mockRepository.shelfByIdToReturn = null
 
         // When
-        val result = useCase.execute("non-existent-shelf", "New Name")
+        val result = useCase("non-existent-shelf", "New Name")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -89,7 +89,7 @@ class RenameShelfUseCaseTest {
         mockRepository.configureShelves(listOf(existingShelf))
 
         // When
-        val result = useCase.execute("shelf-1", "   ")
+        val result = useCase("shelf-1", "   ")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -109,7 +109,7 @@ class RenameShelfUseCaseTest {
         mockRepository.configureShelves(listOf(existingShelf))
 
         // When
-        val result = useCase.execute("shelf-1", "")
+        val result = useCase("shelf-1", "")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -134,7 +134,7 @@ class RenameShelfUseCaseTest {
         mockRepository.configureShelves(listOf(shelfToRename, existingShelf))
 
         // When - Rename to existing shelf's name (now allowed)
-        val result = useCase.execute("shelf-1", "Science Fiction")
+        val result = useCase("shelf-1", "Science Fiction")
 
         // Then - Should succeed (duplicate names are allowed)
         assertTrue("Should return success", result is Result.Success)
@@ -154,7 +154,7 @@ class RenameShelfUseCaseTest {
         mockRepository.configureShelves(listOf(existingShelf))
 
         // When - Rename to same name with different case
-        val result = useCase.execute("shelf-1", "fiction")
+        val result = useCase("shelf-1", "fiction")
 
         // Then - Should succeed (renaming to self)
         assertTrue("Should return success", result is Result.Success)
@@ -174,7 +174,7 @@ class RenameShelfUseCaseTest {
         mockRepository.configureShelves(listOf(existingShelf))
 
         // When - Rename with whitespace
-        val result = useCase.execute("shelf-1", "  New Name  ")
+        val result = useCase("shelf-1", "  New Name  ")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -194,7 +194,7 @@ class RenameShelfUseCaseTest {
         mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute("shelf-1", "New Name")
+        val result = useCase("shelf-1", "New Name")
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -220,7 +220,7 @@ class RenameShelfUseCaseTest {
         mockRepository.configureShelves(listOf(existingShelf))
 
         // When
-        val result = useCase.execute("shelf-1", "New Name")
+        val result = useCase("shelf-1", "New Name")
 
         // Then
         assertTrue("Should return success", result is Result.Success)

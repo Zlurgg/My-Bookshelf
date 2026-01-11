@@ -38,7 +38,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `returns NO_MIGRATION_NEEDED when no orphan data exists`() = runTest {
         mockSyncRepository.migrateOrphanDataResult = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -52,7 +52,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `does not trigger sync when no orphan data exists`() = runTest {
         mockSyncRepository.migrateOrphanDataResult = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be success", result is Result.Success)
         assertFalse("Sync should not be triggered", fakeSyncScheduler.syncTriggered)
@@ -62,7 +62,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `calls repository with current user ID`() = runTest {
         fakeCurrentUserProvider.userId = "test-user-456"
 
-        useCase.execute()
+        useCase()
 
         assertTrue("Repository should be called", mockSyncRepository.migrateOrphanDataCalled)
         assertEquals("test-user-456", mockSyncRepository.lastMigrateOrphanDataUserId)
@@ -81,7 +81,7 @@ class MigrateLocalDataUseCaseImplTest {
             )
         )
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -102,7 +102,7 @@ class MigrateLocalDataUseCaseImplTest {
             )
         )
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -121,7 +121,7 @@ class MigrateLocalDataUseCaseImplTest {
             )
         )
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be success", result is Result.Success)
         val migration = (result as Result.Success).data
@@ -134,7 +134,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `returns error when user is not signed in`() = runTest {
         fakeCurrentUserProvider.userId = null
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Sync.MIGRATION_FAILED, (result as Result.Error).error)
@@ -145,7 +145,7 @@ class MigrateLocalDataUseCaseImplTest {
     fun `returns error when repository fails`() = runTest {
         mockSyncRepository.migrateOrphanDataResult = Result.Error(DataError.Sync.MIGRATION_FAILED)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Sync.MIGRATION_FAILED, (result as Result.Error).error)

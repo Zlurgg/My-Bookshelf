@@ -35,7 +35,7 @@ class GetShelfBooksUseCaseTest {
         mockRepository.configureShelfWithBooks(shelfId, emptyList())
 
         // When
-        val result = useCase.execute(shelfId).first()
+        val result = useCase(shelfId).first()
 
         // Then
         assertTrue("Should return empty list", result.isEmpty())
@@ -54,7 +54,7 @@ class GetShelfBooksUseCaseTest {
         mockRepository.configureShelfWithBooks(shelfId, listOf("book-1"))
 
         // When
-        val result = useCase.execute(shelfId).first()
+        val result = useCase(shelfId).first()
 
         // Then
         assertEquals("Should have 1 book", 1, result.size)
@@ -84,7 +84,7 @@ class GetShelfBooksUseCaseTest {
         mockRepository.configureShelfWithBooks(shelfId, listOf("book-1", "book-2", "book-3"))
 
         // When
-        val result = useCase.execute(shelfId).first()
+        val result = useCase(shelfId).first()
 
         // Then
         assertEquals("Should have 3 books", 3, result.size)
@@ -108,8 +108,8 @@ class GetShelfBooksUseCaseTest {
         mockRepository.configureShelfWithBooks(shelf2, listOf("scifi-book"))
 
         // When
-        val fictionResults = useCase.execute(shelf1).first()
-        val scifiResults = useCase.execute(shelf2).first()
+        val fictionResults = useCase(shelf1).first()
+        val scifiResults = useCase(shelf2).first()
 
         // Then
         assertEquals("Fiction shelf should have 1 book", 1, fictionResults.size)
@@ -134,7 +134,7 @@ class GetShelfBooksUseCaseTest {
         mockRepository.configureShelfWithBooks(shelfId, listOf("purchased-book", "unpurchased-book"))
 
         // When
-        val result = useCase.execute(shelfId).first()
+        val result = useCase(shelfId).first()
 
         // Then
         assertEquals("Should have 2 books", 2, result.size)
@@ -151,7 +151,7 @@ class GetShelfBooksUseCaseTest {
         val nonExistentShelfId = "does-not-exist"
 
         // When
-        val result = useCase.execute(nonExistentShelfId).first()
+        val result = useCase(nonExistentShelfId).first()
 
         // Then
         assertTrue("Should return empty list for non-existent shelf", result.isEmpty())
@@ -164,7 +164,7 @@ class GetShelfBooksUseCaseTest {
         // mockRepository not configured for this shelf
 
         // When
-        val result = useCase.execute(shelfId).first()
+        val result = useCase(shelfId).first()
 
         // Then
         assertTrue("Should return empty list for unconfigured shelf", result.isEmpty())

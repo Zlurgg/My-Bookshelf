@@ -46,7 +46,7 @@ class CheckSignInStatusUseCaseTest {
         mockIsSignedIn = true
         mockCurrentUser = UserData("user-123", "Test User", null)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be signed in when both conditions are true", result)
     }
@@ -56,7 +56,7 @@ class CheckSignInStatusUseCaseTest {
         mockIsSignedIn = true
         mockCurrentUser = null
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertFalse("Should not be signed in when firebase user is null", result)
     }
@@ -66,7 +66,7 @@ class CheckSignInStatusUseCaseTest {
         mockIsSignedIn = false
         mockCurrentUser = UserData("user-123", "Test User", null)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertFalse("Should not be signed in when local state is false", result)
     }
@@ -76,7 +76,7 @@ class CheckSignInStatusUseCaseTest {
         mockIsSignedIn = false
         mockCurrentUser = null
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertFalse("Should not be signed in when both conditions are false", result)
     }
@@ -86,21 +86,21 @@ class CheckSignInStatusUseCaseTest {
         // Start with both false
         mockIsSignedIn = false
         mockCurrentUser = null
-        assertFalse(useCase.execute())
+        assertFalse(useCase())
 
         // Only local true
         mockIsSignedIn = true
         mockCurrentUser = null
-        assertFalse(useCase.execute())
+        assertFalse(useCase())
 
         // Only firebase true
         mockIsSignedIn = false
         mockCurrentUser = UserData("user-123", "Test User", null)
-        assertFalse(useCase.execute())
+        assertFalse(useCase())
 
         // Both true
         mockIsSignedIn = true
         mockCurrentUser = UserData("user-123", "Test User", null)
-        assertTrue(useCase.execute())
+        assertTrue(useCase())
     }
 }

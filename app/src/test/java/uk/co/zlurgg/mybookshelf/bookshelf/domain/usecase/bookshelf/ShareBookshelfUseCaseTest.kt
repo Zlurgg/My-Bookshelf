@@ -33,7 +33,7 @@ class ShareBookshelfUseCaseTest {
         mockExportService.shareResult = Result.Success(Unit)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -48,7 +48,7 @@ class ShareBookshelfUseCaseTest {
         mockExportService.shareResult = Result.Error(DataError.Local.UNKNOWN)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -62,7 +62,7 @@ class ShareBookshelfUseCaseTest {
         mockExportService.shareResult = Result.Error(DataError.Local.UNKNOWN)
 
         // When
-        useCase.execute(emptyShelfId)
+        useCase(emptyShelfId)
 
         // Then
         assertTrue("Should call export service with empty ID", mockExportService.shareBookshelfCalled)
@@ -77,7 +77,7 @@ class ShareBookshelfUseCaseTest {
         mockExportService.shareResult = Result.Error(expectedError)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)

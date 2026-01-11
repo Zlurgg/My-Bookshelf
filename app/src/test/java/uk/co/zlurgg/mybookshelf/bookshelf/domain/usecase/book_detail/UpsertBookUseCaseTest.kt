@@ -38,7 +38,7 @@ class UpsertBookUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(newBook)
+        val result = useCase(newBook)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -63,7 +63,7 @@ class UpsertBookUseCaseTest {
         mockRepository.addBook(existingBook)
 
         // When
-        val result = useCase.execute(updatedBook)
+        val result = useCase(updatedBook)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -80,7 +80,7 @@ class UpsertBookUseCaseTest {
         mockRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
         // When
-        val result = useCase.execute(book)
+        val result = useCase(book)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -93,7 +93,7 @@ class UpsertBookUseCaseTest {
         val completeBook = TestBookBuilder.completeBook()
 
         // When
-        val result = useCase.execute(completeBook)
+        val result = useCase(completeBook)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -106,7 +106,7 @@ class UpsertBookUseCaseTest {
         val minimalBook = TestBookBuilder.minimalBook()
 
         // When
-        val result = useCase.execute(minimalBook)
+        val result = useCase(minimalBook)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -119,7 +119,7 @@ class UpsertBookUseCaseTest {
         val purchasedBook = TestBookBuilder.purchasedBook()
 
         // When
-        val result = useCase.execute(purchasedBook)
+        val result = useCase(purchasedBook)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -134,9 +134,9 @@ class UpsertBookUseCaseTest {
         val book3 = TestBookBuilder().withId("book-3").withTitle("Book 3").build()
 
         // When
-        useCase.execute(book1)
-        useCase.execute(book2)
-        useCase.execute(book3)
+        useCase(book1)
+        useCase(book2)
+        useCase(book3)
 
         // Then
         assertEquals("Should call upsert 3 times", 3, mockRepository.upsertBookCallCount)
@@ -156,7 +156,7 @@ class UpsertBookUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(book)
+        val result = useCase(book)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -176,7 +176,7 @@ class UpsertBookUseCaseTest {
         val updatedBook = originalBook.copy(purchased = true)
 
         // When
-        val result = useCase.execute(updatedBook)
+        val result = useCase(updatedBook)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -212,7 +212,7 @@ class UpsertBookUseCaseTest {
             .build()
 
         // When - Upsert fresh API book
-        val result = useCase.execute(freshBookFromApi)
+        val result = useCase(freshBookFromApi)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -249,7 +249,7 @@ class UpsertBookUseCaseTest {
             .build()
 
         // When
-        val result = useCase.execute(newBookFromApi)
+        val result = useCase(newBookFromApi)
 
         // Then
         assertTrue("Should return success", result is Result.Success)

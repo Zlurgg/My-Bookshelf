@@ -32,11 +32,11 @@ class ShelfOperationsHandler(
             is Result.Success -> {}
         }
 
-        return bookcaseUseCases.createShelf.execute(name, style, existingShelves)
+        return bookcaseUseCases.createShelf(name, style, existingShelves)
     }
 
     suspend fun deleteShelf(shelfId: String): Result<Unit, DataError> {
-        return bookcaseUseCases.deleteShelf.execute(shelfId)
+        return bookcaseUseCases.deleteShelf(shelfId)
     }
 
     suspend fun restoreShelf(shelf: Bookshelf): Result<Unit, DataError> {
@@ -44,10 +44,10 @@ class ShelfOperationsHandler(
     }
 
     suspend fun shareShelf(shelfId: String): Result<Unit, DataError> {
-        return bookcaseUseCases.shareShelf.execute(shelfId)
+        return bookcaseUseCases.shareShelf(shelfId)
     }
 
     suspend fun duplicateShelf(shelfId: String): Result<Bookshelf, DataError> {
-        return bookcaseUseCases.duplicateShelf.execute(shelfId)
+        return bookcaseUseCases.duplicateShelf(shelfId)
     }
 }

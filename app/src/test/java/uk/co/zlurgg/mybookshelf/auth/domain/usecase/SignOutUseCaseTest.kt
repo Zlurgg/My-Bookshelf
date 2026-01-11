@@ -53,7 +53,7 @@ class SignOutUseCaseTest {
     }
 
     private val mockClearUserDataUseCase = object : ClearUserDataUseCase {
-        override suspend fun execute(userId: String): Result<Int, DataError.Local> {
+        override suspend operator fun invoke(userId: String): Result<Int, DataError.Local> {
             clearedUserId = userId
             return mockClearResult
         }
@@ -86,7 +86,7 @@ class SignOutUseCaseTest {
 
     @Test
     fun `execute returns success and clears signed in state when sign out succeeds`() = runTest {
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be success", result is Result.Success)
         assertEquals(false, signedInStateSet)
@@ -96,7 +96,7 @@ class SignOutUseCaseTest {
     fun `execute returns error and does not modify state when sign out fails`() = runTest {
         mockSignOutResult = Result.Error(DataError.Local.AUTH_FAILED)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_FAILED, (result as Result.Error).error)
@@ -105,7 +105,7 @@ class SignOutUseCaseTest {
 
     @Test
     fun `execute returns success with Unit data`() = runTest {
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be success", result is Result.Success)
         assertEquals(Unit, (result as Result.Success).data)
@@ -113,7 +113,7 @@ class SignOutUseCaseTest {
 
     @Test
     fun `execute sets signed in state to false on success`() = runTest {
-        useCase.execute()
+        useCase()
 
         assertEquals(false, signedInStateSet)
     }
@@ -122,7 +122,7 @@ class SignOutUseCaseTest {
     fun `execute preserves error type from auth service`() = runTest {
         mockSignOutResult = Result.Error(DataError.Local.AUTH_NETWORK_ERROR)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_NETWORK_ERROR, (result as Result.Error).error)
@@ -132,7 +132,7 @@ class SignOutUseCaseTest {
 
     @Test
     fun `execute cancels sync before signing out`() = runTest {
-        useCase.execute()
+        useCase()
 
         assertTrue("Sync should be cancelled", syncCancelled)
     }
@@ -141,7 +141,7 @@ class SignOutUseCaseTest {
     fun `execute cancels sync even when sign out fails`() = runTest {
         mockSignOutResult = Result.Error(DataError.Local.AUTH_FAILED)
 
-        useCase.execute()
+        useCase()
 
         assertTrue("Sync should be cancelled even on sign-out failure", syncCancelled)
     }
@@ -150,7 +150,7 @@ class SignOutUseCaseTest {
 
     @Test
     fun `execute clears user data before signing out`() = runTest {
-        useCase.execute()
+        useCase()
 
         assertEquals("test-user-id", clearedUserId)
     }
@@ -159,7 +159,7 @@ class SignOutUseCaseTest {
     fun `execute skips data clearing when no user is signed in`() = runTest {
         mockCurrentUserId = null
 
-        useCase.execute()
+        useCase()
 
         assertNull("Should not clear data when no user signed in", clearedUserId)
     }
@@ -168,7 +168,7 @@ class SignOutUseCaseTest {
     fun `execute succeeds even when clearing data fails`() = runTest {
         mockClearResult = Result.Error(DataError.Local.DATABASE_ERROR)
 
-        val result = useCase.execute()
+        val result = useCase()
 
         assertTrue("Sign-out should succeed even if data clearing fails", result is Result.Success)
         assertEquals("test-user-id", clearedUserId) // Still attempted clearing
@@ -178,7 +178,7 @@ class SignOutUseCaseTest {
     fun `execute clears data for correct user id`() = runTest {
         mockCurrentUserId = "specific-user-123"
 
-        useCase.execute()
+        useCase()
 
         assertEquals("specific-user-123", clearedUserId)
     }
@@ -187,7 +187,7 @@ class SignOutUseCaseTest {
 
     @Test
     fun `execute clears sync metadata for user`() = runTest {
-        useCase.execute()
+        useCase()
 
         assertEquals("test-user-id", mockSyncRepository.clearedSyncDataForUserId)
     }
@@ -196,7 +196,7 @@ class SignOutUseCaseTest {
     fun `execute skips sync metadata clearing when no user is signed in`() = runTest {
         mockCurrentUserId = null
 
-        useCase.execute()
+        useCase()
 
         assertNull("Should not clear sync metadata when no user signed in", mockSyncRepository.clearedSyncDataForUserId)
     }
@@ -205,7 +205,7 @@ class SignOutUseCaseTest {
     fun `execute clears sync metadata for correct user id`() = runTest {
         mockCurrentUserId = "specific-user-456"
 
-        useCase.execute()
+        useCase()
 
         assertEquals("specific-user-456", mockSyncRepository.clearedSyncDataForUserId)
     }

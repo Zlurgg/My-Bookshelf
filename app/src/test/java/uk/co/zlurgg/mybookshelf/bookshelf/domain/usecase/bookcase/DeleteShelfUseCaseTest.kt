@@ -127,7 +127,7 @@ class DeleteShelfUseCaseTest {
         mockRepository.addShelfForTest(shelf)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -142,7 +142,7 @@ class DeleteShelfUseCaseTest {
         val nonExistentShelfId = "non-existent-shelf"
 
         // When
-        val result = useCase.execute(nonExistentShelfId)
+        val result = useCase(nonExistentShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -156,7 +156,7 @@ class DeleteShelfUseCaseTest {
         val emptyShelfId = ""
 
         // When
-        val result = useCase.execute(emptyShelfId)
+        val result = useCase(emptyShelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -171,7 +171,7 @@ class DeleteShelfUseCaseTest {
         mockRepository.errorToReturn = DataError.Local.UNKNOWN
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -197,7 +197,7 @@ class DeleteShelfUseCaseTest {
         mockRepository.addShelfForTest(shelf)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -290,7 +290,7 @@ class DeleteShelfUseCaseTest {
         mockRepository.addShelf(originalShelf)
 
         // When - Delete the shelf
-        val deleteResult = useCase.execute(originalShelf.id)
+        val deleteResult = useCase(originalShelf.id)
 
         // Then - Verify deletion
         assertTrue("Delete should succeed", deleteResult is Result.Success)
@@ -338,7 +338,7 @@ class DeleteShelfUseCaseTest {
         mockRepository.shelfByIdToReturn = shelf
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -362,7 +362,7 @@ class DeleteShelfUseCaseTest {
         mockRepository.addShelfForTest(shelf)
 
         // When
-        val result = useCase.execute(shelfId)
+        val result = useCase(shelfId)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
