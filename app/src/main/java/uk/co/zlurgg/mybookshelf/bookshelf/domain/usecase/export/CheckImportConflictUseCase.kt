@@ -8,7 +8,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Returns the conflicting name if one exists, null otherwise.
  */
 interface CheckImportConflictUseCase {
-    suspend fun execute(jsonData: String): Result<String?, DataError.Local>
+    suspend operator fun invoke(jsonData: String): Result<String?, DataError.Local>
 
     /**
      * Check if a specific shelf name conflicts with existing shelves.

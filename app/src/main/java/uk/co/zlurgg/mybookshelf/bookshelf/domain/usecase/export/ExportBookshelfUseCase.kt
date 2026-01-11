@@ -8,5 +8,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Use case for exporting a bookshelf and generating a shareable token.
  */
 interface ExportBookshelfUseCase {
-    suspend fun execute(shelfId: String): Result<ShareData, DataError.Local>
+    suspend operator fun invoke(shelfId: String): Result<ShareData, DataError.Local>
 }

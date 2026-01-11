@@ -16,7 +16,7 @@ class CheckImportConflictUseCaseImpl(
     private val validator: BookshelfImportValidator
 ) : CheckImportConflictUseCase {
 
-    override suspend fun execute(jsonData: String): Result<String?, DataError.Local> {
+    override suspend operator fun invoke(jsonData: String): Result<String?, DataError.Local> {
         return serializer.deserialize(jsonData)
             .flatMap { exportData ->
                 validator.validateFormat(exportData).map { exportData.bookshelf.name }

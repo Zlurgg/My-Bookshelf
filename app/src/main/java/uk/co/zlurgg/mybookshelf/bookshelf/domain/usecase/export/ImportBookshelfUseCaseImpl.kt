@@ -25,7 +25,7 @@ class ImportBookshelfUseCaseImpl(
         private const val TAG = "BookshelfImport"
     }
 
-    override suspend fun execute(jsonData: String, customName: String?): Result<Unit, DataError.Local> {
+    override suspend operator fun invoke(jsonData: String, customName: String?): Result<Unit, DataError.Local> {
         Timber.tag(
             TAG
         ).d("Starting bookshelf import%s", if (customName != null) " with custom name: $customName" else "")

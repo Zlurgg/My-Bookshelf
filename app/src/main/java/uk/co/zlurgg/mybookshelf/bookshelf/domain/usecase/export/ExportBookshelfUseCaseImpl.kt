@@ -24,7 +24,7 @@ class ExportBookshelfUseCaseImpl(
         private const val TAG = "BookshelfExport"
     }
 
-    override suspend fun execute(shelfId: String): Result<ShareData, DataError.Local> {
+    override suspend operator fun invoke(shelfId: String): Result<ShareData, DataError.Local> {
         Timber.tag(TAG).d("Starting bookshelf export for shelf: %s", shelfId)
 
         val result = dataOrchestrator.loadShelfForExport(shelfId)
