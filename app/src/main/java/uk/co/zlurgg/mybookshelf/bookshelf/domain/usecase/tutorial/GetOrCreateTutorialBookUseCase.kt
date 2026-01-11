@@ -8,5 +8,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Returns the book ID.
  */
 interface GetOrCreateTutorialBookUseCase {
-    suspend fun execute(tutorialShelfId: String): Result<String, DataError.Local>
+    suspend operator fun invoke(tutorialShelfId: String): Result<String, DataError.Local>
 }

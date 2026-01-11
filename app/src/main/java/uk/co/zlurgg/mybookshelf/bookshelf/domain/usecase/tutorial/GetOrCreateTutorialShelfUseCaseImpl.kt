@@ -13,7 +13,7 @@ class GetOrCreateTutorialShelfUseCaseImpl(
     private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
 ) : GetOrCreateTutorialShelfUseCase {
 
-    override suspend fun execute(): Result<String, DataError.Local> {
+    override suspend operator fun invoke(): Result<String, DataError.Local> {
         // Check if tutorial shelf already exists (using fixed ID)
         val existingShelf = when (val getResult = bookcaseRepository.getShelfById(SystemOwnerIds.TUTORIAL_SHELF_ID)) {
             is Result.Success -> getResult.data
@@ -42,7 +42,7 @@ class GetOrCreateTutorialShelfUseCaseImpl(
         }
 
         // Ensure tutorial book exists in the shelf
-        when (val bookResult = getOrCreateTutorialBook.execute(shelfId)) {
+        when (val bookResult = getOrCreateTutorialBook(shelfId)) {
             is Result.Success -> { /* continue */ }
             is Result.Error -> return bookResult
         }

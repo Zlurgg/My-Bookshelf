@@ -22,7 +22,7 @@ class HandleTutorialAccessUseCaseImpl(
 ) : HandleTutorialAccessUseCase {
 
     @Suppress("TooGenericExceptionThrown") // Intentional: throws within safeCall which converts to Result.Error
-    override suspend fun execute(): Result<TutorialAccessResult, DataError.Local> {
+    override suspend operator fun invoke(): Result<TutorialAccessResult, DataError.Local> {
         return ErrorMapper.safeCall {
             // Check if tutorial shelf already exists
             val existingShelves = bookcaseRepository.getAllShelves().first()
@@ -33,7 +33,7 @@ class HandleTutorialAccessUseCaseImpl(
                 val tutorialBook = tutorialShelf.books.firstOrNull()
 
                 val bookId = tutorialBook?.id ?: // Book exists, use ID if it doesn't exist, create it
-                    when (val result = getOrCreateTutorialBook.execute(tutorialShelf.id)) {
+                    when (val result = getOrCreateTutorialBook(tutorialShelf.id)) {
                         is Result.Success -> result.data
                         is Result.Error -> throw Exception("Failed to create tutorial book: ${result.error}")
                     }
@@ -44,7 +44,7 @@ class HandleTutorialAccessUseCaseImpl(
                 )
             } else {
                 // Tutorial doesn't exist, create silently without navigating
-                when (val result = getOrCreateTutorialShelf.execute()) {
+                when (val result = getOrCreateTutorialShelf()) {
                     is Result.Success -> TutorialAccessResult.DoNotNavigate
                     is Result.Error -> throw Exception("Failed to create tutorial shelf: ${result.error}")
                 }

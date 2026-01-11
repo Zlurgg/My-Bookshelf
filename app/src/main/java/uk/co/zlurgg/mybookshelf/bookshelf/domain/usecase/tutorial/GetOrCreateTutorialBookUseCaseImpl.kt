@@ -22,7 +22,7 @@ class GetOrCreateTutorialBookUseCaseImpl(
     private val timeProvider: TimeProvider
 ) : GetOrCreateTutorialBookUseCase {
 
-    override suspend fun execute(tutorialShelfId: String): Result<String, DataError.Local> {
+    override suspend operator fun invoke(tutorialShelfId: String): Result<String, DataError.Local> {
         // Check if tutorial book already exists
         val existingBook = when (val getResult = bookRepository.getBookById(BookDetailConstants.TUTORIAL_BOOK_ID)) {
             is Result.Success -> getResult.data

@@ -4,5 +4,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 interface GetOrCreateTutorialShelfUseCase {
-    suspend fun execute(): Result<String, DataError.Local>
+    suspend operator fun invoke(): Result<String, DataError.Local>
 }

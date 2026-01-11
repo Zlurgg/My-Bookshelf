@@ -17,5 +17,5 @@ interface HandleTutorialAccessUseCase {
      *
      * @return Result containing TutorialAccessResult with navigation instructions
      */
-    suspend fun execute(): Result<TutorialAccessResult, DataError.Local>
+    suspend operator fun invoke(): Result<TutorialAccessResult, DataError.Local>
 }
