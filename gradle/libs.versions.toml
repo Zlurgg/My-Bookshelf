@@ -23,7 +23,6 @@ timber = "5.0.1"
 # Firebase & Google Auth
 firebaseAuth = "24.0.1"
 firebaseFirestore = "25.1.4"
-playServicesAuth = "21.5.0"
 
 # WorkManager
 workManager = "2.11.0"
@@ -90,7 +89,6 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 # Firebase & Google Auth
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestore" }
-play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 
 # WorkManager
 work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
