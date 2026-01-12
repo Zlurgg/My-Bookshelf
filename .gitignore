@@ -20,10 +20,5 @@ app/google-services.json
 emulator-data/
 *-debug.log
 
-# Template/Planning Docs (not part of project)
-docs/FEATURE_PLAN_TEMPLATE.md
-docs/PROJECT_STANDARDS_TEMPLATE.md
-docs/DETEKT_SETUP_PLAN.md
-
 # AI assistant instructions (verbose, not for repo)
 CLAUDE.local.md
