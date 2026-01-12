@@ -35,7 +35,7 @@ class UpdateBookMetadataUseCaseImpl(
         purchaseDate: Long?
     ): Result<Unit, DataError> {
         // Validate personal rating (0.0-5.0, where 0 = unrated)
-        if (personalRating != null && (personalRating < 0f || personalRating > MAX_RATING)) {
+        if (personalRating != null && (personalRating !in 0f..MAX_RATING)) {
             return Result.Error(DataError.Validation.INVALID_FORMAT)
         }
 

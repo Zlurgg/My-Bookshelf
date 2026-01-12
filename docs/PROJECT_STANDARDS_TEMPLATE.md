@@ -14,19 +14,32 @@ This file provides guidance to Claude Code when working with code in this reposi
 
 The app follows Clean Architecture with clear separation of concerns:
 
-- **Domain Layer**: Core business logic, entities, and repository interfaces
-  - Contains domain models and repository contracts
-  - **Pure domain code** - Zero framework dependencies
-  - Business logic lives here, not in ViewModels
+```
+┌─────────────────────┐
+│  Presentation Layer │ ──────┐
+└─────────────────────┘       │
+                              ▼
+┌─────────────────────┐     ┌─────────────────────┐
+│     Data Layer      │ ───▶│    Domain Layer     │
+└─────────────────────┘     └─────────────────────┘
+```
 
-- **Data Layer**: Database, network, and repository implementations
-  - Database entities, DAOs, and type converters
-  - Network clients and API services
-  - Repository implementations of domain contracts
+**Dependency Rule**: Both Presentation and Data layers depend on Domain. Domain depends on nothing.
 
-- **Presentation Layer**: UI components, ViewModels, and state management
-  - MVVM pattern with ViewModels handling UI logic
-  - Unidirectional data flow
+- **Domain Layer**: Core business logic and contracts (dependency inversion boundary)
+  - Domain models (pure Kotlin, no framework dependencies)
+  - Repository interfaces (contracts that Data layer implements)
+  - UseCases (concrete classes with business logic)
+
+- **Data Layer**: Data management and persistence
+  - Repository implementations (implement domain interfaces)
+  - DataSources (wrap DAOs, APIs)
+  - Entities, DTOs, and mappers
+
+- **Presentation Layer**: UI and state management
+  - ViewModels (depend on UseCases, never repositories)
+  - UI State and Actions
+  - Composables (consume state, emit actions)
 
 ---
 
@@ -48,26 +61,50 @@ UI (Composables) → ViewModels → UseCases → Repositories → DataSources
 
 ### UseCase Pattern
 
-UseCases are the gatekeepers of business logic:
+UseCases are concrete classes that encapsulate business logic. They use `operator fun invoke()` for callable syntax:
 
 ```kotlin
-// ✅ CORRECT: ViewModel depends on UseCase
+// ✅ CORRECT: Concrete UseCase class
+class GetBooksUseCase(
+    private val repository: BookRepository
+) {
+    suspend operator fun invoke(): Result<List<Book>, DataError> {
+        return repository.getBooks()
+    }
+}
+
+// ✅ CORRECT: UseCase with multiple dependencies
+class GetBooksWithAuthorsUseCase(
+    private val bookRepository: BookRepository,
+    private val authorRepository: AuthorRepository,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+) {
+    suspend operator fun invoke(): List<BookWithAuthor> =
+        withContext(defaultDispatcher) {
+            // Business logic here
+        }
+}
+
+// ✅ CORRECT: ViewModel depends on UseCases
 class BookshelfViewModel(
     private val getBooks: GetBooksUseCase,
     private val deleteBook: DeleteBookUseCase
 ) : ViewModel()
 
-// ❌ WRONG: ViewModel depends on Repository
+// ❌ WRONG: ViewModel depends on Repository directly
 class BookshelfViewModel(
     private val bookRepository: BookRepository  // NEVER DO THIS
 ) : ViewModel()
 ```
 
 **UseCase Guidelines:**
-- One UseCase per business operation
-- Consistent `Result<T, Error>` return types
-- UseCases can depend on multiple repositories
-- UseCases should be testable in isolation
+- Concrete classes - no interface needed
+- Use `operator fun invoke()` for callable syntax: `useCase(params)`
+- Naming: `VerbNoun` + `UseCase` (e.g., `GetBooksUseCase`, `DeleteBookUseCase`)
+- One UseCase per business operation (single responsibility)
+- Can depend on repositories, domain services, or other use cases
+- Must be main-safe; use `withContext(dispatcher)` for background work
+- No lifecycle, no mutable state
 
 ### Repository Pattern
 
@@ -103,21 +140,57 @@ DTO (Network) ←→ Entity (Database) ←→ Domain Model
 
 ### State Management Pattern
 
-ViewModels manage UI state with StateFlow:
+ViewModels expose a single immutable state via StateFlow:
 
 ```kotlin
-class BookshelfViewModel(...) : ViewModel() {
+data class BookshelfState(
+    val books: List<Book> = emptyList(),
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,        // Persistent error (inline display)
+    val userMessage: String? = null,         // Transient message (snackbar, consumed and cleared)
+    val navigationEvent: NavigationEvent? = null  // Navigation (consumed and cleared)
+)
+
+// State-based navigation - survives configuration changes
+sealed interface NavigationEvent {
+    data object Back : NavigationEvent
+    data class ToDetail(val bookId: String) : NavigationEvent
+}
+
+class BookshelfViewModel(
+    private val deleteBookUseCase: DeleteBookUseCase
+) : ViewModel() {
     private val _state = MutableStateFlow(BookshelfState())
     val state: StateFlow<BookshelfState> = _state.asStateFlow()
 
     fun onAction(action: BookshelfAction) {
         when (action) {
             is BookshelfAction.DeleteBook -> deleteBook(action.bookId)
-            is BookshelfAction.RefreshBooks -> refreshBooks()
+            is BookshelfAction.MessageShown -> _state.update { it.copy(userMessage = null) }
+            is BookshelfAction.NavigationHandled -> _state.update { it.copy(navigationEvent = null) }
+        }
+    }
+
+    private fun deleteBook(bookId: String) {
+        viewModelScope.launch {
+            deleteBookUseCase(bookId)
+                .onSuccess {
+                    _state.update { it.copy(userMessage = "Book deleted") }
+                }
+                .onError { error ->
+                    _state.update {
+                        it.copy(userMessage = ErrorFormatter.formatDataErrorMessage(error, "delete book"))
+                    }
+                }
         }
     }
 }
 ```
+
+**Key Principles:**
+- Single source of truth: One `StateFlow` per ViewModel
+- Immutable state: Always use `copy()` to update
+- No one-off events: Navigation and messages are state, consumed and cleared by UI
 
 ### Error Handling Pattern
 
@@ -170,27 +243,41 @@ class BookRepositoryImpl(...) : BookRepository {
 
 **UseCase Layer - Clean Business Logic:**
 - When repositories return Result, UseCases don't need try-catch
-- For simple delegation, use `ErrorMapper.safeSuspendCall(TAG)` as a safety net
-- For complex logic with early returns, use `@Suppress("TooGenericExceptionCaught")` with logging
+- UseCases are concrete classes (no interface needed)
+- Must be main-safe; use `withContext(dispatcher)` for background work
 
 ```kotlin
-// ✅ IDEAL: No try-catch needed when repository returns Result
-class DeleteBookUseCaseImpl(private val repository: BookRepository) : DeleteBookUseCase {
-    override suspend fun execute(id: String): Result<Unit, DataError.Local> {
-        return repository.deleteBook(id) // Already returns Result
+// ✅ Simple UseCase - just delegates to repository
+class DeleteBookUseCase(private val repository: BookRepository) {
+    suspend operator fun invoke(id: String): Result<Unit, DataError.Local> {
+        return repository.deleteBook(id)
     }
 }
 
-// ✅ PRAGMATIC: Use safeSuspendCall when repository might throw
-class GetBookUseCaseImpl(private val repository: BookRepository) : GetBookUseCase {
-    override suspend fun execute(id: String): Result<Book?, DataError.Local> {
-        return ErrorMapper.safeSuspendCall(TAG) {
-            repository.getBookById(id)
+// ✅ UseCase with business logic
+class GetBookWithAuthorUseCase(
+    private val bookRepository: BookRepository,
+    private val authorRepository: AuthorRepository,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
+) {
+    suspend operator fun invoke(bookId: String): Result<BookWithAuthor, DataError> =
+        withContext(defaultDispatcher) {
+            val book = bookRepository.getBookById(bookId)
+                ?: return@withContext Result.Error(DataError.Local.NOT_FOUND)
+            val author = authorRepository.getAuthor(book.authorId)
+            Result.Success(BookWithAuthor(book, author))
         }
-    }
+}
 
-    companion object {
-        private const val TAG = "GetBook"
+// ✅ UseCase depending on other use cases
+class ProcessBookUseCase(
+    private val getBookUseCase: GetBookUseCase,
+    private val formatBookUseCase: FormatBookUseCase
+) {
+    suspend operator fun invoke(id: String): Result<FormattedBook, DataError> {
+        return getBookUseCase(id).map { book ->
+            formatBookUseCase(book)
+        }
     }
 }
 ```
@@ -234,15 +321,16 @@ class TestTimeProvider : TimeProvider {
 
 | Type | Pattern | Example |
 |------|---------|---------|
-| UseCase | `VerbNounUseCase` | `GetBooksUseCase`, `DeleteBookUseCase` |
+| UseCase | `VerbNounUseCase` (concrete) | `GetBooksUseCase`, `DeleteBookUseCase` |
 | ViewModel | `FeatureViewModel` | `BookshelfViewModel`, `SettingsViewModel` |
 | Repository Interface | `FeatureRepository` | `BookRepository`, `UserRepository` |
 | Repository Impl | `FeatureRepositoryImpl` | `BookRepositoryImpl` |
+| DataSource | `FeatureLocalDataSource`, `FeatureRemoteDataSource` | `BookLocalDataSource` |
 | State | `FeatureState` | `BookshelfState`, `LoginState` |
 | Action | `FeatureAction` | `BookshelfAction`, `LoginAction` |
 | Entity (Room) | `FeatureEntity` | `BookEntity`, `UserEntity` |
 | DTO (Network) | `FeatureDto` | `BookDto`, `UserResponseDto` |
-| Mapper | `FeatureMapper` or extension functions | `BookMapper`, `Book.toEntity()` |
+| Mapper | Extension functions preferred | `Book.toEntity()`, `BookDto.toDomain()` |
 
 ### Functions
 
@@ -284,14 +372,15 @@ app/src/main/java/com/example/app/
 │
 ├── feature_one/                    # Feature module
 │   ├── data/
+│   │   ├── datasource/           # Local and remote data sources
 │   │   ├── database/             # Entities, DAOs
-│   │   ├── network/              # DTOs, API services
+│   │   ├── network/              # DTOs, API interfaces
 │   │   ├── repository/           # Repository implementations
 │   │   └── mappers/              # DTO ↔ Entity ↔ Domain
 │   ├── domain/
 │   │   ├── model/                # Domain models
-│   │   ├── repository/           # Repository interfaces
-│   │   └── usecase/              # UseCases
+│   │   ├── repository/           # Repository interfaces (dependency inversion)
+│   │   └── usecase/              # Concrete UseCase classes
 │   └── presentation/
 │       ├── FeatureScreen.kt
 │       ├── FeatureViewModel.kt
@@ -324,9 +413,11 @@ app/src/main/java/com/example/app/
 | One-shot operation | `suspend fun` |
 | Stream of values | `Flow<T>` |
 | UI state from ViewModel | `StateFlow<T>` |
-| Events (one-time) | `SharedFlow<T>` or Channel |
+| One-time events (navigation, snackbars) | Include in UI state, consume and clear |
 | Combining multiple sources | `combine()`, `zip()` |
 | Transforming streams | `map()`, `flatMapLatest()` |
+
+> **Note**: Avoid `Channel` or `SharedFlow` for one-time UI events. Model them as state that gets consumed and cleared. This ensures events aren't lost during configuration changes.
 
 ### Flow Best Practices
 
@@ -389,25 +480,234 @@ fun BookshelfScreen() {
 - Anything that survives configuration changes
 - State that triggers side effects
 
-**Side Effects:**
+**Side Effects (Consume and Clear Pattern):**
 ```kotlin
-// One-time events (navigation, snackbars)
-LaunchedEffect(state.navigateToDetail) {
-    state.navigateToDetail?.let { bookId ->
-        navController.navigate("detail/$bookId")
-        viewModel.onAction(ClearNavigation)
+@Composable
+fun BookshelfScreenRoot(
+    viewModel: BookshelfViewModel = koinViewModel(),
+    onNavigateToDetail: (String) -> Unit,
+    onNavigateBack: () -> Unit
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Navigation events - consume and clear
+    LaunchedEffect(state.navigationEvent) {
+        when (val event = state.navigationEvent) {
+            is NavigationEvent.Back -> onNavigateBack()
+            is NavigationEvent.ToDetail -> onNavigateToDetail(event.bookId)
+            null -> { /* no-op */ }
+        }
+        if (state.navigationEvent != null) {
+            viewModel.onAction(BookshelfAction.NavigationHandled)
+        }
+    }
+
+    // Transient messages - consume and clear
+    state.userMessage?.let { message ->
+        LaunchedEffect(message) {
+            snackbarHostState.showSnackbar(message)
+            viewModel.onAction(BookshelfAction.MessageShown)
+        }
+    }
+
+    BookshelfContent(state = state, snackbarHostState = snackbarHostState, onAction = viewModel::onAction)
+}
+```
+
+> **Important**: Never use `Channel` or one-off event streams from ViewModel. Always model events as state that UI consumes and clears.
+
+**Advanced: Queued Messages with `List<Message>`**
+
+For apps that need to queue multiple messages (e.g., rapid operations), use unique IDs to ensure `LaunchedEffect` triggers for repeated messages:
+
+```kotlin
+data class Message(val id: Long, val text: String)
+
+data class FeatureState(
+    val userMessages: List<Message> = emptyList()
+)
+
+// In ViewModel
+private var messageId = 0L
+
+private fun showError(error: DataError, operation: String) {
+    val message = Message(
+        id = messageId++,
+        text = ErrorFormatter.formatDataErrorMessage(error, operation)
+    )
+    _state.update { it.copy(userMessages = it.userMessages + message) }
+}
+
+fun messageShown(id: Long) {
+    _state.update { it.copy(userMessages = it.userMessages.filterNot { it.id == id }) }
+}
+
+// In UI - unique ID ensures LaunchedEffect re-triggers for same message text
+state.userMessages.firstOrNull()?.let { message ->
+    LaunchedEffect(message.id) {
+        snackbarHostState.showSnackbar(message.text)
+        viewModel.messageShown(message.id)
+    }
+}
+```
+
+**When to use `List<Message>`:**
+- Multiple messages can occur in quick succession
+- Same message text might repeat (simple `String?` won't re-trigger `LaunchedEffect`)
+- Need to queue messages instead of replacing
+
+### Compose Previews
+
+**Basic Preview:**
+```kotlin
+@Preview(showBackground = true)
+@Composable
+private fun BookCardPreview() {
+    AppTheme {
+        BookCard(book = previewBook, onClick = {})
+    }
+}
+```
+
+**Multi-Preview Annotations:**
+```kotlin
+// Built-in multi-previews
+@PreviewLightDark        // Light and dark themes
+@PreviewScreenSizes      // Multiple screen sizes
+@PreviewFontScales       // Font scaling
+@Composable
+fun BookListPreview() {
+    AppTheme {
+        BookList(books = previewBooks, onBookClick = {})
+    }
+}
+```
+
+**Custom Multi-Preview:**
+```kotlin
+@Preview(name = "Light", uiMode = UI_MODE_NIGHT_NO)
+@Preview(name = "Dark", uiMode = UI_MODE_NIGHT_YES)
+annotation class PreviewLightDark
+
+@PreviewLightDark
+@PreviewFontScales
+@Composable
+fun FeatureScreenPreview() { /* ... */ }
+```
+
+**Preview Data Pattern:**
+```kotlin
+// In presentation/preview/PreviewData.kt
+internal val previewBook = Book(
+    id = "preview-1",
+    title = "Sample Book",
+    author = "Sample Author"
+)
+
+internal val previewBooks = listOf(
+    previewBook,
+    previewBook.copy(id = "preview-2", title = "Another Book")
+)
+
+// Usage in preview
+@Preview
+@Composable
+private fun BookListPreview() {
+    BookList(books = previewBooks, onBookClick = {})
+}
+```
+
+**Preview Best Practices:**
+- ✅ Extract preview data to separate file (`PreviewData.kt`)
+- ✅ Use `internal` visibility for preview data
+- ✅ Preview stateless composables, not ViewModel-connected screens
+- ✅ Wrap previews in `AppTheme` for accurate styling
+- ❌ Don't include network/database calls in previews
+
+> **Reference**: [Compose Previews](https://developer.android.com/develop/ui/compose/tooling/previews)
+
+### Accessibility
+
+All UI must be accessible. Follow these patterns:
+
+**Content Descriptions:**
+```kotlin
+// ✅ Meaningful descriptions for non-text elements
+Image(
+    painter = painterResource(R.drawable.book_cover),
+    contentDescription = stringResource(R.string.book_cover_description, book.title)
+)
+
+IconButton(onClick = { onAction(Action.Delete) }) {
+    Icon(
+        imageVector = Icons.Default.Delete,
+        contentDescription = stringResource(R.string.delete_book)  // Never null for interactive icons
+    )
+}
+
+// ✅ Decorative images - explicitly null
+Image(
+    painter = painterResource(R.drawable.decorative_divider),
+    contentDescription = null  // Screen readers skip this
+)
+```
+
+**Touch Targets:**
+```kotlin
+// ✅ Minimum 48dp touch target (Google's recommended minimum)
+IconButton(
+    onClick = { /* action */ },
+    modifier = Modifier.size(48.dp)  // Ensures adequate touch area
+) {
+    Icon(imageVector = Icons.Default.Add, contentDescription = "Add book")
+}
+
+// ✅ For smaller visual elements, expand touch area
+Icon(
+    imageVector = Icons.Default.Info,
+    contentDescription = "More info",
+    modifier = Modifier
+        .size(24.dp)  // Visual size
+        .clickable { /* action */ }
+        .padding(12.dp)  // Expands touch target to 48dp
+)
+```
+
+**Semantic Grouping:**
+```kotlin
+// ✅ Merge related elements for cleaner screen reader navigation
+Row(
+    modifier = Modifier
+        .semantics(mergeDescendants = true) { }  // Read as single unit
+        .clickable { onBookClick(book) }
+) {
+    BookCover(book)
+    Column {
+        Text(book.title)
+        Text(book.author)
     }
 }
 
-// Lifecycle-aware collection
-val state by viewModel.state.collectAsStateWithLifecycle()
+// ✅ Custom content description for complex items
+Card(
+    modifier = Modifier.semantics {
+        contentDescription = "${book.title} by ${book.author}, ${book.readingStatus.displayName}"
+    }
+) { /* card content */ }
 ```
 
-### Room Database
+**Accessibility Checklist:**
+- [ ] All interactive elements have contentDescription
+- [ ] Touch targets are at least 48dp
+- [ ] Color is not the only indicator (add icons/text)
+- [ ] Text scales with system font size (use `sp`)
+- [ ] Sufficient color contrast (4.5:1 for text)
+- [ ] Screen reader navigation order is logical
 
-**Migration Strategy:**
-- Pre-release: Destructive migrations OK (`fallbackToDestructiveMigration()`)
-- Post-release: Always write migrations, never lose user data
+> **Reference**: [Compose Accessibility](https://developer.android.com/develop/ui/compose/accessibility)
+
+### Room Database
 
 **Query Patterns:**
 ```kotlin
@@ -424,6 +724,112 @@ suspend fun getById(id: String): BookEntity?
 @Query("SELECT * FROM shelves WHERE id = :id")
 suspend fun getShelfWithBooks(id: String): ShelfWithBooks
 ```
+
+**Migration Strategy:**
+
+| Phase | Strategy | Rationale |
+|-------|----------|-----------|
+| Pre-release | `fallbackToDestructiveMigration()` | No user data to preserve |
+| Post-release | Always write migrations | Never lose user data |
+
+**AutoMigration (Simple Changes):**
+```kotlin
+@Database(
+    version = 2,
+    entities = [BookEntity::class, ShelfEntity::class],
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2)  // Room handles simple additions
+    ],
+    exportSchema = true  // Required for migration testing
+)
+abstract class AppDatabase : RoomDatabase()
+```
+
+**AutoMigration with Spec (Renames/Deletes):**
+```kotlin
+@Database(
+    version = 3,
+    entities = [BookEntity::class],
+    autoMigrations = [
+        AutoMigration(from = 2, to = 3, spec = AppDatabase.Migration2To3::class)
+    ]
+)
+abstract class AppDatabase : RoomDatabase() {
+    @RenameColumn(tableName = "books", fromColumnName = "pub_year", toColumnName = "publishedYear")
+    class Migration2To3 : AutoMigrationSpec
+}
+```
+
+**Manual Migration (Complex Changes):**
+```kotlin
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Add new column with default value
+        db.execSQL("ALTER TABLE books ADD COLUMN rating REAL NOT NULL DEFAULT 0.0")
+    }
+}
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Create new table, copy data, drop old (for complex restructuring)
+        db.execSQL("""
+            CREATE TABLE books_new (
+                id TEXT PRIMARY KEY NOT NULL,
+                title TEXT NOT NULL,
+                author TEXT NOT NULL DEFAULT ''
+            )
+        """)
+        db.execSQL("INSERT INTO books_new (id, title, author) SELECT id, title, author FROM books")
+        db.execSQL("DROP TABLE books")
+        db.execSQL("ALTER TABLE books_new RENAME TO books")
+    }
+}
+
+// Register migrations
+Room.databaseBuilder(context, AppDatabase::class.java, "app.db")
+    .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
+    .build()
+```
+
+**Testing Migrations:**
+```kotlin
+@RunWith(AndroidJUnit4::class)
+class MigrationTest {
+    @get:Rule
+    val helper = MigrationTestHelper(
+        InstrumentationRegistry.getInstrumentation(),
+        AppDatabase::class.java
+    )
+
+    @Test
+    fun migrate3To4() {
+        // Create database at version 3
+        helper.createDatabase("test-db", 3).apply {
+            execSQL("INSERT INTO books (id, title) VALUES ('1', 'Test Book')")
+            close()
+        }
+
+        // Run migration and validate
+        helper.runMigrationsAndValidate("test-db", 4, true, MIGRATION_3_4)
+
+        // Verify data integrity
+        val db = helper.openDatabase("test-db", 4)
+        val cursor = db.query("SELECT rating FROM books WHERE id = '1'")
+        cursor.moveToFirst()
+        assertThat(cursor.getFloat(0)).isEqualTo(0.0f)
+    }
+}
+```
+
+**Migration Best Practices:**
+- ✅ Always set `exportSchema = true` for migration testing
+- ✅ Test every migration path (including skipping versions: 1→3)
+- ✅ Use raw SQL strings in migrations (not constants that might change)
+- ✅ Keep schema JSON files in version control (`app/schemas/`)
+- ❌ Never use `fallbackToDestructiveMigration()` in production releases
+- ❌ Never skip testing migrations before release
+
+> **Reference**: [Room Migrations](https://developer.android.com/training/data-storage/room/migrating-db-versions)
 
 ### Koin Dependency Injection
 
@@ -456,18 +862,105 @@ startKoin {
 - `factory`: New instance each time (UseCases)
 - `viewModel`: Scoped to ViewModel lifecycle
 
+### Navigation (Type-Safe)
+
+Use `@Serializable` routes for type-safe navigation:
+
+**Route Definitions:**
+```kotlin
+// In navigation package
+@Serializable
+data object Home
+
+@Serializable
+data class BookDetail(val bookId: String, val shelfId: String)
+
+@Serializable
+data class BookClub(val clubCode: String)
+```
+
+**NavHost Setup:**
+```kotlin
+@Composable
+fun AppNavHost(
+    navController: NavHostController = rememberNavController(),
+    startDestination: Any = Home
+) {
+    NavHost(navController = navController, startDestination = startDestination) {
+        composable<Home> {
+            HomeScreenRoot(
+                onNavigateToDetail = { bookId, shelfId ->
+                    navController.navigate(BookDetail(bookId, shelfId))
+                }
+            )
+        }
+
+        composable<BookDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<BookDetail>()
+            BookDetailScreenRoot(
+                bookId = route.bookId,
+                shelfId = route.shelfId,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+    }
+}
+```
+
+**Accessing Arguments in ViewModel:**
+```kotlin
+class BookDetailViewModel(
+    savedStateHandle: SavedStateHandle,
+    private val getBookUseCase: GetBookUseCase
+) : ViewModel() {
+    // Type-safe argument extraction
+    private val route = savedStateHandle.toRoute<BookDetail>()
+    private val bookId = route.bookId
+
+    init {
+        loadBook(bookId)
+    }
+}
+```
+
+**Deep Links:**
+```kotlin
+composable<BookDetail>(
+    deepLinks = listOf(
+        navDeepLink<BookDetail>(basePath = "https://myapp.com/book")
+    )
+) { /* ... */ }
+```
+
+**Navigation Best Practices:**
+- ✅ Pass navigation lambdas to screens, not `NavController`
+- ✅ Use `@Serializable` routes for type safety
+- ✅ Pass only IDs, fetch data in ViewModel via `SavedStateHandle`
+- ❌ Don't pass complex objects as navigation arguments
+
+> **Reference**: [Compose Navigation](https://developer.android.com/develop/ui/compose/navigation)
+
 ---
 
-## When to Break the Rules
+## When to Use the Domain Layer
+
+The domain layer is **optional** per Google's architecture guidance. Add UseCases when:
+
+### Add UseCase When:
+- **Complex business logic** that would clutter the ViewModel
+- **Reusable logic** used by multiple ViewModels
+- **Multiple repository coordination** (e.g., fetching from two sources)
+- **Improves testability** by isolating business rules
 
 ### Skip UseCase When:
-- **Trivial pass-through**: If UseCase just calls one repository method with no logic, consider combining related operations or allowing direct access for truly simple cases
-- **Never skip for**: Anything with business logic, validation, or multiple repository calls
+- **Simple pass-through** to a single repository method
+- **No business logic** - just data fetching
+- **Single consumer** - logic isn't reused anywhere
 
 ### Direct Repository Access When:
-- Simple CRUD with no business rules
-- Internal data layer operations
-- **But**: Document why the exception exists
+- ViewModels only need simple CRUD operations
+- No business rules to enforce
+- **But**: This violates strict Clean Architecture - use sparingly and document why
 
 ### Simpler State Management When:
 - Screen has only 1-2 pieces of state
@@ -602,6 +1095,56 @@ fun `deleteBook - when book not found - returns NotFound error`()
 3. **Verify method signatures** - don't assume methods exist
 4. **Match field names exactly** - `averageRating` not `ratingsAverage`
 
+### Testing Dependencies
+
+```kotlin
+// build.gradle.kts - Unit tests
+testImplementation(libs.junit)
+testImplementation(libs.kotlinx.coroutines.test)  // runTest, advanceUntilIdle()
+testImplementation(libs.androidx.arch.core.testing)  // InstantTaskExecutorRule
+testImplementation(libs.robolectric)  // Android framework on JVM
+testImplementation(libs.androidx.test.core.ktx)  // ApplicationProvider
+
+// build.gradle.kts - Instrumented tests
+androidTestImplementation(libs.androidx.junit)
+androidTestImplementation(libs.androidx.ui.test.junit4)  // Compose testing
+androidTestImplementation(libs.room.testing)  // MigrationTestHelper
+```
+
+| Library | Purpose |
+|---------|---------|
+| `kotlinx-coroutines-test` | `runTest`, `advanceUntilIdle()`, `TestDispatcher` |
+| `robolectric` | Run Android-dependent tests on JVM (faster) |
+| `room-testing` | `MigrationTestHelper` for database migration tests |
+| `turbine` | Flow testing with `test()` extension (optional) |
+
+---
+
+## Static Analysis (Detekt + ktlint)
+
+Use Detekt with the formatting module (wraps ktlint) for static analysis and code formatting in a single tool.
+
+**Run Detekt:**
+```bash
+./gradlew detekt          # Check all code
+./gradlew detektBaseline  # Generate baseline for existing issues
+```
+
+**Key Configuration Files:**
+- `app/detekt.yml` - Detekt rule configuration
+- `.editorconfig` - ktlint/formatting rules (NowInAndroid approach)
+
+**Suppressing Rules:**
+```kotlin
+@Suppress("TooGenericExceptionCaught")  // Intentional: repository is exception boundary
+override suspend fun getData(): Result<Data, DataError> { ... }
+
+@Suppress("MagicNumber")  // Preview dimensions
+@Preview fun MyPreview() { ... }
+```
+
+> **Full Setup Guide**: See [DETEKT_SETUP_PLAN.md](DETEKT_SETUP_PLAN.md) for complete configuration including pre-commit hooks.
+
 ---
 
 ## Git & Code Review Standards
@@ -680,5 +1223,76 @@ refactor/extract-book-repository
 
 ---
 
-*Template Version*: 2.0
-*Based on*: Production Android/Kotlin project standards
+## Version Catalog (libs.versions.toml)
+
+Centralize dependency versions in `gradle/libs.versions.toml`:
+
+**Structure:**
+```toml
+[versions]
+kotlin = "2.0.0"
+compose-bom = "2024.06.00"
+room = "2.6.1"
+koin = "3.5.6"
+
+[libraries]
+# Format: group-artifact = { group = "...", name = "...", version.ref = "..." }
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version = "1.13.1" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+
+# BOM for version alignment
+compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+
+[plugins]
+android-application = { id = "com.android.application", version = "8.5.0" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version = "2.0.0-1.0.22" }
+```
+
+**Usage in build.gradle.kts:**
+```kotlin
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
+}
+
+dependencies {
+    implementation(libs.androidx.core.ktx)
+
+    // Room (grouped by version)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    // Compose BOM
+    implementation(platform(libs.compose.bom))
+    implementation(libs.compose.ui)
+    implementation(libs.compose.material3)
+}
+```
+
+**Adding New Dependencies:**
+1. Add version to `[versions]` if shared
+2. Add library to `[libraries]` with `version.ref`
+3. Sync Gradle
+4. Use `libs.library.name` in dependencies
+
+> **Reference**: [Migrate to Version Catalogs](https://developer.android.com/build/migrate-to-catalogs)
+
+---
+
+## References
+
+- [Guide to app architecture](https://developer.android.com/topic/architecture) - Core architecture principles
+- [UI layer](https://developer.android.com/topic/architecture/ui-layer) - ViewModel, StateFlow, UDF patterns
+- [Domain layer](https://developer.android.com/topic/architecture/domain-layer) - UseCase patterns
+- [Data layer](https://developer.android.com/topic/architecture/data-layer) - Repository and DataSource patterns
+- [UI events](https://developer.android.com/topic/architecture/ui-layer/events) - Handling user actions and state
+
+---
+
+*Template Version*: 3.0
+*Based on*: [Android Developer Architecture Guidelines](https://developer.android.com/topic/architecture)
