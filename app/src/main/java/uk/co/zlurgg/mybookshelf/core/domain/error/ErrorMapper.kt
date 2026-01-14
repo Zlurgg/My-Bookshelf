@@ -4,6 +4,7 @@ import io.ktor.client.call.NoTransformationFoundException
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.util.network.UnresolvedAddressException
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.SerializationException
 import timber.log.Timber
@@ -12,7 +13,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
-import kotlin.coroutines.coroutineContext
 
 object ErrorMapper {
 
@@ -88,7 +88,7 @@ object ErrorMapper {
         return try {
             Result.Success(action())
         } catch (e: Exception) {
-            coroutineContext.ensureActive()
+            currentCoroutineContext().ensureActive()
             val error = mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
             Timber.tag(tag).e(e, "Operation failed - Mapped to: %s", error)
             Result.Error(error)
@@ -106,7 +106,7 @@ object ErrorMapper {
         val response = try {
             execute()
         } catch (e: Exception) {
-            coroutineContext.ensureActive()
+            currentCoroutineContext().ensureActive()
 
             // Log the actual exception for debugging
             val mappedError = mapExceptionToDataError(e) as? DataError.Remote ?: DataError.Remote.UNKNOWN
