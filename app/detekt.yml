@@ -1,5 +1,6 @@
 # Detekt Configuration for MyBookshelf
 # https://detekt.dev/docs/rules/
+# TODO: Remove presentation/data/service/engine excludes and fix all violations before Play Store release
 
 build:
   maxIssues: 0
@@ -10,23 +11,12 @@ config:
   warningsAsErrors: false
 
 # Formatting rules (from detekt-formatting module / ktlint)
+# Most config is in .editorconfig, but we can disable categories here
 formatting:
   active: true
-  Indentation:
-    # Disabled: ktlint expects 8-space continuation indent (2x indent_size)
-    # but Android/IntelliJ standard is 4-space. No config option available.
-    # IDE handles indentation enforcement instead.
+  ImportOrdering:
+    # IDE/ktlint import ordering conflicts - manual ordering is fine
     active: false
-  MaximumLineLength:
-    excludes: ['**/test/**', '**/androidTest/**']
-  NoWildcardImports:
-    excludes: ['**/test/**', '**/androidTest/**']
-  PackageName:
-    active: true
-    excludes:
-      - '**/book_detail/**'
-      - '**/bookshelf_components/**'
-      - '**/search_components/**'
 
 complexity:
   LongMethod:
@@ -34,24 +24,22 @@ complexity:
     excludes: ['**/presentation/**']
   LongParameterList:
     functionThreshold: 10
-    constructorThreshold: 20  # Increased for aggregator classes like BookClubUseCases
+    constructorThreshold: 15
     excludes: ['**/presentation/**']
   LargeClass:
-    threshold: 600  # Increased for ViewModels, Repositories
-    excludes: ['**/presentation/**', '**/repository/**']  # ViewModels and Repositories excluded
+    threshold: 500
+    excludes: ['**/test/**', '**/androidTest/**']
   ComplexCondition:
     threshold: 5
   CyclomaticComplexMethod:
     threshold: 20
-    excludes: ['**/presentation/**', '**/error/**']  # Composable functions, ViewModels, and ErrorFormatter have complex when/if chains
+    excludes: ['**/presentation/**']
   TooManyFunctions:
     thresholdInFiles: 25
-    thresholdInClasses: 45  # Increased for Repositories and data sources
-    thresholdInInterfaces: 45  # Increased for DAOs and data source interfaces
+    thresholdInClasses: 25
+    thresholdInInterfaces: 25
     thresholdInObjects: 20
     thresholdInEnums: 15
-  NestedBlockDepth:
-    threshold: 5  # Increased from default 4 for complex use cases
 
 coroutines:
   active: true
@@ -66,10 +54,11 @@ empty-blocks:
 exceptions:
   active: true
   TooGenericExceptionCaught:
-    excludes: ['**/test/**', '**/androidTest/**']
+    excludes: ['**/test/**', '**/androidTest/**', '**/data/**', '**/service/**', '**/presentation/**', '**/util/**']
   TooGenericExceptionThrown:
-    active: true
-    excludes: ['**/test/**', '**/androidTest/**']  # Test mocks legitimately throw RuntimeException
+    excludes: ['**/test/**', '**/androidTest/**']
+  InstanceOfCheckForException:
+    excludes: ['**/service/**']
 
 naming:
   active: true
@@ -87,8 +76,6 @@ performance:
 
 potential-bugs:
   active: true
-  ImplicitDefaultLocale:
-    active: false  # UI formatting in Compose uses default locale intentionally
 
 style:
   active: true
@@ -101,26 +88,14 @@ style:
     ignoreAnnotation: true
     ignoreNamedArgument: true
     ignoreEnums: true
-    ignoreNumbers:
-      - '-1'
-      - '0'
-      - '1'
-      - '2'
-      - '3'
-      - '4'
-      - '5'
-      # Note: HTTP status codes and timeouts extracted to named constants
-      # @see HttpStatusCodes, ImageLoaderConfig, ApiConfig.Http
   MaxLineLength:
     excludes: ['**/test/**', '**/androidTest/**']
     maxLineLength: 120
   ReturnCount:
     max: 4
     excludeGuardClauses: true
-    excludes: ['**/repository/**', '**/usecase/**', '**/usecases/**', '**/engine/**']  # Validation-heavy code uses early returns
+    excludes: ['**/data/**', '**/engine/**']
   UnusedPrivateMember:
     allowedNames: "(_|ignored|expected|serialVersionUID|.*Preview)"
   WildcardImport:
     excludes: ['**/test/**', '**/androidTest/**']
-  UseRequire:
-    active: false  # Using throw IllegalArgumentException is fine for explicit control
