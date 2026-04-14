@@ -24,7 +24,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.UpdateUseCases
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
@@ -32,7 +31,6 @@ class BookcaseViewModel(
     private val shelfManagement: ShelfManagementHandler,
     private val bookcaseUseCases: BookcaseUseCases,
     private val bookClubOperations: BookClubOperationsHandler,
-    private val updateUseCases: UpdateUseCases,
     private val authUseCases: AuthUseCases
 ) : ViewModel() {
 
@@ -247,25 +245,6 @@ class BookcaseViewModel(
 
             is BookcaseAction.ConfirmLeaveBookClub -> {
                 leaveBookClub()
-            }
-
-            // Settings Menu Actions
-            is BookcaseAction.CheckForUpdates -> {
-                checkForUpdates()
-            }
-
-            is BookcaseAction.DownloadUpdate -> {
-                downloadUpdate()
-            }
-
-            is BookcaseAction.DismissUpdate -> {
-                dismissUpdate()
-            }
-
-            is BookcaseAction.DismissUpToDate -> {
-                _state.update {
-                    it.copy(showUpToDateDialog = false, currentVersionInfo = null)
-                }
             }
 
             // Auth Actions
@@ -821,77 +800,6 @@ class BookcaseViewModel(
 
     private fun BookcaseState.withRenameError(error: DataError): BookcaseState {
         return copy(renameError = ErrorFormatter.formatDataErrorMessage(error, "rename shelf"))
-    }
-
-    // ============================================================================
-    // Update Checker Methods
-    // ============================================================================
-
-    private fun checkForUpdates() {
-        viewModelScope.launch {
-            _state.update { it.copy(isCheckingForUpdates = true) }
-
-            // Always force check for manual updates (ignores dismissed versions)
-            val updateInfo = updateUseCases.checkForUpdate(forceCheck = true)
-
-            if (updateInfo != null) {
-                Timber.i("Update available: %s", updateInfo.versionName)
-                _state.update {
-                    it.copy(
-                        availableUpdate = updateInfo,
-                        showUpdateDialog = true,
-                        isCheckingForUpdates = false
-                    )
-                }
-            } else {
-                // No update available - show "up to date" dialog
-                Timber.d("No update available, fetching current version info")
-                val currentInfo = updateUseCases.getCurrentVersionInfo()
-                _state.update {
-                    it.copy(
-                        currentVersionInfo = currentInfo,
-                        showUpToDateDialog = true,
-                        isCheckingForUpdates = false
-                    )
-                }
-            }
-        }
-    }
-
-    private fun downloadUpdate() {
-        viewModelScope.launch {
-            val updateInfo = _state.value.availableUpdate ?: return@launch
-            Timber.i("Starting download for version %s", updateInfo.versionName)
-
-            val downloadId = updateUseCases.downloadUpdate(updateInfo)
-            if (downloadId != null) {
-                _state.update {
-                    it.copy(
-                        showUpdateDialog = false,
-                        availableUpdate = null
-                    )
-                }
-            } else {
-                _state.update {
-                    it.copy(errorMessage = "Failed to start download")
-                }
-            }
-        }
-    }
-
-    private fun dismissUpdate() {
-        viewModelScope.launch {
-            val updateInfo = _state.value.availableUpdate ?: return@launch
-            Timber.d("User dismissed update %s", updateInfo.versionName)
-
-            updateUseCases.dismissUpdate(updateInfo.versionName)
-            _state.update {
-                it.copy(
-                    showUpdateDialog = false,
-                    availableUpdate = null
-                )
-            }
-        }
     }
 
     // ============================================================================

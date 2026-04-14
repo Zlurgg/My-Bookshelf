@@ -20,7 +20,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
-import uk.co.zlurgg.mybookshelf.update.domain.repository.UpdatePreferencesRepository
 
 val coreModule = module {
     // HTTP & Network
@@ -40,8 +39,7 @@ val coreModule = module {
     single { get<MyBookshelfRoomDatabase>().syncDao }
     single { get<MyBookshelfRoomDatabase>().bookClubDao }
 
-    // Preferences (shared between welcome and update features)
+    // Preferences
     single { WelcomePreferencesImpl(get()) }
     single<WelcomePreferences> { get<WelcomePreferencesImpl>() }
-    single<UpdatePreferencesRepository> { get<WelcomePreferencesImpl>() }
 }

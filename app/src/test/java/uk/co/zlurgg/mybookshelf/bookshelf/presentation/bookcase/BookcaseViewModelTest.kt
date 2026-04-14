@@ -66,12 +66,6 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.model.UpdateInfo
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.CheckForUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.DismissUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.DownloadUpdateUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.GetCurrentVersionInfoUseCase
-import uk.co.zlurgg.mybookshelf.update.domain.usecases.UpdateUseCases
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -126,19 +120,6 @@ class BookcaseViewModelTest {
         val mockBookClubRepository = MockBookClubRepository()
         val shelfManagement = ShelfManagementHandler(useCases, mockHandleTutorialAccess, mockBookClubRepository)
 
-        // No-op update use cases for testing
-        val mockCheckForUpdate = object : CheckForUpdateUseCase {
-            override suspend operator fun invoke(forceCheck: Boolean): UpdateInfo? = null
-        }
-        val mockDownloadUpdate = object : DownloadUpdateUseCase {
-            override operator fun invoke(updateInfo: UpdateInfo): Long? = null
-        }
-        val mockDismissUpdate = object : DismissUpdateUseCase {
-            override suspend operator fun invoke(version: String) = Unit
-        }
-        val mockGetCurrentVersionInfo = object : GetCurrentVersionInfoUseCase {
-            override suspend operator fun invoke(): UpdateInfo? = null
-        }
         val mockAuthService = object : uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService {
             override suspend fun signIn() = Result.Success(
                 uk.co.zlurgg.mybookshelf.auth.domain.model.UserData("test", null, null)
@@ -177,13 +158,6 @@ class BookcaseViewModelTest {
             override operator fun invoke(): String = "test-user-id"
         }
 
-        // Facades
-        val updateUseCases = UpdateUseCases(
-            checkForUpdate = mockCheckForUpdate,
-            downloadUpdate = mockDownloadUpdate,
-            dismissUpdate = mockDismissUpdate,
-            getCurrentVersionInfo = mockGetCurrentVersionInfo
-        )
         val authUseCases = AuthUseCases(
             signIn = mockSignIn,
             signOut = mockSignOut,
@@ -307,7 +281,6 @@ class BookcaseViewModelTest {
             shelfManagement,
             useCases,
             bookClubOperations,
-            updateUseCases,
             authUseCases
         )
     }

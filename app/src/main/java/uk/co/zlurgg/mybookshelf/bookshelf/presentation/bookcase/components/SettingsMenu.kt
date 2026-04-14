@@ -8,7 +8,6 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -31,7 +30,6 @@ import uk.co.zlurgg.mybookshelf.R
 @Composable
 fun SettingsMenu(
     isSignedIn: Boolean,
-    onCheckForUpdates: () -> Unit,
     onShowHelp: () -> Unit,
     onShowAbout: () -> Unit,
     onJoinBookClub: () -> Unit,
@@ -54,21 +52,6 @@ fun SettingsMenu(
             onDismissRequest = { expanded = false },
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
-            // Check for Updates
-            DropdownMenuItem(
-                text = { Text(stringResource(R.string.menu_check_for_updates)) },
-                onClick = {
-                    expanded = false
-                    onCheckForUpdates()
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.SystemUpdate,
-                        contentDescription = null
-                    )
-                }
-            )
-
             // Help & Tutorial
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.menu_help)) },

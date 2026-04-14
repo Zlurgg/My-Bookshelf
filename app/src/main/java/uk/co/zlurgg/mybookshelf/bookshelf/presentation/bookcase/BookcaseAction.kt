@@ -47,12 +47,6 @@ sealed interface BookcaseAction {
     data object DismissJoinSuccess : BookcaseAction
     data class HandleInviteLink(val code: String) : BookcaseAction
 
-    // Settings Menu Actions
-    data object CheckForUpdates : BookcaseAction
-    data object DownloadUpdate : BookcaseAction
-    data object DismissUpdate : BookcaseAction
-    data object DismissUpToDate : BookcaseAction
-
     // Auth Actions
     data object OnSignInClick : BookcaseAction
     data object ResetNavigateToSignIn : BookcaseAction

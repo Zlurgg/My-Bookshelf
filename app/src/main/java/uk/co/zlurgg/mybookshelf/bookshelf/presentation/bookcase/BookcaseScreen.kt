@@ -62,8 +62,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewMode
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
-import uk.co.zlurgg.mybookshelf.update.presentation.components.UpToDateDialog
-import uk.co.zlurgg.mybookshelf.update.presentation.components.UpdateDialog
 import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose
 
 @Composable
@@ -288,7 +286,6 @@ fun BookcaseScreen(
                     }
                     SettingsMenu(
                         isSignedIn = state.isSignedIn,
-                        onCheckForUpdates = { onAction(BookcaseAction.CheckForUpdates) },
                         onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
                         onShowAbout = { showAboutDialog = true },
                         onJoinBookClub = { onAction(BookcaseAction.ShowJoinBookClubDialog) },
@@ -451,24 +448,6 @@ fun BookcaseScreen(
         AboutDialog(
             versionName = BuildConfig.VERSION_NAME,
             onDismiss = { showAboutDialog = false }
-        )
-    }
-
-    // Update Available Dialog
-    if (state.showUpdateDialog && state.availableUpdate != null) {
-        UpdateDialog(
-            updateInfo = state.availableUpdate,
-            onDownload = { onAction(BookcaseAction.DownloadUpdate) },
-            onDismiss = { onAction(BookcaseAction.DismissUpdate) }
-        )
-    }
-
-    // Up to Date Dialog
-    if (state.showUpToDateDialog) {
-        UpToDateDialog(
-            currentVersionInfo = state.currentVersionInfo,
-            currentVersionName = BuildConfig.VERSION_NAME,
-            onDismiss = { onAction(BookcaseAction.DismissUpToDate) }
         )
     }
 

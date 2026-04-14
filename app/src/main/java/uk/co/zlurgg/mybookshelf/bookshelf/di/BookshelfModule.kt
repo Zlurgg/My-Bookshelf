@@ -218,7 +218,6 @@ val bookshelfModule = module {
             shelfManagement = get(),
             bookcaseUseCases = get(),
             bookClubOperations = get(),
-            updateUseCases = get(),
             authUseCases = get()
         )
     }

@@ -32,11 +32,6 @@
 -keepclassmembers class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** {
     *** Companion;
 }
--keep class uk.co.zlurgg.mybookshelf.update.data.remote.dto.** {
-    <fields>;
-    <init>();
-}
-
 # ====== Firestore DTOs (for Firebase serialization) ======
 # These must preserve field names AND getters/setters for Firestore document mapping
 # Firestore uses reflection to match property names - ALL members must be kept
