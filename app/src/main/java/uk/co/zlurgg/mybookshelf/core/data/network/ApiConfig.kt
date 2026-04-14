@@ -55,7 +55,7 @@ object ApiConfig {
         val socketTimeout: Long = httpTimeoutMillis
         val requestTimeout: Long = httpTimeoutMillis
         val connectTimeout: Long = httpTimeoutMillis
-        const val USER_AGENT = "MyBookshelf/1.0 (Android App; github.com/zlurgg/mybookshelf)"
+        val USER_AGENT = "MyBookshelf/${BuildConfig.VERSION_NAME} (Android; github.com/zlurgg/mybookshelf)"
 
         /** Maximum delay between retry attempts (10 seconds) */
         const val MAX_RETRY_DELAY_MS = 10_000L
