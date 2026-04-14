@@ -24,9 +24,10 @@ play-service-account.json
 # Firebase config (contains API keys)
 google-services.json
 
-# Claude Code temp files
+# Claude Code local/personal files
 tmpclaude-*
 CLAUDE.local.md
+.claude/settings.local.json
 
 # Firebase emulator data and logs
 emulator-data/
