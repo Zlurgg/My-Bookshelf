@@ -3,22 +3,33 @@
 /local.properties
 .idea/
 .DS_Store
-**/build
+/build
 /captures
 .externalNativeBuild
 .cxx
+.kotlin/
 local.properties
 
 # Keystore credentials (never commit)
-*.keystore
 keystore.properties
+*.keystore
+*.jks
+
+# Play Store service account (never commit)
+play-service-account.json
+
+# Release artifacts
+/app/release/app-release.aab
 
 # Firebase config (contains API keys)
-app/google-services.json
+google-services.json
 
-# Firebase emulator data and logs (local development)
-emulator-data/
-*-debug.log
-
-# AI assistant instructions (verbose, not for repo)
+# Claude Code temp files
+tmpclaude-*
 CLAUDE.local.md
+
+# Firebase emulator data and logs
+emulator-data/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

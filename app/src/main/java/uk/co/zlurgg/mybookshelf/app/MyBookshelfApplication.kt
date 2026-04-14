@@ -7,7 +7,6 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.di.DebugInitializer
 import uk.co.zlurgg.mybookshelf.di.appModule
-
 class MyBookshelfApplication : Application() {
     override fun onCreate() {
         super.onCreate()
@@ -27,3 +26,4 @@ class MyBookshelfApplication : Application() {
         }
     }
 }
+

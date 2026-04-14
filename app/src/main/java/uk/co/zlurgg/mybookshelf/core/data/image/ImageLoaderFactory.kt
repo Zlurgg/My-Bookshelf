@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.core.data.image
 
 import android.content.Context
 import coil3.ImageLoader
+import coil3.annotation.ExperimentalCoilApi
 import coil3.network.ktor3.KtorNetworkFetcherFactory
 import coil3.request.CachePolicy
 import io.ktor.client.HttpClient
@@ -14,6 +15,7 @@ import io.ktor.client.plugins.HttpTimeout
  * @see ImageLoaderConfig for timeout configuration and rationale
  */
 object ImageLoaderFactory {
+    @OptIn(ExperimentalCoilApi::class)
     fun create(context: Context): ImageLoader {
         return ImageLoader.Builder(context)
             .components {
