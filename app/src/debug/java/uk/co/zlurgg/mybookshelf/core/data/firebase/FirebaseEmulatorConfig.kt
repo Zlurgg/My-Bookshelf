@@ -25,9 +25,9 @@ object FirebaseEmulatorConfig {
 
     private const val TAG = "FirebaseEmulator"
 
-    // 10.0.2.2 is the special IP for localhost from Android emulator
-    // Use "localhost" for physical device connected via USB with adb reverse
-    private const val EMULATOR_HOST = "10.0.2.2"
+    // Configurable via local.properties: firebase.emulator.host=192.168.1.x
+    // Defaults to 10.0.2.2 (Android emulator's localhost alias)
+    private val EMULATOR_HOST = BuildConfig.FIREBASE_EMULATOR_HOST
     private const val FIRESTORE_PORT = 8080
     private const val AUTH_PORT = 9099
     private const val CONNECTION_TIMEOUT_MS = 2000
