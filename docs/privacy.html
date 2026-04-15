@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - My Bookshelf</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #FAF7F3;
+            --bg-gradient: linear-gradient(135deg, #FAF7F3 0%, #F5EFEA 100%);
+            --accent: #8E6C88;
+            --accent-dark: #6D4C41;
+            --text-primary: #51443D;
+            --text-secondary: #6D6360;
+            --card-bg: #FFFFFF;
+            --card-shadow: 0 4px 20px rgba(109, 76, 65, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        .content-card h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-dark);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-light);
+        }
+
+        .content-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        .content-card p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .content-card ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+        }
+
+        .content-card li {
+            margin-bottom: 8px;
+        }
+
+        .content-card strong {
+            color: var(--text-primary);
+        }
+
+        .content-card a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .content-card a:hover {
+            text-decoration: underline;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--bg-light);
+        }
+
+        .data-table th {
+            background: var(--bg-light);
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .data-table td {
+            color: var(--text-secondary);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .content-card {
+                padding: 20px;
+            }
+
+            .data-table {
+                font-size: 0.85rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Back to Home</a>
+
+        <header class="header">
+            <h1>Privacy Policy</h1>
+            <p class="subtitle">Last updated: April 2026</p>
+        </header>
+
+        <section class="content-card">
+            <h2>Introduction</h2>
+            <p>
+                My Bookshelf is a personal book collection manager designed to help you
+                organize your reading life. We are committed to protecting your privacy and
+                being transparent about how we handle your data.
+            </p>
+            <p>
+                This Privacy Policy explains what information we collect, how we use it, and your rights
+                regarding your personal data.
+            </p>
+        </section>
+
+        <section class="content-card">
+            <h2>Information We Collect</h2>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Data Type</th>
+                        <th>Purpose</th>
+                        <th>Storage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Email address</strong></td>
+                        <td>Account identification (Google Sign-In)</td>
+                        <td>Firebase Authentication</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bookshelves &amp; books</strong></td>
+                        <td>Core app functionality</td>
+                        <td>Local device; Firebase Firestore (if signed in)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Book Club data</strong></td>
+                        <td>Collaborative shelves, reviews, comments</td>
+                        <td>Firebase Firestore (requires sign-in)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Shelf preferences</strong></td>
+                        <td>Shelf styles, ordering, display settings</td>
+                        <td>Local device only</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>What We Don't Collect</h3>
+            <ul>
+                <li>We do not collect analytics or usage data</li>
+                <li>We do not use advertising trackers</li>
+                <li>We do not access your contacts, location, camera, or other device data</li>
+                <li>We do not track what books you search for or read</li>
+            </ul>
+        </section>
+
+        <section class="content-card">
+            <h2>How We Use Your Information</h2>
+            <p>Your data is used solely to provide the app's functionality:</p>
+            <ul>
+                <li><strong>Email address:</strong> To identify your account and enable cloud sync</li>
+                <li><strong>Bookshelves &amp; books:</strong> To display and manage your personal collection</li>
+                <li><strong>Book Club data:</strong> To enable shared shelves, reviews, and comments with other members</li>
+                <li><strong>Shelf preferences:</strong> To remember your display customizations</li>
+            </ul>
+            <p>We do not sell, share, or use your data for advertising purposes.</p>
+        </section>
+
+        <section class="content-card">
+            <h2>Data Storage and Security</h2>
+
+            <h3>Local Storage (Default)</h3>
+            <p>
+                All your bookshelf data is stored locally on your device using a Room database.
+                You can use the app entirely offline as a guest without creating an account.
+                Your data never leaves your device unless you sign in.
+            </p>
+
+            <h3>Cloud Sync (When Signed In)</h3>
+            <p>
+                When you sign in with Google, your bookshelves and books are synced to
+                Firebase Firestore. Book Club features require sign-in and store
+                shared data in Firestore.
+            </p>
+            <ul>
+                <li>Data is encrypted in transit using HTTPS/TLS</li>
+                <li>Data is stored in Google Cloud infrastructure with industry-standard security</li>
+                <li>Only you can access your personal data through your authenticated account</li>
+                <li>Book Club data is accessible only to club members</li>
+            </ul>
+        </section>
+
+        <section class="content-card">
+            <h2>Third-Party Services</h2>
+
+            <h3>Firebase Authentication (Google)</h3>
+            <p>
+                Used for secure sign-in with your Google account. Firebase Authentication stores your email
+                address and authentication tokens.
+                <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase Privacy Policy</a>
+            </p>
+
+            <h3>Firebase Firestore (Google)</h3>
+            <p>
+                Used for cloud sync of your bookshelf data and Book Club features.
+                <a href="https://cloud.google.com/security/privacy" target="_blank">Google Cloud Privacy</a>
+            </p>
+
+            <h3>Open Library API (Internet Archive)</h3>
+            <p>
+                Used to search for books and retrieve book metadata (titles, authors, covers).
+                Search queries are sent to Open Library's public API. No personal data is shared.
+                <a href="https://openlibrary.org/privacy" target="_blank">Open Library Privacy Policy</a>
+            </p>
+        </section>
+
+        <section class="content-card">
+            <h2>Your Rights</h2>
+            <p>You have full control over your data:</p>
+
+            <h3>Access Your Data</h3>
+            <p>All your bookshelves, books, and Book Club activity are visible within the app at any time.</p>
+
+            <h3>Delete Your Data</h3>
+            <p>
+                You can delete your account and all associated data. See our
+                <a href="delete-account.html">account deletion page</a> for instructions.
+                This permanently removes:
+            </p>
+            <ul>
+                <li>All bookshelves and books from cloud storage</li>
+                <li>All Book Club memberships and reviews</li>
+                <li>Your Firebase Authentication account</li>
+                <li>All local data on your device</li>
+            </ul>
+
+            <h3>Use Offline</h3>
+            <p>
+                You can use the app entirely offline as a guest. Your data stays on your device
+                only. Book Clubs require sign-in as they are shared features.
+            </p>
+        </section>
+
+        <section class="content-card">
+            <h2>Contact Information</h2>
+            <p>
+                If you have questions about this Privacy Policy or your data, please open an issue on our
+                <a href="https://github.com/Zlurgg/My-Bookshelf/issues" target="_blank">GitHub repository</a>
+                or contact the developer through GitHub.
+            </p>
+        </section>
+
+        <section class="content-card">
+            <h2>Changes to This Policy</h2>
+            <p>
+                We may update this Privacy Policy from time to time. Any changes will be posted on this page
+                with an updated revision date. Continued use of the app after changes constitutes acceptance
+                of the updated policy.
+            </p>
+        </section>
+
+        <footer class="footer">
+            <p>
+                <a href="index.html">My Bookshelf</a> |
+                <a href="delete-account.html">Delete Account</a> |
+                <a href="https://github.com/Zlurgg/My-Bookshelf">GitHub</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

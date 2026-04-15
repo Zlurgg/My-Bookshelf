@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Account - My Bookshelf</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #FAF7F3;
+            --bg-gradient: linear-gradient(135deg, #FAF7F3 0%, #F5EFEA 100%);
+            --accent: #8E6C88;
+            --accent-dark: #6D4C41;
+            --text-primary: #51443D;
+            --text-secondary: #6D6360;
+            --card-bg: #FFFFFF;
+            --card-shadow: 0 4px 20px rgba(109, 76, 65, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+
+        .content-card h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent-dark);
+            margin-bottom: 15px;
+        }
+
+        .content-card p {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+
+        .content-card a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .content-card a:hover {
+            text-decoration: underline;
+        }
+
+        .steps {
+            margin: 20px 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-right: 15px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            color: var(--text-primary);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .step-content span {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .warning {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .warning strong {
+            color: #E65100;
+        }
+
+        .warning p {
+            color: #5D4037;
+            margin: 0;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.6rem;
+            }
+
+            .content-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">&larr; Back to Home</a>
+
+        <header class="header">
+            <h1>Delete Your Account</h1>
+        </header>
+
+        <section class="content-card">
+            <h2>How to Delete Your Account</h2>
+            <p>You can delete your account and all associated data directly within the My Bookshelf app.</p>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <strong>Open the app</strong>
+                        <span>Launch My Bookshelf on your device</span>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <strong>Open the menu</strong>
+                        <span>Tap the three-dot menu icon in the top bar</span>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <strong>Sign Out</strong>
+                        <span>Select "Sign Out" to disconnect your Google account</span>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <strong>Confirm sign out</strong>
+                        <span>Review the confirmation and confirm to sign out and clear your cloud data</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning">
+                <strong>Warning:</strong>
+                <p>Signing out removes all synced data from the cloud and revokes Book Club memberships. Local bookshelf data remains on your device. To fully remove local data, uninstall the app.</p>
+            </div>
+        </section>
+
+        <section class="content-card">
+            <h2>What Gets Deleted</h2>
+            <p>When you sign out and delete your account data, the following is permanently removed from the cloud:</p>
+            <ul style="margin-left: 20px; color: var(--text-secondary);">
+                <li>All bookshelves and books synced to the cloud</li>
+                <li>All Book Club memberships, reviews, and comments</li>
+                <li>Your Firebase Authentication session</li>
+            </ul>
+            <p>Local data on your device (bookshelves, books) is retained so you can continue using the app as a guest. To remove local data, uninstall the app.</p>
+        </section>
+
+        <section class="content-card">
+            <h2>Guest Users</h2>
+            <p>
+                If you use My Bookshelf without signing in, no data is stored in the cloud.
+                All your data is local to your device. Simply uninstall the app to remove all data.
+            </p>
+        </section>
+
+        <section class="content-card">
+            <h2>Need Help?</h2>
+            <p>
+                If you're unable to access the app or need assistance, please open an issue on our
+                <a href="https://github.com/Zlurgg/My-Bookshelf/issues" target="_blank">GitHub repository</a>.
+            </p>
+        </section>
+
+        <footer class="footer">
+            <p>
+                <a href="index.html">My Bookshelf</a> |
+                <a href="privacy.html">Privacy Policy</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
