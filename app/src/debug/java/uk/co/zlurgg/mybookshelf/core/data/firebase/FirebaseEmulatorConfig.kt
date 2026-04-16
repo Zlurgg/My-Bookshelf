@@ -131,4 +131,13 @@ object FirebaseEmulatorConfig {
      * Returns true if running against emulators (debug build).
      */
     fun isUsingEmulators(): Boolean = BuildConfig.DEBUG && isConfigured
+
+    /**
+     * Returns true if the Firebase emulators are reachable.
+     * Call from a background thread — performs a socket connection check.
+     */
+    fun areEmulatorsReachable(): Boolean {
+        return isPortReachable(EMULATOR_HOST, AUTH_PORT) &&
+            isPortReachable(EMULATOR_HOST, FIRESTORE_PORT)
+    }
 }

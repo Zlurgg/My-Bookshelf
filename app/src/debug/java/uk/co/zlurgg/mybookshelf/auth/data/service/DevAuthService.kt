@@ -1,9 +1,12 @@
 package uk.co.zlurgg.mybookshelf.auth.data.service
 
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
+import uk.co.zlurgg.mybookshelf.core.data.firebase.FirebaseEmulatorConfig
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
@@ -49,6 +52,15 @@ class DevAuthService {
         Timber.tag(TAG).d("=== DEV SIGN-IN START === User: %s", testUser.displayName)
 
         return try {
+            // Fast-fail if emulators aren't running (avoids 30s+ Firebase timeout)
+            val reachable = withContext(Dispatchers.IO) {
+                FirebaseEmulatorConfig.areEmulatorsReachable()
+            }
+            if (!reachable) {
+                Timber.tag(TAG).e("Firebase emulators not reachable — start with: firebase emulators:start")
+                return Result.Error(DataError.Local.AUTH_FAILED)
+            }
+
             // Try to sign in first
             val signInResult = trySignIn(testUser)
             if (signInResult != null) {
