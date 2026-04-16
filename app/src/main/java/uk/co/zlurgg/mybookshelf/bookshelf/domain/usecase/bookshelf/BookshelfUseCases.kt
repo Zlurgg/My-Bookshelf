@@ -1,8 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.AddBookToShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.RemoveBookFromShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.book_detail.UpsertBookUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.RemoveBookFromShelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpsertBookUseCase
 
 /**
  * Facade aggregating all bookshelf related UseCases.
