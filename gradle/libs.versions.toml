@@ -30,6 +30,8 @@ androidxCredentials = "1.6.0"
 googleid = "1.2.0"
 googleServices = "4.4.4"
 
+splashscreen = "1.2.0"
+
 robolectric = "4.16.1"
 androidxTestCore = "1.7.0"
 coroutinesTest = "1.10.2"
@@ -85,6 +87,7 @@ androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testin
 datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
+androidx-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "splashscreen" }
 
 # Firebase & Google Auth
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }

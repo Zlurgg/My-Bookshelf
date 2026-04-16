@@ -108,6 +108,7 @@ dependencies {
     implementation(libs.bundles.ktor)
     implementation(libs.bundles.koin)
     implementation(libs.material3)
+    implementation(libs.androidx.splashscreen)
 
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
