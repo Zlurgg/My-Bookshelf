@@ -23,7 +23,7 @@ class UpsertBookClubReviewUseCaseImpl(
         Timber.tag(TAG).d("Upserting review for book %s in club %s", bookId, clubCode)
 
         // Validate rating (0 = no rating, 1-5 = rated)
-        if (rating < 0 || rating > 5) {
+        if (rating < 0 || rating > MAX_RATING) {
             Timber.tag(TAG).e("Invalid rating: %f", rating)
             return Result.Error(DataError.Sync.INVALID_INPUT)
         }
@@ -55,6 +55,7 @@ class UpsertBookClubReviewUseCaseImpl(
 
     companion object {
         private const val TAG = "UpsertClubReview"
+        private const val MAX_RATING = 5f
         private const val MAX_REVIEW_LENGTH = 2000
     }
 }

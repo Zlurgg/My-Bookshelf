@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
@@ -140,9 +141,9 @@ class GetAllShelvesUseCaseTest {
         try {
             useCase().first()
             // If we get here without exception, that's also valid behavior
-        } catch (e: Exception) {
-            // Expected - exception propagates through Flow
-            assertTrue("Should propagate exception", e is RuntimeException)
+        } catch (e: RuntimeException) {
+            // Expected - RuntimeException propagates through Flow
+            assertNotNull("Should propagate exception", e)
         }
     }
 }

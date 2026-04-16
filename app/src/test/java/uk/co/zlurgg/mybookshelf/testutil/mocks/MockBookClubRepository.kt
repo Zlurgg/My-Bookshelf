@@ -261,7 +261,12 @@ class MockBookClubRepository : BookClubRepository {
         return addBookCommentResult
     }
 
-    override suspend fun editBookComment(code: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync> {
+    override suspend fun editBookComment(
+        code: String,
+        bookId: String,
+        commentId: String,
+        newText: String
+    ): Result<Unit, DataError.Sync> {
         editBookCommentCalled = true
         lastEditCommentCode = code
         lastEditCommentBookId = bookId
@@ -270,7 +275,11 @@ class MockBookClubRepository : BookClubRepository {
         return editBookCommentResult
     }
 
-    override suspend fun deleteBookComment(code: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> {
+    override suspend fun deleteBookComment(
+        code: String,
+        bookId: String,
+        commentId: String
+    ): Result<Unit, DataError.Sync> {
         deleteBookCommentCalled = true
         lastDeleteCommentCode = code
         lastDeleteCommentBookId = bookId

@@ -71,10 +71,8 @@ object Base64Encoder {
                 totalRead += bytesRead
 
                 // Check size limit before writing
-                if (totalRead > MAX_DECOMPRESSED_SIZE) {
-                    throw IllegalArgumentException(
-                        "Decompressed data exceeds $MAX_DECOMPRESSED_SIZE byte limit (potential ZIP bomb)"
-                    )
+                require(totalRead <= MAX_DECOMPRESSED_SIZE) {
+                    "Decompressed data exceeds $MAX_DECOMPRESSED_SIZE byte limit (potential ZIP bomb)"
                 }
 
                 buffer.write(chunk, 0, bytesRead)

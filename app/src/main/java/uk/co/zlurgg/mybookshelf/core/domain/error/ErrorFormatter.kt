@@ -38,7 +38,7 @@ object ErrorFormatter {
             DataError.Local.SHARE_FAILED -> "Sharing failed."
             DataError.Local.SHARE_LINK_TOO_LARGE ->
                 "This bookshelf is too large to share. " +
-                "Try sharing a smaller shelf or splitting it into multiple shelves."
+                    "Try sharing a smaller shelf or splitting it into multiple shelves."
             DataError.Local.AUTH_CANCELLED -> "Sign-in was cancelled."
             DataError.Local.AUTH_NO_CREDENTIAL -> "No Google account found. Please add a Google account to your device."
             DataError.Local.AUTH_FAILED -> "Sign-in failed. Please try again."

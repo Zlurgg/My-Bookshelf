@@ -530,7 +530,10 @@ class SyncEngineTest {
             return Result.Success(remoteBooks.find { it.id == bookId })
         }
 
-        override suspend fun downloadBooksSince(userId: String, sinceTimestamp: Long): Result<List<BookFirestoreDto>, DataError.Sync> {
+        override suspend fun downloadBooksSince(
+            userId: String,
+            sinceTimestamp: Long
+        ): Result<List<BookFirestoreDto>, DataError.Sync> {
             return Result.Success(remoteBooks.filter { it.lastModifiedAt > sinceTimestamp })
         }
 
@@ -539,16 +542,25 @@ class SyncEngineTest {
             return Result.Success(Unit)
         }
 
-        override suspend fun uploadBookshelf(userId: String, shelf: BookshelfFirestoreDto): Result<Unit, DataError.Sync> {
+        override suspend fun uploadBookshelf(
+            userId: String,
+            shelf: BookshelfFirestoreDto
+        ): Result<Unit, DataError.Sync> {
             uploadedShelves[shelf.id] = shelf
             return Result.Success(Unit)
         }
 
-        override suspend fun downloadBookshelf(userId: String, shelfId: String): Result<BookshelfFirestoreDto?, DataError.Sync> {
+        override suspend fun downloadBookshelf(
+            userId: String,
+            shelfId: String
+        ): Result<BookshelfFirestoreDto?, DataError.Sync> {
             return Result.Success(remoteShelves.find { it.id == shelfId })
         }
 
-        override suspend fun downloadBookshelvesSince(userId: String, sinceTimestamp: Long): Result<List<BookshelfFirestoreDto>, DataError.Sync> {
+        override suspend fun downloadBookshelvesSince(
+            userId: String,
+            sinceTimestamp: Long
+        ): Result<List<BookshelfFirestoreDto>, DataError.Sync> {
             return Result.Success(remoteShelves.filter { it.lastModifiedAt > sinceTimestamp })
         }
 

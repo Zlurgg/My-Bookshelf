@@ -64,7 +64,12 @@ class BookRepositoryImplTest {
         ).allowMainThreadQueries().build()
 
         mockRemoteDataSource = MockRemoteBookDataSource()
-        repository = BookRepositoryImpl(mockRemoteDataSource, database.bookshelfDao, mockCurrentUserProvider, testTimeProvider)
+        repository = BookRepositoryImpl(
+            mockRemoteDataSource,
+            database.bookshelfDao,
+            mockCurrentUserProvider,
+            testTimeProvider
+        )
     }
 
     @After

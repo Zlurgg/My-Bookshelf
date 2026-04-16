@@ -78,7 +78,7 @@ fun ClubRatingCard(
                     Text(
                         text = stringResource(
                             R.string.club_rating_average,
-                            String.format("%.1f", averageRating),
+                            String.format(java.util.Locale.ROOT, "%.1f", averageRating),
                             ratedReviews.size
                         ),
                         style = MaterialTheme.typography.bodyMedium,

@@ -59,7 +59,7 @@ fun CommunityRatingsCard(
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = String.format("%.1f", averageRating),
+                        text = String.format(java.util.Locale.ROOT, "%.1f", averageRating),
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )

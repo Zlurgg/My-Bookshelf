@@ -47,8 +47,4 @@ class WelcomePreferencesImpl(
             preferences[key] ?: false
         }
     }
-
-    companion object {
-        private const val TAG = "WelcomePreferences"
-    }
 }
