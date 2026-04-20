@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 
 import kotlinx.coroutines.flow.first
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
@@ -25,19 +24,14 @@ class DatabaseBookshelfDataOrchestrator(
         private const val TAG = "BookshelfDataOrchestrator"
     }
 
-    @Suppress("TooGenericExceptionCaught")
     override suspend fun loadShelfForExport(shelfId: String): Result<Bookshelf, DataError.Local> {
-        return try {
+        return ErrorMapper.safeSuspendCall(TAG) {
             val allShelves = bookcaseRepository.getAllShelves().first()
             val shelf = allShelves.find { it.id == shelfId }
                 ?: return Result.Error(DataError.Local.NOT_FOUND)
 
             val books = bookshelfRepository.getBooksForShelf(shelfId).first()
-            Result.Success(shelf.copy(books = books))
-        } catch (e: Exception) {
-            val error = ErrorMapper.mapExceptionToDataError(e) as? DataError.Local ?: DataError.Local.UNKNOWN
-            Timber.tag(TAG).e(e, "Load shelf for export failed - Mapped to: %s", error)
-            Result.Error(error)
+            shelf.copy(books = books)
         }
     }
 
