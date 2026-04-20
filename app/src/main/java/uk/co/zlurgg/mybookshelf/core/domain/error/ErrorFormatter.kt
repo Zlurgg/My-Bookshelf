@@ -53,18 +53,27 @@ object ErrorFormatter {
         DataError.Local.SHARE_LINK_TOO_LARGE ->
             "This bookshelf is too large to share. " +
                 "Try sharing a smaller shelf or splitting it into multiple shelves."
-        DataError.Local.AUTH_CANCELLED -> "Sign-in was cancelled."
-        DataError.Local.AUTH_NO_CREDENTIAL ->
-            "No Google account found. Please add a Google account to your device."
-        DataError.Local.AUTH_FAILED -> "Sign-in failed. Please try again."
-        DataError.Local.AUTH_NETWORK_ERROR ->
-            "Network error during sign-in. Please check your connection."
         DataError.Local.PERMISSION_DENIED ->
             "You don't have permission to perform this action."
         DataError.Local.MAX_SHELVES_REACHED -> "You've reached the maximum of 20 shelves."
         DataError.Local.MAX_BOOKS_REACHED ->
             "This shelf has reached its maximum of 20 books."
         DataError.Local.UNKNOWN -> "Unknown local error occurred."
+        DataError.Local.AUTH_CANCELLED,
+        DataError.Local.AUTH_NO_CREDENTIAL,
+        DataError.Local.AUTH_FAILED,
+        DataError.Local.AUTH_NETWORK_ERROR,
+        -> formatLocalAuthError(error)
+    }
+
+    private fun formatLocalAuthError(error: DataError.Local): String = when (error) {
+        DataError.Local.AUTH_CANCELLED -> "Sign-in was cancelled."
+        DataError.Local.AUTH_NO_CREDENTIAL ->
+            "No Google account found. Please add a Google account to your device."
+        DataError.Local.AUTH_FAILED -> "Sign-in failed. Please try again."
+        DataError.Local.AUTH_NETWORK_ERROR ->
+            "Network error during sign-in. Please check your connection."
+        else -> "Authentication error occurred."
     }
 
     private fun formatValidationError(error: DataError.Validation): String = when (error) {
