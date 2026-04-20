@@ -9,7 +9,15 @@ import uk.co.zlurgg.mybookshelf.sync.data.repository.SyncRepositoryImpl
 import uk.co.zlurgg.mybookshelf.sync.data.repository.UserPreferencesRepositoryImpl
 import uk.co.zlurgg.mybookshelf.sync.data.service.AndroidConnectivityMonitor
 import uk.co.zlurgg.mybookshelf.sync.data.service.DefaultConflictResolver
+import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.BookSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.ShelfSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.UserPreferencesDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreBookClubRemoteDataSourceImpl
+import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreBookSyncDataSourceImpl
 import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreRemoteDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreShelfSyncDataSourceImpl
+import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreUserPreferencesDataSourceImpl
 import uk.co.zlurgg.mybookshelf.sync.data.worker.SyncScheduler
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
 import uk.co.zlurgg.mybookshelf.sync.domain.repository.UserPreferencesRepository
@@ -28,7 +36,11 @@ val syncModule = module {
     single<ConnectivityMonitor> { AndroidConnectivityMonitor(get<Context>()) }
     single<ConflictResolver> { DefaultConflictResolver.lastWriteWins() }
     single { FirebaseFirestore.getInstance() }
-    single<RemoteSyncDataSource> { FirestoreRemoteDataSource(get()) }
+    single<BookSyncDataSource> { FirestoreBookSyncDataSourceImpl(get()) }
+    single<ShelfSyncDataSource> { FirestoreShelfSyncDataSourceImpl(get()) }
+    single<UserPreferencesDataSource> { FirestoreUserPreferencesDataSourceImpl(get()) }
+    single<BookClubRemoteDataSource> { FirestoreBookClubRemoteDataSourceImpl(get()) }
+    single<RemoteSyncDataSource> { FirestoreRemoteDataSource(get(), get(), get(), get()) }
     single<SyncSchedulerService> { SyncScheduler(get()) }
 
     // Engine
