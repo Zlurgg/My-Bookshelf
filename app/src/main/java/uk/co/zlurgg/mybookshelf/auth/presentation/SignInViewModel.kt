@@ -13,6 +13,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DevSignInUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
@@ -42,7 +43,7 @@ class SignInViewModel(
 
     fun onAction(action: SignInAction) {
         when (action) {
-            is SignInAction.SignIn -> signIn()
+            is SignInAction.SignIn -> signIn(action.fetchCredential)
             is SignInAction.DevSignIn -> devSignIn(action.userNumber)
             is SignInAction.ContinueAsGuest -> continueAsGuest()
             is SignInAction.ResetState -> resetState()
@@ -128,11 +129,28 @@ class SignInViewModel(
         }
     }
 
-    private fun signIn() {
+    private fun signIn(
+        fetchCredential: suspend () -> Result<String, DataError.Local>
+    ) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
 
-            when (val result = authUseCases.signIn()) {
+            val credentialResult = fetchCredential()
+            if (credentialResult is Result.Error) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = ErrorFormatter.formatDataErrorMessage(
+                            credentialResult.error,
+                            "sign in"
+                        )
+                    )
+                }
+                return@launch
+            }
+
+            val idToken = (credentialResult as Result.Success).data
+            when (val result = authUseCases.signIn(idToken)) {
                 is Result.Success -> {
                     // Sync user preferences from cloud (handles offline gracefully)
                     syncUserPreferencesUseCase()

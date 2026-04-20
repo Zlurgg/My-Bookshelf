@@ -10,10 +10,10 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 interface AuthService {
     /**
-     * Performs sign-in. Implementation requires Activity context
-     * which is provided at the data layer.
+     * Performs sign-in using a pre-fetched Google ID token.
+     * Credential fetching is a UI concern handled at the presentation layer.
      */
-    suspend fun signIn(): Result<UserData, DataError.Local>
+    suspend fun signIn(idToken: String): Result<UserData, DataError.Local>
 
     suspend fun signOut(): Result<Unit, DataError.Local>
 

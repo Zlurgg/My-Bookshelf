@@ -20,7 +20,7 @@ class MockAuthService : AuthService {
     var signInCalled = false
     var signOutCalled = false
 
-    override suspend fun signIn(): Result<UserData, DataError.Local> {
+    override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> {
         signInCalled = true
         return signInResult
     }

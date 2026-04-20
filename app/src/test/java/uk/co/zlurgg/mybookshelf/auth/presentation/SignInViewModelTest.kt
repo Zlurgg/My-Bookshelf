@@ -45,6 +45,7 @@ class SignInViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
 
     // Test doubles
+    private var mockCredentialResult: Result<String, DataError.Local> = Result.Success("test-id-token")
     private var mockSignInResult: Result<UserData, DataError.Local> = Result.Success(
         UserData("test-user-id", "Test User", null)
     )
@@ -54,7 +55,7 @@ class SignInViewModelTest {
     private var signInStateSet: Boolean? = null
 
     private val mockAuthService = object : AuthService {
-        override suspend fun signIn(): Result<UserData, DataError.Local> = mockSignInResult
+        override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> = mockSignInResult
         override suspend fun signOut(): Result<Unit, DataError.Local> = mockSignOutResult
         override fun getSignedInUser(): UserData? = mockCurrentUser
     }
@@ -142,7 +143,10 @@ class SignInViewModelTest {
         )
     }
 
+    private fun signInAction() = SignInAction.SignIn { mockCredentialResult }
+
     private fun resetMocks() {
+        mockCredentialResult = Result.Success("test-id-token")
         mockSignInResult = Result.Success(UserData("test-user-id", "Test User", null))
         mockSignOutResult = Result.Success(Unit)
         mockIsSignedIn = false
@@ -204,7 +208,7 @@ class SignInViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onAction(SignInAction.SignIn)
+        viewModel.onAction(signInAction())
         advanceUntilIdle()
 
         val state = viewModel.state.value
@@ -223,7 +227,7 @@ class SignInViewModelTest {
         // Capture loading state during sign in
         mockSignInResult = Result.Success(UserData("test", null, null))
 
-        viewModel.onAction(SignInAction.SignIn)
+        viewModel.onAction(signInAction())
         // In UnconfinedTestDispatcher, this happens synchronously
         // So we check the final state
         advanceUntilIdle()
@@ -234,12 +238,12 @@ class SignInViewModelTest {
     @Test
     fun `sign in cancelled shows appropriate error`() = runTest(testDispatcher) {
         resetMocks()
-        mockSignInResult = Result.Error(DataError.Local.AUTH_CANCELLED)
+        mockCredentialResult = Result.Error(DataError.Local.AUTH_CANCELLED)
 
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onAction(SignInAction.SignIn)
+        viewModel.onAction(signInAction())
         advanceUntilIdle()
 
         val state = viewModel.state.value
@@ -251,12 +255,12 @@ class SignInViewModelTest {
     @Test
     fun `sign in no credential shows appropriate error`() = runTest(testDispatcher) {
         resetMocks()
-        mockSignInResult = Result.Error(DataError.Local.AUTH_NO_CREDENTIAL)
+        mockCredentialResult = Result.Error(DataError.Local.AUTH_NO_CREDENTIAL)
 
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onAction(SignInAction.SignIn)
+        viewModel.onAction(signInAction())
         advanceUntilIdle()
 
         val state = viewModel.state.value
@@ -275,7 +279,7 @@ class SignInViewModelTest {
         val viewModel = createViewModel()
         advanceUntilIdle()
 
-        viewModel.onAction(SignInAction.SignIn)
+        viewModel.onAction(signInAction())
         advanceUntilIdle()
 
         val state = viewModel.state.value
@@ -294,7 +298,7 @@ class SignInViewModelTest {
         advanceUntilIdle()
 
         // First sign in successfully
-        viewModel.onAction(SignInAction.SignIn)
+        viewModel.onAction(signInAction())
         advanceUntilIdle()
         assertTrue("Should be signed in", viewModel.state.value.isSignInSuccessful)
 
@@ -311,13 +315,13 @@ class SignInViewModelTest {
     @Test
     fun `reset state clears error message`() = runTest(testDispatcher) {
         resetMocks()
-        mockSignInResult = Result.Error(DataError.Local.AUTH_FAILED)
+        mockCredentialResult = Result.Error(DataError.Local.AUTH_FAILED)
 
         val viewModel = createViewModel()
         advanceUntilIdle()
 
         // Trigger error
-        viewModel.onAction(SignInAction.SignIn)
+        viewModel.onAction(signInAction())
         advanceUntilIdle()
         assertTrue("Should have error", viewModel.state.value.errorMessage != null)
 

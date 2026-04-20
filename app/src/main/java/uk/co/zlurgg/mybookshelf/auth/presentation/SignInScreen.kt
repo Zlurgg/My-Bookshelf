@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
+import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleCredentialFetcher
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.ContinueAsGuestButton
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.DevSignInButton
@@ -28,10 +33,12 @@ import uk.co.zlurgg.mybookshelf.auth.presentation.components.WelcomeHeader
 @Composable
 fun SignInScreenRoot(
     viewModel: SignInViewModel = koinViewModel(),
+    credentialFetcher: GoogleCredentialFetcher = koinInject(),
     onNavigate: (PostSignInDestination) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val activity = LocalActivity.current
 
     // Handle navigation when destination is determined
     LaunchedEffect(state.navigateToDestination) {
@@ -62,7 +69,15 @@ fun SignInScreenRoot(
     SignInScreen(
         state = state,
         snackbarHostState = snackbarHostState,
-        onSignInClick = { viewModel.onAction(SignInAction.SignIn) },
+        onSignInClick = {
+            viewModel.onAction(
+                SignInAction.SignIn {
+                    val currentActivity = activity
+                        ?: return@SignIn Result.Error(DataError.Local.AUTH_FAILED)
+                    credentialFetcher.fetch(currentActivity)
+                }
+            )
+        },
         onDevSignInClick = { userNumber -> viewModel.onAction(SignInAction.DevSignIn(userNumber)) },
         onContinueAsGuestClick = { viewModel.onAction(SignInAction.ContinueAsGuest) }
     )

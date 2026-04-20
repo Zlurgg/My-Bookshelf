@@ -18,7 +18,7 @@ class CheckSignInStatusUseCaseTest {
     private var mockCurrentUser: UserData? = null
 
     private val mockAuthService = object : AuthService {
-        override suspend fun signIn(): Result<UserData, DataError.Local> = Result.Success(
+        override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> = Result.Success(
             UserData("test-user-id", "Test User", null)
         )
         override suspend fun signOut(): Result<Unit, DataError.Local> = Result.Success(Unit)

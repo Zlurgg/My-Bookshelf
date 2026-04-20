@@ -17,10 +17,10 @@ class SignInUseCaseImpl(
         private const val TAG = "SignIn"
     }
 
-    override suspend operator fun invoke(): Result<UserData, DataError.Local> {
+    override suspend operator fun invoke(idToken: String): Result<UserData, DataError.Local> {
         Timber.tag(TAG).d("=== SIGN-IN START ===")
 
-        return when (val signInResult = authService.signIn()) {
+        return when (val signInResult = authService.signIn(idToken)) {
             is Result.Success -> {
                 Timber.tag(TAG).d("Sign-in successful, saving state")
                 when (val stateResult = authStateRepository.setSignedInState(true)) {

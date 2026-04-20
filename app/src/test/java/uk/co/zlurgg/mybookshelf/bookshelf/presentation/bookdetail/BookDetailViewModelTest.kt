@@ -85,7 +85,7 @@ class BookDetailViewModelTest {
 
     // Auth mock dependencies
     private val mockAuthService = object : AuthService {
-        override suspend fun signIn() = Result.Success(UserData("test", "Test", null))
+        override suspend fun signIn(idToken: String) = Result.Success(UserData("test", "Test", null))
         override suspend fun signOut() = Result.Success(Unit)
         override fun getSignedInUser() = null
     }

@@ -11,6 +11,7 @@ import uk.co.zlurgg.mybookshelf.auth.data.config.AuthConfig
 import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthStateRepositoryImpl
 import uk.co.zlurgg.mybookshelf.auth.data.service.CurrentUserProviderImpl
 import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleAuthUiClient
+import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleCredentialFetcher
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
@@ -36,10 +37,10 @@ val authModule = module {
     }
 
     // Services
+    single { GoogleCredentialFetcher(authConfig = get()) }
     single<AuthService> {
         GoogleAuthUiClient(
-            context = get(),
-            authConfig = get()
+            context = get()
         )
     }
     single<AuthStateRepository> { AuthStateRepositoryImpl(get()) }

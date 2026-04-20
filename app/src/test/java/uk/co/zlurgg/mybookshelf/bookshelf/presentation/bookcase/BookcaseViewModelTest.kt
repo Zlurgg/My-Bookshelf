@@ -112,7 +112,7 @@ class BookcaseViewModelTest {
         val shelfManagement = ShelfManagementHandler(useCases, mockHandleTutorialAccess, mockBookClubRepository)
 
         val mockAuthService = object : uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService {
-            override suspend fun signIn() = Result.Success(
+            override suspend fun signIn(idToken: String) = Result.Success(
                 uk.co.zlurgg.mybookshelf.auth.domain.model.UserData("test", null, null)
             )
             override suspend fun signOut() = Result.Success(Unit)

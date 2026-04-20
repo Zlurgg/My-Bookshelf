@@ -23,7 +23,7 @@ class SignInUseCaseTest {
     private var immediateSyncTriggered = false
 
     private val mockAuthService = object : AuthService {
-        override suspend fun signIn(): Result<UserData, DataError.Local> = mockSignInResult
+        override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> = mockSignInResult
         override suspend fun signOut(): Result<Unit, DataError.Local> = Result.Success(Unit)
         override fun getSignedInUser(): UserData? = null
     }
@@ -60,7 +60,7 @@ class SignInUseCaseTest {
 
     @Test
     fun `execute returns success and saves signed in state when sign in succeeds`() = runTest {
-        val result = useCase()
+        val result = useCase("test-id-token")
 
         assertTrue("Should be success", result is Result.Success)
         assertEquals("test-user-id", (result as Result.Success).data.userId)
@@ -72,7 +72,7 @@ class SignInUseCaseTest {
         val expectedUser = UserData("user-123", "John Doe", "https://example.com/photo.jpg")
         mockSignInResult = Result.Success(expectedUser)
 
-        val result = useCase()
+        val result = useCase("test-id-token")
 
         assertTrue("Should be success", result is Result.Success)
         val userData = (result as Result.Success).data
@@ -85,7 +85,7 @@ class SignInUseCaseTest {
     fun `execute returns error and does not save state when sign in fails`() = runTest {
         mockSignInResult = Result.Error(DataError.Local.AUTH_FAILED)
 
-        val result = useCase()
+        val result = useCase("test-id-token")
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_FAILED, (result as Result.Error).error)
@@ -96,7 +96,7 @@ class SignInUseCaseTest {
     fun `execute returns cancelled error when user cancels`() = runTest {
         mockSignInResult = Result.Error(DataError.Local.AUTH_CANCELLED)
 
-        val result = useCase()
+        val result = useCase("test-id-token")
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_CANCELLED, (result as Result.Error).error)
@@ -106,7 +106,7 @@ class SignInUseCaseTest {
     fun `execute returns no credential error when no account available`() = runTest {
         mockSignInResult = Result.Error(DataError.Local.AUTH_NO_CREDENTIAL)
 
-        val result = useCase()
+        val result = useCase("test-id-token")
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_NO_CREDENTIAL, (result as Result.Error).error)
@@ -116,7 +116,7 @@ class SignInUseCaseTest {
     fun `execute returns network error on network failure`() = runTest {
         mockSignInResult = Result.Error(DataError.Local.AUTH_NETWORK_ERROR)
 
-        val result = useCase()
+        val result = useCase("test-id-token")
 
         assertTrue("Should be error", result is Result.Error)
         assertEquals(DataError.Local.AUTH_NETWORK_ERROR, (result as Result.Error).error)
@@ -126,14 +126,14 @@ class SignInUseCaseTest {
 
     @Test
     fun `execute schedules periodic sync on successful sign in`() = runTest {
-        useCase()
+        useCase("test-id-token")
 
         assertTrue("Periodic sync should be scheduled", periodicSyncScheduled)
     }
 
     @Test
     fun `execute triggers immediate sync on successful sign in`() = runTest {
-        useCase()
+        useCase("test-id-token")
 
         assertTrue("Immediate sync should be triggered", immediateSyncTriggered)
     }
@@ -142,7 +142,7 @@ class SignInUseCaseTest {
     fun `execute does not schedule sync when sign in fails`() = runTest {
         mockSignInResult = Result.Error(DataError.Local.AUTH_FAILED)
 
-        useCase()
+        useCase("test-id-token")
 
         assertEquals(false, periodicSyncScheduled)
         assertEquals(false, immediateSyncTriggered)
