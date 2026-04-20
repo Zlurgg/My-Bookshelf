@@ -2,6 +2,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 
 data class BookcaseState(
     val bookshelves: List<Bookshelf> = emptyList(),
@@ -71,3 +73,89 @@ data class BookcaseState(
     val showShelfLimitDialog: Boolean = false,
     val showBookClubLimitDialog: Boolean = false,
 )
+
+// ============================================================================
+// State Reducers (Extensions)
+// ============================================================================
+
+internal fun BookcaseState.withError(error: DataError, operation: String): BookcaseState {
+    return copy(
+        isLoading = false,
+        errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation)
+    )
+}
+
+internal fun BookcaseState.withShelfAdded(newShelf: Bookshelf): BookcaseState {
+    val newShelves = bookshelves + newShelf
+    return copy(
+        bookshelves = newShelves,
+        isLoading = false,
+        operationSuccess = true,
+        showAddDialog = false,
+        defaultShelfName = "New Bookshelf ${calculateNextShelfNumber(newShelves)}"
+    )
+}
+
+internal fun BookcaseState.withShelfDeleted(shelf: Bookshelf): BookcaseState {
+    return copy(
+        bookshelves = bookshelves - shelf,
+        recentlyDeleted = shelf
+    )
+}
+
+internal fun BookcaseState.withShelfDeleteError(shelf: Bookshelf, error: DataError): BookcaseState {
+    return copy(
+        bookshelves = bookshelves + shelf,
+        recentlyDeleted = null,
+        errorMessage = ErrorFormatter.formatDataErrorMessage(error, "remove shelf")
+    )
+}
+
+internal fun BookcaseState.withShelfRestored(shelf: Bookshelf): BookcaseState {
+    return copy(
+        bookshelves = bookshelves + shelf,
+        recentlyDeleted = null,
+        operationSuccess = true
+    )
+}
+
+internal fun BookcaseState.updateShelfInList(
+    shelfId: String,
+    transform: (Bookshelf) -> Bookshelf,
+): BookcaseState {
+    val updatedShelves = bookshelves.map { shelf ->
+        if (shelf.id == shelfId) transform(shelf) else shelf
+    }
+    return copy(bookshelves = updatedShelves)
+}
+
+internal fun BookcaseState.closeRenameDialog(): BookcaseState {
+    return copy(
+        showRenameDialog = false,
+        shelfToRename = null,
+        renameError = null,
+        operationSuccess = true,
+        errorMessage = null
+    )
+}
+
+internal fun BookcaseState.closeStyleDialog(): BookcaseState {
+    return copy(
+        showChangeStyleDialog = false,
+        shelfToChangeStyle = null,
+        operationSuccess = true,
+        errorMessage = null
+    )
+}
+
+internal fun BookcaseState.withRenameError(error: DataError): BookcaseState {
+    return copy(renameError = ErrorFormatter.formatDataErrorMessage(error, "rename shelf"))
+}
+
+internal fun calculateNextShelfNumber(shelves: List<Bookshelf>): Int {
+    val newBookshelfPattern = Regex("^New Bookshelf (\\d+)$")
+    val existingNumbers = shelves.mapNotNull { shelf ->
+        newBookshelfPattern.matchEntire(shelf.name)?.groupValues?.get(1)?.toIntOrNull()
+    }
+    return (existingNumbers.maxOrNull() ?: 0) + 1
+}
