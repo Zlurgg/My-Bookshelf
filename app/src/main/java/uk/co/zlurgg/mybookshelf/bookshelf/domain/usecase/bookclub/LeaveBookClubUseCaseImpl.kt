@@ -21,36 +21,12 @@ class LeaveBookClubUseCaseImpl(
     override suspend fun invoke(shelfId: String): Result<Unit, DataError.Sync> {
         Timber.tag(TAG).d("Attempting to leave book club for shelf: %s", shelfId)
 
-        // 1. Get the shelf to find the club code
-        val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
-            is Result.Success -> {
-                if (getResult.data == null) {
-                    Timber.tag(TAG).e("Shelf not found: %s", shelfId)
-                    return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
-                }
-                getResult.data
-            }
-            is Result.Error -> {
-                Timber.tag(TAG).e("Failed to get shelf: %s", getResult.error)
-                return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
-            }
+        val clubCode = when (val codeResult = getClubCodeForShelf(shelfId)) {
+            is Result.Success -> codeResult.data
+            is Result.Error -> return codeResult
         }
 
-        if (!shelf.isBookClub) {
-            Timber.tag(TAG).e("Shelf is not a book club: %s", shelfId)
-            return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
-        }
-
-        val clubCode = shelf.clubCode
-        if (clubCode == null) {
-            Timber.tag(TAG).e("Book club shelf has no club code: %s", shelfId)
-            return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
-        }
-
-        // 2. Delegate to repository
-        val leaveResult = bookClubRepository.leaveBookClub(clubCode)
-
-        return when (leaveResult) {
+        return when (val leaveResult = bookClubRepository.leaveBookClub(clubCode)) {
             is Result.Success -> {
                 Timber.tag(TAG).d("Successfully left book club: %s", clubCode)
                 Result.Success(Unit)
@@ -60,6 +36,28 @@ class LeaveBookClubUseCaseImpl(
                 Result.Error(leaveResult.error)
             }
         }
+    }
+
+    private suspend fun getClubCodeForShelf(shelfId: String): Result<String, DataError.Sync> {
+        val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+            is Result.Success -> getResult.data
+            is Result.Error -> {
+                Timber.tag(TAG).e("Failed to get shelf: %s", getResult.error)
+                return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
+            }
+        }
+
+        if (shelf == null) {
+            Timber.tag(TAG).e("Shelf not found: %s", shelfId)
+            return Result.Error(DataError.Sync.DOCUMENT_NOT_FOUND)
+        }
+
+        if (!shelf.isBookClub || shelf.clubCode == null) {
+            Timber.tag(TAG).e("Shelf is not a book club: %s", shelfId)
+            return Result.Error(DataError.Sync.CLUB_NOT_FOUND)
+        }
+
+        return Result.Success(shelf.clubCode)
     }
 
     companion object {

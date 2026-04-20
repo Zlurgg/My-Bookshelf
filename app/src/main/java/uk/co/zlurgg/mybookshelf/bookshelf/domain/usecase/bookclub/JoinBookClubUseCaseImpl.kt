@@ -24,51 +24,54 @@ class JoinBookClubUseCaseImpl(
     override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> {
         Timber.tag(TAG).d("Attempting to join book club: %s", code)
 
-        // 1. Validate user is signed in
+        val validationError = validateJoinPreconditions(code)
+        if (validationError != null) return validationError
+
+        val existingResult = checkExistingMembership(code)
+        if (existingResult != null) return existingResult
+
+        return verifyClubAndJoin(code)
+    }
+
+    private suspend fun validateJoinPreconditions(code: String): Result<JoinResult, DataError.Sync>? {
         val user = authService.getSignedInUser()
         if (user == null) {
             Timber.tag(TAG).d("User not signed in, cannot join club")
             return Result.Error(DataError.Sync.NOT_SIGNED_IN)
         }
 
-        // 2. Check book club limit before joining
         val currentBookClubs = bookClubRepository.observeMyBookClubs().first()
         if (currentBookClubs.size >= MAX_BOOK_CLUBS) {
             Timber.tag(TAG).w("User has reached max book clubs limit: %d", MAX_BOOK_CLUBS)
             return Result.Error(DataError.Sync.MAX_BOOK_CLUBS_REACHED)
         }
 
-        // 3. Check if already a member
-        val memberCheckResult = bookClubRepository.isMemberOfClub(code)
-        when (memberCheckResult) {
-            is Result.Error -> {
-                Timber.tag(TAG).e("Failed to check membership: %s", memberCheckResult.error)
-                return Result.Error(memberCheckResult.error)
-            }
+        return null
+    }
+
+    private suspend fun checkExistingMembership(code: String): Result<JoinResult, DataError.Sync>? {
+        when (val memberCheckResult = bookClubRepository.isMemberOfClub(code)) {
+            is Result.Error -> return Result.Error(memberCheckResult.error)
             is Result.Success -> {
                 if (memberCheckResult.data) {
-                    // User is already a member - get the existing shelf
                     Timber.tag(TAG).d("User is already a member of club %s", code)
                     val existingShelf = bookClubRepository.getLocalShelfForClub(code)
                     return if (existingShelf != null) {
                         Result.Success(JoinResult.AlreadyMember(existingShelf.id))
                     } else {
-                        // Edge case: member in Firestore but no local shelf
-                        // Proceed with join to recreate local data
                         Timber.tag(TAG).w("Member in Firestore but no local shelf, proceeding with join")
                         performJoin(code)
                     }
                 }
             }
         }
+        return null
+    }
 
-        // 4. Get club metadata to verify it exists
+    private suspend fun verifyClubAndJoin(code: String): Result<JoinResult, DataError.Sync> {
         val clubResult = bookClubRepository.getBookClub(code)
         when (clubResult) {
-            is Result.Error -> {
-                Timber.tag(TAG).e("Failed to get club metadata: %s", clubResult.error)
-                return Result.Error(clubResult.error)
-            }
+            is Result.Error -> return Result.Error(clubResult.error)
             is Result.Success -> {
                 if (clubResult.data == null) {
                     Timber.tag(TAG).d("Club not found: %s", code)
@@ -76,8 +79,6 @@ class JoinBookClubUseCaseImpl(
                 }
             }
         }
-
-        // 5. Perform the join
         return performJoin(code)
     }
 

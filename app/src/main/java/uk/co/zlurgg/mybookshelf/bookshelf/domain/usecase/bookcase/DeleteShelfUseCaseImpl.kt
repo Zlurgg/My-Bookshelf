@@ -26,41 +26,38 @@ class DeleteShelfUseCaseImpl(
             is Result.Error -> return getResult
         }
 
-        // Delete associated book club if exists (creator must delete from Firestore first)
-        if (shelf?.clubCode != null) {
-            Timber.tag(TAG).d("Deleting associated book club: %s", shelf.clubCode)
-            val deleteClubResult = bookClubRepository.deleteBookClub(shelf.clubCode)
-            if (deleteClubResult is Result.Error) {
-                Timber.tag(TAG).e("Failed to delete book club from Firestore: %s", deleteClubResult.error)
-                // Map Sync errors to Local errors for proper UI feedback
-                val localError = when (deleteClubResult.error) {
-                    DataError.Sync.PERMISSION_DENIED -> DataError.Local.PERMISSION_DENIED
-                    DataError.Sync.NETWORK_ERROR -> DataError.Local.DISK_FULL // No better mapping available
-                    else -> DataError.Local.UNKNOWN
-                }
-                // Don't continue with local deletion if Firestore deletion failed
-                // This prevents orphaned clubs in Firestore
-                return Result.Error(localError)
-            }
-            // Book club deleted from Firestore - hard delete locally (no sync needed)
-            Timber.tag(TAG).d("Hard deleting local book club shelf: %s", shelfId)
-            when (val hardDeleteResult = repository.hardDeleteShelf(shelfId)) {
-                is Result.Success -> { /* continue */ }
-                is Result.Error -> return hardDeleteResult
-            }
+        // Delete based on shelf type
+        val deleteResult = if (shelf?.clubCode != null) {
+            deleteBookClubShelf(shelf.clubCode, shelfId)
         } else {
-            // Regular shelf - soft delete for sync
-            when (val removeResult = repository.removeShelf(shelfId)) {
-                is Result.Success -> { /* continue */ }
-                is Result.Error -> return removeResult
-            }
+            repository.removeShelf(shelfId)
         }
 
-        // Trigger sync after successful shelf deletion
-        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: DeleteShelf")
-        syncSchedulerService.triggerImmediateSync()
+        when (deleteResult) {
+            is Result.Success -> {
+                Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: DeleteShelf")
+                syncSchedulerService.triggerImmediateSync()
+            }
+            is Result.Error -> return deleteResult
+        }
 
         return Result.Success(Unit)
+    }
+
+    private suspend fun deleteBookClubShelf(clubCode: String, shelfId: String): Result<Unit, DataError.Local> {
+        Timber.tag(TAG).d("Deleting associated book club: %s", clubCode)
+        val deleteClubResult = bookClubRepository.deleteBookClub(clubCode)
+        if (deleteClubResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to delete book club from Firestore: %s", deleteClubResult.error)
+            val localError = when (deleteClubResult.error) {
+                DataError.Sync.PERMISSION_DENIED -> DataError.Local.PERMISSION_DENIED
+                DataError.Sync.NETWORK_ERROR -> DataError.Local.DISK_FULL
+                else -> DataError.Local.UNKNOWN
+            }
+            return Result.Error(localError)
+        }
+        Timber.tag(TAG).d("Hard deleting local book club shelf: %s", shelfId)
+        return repository.hardDeleteShelf(shelfId)
     }
 
     override suspend fun restore(shelf: Bookshelf): Result<Unit, DataError.Local> {
