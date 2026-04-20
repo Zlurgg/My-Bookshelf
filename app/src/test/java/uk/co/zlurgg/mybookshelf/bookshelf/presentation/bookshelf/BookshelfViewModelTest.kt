@@ -25,7 +25,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.RemoveBookFr
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubOperationUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
@@ -120,7 +120,7 @@ class BookshelfViewModelTest {
             duplicateShelf = MockDuplicateShelfUseCase(),
             shareShelf = MockShareBookshelfUseCase()
         )
-        val bookClubUseCases = BookClubUseCases(
+        val bookClubUseCases = BookClubOperationUseCases(
             createBookClub = SimpleCreateBookClubUseCase(),
             generateInviteLink = SimpleGenerateInviteLinkUseCase(),
             parseClubCode = SimpleParseClubCodeUseCase(),
@@ -129,14 +129,7 @@ class BookshelfViewModelTest {
             syncBookClub = SimpleSyncBookClubUseCase(),
             restoreBookClubMemberships = SimpleRestoreBookClubMembershipsUseCase(),
             leaveBookClub = SimpleLeaveBookClubUseCase(),
-            validateMemberships = SimpleValidateBookClubMembershipsUseCase(),
-            getBookClubReviews = SimpleGetBookClubReviewsUseCase(),
-            upsertBookClubReview = SimpleUpsertBookClubReviewUseCase(),
-            deleteBookClubReview = SimpleDeleteBookClubReviewUseCase(),
-            getBookClubComments = SimpleGetBookClubCommentsUseCase(),
-            addBookClubComment = SimpleAddBookClubCommentUseCase(),
-            editBookClubComment = SimpleEditBookClubCommentUseCase(),
-            deleteBookClubComment = SimpleDeleteBookClubCommentUseCase()
+            validateMemberships = SimpleValidateBookClubMembershipsUseCase()
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
         return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, bookClubOperations, shelfId)

@@ -26,7 +26,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubOperationUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
@@ -256,7 +256,7 @@ class BookcaseViewModelTest {
             ): Result<Unit, DataError.Sync> =
                 Result.Success(Unit)
         }
-        val bookClubUseCases = BookClubUseCases(
+        val bookClubUseCases = BookClubOperationUseCases(
             createBookClub = mockCreateBookClub,
             generateInviteLink = mockGenerateInviteLink,
             parseClubCode = mockParseClubCode,
@@ -265,14 +265,7 @@ class BookcaseViewModelTest {
             syncBookClub = mockSyncBookClub,
             restoreBookClubMemberships = mockRestoreBookClubMemberships,
             leaveBookClub = mockLeaveBookClub,
-            validateMemberships = mockValidateMemberships,
-            getBookClubReviews = mockGetBookClubReviews,
-            upsertBookClubReview = mockUpsertBookClubReview,
-            deleteBookClubReview = mockDeleteBookClubReview,
-            getBookClubComments = mockGetBookClubComments,
-            addBookClubComment = mockAddBookClubComment,
-            editBookClubComment = mockEditBookClubComment,
-            deleteBookClubComment = mockDeleteBookClubComment
+            validateMemberships = mockValidateMemberships
         )
         val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
 

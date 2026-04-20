@@ -2,7 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers
 
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubOperationUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -12,7 +12,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Extracts common logic for creating book clubs and generating invite links.
  */
 class BookClubOperationsHandler(
-    private val bookClubUseCases: BookClubUseCases
+    private val bookClubUseCases: BookClubOperationUseCases
 ) {
     /**
      * Result of a successful book club creation.

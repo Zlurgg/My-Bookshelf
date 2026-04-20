@@ -9,7 +9,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubOperationUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubReviewUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
@@ -78,9 +79,9 @@ val bookClubModule = module {
     singleOf(::EditBookClubCommentUseCaseImpl).bind<EditBookClubCommentUseCase>()
     singleOf(::DeleteBookClubCommentUseCaseImpl).bind<DeleteBookClubCommentUseCase>()
 
-    // UseCase Facade
+    // UseCase Aggregators
     single {
-        BookClubUseCases(
+        BookClubOperationUseCases(
             createBookClub = get(),
             generateInviteLink = get(),
             parseClubCode = get(),
@@ -89,7 +90,12 @@ val bookClubModule = module {
             syncBookClub = get(),
             restoreBookClubMemberships = get(),
             leaveBookClub = get(),
-            validateMemberships = get(),
+            validateMemberships = get()
+        )
+    }
+
+    single {
+        BookClubReviewUseCases(
             getBookClubReviews = get(),
             upsertBookClubReview = get(),
             deleteBookClubReview = get(),

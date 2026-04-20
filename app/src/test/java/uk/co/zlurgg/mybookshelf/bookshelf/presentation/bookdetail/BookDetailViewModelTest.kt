@@ -39,7 +39,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpdateBookMe
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubReviewUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
@@ -149,16 +149,7 @@ class BookDetailViewModelTest {
             toggleBookPurchase = mockToggleBookPurchase,
             updateBookMetadata = mockUpdateBookMetadata
         )
-        val bookClubUseCases = BookClubUseCases(
-            createBookClub = SimpleCreateBookClubUseCase(),
-            generateInviteLink = SimpleGenerateInviteLinkUseCase(),
-            parseClubCode = SimpleParseClubCodeUseCase(),
-            getBookClubPreview = SimpleGetBookClubPreviewUseCase(),
-            joinBookClub = SimpleJoinBookClubUseCase(),
-            syncBookClub = SimpleSyncBookClubUseCase(),
-            restoreBookClubMemberships = SimpleRestoreBookClubMembershipsUseCase(),
-            leaveBookClub = SimpleLeaveBookClubUseCase(),
-            validateMemberships = SimpleValidateBookClubMembershipsUseCase(),
+        val bookClubReviewUseCases = BookClubReviewUseCases(
             getBookClubReviews = SimpleGetBookClubReviewsUseCase(),
             upsertBookClubReview = SimpleUpsertBookClubReviewUseCase(),
             deleteBookClubReview = SimpleDeleteBookClubReviewUseCase(),
@@ -167,7 +158,7 @@ class BookDetailViewModelTest {
             editBookClubComment = SimpleEditBookClubCommentUseCase(),
             deleteBookClubComment = SimpleDeleteBookClubCommentUseCase()
         )
-        return BookDetailViewModel(useCases, bookClubUseCases, mockAuthUseCases, "book-1", "test-shelf")
+        return BookDetailViewModel(useCases, bookClubReviewUseCases, mockAuthUseCases, "book-1", "test-shelf")
     }
 
     @Test

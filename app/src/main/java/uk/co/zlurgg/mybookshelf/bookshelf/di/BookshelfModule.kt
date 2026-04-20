@@ -225,7 +225,7 @@ val bookshelfModule = module {
     viewModel { (bookId: String, shelfId: String) ->
         BookDetailViewModel(
             bookDetailUseCases = get(),
-            bookClubUseCases = get(),
+            bookClubReviewUseCases = get(),
             authUseCases = get(),
             bookId = bookId,
             shelfId = shelfId
