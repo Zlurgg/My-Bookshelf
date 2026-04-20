@@ -3,7 +3,16 @@ package uk.co.zlurgg.mybookshelf.bookshelf.di
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookClubManagementRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookClubMembershipRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookClubRepositoryHelper
 import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookClubRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookClubReviewRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookClubSyncRepositoryImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubManagementRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubMembershipRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubReviewRepository
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubSyncRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.BookClubCodeGeneratorImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
@@ -48,16 +57,66 @@ val bookClubModule = module {
     // Services
     single<BookClubCodeGenerator> { BookClubCodeGeneratorImpl(get()) }
 
-    // Repository
-    single<BookClubRepository> {
-        BookClubRepositoryImpl(
+    // Repository Helper
+    single {
+        BookClubRepositoryHelper(
+            bookClubDao = get(),
+            bookshelfDao = get(),
+            remoteDataSource = get(),
+            authService = get(),
+            timeProvider = get()
+        )
+    }
+
+    // Focused Repositories
+    single<BookClubManagementRepository> {
+        BookClubManagementRepositoryImpl(
             bookClubDao = get(),
             bookshelfDao = get(),
             remoteDataSource = get(),
             codeGenerator = get(),
             authService = get(),
             idGenerator = get(),
+            timeProvider = get(),
+            helper = get()
+        )
+    }
+    single<BookClubMembershipRepository> {
+        BookClubMembershipRepositoryImpl(
+            bookClubDao = get(),
+            bookshelfDao = get(),
+            remoteDataSource = get(),
+            authService = get(),
+            idGenerator = get(),
+            timeProvider = get(),
+            helper = get()
+        )
+    }
+    single<BookClubSyncRepository> {
+        BookClubSyncRepositoryImpl(
+            bookClubDao = get(),
+            bookshelfDao = get(),
+            remoteDataSource = get(),
+            authService = get(),
+            timeProvider = get(),
+            helper = get()
+        )
+    }
+    single<BookClubReviewRepository> {
+        BookClubReviewRepositoryImpl(
+            remoteDataSource = get(),
+            authService = get(),
             timeProvider = get()
+        )
+    }
+
+    // Composite Repository
+    single<BookClubRepository> {
+        BookClubRepositoryImpl(
+            management = get(),
+            membership = get(),
+            sync = get(),
+            review = get()
         )
     }
 
