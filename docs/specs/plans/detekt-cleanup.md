@@ -289,3 +289,53 @@ Phase 12 (final config + verification)
 ```
 
 14 commits. Feature branch with squash/rebase option. Each commit: build + test + detekt must pass.
+
+---
+
+## Completion Log
+
+All phases complete. `./gradlew detekt` passes with 0 violations.
+
+### Session 2 Summary (2026-04-20)
+
+Picked up from Phase 10 onwards. Resolved all 70 remaining violations.
+
+**Deviations from plan:**
+
+- **Phase 8/9 impl splits (deferred → completed):** Original plan deferred the impl class splits for BookClubRepositoryImpl and FirestoreRemoteDataSource. Completed them using Kotlin `by` delegation pattern — each monolith became a thin composite delegating to focused impl classes. Shared helpers extracted to `BookClubRepositoryHelper` (Koin-injected) and `FirestoreOperationHelper` (instantiated per-impl with per-caller TAG).
+
+- **Phase 10:** Extracted 9 state reducers + `calculateNextShelfNumber` to BookcaseState.kt as `internal` extension functions. Dropped ViewModel from 28 to 18 functions.
+
+- **Phase 11a (partial):** Extracted club action handling to `BookcaseClubActionHandler` instead of just grouping `when` branches. This was necessary because grouping alone couldn't fix the LargeClass violation (754 lines, threshold 500). The handler takes `_state`, `viewModelScope`, and domain handlers as constructor params. Dropped ViewModel from 754 to 320 lines.
+
+- **Phase 11b/11c (skipped):** Screen composable extraction and test cleanup were not needed — no detekt violations remain in presentation layer after the Phase 11a extraction. These can be revisited as tech-debt cleanup independent of detekt.
+
+- **Phase 12 (not needed):** Config already correct. All path excludes for production code were removed in earlier phases. Zero violations without further config changes.
+
+- **ErrorFormatter:** `formatLocalError` was at CC=20 (exactly at threshold, triggers violation). Fixed by extracting auth errors into `formatLocalAuthError`, dropping to CC=16.
+
+- **Cross-boundary calls in BookClubRepositoryImpl split:** Three cross-boundary dependencies resolved via helper:
+  1. `syncBooksFromClub` → `convertClubToPersonalShelf`: moved to `BookClubRepositoryHelper.convertToPersonalShelf()`
+  2. `joinBookClub`/`restoreClubMembership` → `getBookClub`: added `BookClubRepositoryHelper.fetchBookClubMetadata()`
+  
+- **FirestoreOperationHelper:** NOT Koin-injected (unlike BookClubRepositoryHelper). Each focused Firestore impl instantiates its own with a unique TAG for per-caller logging. Simpler than DI for a stateless utility.
+
+### Final file counts
+
+| New File | Lines | Functions |
+|----------|-------|-----------|
+| FirestoreCollections.kt | 17 | 0 (object) |
+| FirestoreOperationHelper.kt | 42 | 2 |
+| FirestoreBookSyncDataSourceImpl.kt | 98 | 5 |
+| FirestoreShelfSyncDataSourceImpl.kt | 164 | 10 |
+| FirestoreUserPreferencesDataSourceImpl.kt | 48 | 2 |
+| FirestoreBookClubRemoteDataSourceImpl.kt | 286 | 22 |
+| FirestoreRemoteDataSource.kt (delegator) | 21 | 0 |
+| BookClubRepositoryHelper.kt | 148 | 7 |
+| BookClubManagementRepositoryImpl.kt | 282 | 7 |
+| BookClubMembershipRepositoryImpl.kt | 195 | 7 |
+| BookClubSyncRepositoryImpl.kt | 178 | 4 |
+| BookClubReviewRepositoryImpl.kt | 186 | 7 |
+| BookClubRepositoryImpl.kt (delegator) | 21 | 0 |
+| BookcaseClubActionHandler.kt | 244 | 8 |
+| BookcaseState.kt (extensions) | +84 | +10 |
