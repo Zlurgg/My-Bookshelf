@@ -24,7 +24,7 @@ class JoinBookClubUseCaseImpl(
     override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> {
         Timber.tag(TAG).d("Attempting to join book club: %s", code)
 
-        val validationError = validateJoinPreconditions(code)
+        val validationError = validateJoinPreconditions()
         if (validationError != null) return validationError
 
         val existingResult = checkExistingMembership(code)
@@ -33,7 +33,7 @@ class JoinBookClubUseCaseImpl(
         return verifyClubAndJoin(code)
     }
 
-    private suspend fun validateJoinPreconditions(code: String): Result<JoinResult, DataError.Sync>? {
+    private suspend fun validateJoinPreconditions(): Result<JoinResult, DataError.Sync>? {
         val user = authService.getSignedInUser()
         if (user == null) {
             Timber.tag(TAG).d("User not signed in, cannot join club")

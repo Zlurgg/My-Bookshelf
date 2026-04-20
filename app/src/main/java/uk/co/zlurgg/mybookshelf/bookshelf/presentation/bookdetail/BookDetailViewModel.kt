@@ -380,7 +380,14 @@ class BookDetailViewModel(
                 if (newText.isEmpty()) return
 
                 viewModelScope.launch {
-                    when (val editResult = bookClubReviewUseCases.editBookClubComment(clubCode, bookId, commentId, newText)) {
+                    when (
+                        val editResult = bookClubReviewUseCases.editBookClubComment(
+                            clubCode,
+                            bookId,
+                            commentId,
+                            newText,
+                        )
+                    ) {
                         is Result.Success -> {
                             _state.update {
                                 it.copy(

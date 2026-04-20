@@ -18,10 +18,10 @@ class RenameShelfUseCaseImpl(
 ) : RenameShelfUseCase {
 
     override suspend operator fun invoke(shelfId: String, newName: String): Result<Unit, DataError.Local> {
-        val trimmedName = newName.trim()
-        if (trimmedName.isBlank()) {
+        if (newName.isBlank()) {
             return Result.Error(DataError.Local.VALIDATION_ERROR)
         }
+        val trimmedName = newName.trim()
 
         val shelfToRename = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
             is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)

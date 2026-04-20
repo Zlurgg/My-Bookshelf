@@ -9,5 +9,8 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
  */
 interface UserPreferencesDataSource {
     suspend fun getUserPreferences(userId: String): Result<UserPreferencesFirestoreDto?, DataError.Sync>
-    suspend fun setUserPreferences(userId: String, preferences: UserPreferencesFirestoreDto): Result<Unit, DataError.Sync>
+    suspend fun setUserPreferences(
+        userId: String,
+        preferences: UserPreferencesFirestoreDto,
+    ): Result<Unit, DataError.Sync>
 }

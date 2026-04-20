@@ -28,10 +28,23 @@ interface BookClubRemoteDataSource {
     suspend fun addClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync>
     suspend fun removeClubMembership(userId: String, clubCode: String): Result<Unit, DataError.Sync>
     suspend fun getBookReviews(clubCode: String, bookId: String): Result<List<BookClubReviewDto>, DataError.Sync>
-    suspend fun upsertBookReview(clubCode: String, bookId: String, review: BookClubReviewDto): Result<Unit, DataError.Sync>
+    suspend fun upsertBookReview(
+        clubCode: String,
+        bookId: String,
+        review: BookClubReviewDto,
+    ): Result<Unit, DataError.Sync>
     suspend fun deleteBookReview(clubCode: String, bookId: String, userId: String): Result<Unit, DataError.Sync>
     suspend fun getBookComments(clubCode: String, bookId: String): Result<List<BookClubCommentDto>, DataError.Sync>
-    suspend fun addBookComment(clubCode: String, bookId: String, comment: BookClubCommentDto): Result<String, DataError.Sync>
-    suspend fun editBookComment(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync>
+    suspend fun addBookComment(
+        clubCode: String,
+        bookId: String,
+        comment: BookClubCommentDto,
+    ): Result<String, DataError.Sync>
+    suspend fun editBookComment(
+        clubCode: String,
+        bookId: String,
+        commentId: String,
+        newText: String,
+    ): Result<Unit, DataError.Sync>
     suspend fun deleteBookComment(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync>
 }

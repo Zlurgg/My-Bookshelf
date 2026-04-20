@@ -73,8 +73,10 @@ class DeleteShelfUseCaseTest {
         override suspend fun getBookReviews(
             code: String,
             bookId: String
-        ): Result<List<uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview>,
-            DataError.Sync> = Result.Success(emptyList())
+        ): Result<
+            List<uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview>,
+            DataError.Sync,
+            > = Result.Success(emptyList())
         override suspend fun upsertBookReview(
             code: String,
             bookId: String,

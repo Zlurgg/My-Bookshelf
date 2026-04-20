@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.repository
 
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
@@ -8,7 +9,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 interface BookClubManagementRepository {
     suspend fun createBookClub(shelfId: String): Result<String, DataError.Sync>
-    suspend fun getBookClub(code: String): Result<uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub?, DataError.Sync>
+    suspend fun getBookClub(
+        code: String,
+    ): Result<BookClub?, DataError.Sync>
     suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync>
     suspend fun renameBookClub(code: String, newName: String): Result<Unit, DataError.Sync>
     suspend fun updateClubStyle(code: String, style: String): Result<Unit, DataError.Sync>
