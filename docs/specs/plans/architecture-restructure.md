@@ -120,39 +120,17 @@ welcome/   → book/          (uses shared models for tutorial)
 
 Bookcase is the parent screen. It should not import from bookclub. Currently BookcaseViewModel directly calls `BookClubOperationsHandler` for create, join, leave, invite operations.
 
-**Fix:** Define an interface in `book/domain/service/`:
-```kotlin
-// book/domain/service/ClubOperations.kt
-interface ClubOperations {
-    suspend fun createBookClub(shelfId: String, shelfName: String): Result<CreationResult, DataError.Sync>
-    suspend fun lookupBookClub(codeOrUrl: String): LookupResult
-    suspend fun joinBookClub(): Result<JoinResult, DataError.Sync>
-    suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync>
-    fun generateInviteLink(clubCode: String, shelfName: String?): String
-    suspend fun validateMemberships(): List<String>
-    // etc.
-}
-```
-`BookClubOperationsHandler` in `bookclub/` implements this interface. BookcaseViewModel depends on the interface via Koin injection. Dependency flows downward: bookclub → book (to implement the interface), bookshelf → book (to use the interface).
+**Fix:** Define `ClubOperations` interface in `book/domain/service/` with the 7 methods actually used by `BookcaseClubActionHandler` + `BookcaseViewModel`. `BookClubOperationsHandler` in `bookclub/` implements it. Bookshelf depends on the interface via Koin. Dependency flows downward: bookclub → book (implements), bookshelf → book (consumes).
+
+Created in Step 2 (not Step 1) — the concrete class still exists and works until Step 2 moves it.
 
 ### 2. `BookDetailViewModel` → `BookClubReviewUseCases` (WRONG DIRECTION)
 
 Book detail shows club reviews/comments but shouldn't know about bookclub's use case aggregator.
 
-**Fix:** Define a review provider interface in `book/domain/service/`:
-```kotlin
-// book/domain/service/BookReviewProvider.kt
-interface BookReviewProvider {
-    suspend fun getReviews(clubCode: String, bookId: String): Result<List<BookClubReview>, DataError.Sync>
-    suspend fun upsertReview(clubCode: String, bookId: String, rating: Float, text: String): Result<Unit, DataError.Sync>
-    suspend fun deleteReview(clubCode: String, bookId: String): Result<Unit, DataError.Sync>
-    suspend fun getComments(clubCode: String, bookId: String): Result<List<BookClubComment>, DataError.Sync>
-    suspend fun addComment(clubCode: String, bookId: String, text: String): Result<String, DataError.Sync>
-    suspend fun editComment(clubCode: String, bookId: String, commentId: String, newText: String): Result<Unit, DataError.Sync>
-    suspend fun deleteComment(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync>
-}
-```
-`bookclub/` implements this. BookDetailViewModel depends on the interface. The club review models (BookClubReview, BookClubComment) may need to move to `book/domain/model/` since they're used across the boundary — or stay in bookclub with the interface referencing them from book/.
+**Fix:** Define `BookReviewProvider` interface in `book/domain/service/` with 7 review/comment methods. Returns slim `BookReview`/`BookComment` DTOs from `book/domain/model/` (not club-specific models). `bookclub/` implements the interface and maps its rich `BookClubReview` → `BookReview` at the boundary. BookDetailViewModel depends on the interface.
+
+Created in Step 2 alongside the implementation.
 
 ### 3. `BookshelfScreen` → `AddBookToShelfUseCaseImpl.MAX_BOOKS_PER_SHELF` (VIOLATION)
 
@@ -192,17 +170,14 @@ Move models, repositories, and shared presentation utils that are referenced by 
 - `bookshelf/presentation/components/` → `book/presentation/components/`
 - `bookshelf/presentation/util/` → `book/presentation/util/`
 
-**New interfaces (dependency inversion):**
-- `book/domain/service/ClubOperations.kt` — interface for club operations (bookclub implements, bookcase consumes)
-- `book/domain/service/BookReviewProvider.kt` — interface for reviews/comments (bookclub implements, bookdetail consumes)
-
 **DI:** Extract BookModule from BookshelfModule for shared repos.
 
 **DO NOT move:** `bookshelf/data/export/` — that belongs in `sharing/` (Step 3).
 
-**Fixes during this step:**
+**Fix during this step:**
 - Move `MAX_BOOKS_PER_SHELF` from `AddBookToShelfUseCaseImpl` to `BookshelfConstants` — removes presentation→impl violation
-- Create `ClubOperations` and `BookReviewProvider` interfaces — these are consumed by bookshelf ViewModels, implemented by bookclub in Step 2
+
+**Do NOT create interfaces yet** — defer to Step 2 where implementations land. ViewModels keep concrete imports until then.
 
 **Risk:** Highest — every feature imports Book/Bookshelf models. ~100+ import updates.
 
@@ -223,15 +198,40 @@ Move all book club domain, data, and presentation.
 **Presentation moves:**
 - `bookshelf/presentation/bookclub/` (all) → `bookclub/presentation/`
 
-**Implement interfaces from Step 1:**
-- `BookClubOperationsHandler` implements `ClubOperations` from `book/domain/service/`
-- Create `BookClubReviewProviderImpl` implementing `BookReviewProvider` from `book/domain/service/`
-- Update BookcaseViewModel to depend on `ClubOperations` (interface), not `BookClubOperationsHandler` (concrete)
-- Update BookDetailViewModel to depend on `BookReviewProvider` (interface), not `BookClubReviewUseCases` (concrete)
+**Dependency inversion (created during this step, not Step 1):**
+
+Actual usage analysis:
+- `BookcaseViewModel` calls `bookClubOperations.validateMemberships()` — 1 method
+- `BookcaseClubActionHandler` calls create, join, leave, lookup, invite, clearLookupState — 6 methods
+- `BookshelfViewModel` calls `bookClubOperations.syncBooksFromClub()` — 1 method
+- `BookDetailViewModel` calls reviews + comments CRUD — 7 methods
+
+Interfaces to create in `book/domain/service/`:
+- `ClubOperations` — 8 methods across all 3 bookshelf consumers (validateMemberships, create, join, leave, lookup, invite, clearLookupState, syncBooksFromClub). Single interface is appropriate — these are all "things bookshelf screens need from clubs", not a God interface.
+- `BookReviewProvider` — the 7 review/comment methods `BookDetailViewModel` uses. Returns `BookReview`/`BookComment` (slim DTOs in `book/domain/model/`, no "Club" prefix). Bookclub maps its rich models at the boundary.
+
+The coupling between bookshelf and bookclub is inherent — a club shelf IS a shelf with social features. The interface formalises this relationship without eliminating it. Bookshelf knows the contract, not the implementation.
+
+Review/comment model placement:
+- `BookClubReview`, `BookClubComment` stay in `bookclub/domain/model/` — they're club-specific with club metadata
+- `BookReview`, `BookComment` (slim DTOs) created in `book/domain/model/` — what `BookReviewProvider` returns. Just rating/text/author, no club context
+- `bookclub/` maps `BookClubReview → BookReview` at the provider boundary
+
+Wiring:
+- `BookClubOperationsHandler` implements `ClubOperations`
+- New `BookClubReviewProviderImpl` implements `BookReviewProvider`
+- `BookcaseViewModel`, `BookcaseClubActionHandler`, and `BookshelfViewModel` depend on `ClubOperations` (interface)
+- `BookDetailViewModel` depends on `BookReviewProvider` (interface)
+
+**`BookcaseClubActionHandler` disposition:** Stays in `bookshelf/presentation/bookcase/handlers/`. It's bookcase's bridge to club functionality. Gets refactored to depend on `ClubOperations` interface instead of `BookClubOperationsHandler` concrete.
 
 **DI:** `BookClubModule.kt` moves to `bookclub/di/`. Register `ClubOperations` and `BookReviewProvider` bindings.
 
-**Post-step verification:** No imports from `bookclub/` in `bookshelf/` — all cross-feature communication goes through interfaces in `book/`.
+**BookcaseUseCases → ShareBookshelfUseCase:** This is internal to `bookshelf/` (bookcase subdirectory importing from bookshelf subdirectory). Intentional — same feature package.
+
+**Post-step verification:** Zero imports from `bookclub/` in `bookshelf/`. All cross-feature communication flows through interfaces in `book/domain/service/`.
+
+**Rollback:** Each step is independently shippable. If Step 2 is problematic, Step 1 alone is a valid state (shared domain extracted, everything else still in bookshelf). Consider squashing all 3 before merging to main.
 
 ### Step 3: Extract `sharing/` and `welcome/`
 
