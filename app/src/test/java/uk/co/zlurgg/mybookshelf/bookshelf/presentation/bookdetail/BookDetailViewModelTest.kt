@@ -24,10 +24,11 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookComment
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.book.domain.service.BookReviewProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.GetBookDetailsUseCase
@@ -36,14 +37,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.ToggleBookPu
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpdateBookMetadataUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.AddBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubReviewUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.DeleteBookClubReviewUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.EditBookClubCommentUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubCommentsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubReviewsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.UpsertBookClubReviewUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
@@ -127,6 +120,37 @@ class BookDetailViewModelTest {
         getCurrentUserId = mockGetCurrentUserIdUseCase
     )
 
+    private val stubBookReviewProvider = object : BookReviewProvider {
+        override suspend fun getReviews(clubCode: String, bookId: String): Result<List<BookReview>, DataError.Sync> =
+            Result.Success(emptyList())
+        override suspend fun upsertReview(
+            clubCode: String,
+            bookId: String,
+            rating: Float,
+            reviewText: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
+        override suspend fun deleteReview(clubCode: String, bookId: String): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
+        override suspend fun getComments(clubCode: String, bookId: String): Result<List<BookComment>, DataError.Sync> =
+            Result.Success(emptyList())
+        override suspend fun addComment(clubCode: String, bookId: String, text: String): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
+        override suspend fun editComment(
+            clubCode: String,
+            bookId: String,
+            commentId: String,
+            newText: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
+        override suspend fun deleteComment(
+            clubCode: String,
+            bookId: String,
+            commentId: String,
+        ): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
+    }
+
     private fun createViewModel(): BookDetailViewModel {
         val useCases = BookDetailUseCases(
             getBookDetails = mockGetBookDetails,
@@ -136,16 +160,7 @@ class BookDetailViewModelTest {
             toggleBookPurchase = mockToggleBookPurchase,
             updateBookMetadata = mockUpdateBookMetadata
         )
-        val bookClubReviewUseCases = BookClubReviewUseCases(
-            getBookClubReviews = SimpleGetBookClubReviewsUseCase(),
-            upsertBookClubReview = SimpleUpsertBookClubReviewUseCase(),
-            deleteBookClubReview = SimpleDeleteBookClubReviewUseCase(),
-            getBookClubComments = SimpleGetBookClubCommentsUseCase(),
-            addBookClubComment = SimpleAddBookClubCommentUseCase(),
-            editBookClubComment = SimpleEditBookClubCommentUseCase(),
-            deleteBookClubComment = SimpleDeleteBookClubCommentUseCase()
-        )
-        return BookDetailViewModel(useCases, bookClubReviewUseCases, mockAuthUseCases, "book-1", "test-shelf")
+        return BookDetailViewModel(useCases, stubBookReviewProvider, mockAuthUseCases, "book-1", "test-shelf")
     }
 
     @Test
@@ -484,50 +499,5 @@ class BookDetailViewModelTest {
         fun reset() {
             shouldSucceed = true
         }
-    }
-
-    private class SimpleGetBookClubReviewsUseCase : GetBookClubReviewsUseCase {
-        override suspend fun invoke(clubCode: String, bookId: String): Result<List<BookClubReview>, DataError.Sync> =
-            Result.Success(emptyList())
-    }
-
-    private class SimpleUpsertBookClubReviewUseCase : UpsertBookClubReviewUseCase {
-        override suspend fun invoke(
-            clubCode: String,
-            bookId: String,
-            rating: Float,
-            reviewText: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-    }
-
-    private class SimpleDeleteBookClubReviewUseCase : DeleteBookClubReviewUseCase {
-        override suspend fun invoke(clubCode: String, bookId: String): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
-    }
-
-    // Comment Use Case mocks
-    private class SimpleGetBookClubCommentsUseCase : GetBookClubCommentsUseCase {
-        override suspend fun invoke(clubCode: String, bookId: String): Result<List<BookClubComment>, DataError.Sync> =
-            Result.Success(emptyList())
-    }
-
-    private class SimpleAddBookClubCommentUseCase : AddBookClubCommentUseCase {
-        override suspend fun invoke(clubCode: String, bookId: String, text: String): Result<String, DataError.Sync> =
-            Result.Success("comment-id")
-    }
-
-    private class SimpleEditBookClubCommentUseCase : EditBookClubCommentUseCase {
-        override suspend fun invoke(
-            clubCode: String,
-            bookId: String,
-            commentId: String,
-            newText: String
-        ): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
-    }
-
-    private class SimpleDeleteBookClubCommentUseCase : DeleteBookClubCommentUseCase {
-        override suspend fun invoke(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
     }
 }

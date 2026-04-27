@@ -25,14 +25,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
 
 /**
  * Card showing all club reviews and input for user's review.
  */
 @Composable
 fun ClubReviewsCard(
-    reviews: List<BookClubReview>,
+    reviews: List<BookReview>,
     currentUserId: String?,
     userReviewText: String,
     onReviewTextChange: (String) -> Unit,
@@ -151,7 +151,7 @@ fun ClubReviewsCard(
 
 @Composable
 private fun ReviewItem(
-    review: BookClubReview,
+    review: BookReview,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {

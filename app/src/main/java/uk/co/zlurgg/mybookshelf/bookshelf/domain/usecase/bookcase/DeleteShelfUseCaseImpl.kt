@@ -2,7 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -11,7 +11,7 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class DeleteShelfUseCaseImpl(
     private val repository: BookcaseRepository,
-    private val bookClubRepository: BookClubRepository,
+    private val clubOperations: ClubOperations,
     private val syncSchedulerService: SyncSchedulerService
 ) : DeleteShelfUseCase {
 
@@ -46,7 +46,7 @@ class DeleteShelfUseCaseImpl(
 
     private suspend fun deleteBookClubShelf(clubCode: String, shelfId: String): Result<Unit, DataError.Local> {
         Timber.tag(TAG).d("Deleting associated book club: %s", clubCode)
-        val deleteClubResult = bookClubRepository.deleteBookClub(clubCode)
+        val deleteClubResult = clubOperations.deleteBookClub(clubCode)
         if (deleteClubResult is Result.Error) {
             Timber.tag(TAG).e("Failed to delete book club from Firestore: %s", deleteClubResult.error)
             val localError = when (deleteClubResult.error) {

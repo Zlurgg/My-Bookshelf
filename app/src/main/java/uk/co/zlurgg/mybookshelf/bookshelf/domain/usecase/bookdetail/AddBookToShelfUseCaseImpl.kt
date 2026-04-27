@@ -7,7 +7,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.book.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
@@ -23,7 +23,7 @@ class AddBookToShelfUseCaseImpl(
     private val bookRepository: BookRepository,
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
-    private val bookClubRepository: BookClubRepository,
+    private val clubOperations: ClubOperations,
     private val syncSchedulerService: SyncSchedulerService
 ) : AddBookToShelfUseCase {
 
@@ -80,7 +80,7 @@ class AddBookToShelfUseCaseImpl(
         // If this is a book club shelf, also sync to Firestore club collection
         if (shelf.isBookClub && !shelf.clubCode.isNullOrEmpty()) {
             Timber.tag(TAG).d("Syncing book %s to book club %s", book.id, shelf.clubCode)
-            val syncResult = bookClubRepository.syncBookToClub(shelf.clubCode, bookToUpsert)
+            val syncResult = clubOperations.syncBookToClub(shelf.clubCode, bookToUpsert)
             if (syncResult is Result.Error) {
                 Timber.tag(TAG).w("Failed to sync book to club: %s", syncResult.error)
                 // Don't fail the whole operation - local add succeeded

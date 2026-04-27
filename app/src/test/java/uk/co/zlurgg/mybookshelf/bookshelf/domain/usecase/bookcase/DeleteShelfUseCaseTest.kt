@@ -1,7 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -9,12 +7,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
-import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -26,91 +19,25 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 class DeleteShelfUseCaseTest {
 
     private val mockRepository = MockBookcaseRepository()
-    private val mockBookClubRepository = object : BookClubRepository {
-        override suspend fun createBookClub(
-            shelfId: String
-        ): Result<String, DataError.Sync> = Result.Success("test-code")
-        override suspend fun getBookClub(code: String): Result<BookClub?, DataError.Sync> = Result.Success(null)
-        override suspend fun deleteBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun renameBookClub(
-            code: String,
-            newName: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override fun observeMyBookClubs(): Flow<List<BookClubMembership>> = flowOf(emptyList())
-        override suspend fun getLocalShelfForClub(code: String): Bookshelf? = null
-        override suspend fun getClubBooks(
-            code: String
-        ): Result<List<Book>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun isMemberOfClub(code: String): Result<Boolean, DataError.Sync> = Result.Success(false)
-        override suspend fun joinBookClub(code: String): Result<String, DataError.Sync> = Result.Success("shelf-id")
-        override suspend fun getRemoteClubMemberships(
-            userId: String
-        ): Result<List<String>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun restoreClubMembership(
-            code: String
-        ): Result<String, DataError.Sync> = Result.Success("restored-shelf-id")
-        override suspend fun syncBookToClub(
-            code: String,
-            book: Book
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeBookFromClub(
-            code: String,
-            bookId: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun syncBooksFromClub(
-            code: String,
-            localShelfId: String
-        ): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
-        override suspend fun leaveBookClub(code: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun convertClubToPersonalShelf(
-            code: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-
-        override suspend fun updateClubStyle(
-            code: String,
-            style: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookReviews(
-            code: String,
-            bookId: String
-        ): Result<
-            List<uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview>,
-            DataError.Sync,
-            > = Result.Success(emptyList())
-        override suspend fun upsertBookReview(
-            code: String,
-            bookId: String,
-            rating: Float,
-            reviewText: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun deleteBookReview(
-            code: String,
-            bookId: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun getBookComments(
-            code: String,
-            bookId: String
-        ): Result<List<BookClubComment>, DataError.Sync> = Result.Success(emptyList())
-        override suspend fun addBookComment(
-            code: String,
-            bookId: String,
-            text: String
-        ): Result<String, DataError.Sync> = Result.Success("comment-id")
-        override suspend fun editBookComment(
-            code: String,
-            bookId: String,
-            commentId: String,
-            newText: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun deleteBookComment(
-            code: String,
-            bookId: String,
-            commentId: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private val mockClubOperations = object : ClubOperations {
+        override suspend fun createBookClub(shelfId: String, shelfName: String) = throw NotImplementedError()
+        override suspend fun lookupBookClub(codeOrUrl: String) = throw NotImplementedError()
+        override suspend fun joinBookClub() = throw NotImplementedError()
+        override suspend fun joinBookClub(code: String) = throw NotImplementedError()
+        override fun clearLookupState() = throw NotImplementedError()
+        override fun generateInviteLink(clubCode: String, shelfName: String) = throw NotImplementedError()
+        override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) = throw NotImplementedError()
+        override suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun validateMemberships() = throw NotImplementedError()
+        override suspend fun deleteBookClub(clubCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun syncBookToClub(clubCode: String, book: Book) = throw NotImplementedError()
+        override suspend fun removeBookFromClub(clubCode: String, bookId: String) = throw NotImplementedError()
+        override suspend fun updateClubStyle(clubCode: String, styleName: String) = throw NotImplementedError()
         override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> = Result.Success(Unit)
+        override suspend fun renameBookClub(clubCode: String, newName: String) = throw NotImplementedError()
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
-    private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockBookClubRepository, mockSyncSchedulerService)
+    private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockClubOperations, mockSyncSchedulerService)
 
     @After
     fun tearDown() {

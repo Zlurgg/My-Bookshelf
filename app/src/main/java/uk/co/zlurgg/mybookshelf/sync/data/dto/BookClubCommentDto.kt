@@ -4,7 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.PropertyName
 import com.google.firebase.firestore.ServerTimestamp
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
+import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClubComment
 import java.util.Date
 
 /**

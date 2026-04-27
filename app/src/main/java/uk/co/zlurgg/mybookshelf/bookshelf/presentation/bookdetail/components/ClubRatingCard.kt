@@ -22,14 +22,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
 
 /**
  * Card showing club average rating and user's club rating.
  */
 @Composable
 fun ClubRatingCard(
-    reviews: List<BookClubReview>,
+    reviews: List<BookReview>,
     userClubRating: Float,
     onClubRatingChange: (Float) -> Unit,
     modifier: Modifier = Modifier

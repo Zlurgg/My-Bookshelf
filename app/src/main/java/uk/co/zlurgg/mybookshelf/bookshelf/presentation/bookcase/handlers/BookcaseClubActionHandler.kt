@@ -5,17 +5,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseState
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 internal class BookcaseClubActionHandler(
     private val state: MutableStateFlow<BookcaseState>,
-    private val bookClubOperations: BookClubOperationsHandler,
+    private val bookClubOperations: ClubOperations,
     private val shelfOperations: ShelfOperationsHandler,
     private val scope: CoroutineScope,
 ) {
@@ -191,16 +190,16 @@ internal class BookcaseClubActionHandler(
             state.update { it.copy(joinLookupLoading = true, joinLookupError = null) }
 
             when (val lookupResult = bookClubOperations.lookupBookClub(codeOrUrl)) {
-                is BookClubOperationsHandler.LookupResult.Found -> {
+                is ClubOperations.LookupResult.Found -> {
                     state.update {
                         it.copy(
                             joinLookupLoading = false,
                             showJoinBookClubDialog = false,
-                            bookClubPreview = lookupResult.bookClub
+                            bookClubPreview = lookupResult
                         )
                     }
                 }
-                is BookClubOperationsHandler.LookupResult.NotFound -> {
+                is ClubOperations.LookupResult.NotFound -> {
                     state.update {
                         it.copy(
                             joinLookupLoading = false,
@@ -211,7 +210,7 @@ internal class BookcaseClubActionHandler(
                         )
                     }
                 }
-                is BookClubOperationsHandler.LookupResult.InvalidCode -> {
+                is ClubOperations.LookupResult.InvalidCode -> {
                     state.update {
                         it.copy(
                             joinLookupLoading = false,
@@ -233,7 +232,7 @@ internal class BookcaseClubActionHandler(
             when (val joinResult = bookClubOperations.joinBookClub()) {
                 is Result.Success -> {
                     when (val result = joinResult.data) {
-                        is JoinResult.Success -> {
+                        is ClubOperations.JoinResult.Success -> {
                             state.update {
                                 it.copy(
                                     joinInProgress = false,
@@ -242,7 +241,7 @@ internal class BookcaseClubActionHandler(
                                 )
                             }
                         }
-                        is JoinResult.AlreadyMember -> {
+                        is ClubOperations.JoinResult.AlreadyMember -> {
                             state.update {
                                 it.copy(
                                     joinInProgress = false,

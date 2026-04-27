@@ -1,8 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail
 
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubReview
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookComment
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
 
 data class BookDetailState(
     val isLoading: Boolean = true,
@@ -13,12 +13,12 @@ data class BookDetailState(
     val isBookClub: Boolean = false,
     val clubCode: String? = null,
     // Reviews (for ratings)
-    val clubReviews: List<BookClubReview> = emptyList(),
+    val clubReviews: List<BookReview> = emptyList(),
     val isLoadingReviews: Boolean = false,
     val userClubRating: Float = 0f,
     val userClubReviewText: String = "",
     // Comments (for discussion)
-    val clubComments: List<BookClubComment> = emptyList(),
+    val clubComments: List<BookComment> = emptyList(),
     val isLoadingComments: Boolean = false,
     val commentText: String = "",
     val editingCommentId: String? = null,

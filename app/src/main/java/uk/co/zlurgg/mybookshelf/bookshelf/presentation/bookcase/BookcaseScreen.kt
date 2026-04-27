@@ -52,11 +52,11 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.Shelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.ShelfLimitDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.createShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.BookClubPreviewDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.DeleteBookClubDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.InviteLinkDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.JoinBookClubDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.LeaveBookClubDialog
+import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.BookClubPreviewDialog
+import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.DeleteBookClubDialog
+import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.InviteLinkDialog
+import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.JoinBookClubDialog
+import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.LeaveBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.bookshelves
@@ -474,9 +474,10 @@ fun BookcaseScreen(
     }
 
     // Book Club Preview dialog - confirmation before joining
-    state.bookClubPreview?.let { bookClub ->
+    state.bookClubPreview?.let { preview ->
         BookClubPreviewDialog(
-            bookClub = bookClub,
+            clubName = preview.clubName,
+            memberCount = preview.memberCount,
             onDismiss = { onAction(BookcaseAction.DismissBookClubPreview) },
             onJoin = { onAction(BookcaseAction.OnConfirmJoinBookClub) },
             isJoining = state.joinInProgress

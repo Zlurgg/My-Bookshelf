@@ -8,7 +8,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
@@ -17,12 +18,29 @@ class RemoveBookFromShelfUseCaseTest {
 
     private val mockBookshelfRepository = MockBookshelfRepository()
     private val mockBookcaseRepository = MockBookcaseRepository()
-    private val mockBookClubRepository = MockBookClubRepository()
+    private val mockClubOperations = object : ClubOperations {
+        var removeBookFromClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun createBookClub(shelfId: String, shelfName: String) = throw NotImplementedError()
+        override suspend fun lookupBookClub(codeOrUrl: String) = throw NotImplementedError()
+        override suspend fun joinBookClub() = throw NotImplementedError()
+        override suspend fun joinBookClub(code: String) = throw NotImplementedError()
+        override fun clearLookupState() = throw NotImplementedError()
+        override fun generateInviteLink(clubCode: String, shelfName: String) = throw NotImplementedError()
+        override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) = throw NotImplementedError()
+        override suspend fun leaveBookClub(shelfId: String) = throw NotImplementedError()
+        override suspend fun validateMemberships() = throw NotImplementedError()
+        override suspend fun deleteBookClub(clubCode: String) = throw NotImplementedError()
+        override suspend fun syncBookToClub(clubCode: String, book: Book) = throw NotImplementedError()
+        override suspend fun removeBookFromClub(clubCode: String, bookId: String) = removeBookFromClubResult
+        override suspend fun updateClubStyle(clubCode: String, styleName: String) = throw NotImplementedError()
+        override suspend fun clearAllMemberships() = throw NotImplementedError()
+        override suspend fun renameBookClub(clubCode: String, newName: String) = throw NotImplementedError()
+    }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = RemoveBookFromShelfUseCaseImpl(
         mockBookshelfRepository,
         mockBookcaseRepository,
-        mockBookClubRepository,
+        mockClubOperations,
         mockSyncSchedulerService
     )
 
@@ -30,7 +48,6 @@ class RemoveBookFromShelfUseCaseTest {
     fun tearDown() {
         mockBookshelfRepository.reset()
         mockBookcaseRepository.reset()
-        mockBookClubRepository.reset()
         mockSyncSchedulerService.reset()
     }
 

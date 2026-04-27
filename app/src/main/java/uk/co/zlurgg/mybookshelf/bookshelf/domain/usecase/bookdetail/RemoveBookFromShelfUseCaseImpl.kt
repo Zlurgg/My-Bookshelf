@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail
 
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -17,7 +17,7 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 class RemoveBookFromShelfUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
-    private val bookClubRepository: BookClubRepository,
+    private val clubOperations: ClubOperations,
     private val syncSchedulerService: SyncSchedulerService
 ) : RemoveBookFromShelfUseCase {
 
@@ -36,7 +36,7 @@ class RemoveBookFromShelfUseCaseImpl(
         // If this is a book club shelf, also remove from Firestore club collection
         shelf?.takeIf { it.isBookClub }?.clubCode?.takeIf { it.isNotEmpty() }?.let { code ->
             Timber.tag(TAG).d("Removing book %s from book club %s", bookId, code)
-            val syncResult = bookClubRepository.removeBookFromClub(code, bookId)
+            val syncResult = clubOperations.removeBookFromClub(code, bookId)
             if (syncResult is Result.Error) {
                 Timber.tag(TAG).w("Failed to remove book from club: %s", syncResult.error)
                 // Don't fail the whole operation - local remove succeeded

@@ -15,7 +15,7 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
@@ -27,7 +27,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 class BookshelfViewModel(
     private val bookshelfUseCases: BookshelfUseCases,
     private val bookcaseUseCases: BookcaseUseCases,
-    private val bookClubOperations: BookClubOperationsHandler,
+    private val bookClubOperations: ClubOperations,
     private val shelfId: String
 ) : ViewModel() {
 

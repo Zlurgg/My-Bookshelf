@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.service.BookReviewProvider
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.BookDetailUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubReviewUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -22,7 +22,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 
 class BookDetailViewModel(
     private val bookDetailUseCases: BookDetailUseCases,
-    private val bookClubReviewUseCases: BookClubReviewUseCases,
+    private val bookReviewProvider: BookReviewProvider,
     private val authUseCases: AuthUseCases,
     private val bookId: String,
     private val shelfId: String
@@ -81,7 +81,7 @@ class BookDetailViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoadingReviews = true) }
 
-            when (val reviewsResult = bookClubReviewUseCases.getBookClubReviews(clubCode, bookId)) {
+            when (val reviewsResult = bookReviewProvider.getReviews(clubCode, bookId)) {
                 is Result.Success -> {
                     val reviews = reviewsResult.data
                     val currentUserId = authUseCases.getCurrentUserId()
@@ -117,7 +117,7 @@ class BookDetailViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoadingComments = true) }
 
-            when (val commentsResult = bookClubReviewUseCases.getBookClubComments(clubCode, bookId)) {
+            when (val commentsResult = bookReviewProvider.getComments(clubCode, bookId)) {
                 is Result.Success -> {
                     _state.update {
                         it.copy(
@@ -321,7 +321,7 @@ class BookDetailViewModel(
             is BookDetailAction.OnClubReviewDelete -> {
                 val clubCode = state.value.clubCode ?: return
                 viewModelScope.launch {
-                    when (val deleteResult = bookClubReviewUseCases.deleteBookClubReview(clubCode, bookId)) {
+                    when (val deleteResult = bookReviewProvider.deleteReview(clubCode, bookId)) {
                         is Result.Success -> {
                             _state.update {
                                 it.copy(
@@ -351,7 +351,7 @@ class BookDetailViewModel(
                 if (text.isEmpty()) return
 
                 viewModelScope.launch {
-                    when (val addResult = bookClubReviewUseCases.addBookClubComment(clubCode, bookId, text)) {
+                    when (val addResult = bookReviewProvider.addComment(clubCode, bookId, text)) {
                         is Result.Success -> {
                             _state.update { it.copy(commentText = "") }
                             loadClubComments(clubCode)
@@ -381,7 +381,7 @@ class BookDetailViewModel(
 
                 viewModelScope.launch {
                     when (
-                        val editResult = bookClubReviewUseCases.editBookClubComment(
+                        val editResult = bookReviewProvider.editComment(
                             clubCode,
                             bookId,
                             commentId,
@@ -415,7 +415,7 @@ class BookDetailViewModel(
                 val clubCode = state.value.clubCode ?: return
                 viewModelScope.launch {
                     when (
-                        val deleteResult = bookClubReviewUseCases.deleteBookClubComment(
+                        val deleteResult = bookReviewProvider.deleteComment(
                             clubCode,
                             bookId,
                             action.commentId
@@ -436,7 +436,7 @@ class BookDetailViewModel(
     private fun submitClubReview(clubCode: String, rating: Float, reviewText: String) {
         viewModelScope.launch {
             when (
-                val upsertResult = bookClubReviewUseCases.upsertBookClubReview(
+                val upsertResult = bookReviewProvider.upsertReview(
                     clubCode = clubCode,
                     bookId = bookId,
                     rating = rating,

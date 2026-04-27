@@ -2,7 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -15,7 +15,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 class UpdateShelfStyleUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val bookClubRepository: BookClubRepository,
+    private val clubOperations: ClubOperations,
     private val authService: AuthService
 ) : UpdateShelfStyleUseCase {
 
@@ -40,7 +40,7 @@ class UpdateShelfStyleUseCaseImpl(
             // Update Firestore for book clubs
             val clubCode = shelfToUpdate.clubCode
             if (clubCode != null) {
-                val updateResult = bookClubRepository.updateClubStyle(clubCode, newStyle.name)
+                val updateResult = clubOperations.updateClubStyle(clubCode, newStyle.name)
                 if (updateResult is Result.Error) {
                     Timber.tag(TAG).w("Failed to sync style to Firestore: %s", updateResult.error)
                     // Continue with local update even if Firestore fails

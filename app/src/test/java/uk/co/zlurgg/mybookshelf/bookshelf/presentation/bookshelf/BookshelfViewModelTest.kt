@@ -16,30 +16,16 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.BookClubOperationUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.CreateBookClubUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GenerateInviteLinkUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.GetBookClubPreviewUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinBookClubUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.JoinResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.LeaveBookClubUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ParseClubCodeUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreBookClubMembershipsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.RestoreResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.SyncBookClubUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub.ValidateBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
@@ -90,6 +76,56 @@ class BookshelfViewModelTest {
         mockGetShelfById.reset()
     }
 
+    private val stubClubOperations = object : ClubOperations {
+        override suspend fun createBookClub(
+            shelfId: String,
+            shelfName: String,
+        ): Result<ClubOperations.BookClubCreationResult, DataError.Sync> =
+            Result.Success(
+                ClubOperations.BookClubCreationResult(
+                    "ABC12345",
+                    "https://mybookshelf.app/join/ABC12345",
+                ),
+            )
+        override suspend fun lookupBookClub(codeOrUrl: String): ClubOperations.LookupResult =
+            ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
+        override suspend fun joinBookClub(): Result<ClubOperations.JoinResult, DataError.Sync> =
+            Result.Success(ClubOperations.JoinResult.Success("Test Shelf"))
+        override suspend fun joinBookClub(code: String): Result<ClubOperations.JoinResult, DataError.Sync> =
+            Result.Success(ClubOperations.JoinResult.Success("Test Shelf"))
+        override fun clearLookupState() = Unit
+        override fun generateInviteLink(clubCode: String, shelfName: String) =
+            "https://mybookshelf.app/join/$clubCode"
+        override suspend fun syncBooksFromClub(
+            clubCode: String,
+            localShelfId: String,
+        ): Result<ClubOperations.SyncResult, DataError.Sync> =
+            Result.Success(ClubOperations.SyncResult(0, 0))
+        override suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
+        override suspend fun validateMemberships(): List<String> = emptyList()
+        override suspend fun deleteBookClub(clubCode: String): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
+        override suspend fun syncBookToClub(
+            clubCode: String,
+            book: Book,
+        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun removeBookFromClub(
+            clubCode: String,
+            bookId: String,
+        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun updateClubStyle(
+            clubCode: String,
+            styleName: String,
+        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> =
+            Result.Success(Unit)
+        override suspend fun renameBookClub(
+            clubCode: String,
+            newName: String,
+        ): Result<Unit, DataError> = Result.Success(Unit)
+    }
+
     private fun createViewModel(shelfId: String = "test-shelf"): BookshelfViewModel {
         val bookshelfUseCases = BookshelfUseCases(
             searchBooks = mockSearchBooks,
@@ -111,19 +147,7 @@ class BookshelfViewModelTest {
             duplicateShelf = MockDuplicateShelfUseCase(),
             shareShelf = MockShareBookshelfUseCase()
         )
-        val bookClubUseCases = BookClubOperationUseCases(
-            createBookClub = SimpleCreateBookClubUseCase(),
-            generateInviteLink = SimpleGenerateInviteLinkUseCase(),
-            parseClubCode = SimpleParseClubCodeUseCase(),
-            getBookClubPreview = SimpleGetBookClubPreviewUseCase(),
-            joinBookClub = SimpleJoinBookClubUseCase(),
-            syncBookClub = SimpleSyncBookClubUseCase(),
-            restoreBookClubMemberships = SimpleRestoreBookClubMembershipsUseCase(),
-            leaveBookClub = SimpleLeaveBookClubUseCase(),
-            validateMemberships = SimpleValidateBookClubMembershipsUseCase()
-        )
-        val bookClubOperations = BookClubOperationsHandler(bookClubUseCases)
-        return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, bookClubOperations, shelfId)
+        return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, stubClubOperations, shelfId)
     }
 
     @Test
@@ -406,60 +430,5 @@ class BookshelfViewModelTest {
     private class SimpleUpdateShelfTidyModeUseCase : UpdateShelfTidyModeUseCase {
         override suspend operator fun invoke(shelfId: String, isTidyMode: Boolean): Result<Unit, DataError> =
             Result.Success(Unit)
-    }
-
-    private class SimpleCreateBookClubUseCase : CreateBookClubUseCase {
-        var shouldSucceed = true
-        var codeToReturn = "ABC12345"
-
-        override suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync> =
-            if (shouldSucceed) Result.Success(codeToReturn) else Result.Error(DataError.Sync.GENERATION_FAILED)
-
-        fun reset() {
-            shouldSucceed = true
-            codeToReturn = "ABC12345"
-        }
-    }
-
-    private class SimpleGenerateInviteLinkUseCase : GenerateInviteLinkUseCase {
-        override operator fun invoke(clubCode: String, clubName: String?): String =
-            "https://mybookshelf.app/join/$clubCode"
-    }
-
-    private class SimpleParseClubCodeUseCase : ParseClubCodeUseCase {
-        override fun invoke(input: String): Result<String, DataError.Validation> =
-            Result.Success("TESTCODE")
-    }
-
-    private class SimpleGetBookClubPreviewUseCase : GetBookClubPreviewUseCase {
-        override suspend fun invoke(code: String): Result<BookClub?, DataError.Sync> =
-            Result.Success(null)
-    }
-
-    private class SimpleJoinBookClubUseCase : JoinBookClubUseCase {
-        override suspend fun invoke(code: String): Result<JoinResult, DataError.Sync> =
-            Result.Success(JoinResult.Success("shelf-id", "Test Shelf"))
-    }
-
-    private class SimpleRestoreBookClubMembershipsUseCase : RestoreBookClubMembershipsUseCase {
-        override suspend fun invoke(): Result<RestoreResult, DataError.Sync> =
-            Result.Success(RestoreResult(0, 0))
-    }
-
-    private class SimpleSyncBookClubUseCase : SyncBookClubUseCase {
-        override suspend operator fun invoke(
-            clubCode: String,
-            localShelfId: String,
-        ): Result<SyncResult, DataError.Sync> = Result.Success(SyncResult(0, 0))
-    }
-
-    private class SimpleLeaveBookClubUseCase : LeaveBookClubUseCase {
-        override suspend fun invoke(shelfId: String): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
-    }
-
-    private class SimpleValidateBookClubMembershipsUseCase : ValidateBookClubMembershipsUseCase {
-        override suspend fun invoke(): Result<List<String>, DataError.Sync> =
-            Result.Success(emptyList())
     }
 }

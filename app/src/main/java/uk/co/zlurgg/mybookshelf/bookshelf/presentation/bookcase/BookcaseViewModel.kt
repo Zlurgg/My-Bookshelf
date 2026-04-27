@@ -19,7 +19,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookcaseClubActionHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.handlers.BookClubOperationsHandler
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -30,7 +30,7 @@ class BookcaseViewModel(
     private val shelfOperations: ShelfOperationsHandler,
     private val shelfManagement: ShelfManagementHandler,
     private val bookcaseUseCases: BookcaseUseCases,
-    private val bookClubOperations: BookClubOperationsHandler,
+    private val bookClubOperations: ClubOperations,
     private val authUseCases: AuthUseCases
 ) : ViewModel() {
 

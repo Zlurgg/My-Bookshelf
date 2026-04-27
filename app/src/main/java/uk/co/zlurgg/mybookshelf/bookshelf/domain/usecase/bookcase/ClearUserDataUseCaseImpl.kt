@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -12,7 +12,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 class ClearUserDataUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val bookClubRepository: BookClubRepository
+    private val clubOperations: ClubOperations
 ) : ClearUserDataUseCase {
 
     override suspend operator fun invoke(userId: String): Result<Int, DataError.Local> {
@@ -28,7 +28,7 @@ class ClearUserDataUseCaseImpl(
         Timber.tag(TAG).d("Cleared %d bookshelf items", totalItems)
 
         // Clear book club memberships
-        when (val clearMembershipsResult = bookClubRepository.clearAllMemberships()) {
+        when (val clearMembershipsResult = clubOperations.clearAllMemberships()) {
             is Result.Success -> { /* continue */ }
             is Result.Error -> return clearMembershipsResult
         }

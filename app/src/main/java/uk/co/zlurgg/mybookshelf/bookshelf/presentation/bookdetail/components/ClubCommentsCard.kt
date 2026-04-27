@@ -49,7 +49,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookComment
 
 /**
  * Card showing all club comments in a messaging-style conversation thread.
@@ -63,7 +63,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubComment
  */
 @Composable
 fun ClubCommentsCard(
-    comments: List<BookClubComment>,
+    comments: List<BookComment>,
     currentUserId: String?,
     commentText: String,
     onCommentTextChange: (String) -> Unit,
@@ -184,7 +184,7 @@ fun ClubCommentsCard(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun CommentBubble(
-    comment: BookClubComment,
+    comment: BookComment,
     isOwnComment: Boolean,
     isEditing: Boolean,
     editingText: String,
