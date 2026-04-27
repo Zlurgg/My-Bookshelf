@@ -193,6 +193,7 @@ Move all book club domain, data, and presentation.
 
 **Data moves:**
 - `bookshelf/data/book/repository/BookClub*Impl.kt` (5 files) → `bookclub/data/repository/`
+- `bookshelf/data/book/repository/BookClubRepositoryHelper.kt` → `bookclub/data/repository/`
 - `bookshelf/data/service/BookClubCodeGeneratorImpl.kt` → `bookclub/data/service/`
 
 **Presentation moves:**
@@ -290,19 +291,31 @@ Test directories mirror main. Each step moves tests alongside source:
 - `test/.../bookshelf/domain/usecase/bookclub/` tests → `test/.../bookclub/domain/usecase/`
 - `testutil/mocks/MockBookClubRepository.kt` — imports update, file stays in testutil
 
+## Pre-execution Verification (completed)
+
+| Item | Status | Finding |
+|------|--------|---------|
+| Room entities/DAOs | No impact | All in `core/data/database/` — not moved |
+| BookClubRepositoryHelper | Moves in Step 2 | Lives in `bookshelf/data/book/repository/` → `bookclub/data/repository/` |
+| FirestoreOperationHelper | No impact | Lives in `sync/data/service/` — not moved |
+| Import count for `Book.kt` | 48 imports | Manageable |
+| All domain model imports | 153 imports | Confirms ~100+ estimate for Step 1 |
+| ShelfNameInputDialog | Cross-feature | Used by bookcase + deeplink → moves to `book/presentation/` |
+| AndroidBookshelfExportService | Verify DI | Moves to `sharing/data/` — confirm Koin injection, not manual |
+
 ## Risk Mitigation
 
 - Feature branch with squash option
-- 3 steps, each independently buildable
+- 3 steps, each independently buildable and shippable
 - `./gradlew clean` after each step
-- Step 1 is the riskiest (most import changes) — if it works, Steps 2-3 are straightforward
+- Step 1 is the riskiest (153 import changes) — if it works, Steps 2-3 are straightforward
 - Fix the `BookshelfScreen` UseCase impl import as part of Step 1
 
 ## Estimated Scope
 
 | Step | Files moved | Import updates | Risk |
 |------|-----------|----------------|------|
-| 1 | ~40 | ~100+ | High — shared models everywhere |
+| 1 | ~40 | ~153 | High — shared models everywhere |
 | 2 | ~50 | ~30 | Medium — mostly self-contained |
 | 3 | ~30 | ~20 | Low — self-contained features |
 
