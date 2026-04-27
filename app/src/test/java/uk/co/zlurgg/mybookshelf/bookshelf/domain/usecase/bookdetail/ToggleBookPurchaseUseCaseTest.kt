@@ -276,7 +276,7 @@ class ToggleBookPurchaseUseCaseTest {
             .withTitle("Old Title")
             .withPersonalRating(4.5f)
             .withPersonalNotes("Amazing read!")
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ)
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.READ)
             .withDateAdded(1609459200000L)
             .withPurchaseDate(1609545600000L)
             .withPurchased(false)
@@ -289,7 +289,7 @@ class ToggleBookPurchaseUseCaseTest {
             .withTitle("Updated Title from API")
             .withPersonalRating(0f) // API doesn't have this
             .withPersonalNotes("") // API doesn't have this
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ) // Default
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ) // Default
             .withDateAdded(null) // API doesn't track this
             .withPurchaseDate(null) // API doesn't track this
             .withPurchased(false)
@@ -311,7 +311,7 @@ class ToggleBookPurchaseUseCaseTest {
         assertEquals("Should preserve personal notes", "Amazing read!", updatedBook.personalNotes)
         assertEquals(
             "Should preserve reading status",
-            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ,
+            uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.READ,
             updatedBook.readingStatus
         )
         assertEquals("Should preserve dateAdded", 1609459200000L, updatedBook.dateAdded)
@@ -326,7 +326,7 @@ class ToggleBookPurchaseUseCaseTest {
             .withTitle("Brand New Book")
             .withPersonalRating(0f)
             .withPersonalNotes("")
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ)
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ)
             .withDateAdded(null)
             .withPurchaseDate(null)
             .withPurchased(false)
@@ -346,7 +346,7 @@ class ToggleBookPurchaseUseCaseTest {
         assertEquals("Should use default notes", "", updatedBook.personalNotes)
         assertEquals(
             "Should use default reading status",
-            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ,
+            uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ,
             updatedBook.readingStatus
         )
     }

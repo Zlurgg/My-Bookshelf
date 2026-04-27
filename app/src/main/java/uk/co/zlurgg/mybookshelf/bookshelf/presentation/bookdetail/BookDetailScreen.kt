@@ -30,7 +30,7 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookDetailConstants
+import uk.co.zlurgg.mybookshelf.book.domain.util.BookDetailConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.components.BookDetailImage
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.components.BookOverviewCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.components.ClubCommentsCard
@@ -43,8 +43,8 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.components.Pub
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.components.PurchasedToggleCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.components.RecommendationStatusCard
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.components.ShelfActionsCard
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBook
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.withMediumImage
+import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBook
+import uk.co.zlurgg.mybookshelf.book.presentation.util.withMediumImage
 
 @Composable
 fun BookDetailsScreenRoot(

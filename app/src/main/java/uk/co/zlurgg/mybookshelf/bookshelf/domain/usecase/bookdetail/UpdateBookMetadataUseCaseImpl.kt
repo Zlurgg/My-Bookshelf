@@ -1,8 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail
 
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider

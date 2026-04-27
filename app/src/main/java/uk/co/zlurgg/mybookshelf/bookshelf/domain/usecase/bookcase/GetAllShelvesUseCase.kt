@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 
 import kotlinx.coroutines.flow.Flow
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookcase
 
 /**
  * UseCase for getting the complete bookcase with all shelves and their book counts.

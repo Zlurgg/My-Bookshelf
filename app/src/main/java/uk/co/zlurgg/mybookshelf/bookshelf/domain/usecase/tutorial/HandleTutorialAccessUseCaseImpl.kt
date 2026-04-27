@@ -1,8 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial
 
 import kotlinx.coroutines.flow.first
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

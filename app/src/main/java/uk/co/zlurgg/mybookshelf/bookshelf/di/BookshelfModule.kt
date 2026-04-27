@@ -5,13 +5,6 @@ import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.KtorRemoteBookDataSource
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryApiService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.api.OpenLibraryBookApi
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookRepositoryImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookcaseRepositoryImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidShareService
@@ -20,9 +13,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.data.service.DatabaseBookshelfDataOrch
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.JsonBookshelfSerializer
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UrlEncodedShareTokenService
 import uk.co.zlurgg.mybookshelf.bookshelf.data.service.WelcomeService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfDataOrchestrator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfImportValidator
@@ -96,15 +86,6 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewMode
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeViewModel
 
 val bookshelfModule = module {
-    // Network
-    singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
-    singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
-
-    // Repositories
-    singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
-    singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()
-    singleOf(::BookRepositoryImpl).bind<BookRepository>()
-
     // Export/Import Services
     single<ShareTokenService> { UrlEncodedShareTokenService() }
     singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()

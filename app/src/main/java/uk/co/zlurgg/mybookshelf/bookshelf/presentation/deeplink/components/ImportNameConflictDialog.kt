@@ -3,7 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.components.ShelfNameInputDialog
+import uk.co.zlurgg.mybookshelf.book.presentation.components.ShelfNameInputDialog
 
 /**
  * Dialog displayed when importing a shelf with a name that already exists.

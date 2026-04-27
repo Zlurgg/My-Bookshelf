@@ -1,9 +1,9 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookClubMembershipEntity
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
@@ -13,7 +13,7 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 /**
  * Converts Firestore metadata DTO to domain BookClub model.
  */
-fun BookClubMetadataDto.toDomain(): BookClub = BookClub(
+fun BookClubMetadataDto.toBookClub(): BookClub = BookClub(
     code = code,
     name = name,
     style = ShelfStyle.entries.find { it.name == shelfStyle } ?: ShelfStyle.DarkWood,
@@ -29,7 +29,7 @@ fun BookClubMetadataDto.toDomain(): BookClub = BookClub(
 /**
  * Converts domain BookClubMembership to Room entity.
  */
-fun BookClubMembership.toEntity(id: String): BookClubMembershipEntity = BookClubMembershipEntity(
+fun BookClubMembership.toMembershipEntity(id: String): BookClubMembershipEntity = BookClubMembershipEntity(
     id = id,
     clubCode = clubCode,
     localShelfId = localShelfId,
@@ -41,7 +41,7 @@ fun BookClubMembership.toEntity(id: String): BookClubMembershipEntity = BookClub
 /**
  * Converts Room entity to domain BookClubMembership.
  */
-fun BookClubMembershipEntity.toDomain(): BookClubMembership = BookClubMembership(
+fun BookClubMembershipEntity.toMembership(): BookClubMembership = BookClubMembership(
     clubCode = clubCode,
     localShelfId = localShelfId,
     joinedAt = joinedAt,
@@ -55,7 +55,7 @@ fun BookClubMembershipEntity.toDomain(): BookClubMembership = BookClubMembership
  * Note: Personal metadata (notes, personal rating, reading status) are not included
  * as they're not stored in the club's book collection.
  */
-fun BookClubBookDto.toBook(): Book = Book(
+fun BookClubBookDto.toBookDomain(): Book = Book(
     id = id,
     title = title,
     authors = authors,

@@ -5,12 +5,12 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.BookWorkDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchResponseDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.data.dto.BookWorkDto
+import uk.co.zlurgg.mybookshelf.book.data.dto.SearchResponseDto
+import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator

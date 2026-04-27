@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 
 data class BookshelfState(
     val shelfId: String,

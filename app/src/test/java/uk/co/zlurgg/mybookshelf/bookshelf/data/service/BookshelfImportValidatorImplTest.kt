@@ -8,7 +8,7 @@ import org.junit.Before
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder

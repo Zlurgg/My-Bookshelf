@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.testutil.builders
 
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.SearchedBookDto
+import uk.co.zlurgg.mybookshelf.book.data.dto.SearchedBookDto
 
 /**
  * Builder pattern for creating test SearchedBookDto instances.

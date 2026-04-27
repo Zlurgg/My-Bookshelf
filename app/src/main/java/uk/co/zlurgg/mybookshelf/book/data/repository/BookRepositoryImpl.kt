@@ -1,0 +1,63 @@
+package uk.co.zlurgg.mybookshelf.book.data.repository
+
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toBookEntity
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
+import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.result.map
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
+
+class BookRepositoryImpl(
+    private val remoteBookDataSource: RemoteBookDataSource,
+    private val dao: BookshelfDao,
+    private val currentUserProvider: CurrentUserProvider,
+    private val timeProvider: TimeProvider
+) : BookRepository {
+
+    override suspend fun getBookById(bookId: String): Result<Book?, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.getBookById(bookId)?.toBook()
+        }
+    }
+
+    override suspend fun upsertBook(book: Book): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            val ownerId = currentUserProvider.getCurrentUserId()
+            dao.upsertBookWithSyncInit(
+                book.toBookEntity(ownerId),
+                timeProvider.currentTimeMillis()
+            )
+        }
+    }
+
+    override suspend fun deleteBook(bookId: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.deleteBook(bookId)
+        }
+    }
+
+    override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
+        return remoteBookDataSource.getBookDetails(bookId)
+            .map { bookDetails -> bookDetails.description }
+    }
+
+    override suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            // System books are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
+            val entity = book.toBookEntity(ownerId = SystemOwnerIds.TUTORIAL)
+                .copy(syncStatus = "SYNCED")
+            dao.upsert(entity)
+        }
+    }
+
+    companion object {
+        private const val TAG = "BookRepository"
+    }
+}

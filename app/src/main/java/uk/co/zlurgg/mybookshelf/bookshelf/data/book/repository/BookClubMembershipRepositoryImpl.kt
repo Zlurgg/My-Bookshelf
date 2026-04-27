@@ -4,10 +4,12 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toDomain
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toEntity
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toMembership
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toMembershipEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubMembershipRepository
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
@@ -31,7 +33,7 @@ internal class BookClubMembershipRepositoryImpl(
 
     override fun observeMyBookClubs(): Flow<List<BookClubMembership>> {
         return bookClubDao.observeAllMemberships().map { entities ->
-            entities.map { it.toDomain() }
+            entities.map { it.toMembership() }
         }
     }
 
@@ -111,7 +113,7 @@ internal class BookClubMembershipRepositoryImpl(
             localShelfId = shelfId,
             joinedAt = now,
             lastSyncedAt = now
-        ).toEntity(idGenerator.generateId())
+        ).toMembershipEntity(idGenerator.generateId())
 
         bookClubDao.upsertMembership(membershipEntity)
 
@@ -200,7 +202,7 @@ internal class BookClubMembershipRepositoryImpl(
             localShelfId = shelfId,
             joinedAt = now,
             lastSyncedAt = now
-        ).toEntity(idGenerator.generateId())
+        ).toMembershipEntity(idGenerator.generateId())
 
         bookClubDao.upsertMembership(membershipEntity)
 

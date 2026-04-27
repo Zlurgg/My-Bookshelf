@@ -39,9 +39,9 @@ import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.BookshelfConstants
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.AddBookshelfDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseBottomBar
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components.BookcaseShelf
@@ -59,7 +59,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.JoinB
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookclub.components.LeaveBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.bookshelves
+import uk.co.zlurgg.mybookshelf.book.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose

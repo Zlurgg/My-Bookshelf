@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export
 
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ShareData
+import uk.co.zlurgg.mybookshelf.book.domain.model.ShareData
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfDataOrchestrator
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfSerializer
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService

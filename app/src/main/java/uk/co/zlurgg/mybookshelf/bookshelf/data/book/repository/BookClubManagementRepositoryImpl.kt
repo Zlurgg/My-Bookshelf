@@ -2,13 +2,14 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toEntity
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toEntity
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toMembershipEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClubMembership
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubManagementRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookClubCodeGenerator
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
@@ -132,7 +133,7 @@ internal class BookClubManagementRepositoryImpl(
             localShelfId = clubShelfId,
             joinedAt = now,
             lastSyncedAt = now
-        ).toEntity(idGenerator.generateId())
+        ).toMembershipEntity(idGenerator.generateId())
 
         bookClubDao.upsertMembership(membershipEntity)
 

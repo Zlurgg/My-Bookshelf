@@ -2,10 +2,11 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toBookEntity
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookClub
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookClubBookDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toDomain
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookDomain
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
@@ -35,7 +36,7 @@ internal class BookClubRepositoryHelper(
             is Result.Success -> {
                 val metadata = metadataResult.data
                 if (metadata != null) {
-                    Result.Success(metadata.toDomain())
+                    Result.Success(metadata.toBookClub())
                 } else {
                     Result.Success(null)
                 }
@@ -108,7 +109,7 @@ internal class BookClubRepositoryHelper(
 
         for (bookDto in clubBooks) {
             try {
-                val book = bookDto.toBook()
+                val book = bookDto.toBookDomain()
                 val bookEntity = book.toBookEntity(userId)
 
                 bookshelfDao.upsert(bookEntity)

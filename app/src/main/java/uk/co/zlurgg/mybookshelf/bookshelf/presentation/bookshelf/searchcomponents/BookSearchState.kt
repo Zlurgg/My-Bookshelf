@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.searchcomponents
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 
 data class BookSearchState(
     val query: String,

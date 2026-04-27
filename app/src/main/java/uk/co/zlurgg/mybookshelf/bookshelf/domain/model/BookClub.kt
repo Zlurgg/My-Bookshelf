@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.model
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 
 /**
  * Domain model representing a Book Club.

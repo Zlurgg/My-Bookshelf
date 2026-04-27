@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.components
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseAction
 
 fun createShelfCallbacks(

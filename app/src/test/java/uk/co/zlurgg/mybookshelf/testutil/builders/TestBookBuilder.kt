@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.testutil.builders
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 
 /**
  * Builder pattern for creating test Book instances.

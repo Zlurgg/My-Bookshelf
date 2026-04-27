@@ -1,12 +1,13 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail
 
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.BookColorGenerator
+import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookshelfRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
@@ -33,8 +34,12 @@ class AddBookToShelfUseCaseImpl(
             is Result.Error -> return getResult
         }
 
-        if (shelf.books.size >= MAX_BOOKS_PER_SHELF) {
-            Timber.tag(TAG).w("Shelf %s has reached maximum of %d books", shelfId, MAX_BOOKS_PER_SHELF)
+        if (shelf.books.size >= BookshelfConstants.MAX_BOOKS_PER_SHELF) {
+            Timber.tag(TAG).w(
+                "Shelf %s has reached maximum of %d books",
+                shelfId,
+                BookshelfConstants.MAX_BOOKS_PER_SHELF
+            )
             return Result.Error(DataError.Local.MAX_BOOKS_REACHED)
         }
 
@@ -91,6 +96,5 @@ class AddBookToShelfUseCaseImpl(
 
     companion object {
         private const val TAG = "AddBookToShelf"
-        const val MAX_BOOKS_PER_SHELF = 20
     }
 }

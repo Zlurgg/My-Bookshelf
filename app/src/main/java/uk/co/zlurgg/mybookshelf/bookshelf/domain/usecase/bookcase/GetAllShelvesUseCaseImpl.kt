@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookcase
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class GetAllShelvesUseCaseImpl(

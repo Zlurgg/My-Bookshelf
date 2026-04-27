@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelfcomponents
 
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.book.presentation.util.BookDisplayStyle
 
 data class BookshelfRowConfig(
     val showAddSlot: Boolean = false,

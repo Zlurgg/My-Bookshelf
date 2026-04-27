@@ -2,10 +2,10 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.book.repository
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBook
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookClubBookDto
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookEntity
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.toBookDomain
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubSyncRepository
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.SyncResult
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookClubDao
@@ -31,7 +31,7 @@ internal class BookClubSyncRepositoryImpl(
         val booksResult = remoteDataSource.getClubBooks(code)
         return when (booksResult) {
             is Result.Success -> {
-                val books = booksResult.data.map { it.toBook() }
+                val books = booksResult.data.map { it.toBookDomain() }
                 Timber.tag(TAG).d("Retrieved %d books from club", books.size)
                 Result.Success(books)
             }
@@ -135,7 +135,7 @@ internal class BookClubSyncRepositoryImpl(
         val booksToAdd = remoteBookIds - localBookIds
         for (bookDto in remoteBooks.filter { it.id in booksToAdd }) {
             try {
-                val book = bookDto.toBook()
+                val book = bookDto.toBookDomain()
                 val bookEntity = book.toBookEntity(user.userId)
                 bookshelfDao.upsert(bookEntity)
 

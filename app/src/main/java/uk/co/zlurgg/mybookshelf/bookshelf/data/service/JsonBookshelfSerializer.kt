@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
 import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfSerializer
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper

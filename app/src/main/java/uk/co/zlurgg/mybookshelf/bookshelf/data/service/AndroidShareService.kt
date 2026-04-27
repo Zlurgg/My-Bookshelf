@@ -3,7 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.data.service
 import android.content.Context
 import android.content.Intent
 import timber.log.Timber
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ShareData
+import uk.co.zlurgg.mybookshelf.book.domain.model.ShareData
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

@@ -1,9 +1,11 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.data.mappers
 
-import uk.co.zlurgg.mybookshelf.bookshelf.data.book.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.data.mappers.BookshelfMapper
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
+import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookshelfExportData
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator

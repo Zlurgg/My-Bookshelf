@@ -2,7 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookclub
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookClubRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 

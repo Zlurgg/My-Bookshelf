@@ -15,10 +15,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.presentation.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookDisplayStyle
 
 @Composable
 fun BookshelfRowDynamic(

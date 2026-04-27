@@ -37,18 +37,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelfcomponents.BookshelfRowConfig
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelfcomponents.BookshelfRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.searchcomponents.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.searchcomponents.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.searchcomponents.BookSearchState
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.BookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.ShelfMaterial
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookDisplayStyle
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.util.getBookWidth
+import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBooks
+import uk.co.zlurgg.mybookshelf.book.presentation.util.BookDisplayStyle
+import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookDisplayStyle
+import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookWidth
 
 @Composable
 fun BookshelfScreenRoot(
@@ -210,7 +210,7 @@ fun BookshelfScreen(
                                 text = stringResource(
                                     R.string.shelf_book_count,
                                     books.size,
-                                    AddBookToShelfUseCaseImpl.MAX_BOOKS_PER_SHELF
+                                    BookshelfConstants.MAX_BOOKS_PER_SHELF
                                 ),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -252,7 +252,7 @@ fun BookshelfScreen(
                                 text = stringResource(
                                     R.string.shelf_book_count,
                                     books.size,
-                                    AddBookToShelfUseCaseImpl.MAX_BOOKS_PER_SHELF
+                                    BookshelfConstants.MAX_BOOKS_PER_SHELF
                                 ),
                                 style = MaterialTheme.typography.labelLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant

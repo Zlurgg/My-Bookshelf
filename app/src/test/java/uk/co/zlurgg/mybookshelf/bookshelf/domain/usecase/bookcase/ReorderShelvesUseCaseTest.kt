@@ -5,7 +5,7 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
@@ -279,7 +279,7 @@ class ReorderShelvesUseCaseTest {
     @Test
     fun `execute handles empty shelf list gracefully`() = runTest {
         // Given
-        val emptyShelves = emptyList<uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf>()
+        val emptyShelves = emptyList<uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf>()
         val shelfToMove = TestShelfBuilder().withId("orphaned-shelf").build()
 
         // When

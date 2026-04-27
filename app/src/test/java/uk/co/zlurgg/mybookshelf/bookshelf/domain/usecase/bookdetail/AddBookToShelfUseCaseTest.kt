@@ -13,6 +13,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
+import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class AddBookToShelfUseCaseTest {
@@ -262,7 +263,7 @@ class AddBookToShelfUseCaseTest {
             .withSpineColor(12345) // Existing spine color
             .withPersonalRating(4.5f)
             .withPersonalNotes("Great book!")
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ)
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.READ)
             .withDateAdded(1609459200000L) // 2021-01-01
             .withPurchaseDate(1609545600000L) // 2021-01-02
             .withPurchased(true)
@@ -276,7 +277,7 @@ class AddBookToShelfUseCaseTest {
             .withSpineColor(0) // Placeholder from search
             .withPersonalRating(0f) // API doesn't have this
             .withPersonalNotes("") // API doesn't have this
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ) // Default
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ) // Default
             .withDateAdded(null) // API doesn't track this
             .withPurchaseDate(null) // API doesn't track this
             .withPurchased(false) // Default
@@ -300,7 +301,7 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
         assertEquals(
             "Should preserve reading status",
-            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.READ,
+            uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.READ,
             upsertedBook.readingStatus
         )
         assertEquals("Should preserve dateAdded", 1609459200000L, upsertedBook.dateAdded)
@@ -316,7 +317,7 @@ class AddBookToShelfUseCaseTest {
             .withTitle("Brand New Book")
             .withPersonalRating(0f)
             .withPersonalNotes("")
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ)
+            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ)
             .withDateAdded(null)
             .withPurchaseDate(null)
             .withPurchased(false)
@@ -337,7 +338,7 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should use default notes", "", upsertedBook.personalNotes)
         assertEquals(
             "Should use default reading status",
-            uk.co.zlurgg.mybookshelf.bookshelf.domain.model.ReadingStatus.WANT_TO_READ,
+            uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ,
             upsertedBook.readingStatus
         )
     }
@@ -347,7 +348,7 @@ class AddBookToShelfUseCaseTest {
     @Test
     fun `execute returns MAX_BOOKS_REACHED when shelf has 20 books`() = runTest {
         // Given - Shelf already at max capacity
-        val existingBooks = (1..AddBookToShelfUseCaseImpl.MAX_BOOKS_PER_SHELF).map { i ->
+        val existingBooks = (1..BookshelfConstants.MAX_BOOKS_PER_SHELF).map { i ->
             TestBookBuilder()
                 .withId("book-$i")
                 .withTitle("Book $i")

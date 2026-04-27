@@ -31,9 +31,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.bookshelfcomponents.LoadImage
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.preview.sampleBooks
+import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBooks
 
 @Composable
 fun BookSearchDialog(
