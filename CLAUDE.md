@@ -53,13 +53,14 @@ All fallible operations return `Result<T, DataError>`, never throw. Use `ErrorMa
 | `core/` | Infrastructure (database, network, preferences) |
 | `auth/` | Authentication (sign-in, user provider) |
 | `sync/` | Cloud sync (Firestore sync engine) |
-| `book/` | Shared book domain (models, repos, interfaces, preview data) |
-| `bookshelf/` | Shelf screens (bookcase, shelf view, book detail) |
+| `book/` | Shared book domain (models, repos, network, preview) + bookdetail feature |
+| `bookcase/` | Home screen (shelf list, create/delete/rename shelves) |
+| `bookshelf/` | Shelf screen (viewing books on a shelf, searching, adding) |
 | `bookclub/` | Book club feature (club models, repos, use cases, UI) |
 | `sharing/` | Deeplinks, export/import |
 | `welcome/` | Tutorial, onboarding |
 
-Dependencies flow downward: `bookshelf/` → `book/` (shared models), `bookclub/` → `book/`. Cross-feature communication uses interfaces in `book/domain/service/` (`ClubOperations`, `BookReviewProvider`).
+Dependencies flow downward: `bookshelf/` → `bookcase/` (GetShelfByIdUseCase) → `book/` → `core/`. `bookclub/` → `book/`. Cross-feature communication uses interfaces in `book/domain/service/` (`ClubOperations`, `BookReviewProvider`).
 
 ## Key Locations
 

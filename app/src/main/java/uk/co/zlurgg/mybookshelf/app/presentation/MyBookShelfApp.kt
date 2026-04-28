@@ -23,9 +23,9 @@ import uk.co.zlurgg.mybookshelf.book.presentation.bookdetail.BookDetailsScreenRo
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseAction
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfAction
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfScreenRoot
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfAction
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfScreenRoot
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfViewModel
 import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkAction
 import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.sharing.presentation.components.ImportErrorDialog

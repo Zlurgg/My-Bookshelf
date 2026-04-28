@@ -4,17 +4,16 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.GetShelfByIdUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.ShareBookshelfUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.ShareBookshelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
+import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfViewModel
 
 val bookshelfModule = module {
     // Bookshelf UseCases

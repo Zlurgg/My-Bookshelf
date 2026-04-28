@@ -256,7 +256,7 @@ class MockDuplicateShelfUseCase : DuplicateShelfUseCase {
     }
 }
 
-class MockShareBookshelfUseCase : uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCase {
+class MockShareBookshelfUseCase : uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.ShareBookshelfUseCase {
     var callCount = 0
     var lastShelfId: String? = null
     var shouldReturnError = false

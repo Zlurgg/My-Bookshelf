@@ -18,8 +18,12 @@ import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
  * - coreModule: Infrastructure (database, network, preferences, core services)
  * - authModule: Authentication (Google Sign-In, auth state, user provider)
  * - syncModule: Cloud sync (Firestore sync engine, connectivity, migration)
- * - bookClubModule: Book club feature (16 use cases, handler)
- * - bookshelfModule: Main bookshelf feature (repositories, use cases, ViewModels)
+ * - bookModule: Shared book domain (models, repos, network) + bookdetail feature
+ * - bookClubModule: Book club feature (use cases, handler)
+ * - bookcaseModule: Home screen (shelf list, create/delete/rename shelves)
+ * - bookshelfModule: Shelf screen (viewing books, searching, adding)
+ * - sharingModule: Deeplinks, export/import
+ * - welcomeModule: Tutorial, onboarding
  * - debugModule: Debug-only dependencies (only in debug builds via DebugModuleProvider)
  */
 val appModule = module {
