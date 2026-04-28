@@ -150,4 +150,12 @@ detekt {
     config.setFrom("$projectDir/detekt.yml")
     buildUponDefaultConfig = true
     allRules = false
+    source.setFrom(
+        files(
+            "src/main/java",
+            "src/main/kotlin",
+            "src/test/java",
+            "src/test/kotlin",
+        )
+    )
 }
