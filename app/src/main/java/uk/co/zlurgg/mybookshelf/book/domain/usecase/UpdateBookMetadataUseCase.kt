@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError

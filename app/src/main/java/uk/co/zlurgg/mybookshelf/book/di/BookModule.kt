@@ -14,19 +14,19 @@ import uk.co.zlurgg.mybookshelf.book.data.repository.BookshelfRepositoryImpl
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.AddBookToShelfUseCase
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.AddBookToShelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.BookDetailUseCases
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.GetBookDetailsUseCase
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.GetBookDetailsUseCaseImpl
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.RemoveBookFromShelfUseCase
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.RemoveBookFromShelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.ToggleBookPurchaseUseCase
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.ToggleBookPurchaseUseCaseImpl
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.UpdateBookMetadataUseCase
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.UpdateBookMetadataUseCaseImpl
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.UpsertBookUseCase
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.UpsertBookUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.BookDetailUseCases
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.GetBookDetailsUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.GetBookDetailsUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.ToggleBookPurchaseUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.ToggleBookPurchaseUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpdateBookMetadataUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpdateBookMetadataUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.presentation.bookdetail.BookDetailViewModel
 
 val bookModule = module {

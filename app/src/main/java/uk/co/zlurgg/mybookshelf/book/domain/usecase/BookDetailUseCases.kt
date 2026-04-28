@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 /**
  * Facade aggregating all book detail related UseCases.

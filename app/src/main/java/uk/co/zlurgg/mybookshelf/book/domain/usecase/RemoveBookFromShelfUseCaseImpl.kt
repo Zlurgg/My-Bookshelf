@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations

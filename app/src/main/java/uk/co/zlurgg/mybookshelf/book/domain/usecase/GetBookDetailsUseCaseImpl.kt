@@ -1,7 +1,8 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
@@ -32,7 +33,7 @@ class GetBookDetailsUseCaseImpl(
         return bookshelfRepository.isBookOnShelf(bookId, shelfId)
             .combine(
                 // Convert single book fetch to Flow behavior by getting book once
-                kotlinx.coroutines.flow.flow {
+                flow {
                     val bookResult = bookRepository.getBookById(bookId)
                     val book = when (bookResult) {
                         is Result.Success -> bookResult.data

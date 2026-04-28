@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -9,6 +9,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
@@ -29,7 +30,11 @@ class GetBookDetailsUseCaseTest {
     private val mockBookRepository = MockBookRepository()
     private val mockBookshelfRepository = MockBookshelfRepository()
     private val mockBookcaseRepository = MockBookcaseRepository()
-    private val useCase = GetBookDetailsUseCaseImpl(mockBookRepository, mockBookshelfRepository, mockBookcaseRepository)
+    private val useCase = GetBookDetailsUseCaseImpl(
+        mockBookRepository,
+        mockBookshelfRepository,
+        mockBookcaseRepository
+    )
 
     @After
     fun tearDown() {
@@ -131,7 +136,7 @@ class GetBookDetailsUseCaseTest {
     fun `loadBookDescription returns error when repository fails`() = runTest {
         // Given
         val bookId = "book-1"
-        mockBookRepository.remoteErrorToReturn = uk.co.zlurgg.mybookshelf.core.domain.error.DataError.Remote.UNKNOWN
+        mockBookRepository.remoteErrorToReturn = DataError.Remote.UNKNOWN
 
         // When
         val result = useCase.loadBookDescription(bookId)

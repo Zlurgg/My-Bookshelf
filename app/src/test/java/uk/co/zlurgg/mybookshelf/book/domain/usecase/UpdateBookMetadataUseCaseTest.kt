@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -30,7 +30,8 @@ class UpdateBookMetadataUseCaseTest {
     private val mockRepository = MockBookRepository()
     private val testTimeProvider = TestTimeProvider(currentTime = 1234567890L)
     private val mockSyncSchedulerService = MockSyncSchedulerService()
-    private val useCase = UpdateBookMetadataUseCaseImpl(mockRepository, testTimeProvider, mockSyncSchedulerService)
+    private val useCase =
+        UpdateBookMetadataUseCaseImpl(mockRepository, testTimeProvider, mockSyncSchedulerService)
 
     @After
     fun tearDown() {

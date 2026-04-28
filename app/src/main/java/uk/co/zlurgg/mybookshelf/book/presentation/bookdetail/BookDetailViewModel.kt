@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.service.BookReviewProvider
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail.BookDetailUseCases
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

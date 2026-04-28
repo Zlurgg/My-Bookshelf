@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus

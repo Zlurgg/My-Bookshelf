@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.book.domain.usecase.bookdetail
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -10,6 +10,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
@@ -280,7 +281,7 @@ class AddBookToShelfUseCaseTest {
             .withSpineColor(12345) // Existing spine color
             .withPersonalRating(4.5f)
             .withPersonalNotes("Great book!")
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.READ)
+            .withReadingStatus(ReadingStatus.READ)
             .withDateAdded(1609459200000L) // 2021-01-01
             .withPurchaseDate(1609545600000L) // 2021-01-02
             .withPurchased(true)
@@ -294,7 +295,7 @@ class AddBookToShelfUseCaseTest {
             .withSpineColor(0) // Placeholder from search
             .withPersonalRating(0f) // API doesn't have this
             .withPersonalNotes("") // API doesn't have this
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ) // Default
+            .withReadingStatus(ReadingStatus.WANT_TO_READ) // Default
             .withDateAdded(null) // API doesn't track this
             .withPurchaseDate(null) // API doesn't track this
             .withPurchased(false) // Default
@@ -318,7 +319,7 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
         assertEquals(
             "Should preserve reading status",
-            uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.READ,
+            ReadingStatus.READ,
             upsertedBook.readingStatus
         )
         assertEquals("Should preserve dateAdded", 1609459200000L, upsertedBook.dateAdded)
@@ -334,7 +335,7 @@ class AddBookToShelfUseCaseTest {
             .withTitle("Brand New Book")
             .withPersonalRating(0f)
             .withPersonalNotes("")
-            .withReadingStatus(uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ)
+            .withReadingStatus(ReadingStatus.WANT_TO_READ)
             .withDateAdded(null)
             .withPurchaseDate(null)
             .withPurchased(false)
@@ -355,7 +356,7 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should use default notes", "", upsertedBook.personalNotes)
         assertEquals(
             "Should use default reading status",
-            uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.WANT_TO_READ,
+            ReadingStatus.WANT_TO_READ,
             upsertedBook.readingStatus
         )
     }
