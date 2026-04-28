@@ -4,19 +4,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.BookDetailUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.GetBookDetailsUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.GetBookDetailsUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.RemoveBookFromShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.RemoveBookFromShelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.ToggleBookPurchaseUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.ToggleBookPurchaseUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpdateBookMetadataUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpdateBookMetadataUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpsertBookUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.UpsertBookUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.CreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.CreateShelfUseCaseImpl
@@ -43,21 +30,12 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
 
 val bookshelfModule = module {
-    // Book Detail UseCases
-    singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
-    singleOf(::RemoveBookFromShelfUseCaseImpl).bind<RemoveBookFromShelfUseCase>()
-    singleOf(::GetBookDetailsUseCaseImpl).bind<GetBookDetailsUseCase>()
-    singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
-    singleOf(::ToggleBookPurchaseUseCaseImpl).bind<ToggleBookPurchaseUseCase>()
-    singleOf(::UpdateBookMetadataUseCaseImpl).bind<UpdateBookMetadataUseCase>()
-
     // Bookshelf UseCases
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::GetShelfBooksUseCaseImpl).bind<GetShelfBooksUseCase>()
@@ -75,16 +53,6 @@ val bookshelfModule = module {
     singleOf(::DuplicateShelfUseCaseImpl).bind<DuplicateShelfUseCase>()
 
     // UseCase Facades
-    single {
-        BookDetailUseCases(
-            addBookToShelf = get(),
-            removeBookFromShelf = get(),
-            getBookDetails = get(),
-            upsertBook = get(),
-            toggleBookPurchase = get(),
-            updateBookMetadata = get()
-        )
-    }
     single {
         BookshelfUseCases(
             searchBooks = get(),
@@ -134,13 +102,4 @@ val bookshelfModule = module {
         )
     }
 
-    viewModel { (bookId: String, shelfId: String) ->
-        BookDetailViewModel(
-            bookDetailUseCases = get(),
-            bookReviewProvider = get(),
-            authUseCases = get(),
-            bookId = bookId,
-            shelfId = shelfId
-        )
-    }
 }
