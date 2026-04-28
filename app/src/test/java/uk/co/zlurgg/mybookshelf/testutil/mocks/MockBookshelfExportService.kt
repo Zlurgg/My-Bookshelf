@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.testutil.mocks
 
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
+import uk.co.zlurgg.mybookshelf.sharing.domain.service.BookshelfExportService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 

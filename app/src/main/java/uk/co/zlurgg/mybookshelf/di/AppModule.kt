@@ -6,7 +6,9 @@ import uk.co.zlurgg.mybookshelf.book.di.bookModule
 import uk.co.zlurgg.mybookshelf.bookclub.di.bookClubModule
 import uk.co.zlurgg.mybookshelf.bookshelf.di.bookshelfModule
 import uk.co.zlurgg.mybookshelf.core.di.coreModule
+import uk.co.zlurgg.mybookshelf.sharing.di.sharingModule
 import uk.co.zlurgg.mybookshelf.sync.di.syncModule
+import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
 
 /**
  * Root Koin module that aggregates all feature-scoped modules.
@@ -26,7 +28,9 @@ val appModule = module {
         syncModule,
         bookModule,
         bookClubModule,
-        bookshelfModule
+        bookshelfModule,
+        sharingModule,
+        welcomeModule
     )
     DebugModuleProvider.getModules().forEach { includes(it) }
 }

@@ -23,8 +23,8 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Bookcase
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.HandleTutorialAccessUseCase
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler

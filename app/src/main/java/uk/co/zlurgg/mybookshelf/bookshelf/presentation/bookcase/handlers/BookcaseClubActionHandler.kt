@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookClubPreview
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseState
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -191,11 +192,16 @@ internal class BookcaseClubActionHandler(
 
             when (val lookupResult = bookClubOperations.lookupBookClub(codeOrUrl)) {
                 is ClubOperations.LookupResult.Found -> {
+                    val preview = BookClubPreview(
+                        clubName = lookupResult.clubName,
+                        clubCode = lookupResult.clubCode,
+                        memberCount = lookupResult.memberCount
+                    )
                     state.update {
                         it.copy(
                             joinLookupLoading = false,
                             showJoinBookClubDialog = false,
-                            bookClubPreview = lookupResult
+                            bookClubPreview = preview
                         )
                     }
                 }

@@ -57,8 +57,8 @@ import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.DeleteBookClubD
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.InviteLinkDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.JoinBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.LeaveBookClubDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkAction
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
+import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkAction
+import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme

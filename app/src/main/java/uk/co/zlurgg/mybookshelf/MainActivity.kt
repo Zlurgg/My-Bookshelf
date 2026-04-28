@@ -9,7 +9,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.MyBookShelfApp
+import uk.co.zlurgg.mybookshelf.app.presentation.MyBookShelfApp
 
 class MainActivity : ComponentActivity() {
 

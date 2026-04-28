@@ -6,7 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.GetOrCreateTutorialBookUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

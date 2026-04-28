@@ -13,7 +13,7 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.BookcaseClubActionHandler

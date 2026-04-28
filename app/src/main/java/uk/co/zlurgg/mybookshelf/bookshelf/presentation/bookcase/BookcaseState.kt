@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase
 
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
-import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 
@@ -51,7 +50,7 @@ data class BookcaseState(
     val joinLookupError: String? = null,
 
     // Join Book Club - Step 2: Preview
-    val bookClubPreview: ClubOperations.LookupResult.Found? = null,
+    val bookClubPreview: BookClubPreview? = null,
     val joinInProgress: Boolean = false,
 
     // Join Book Club - Success
@@ -151,6 +150,12 @@ internal fun BookcaseState.closeStyleDialog(): BookcaseState {
 internal fun BookcaseState.withRenameError(error: DataError): BookcaseState {
     return copy(renameError = ErrorFormatter.formatDataErrorMessage(error, "rename shelf"))
 }
+
+data class BookClubPreview(
+    val clubName: String,
+    val clubCode: String,
+    val memberCount: Int
+)
 
 internal fun calculateNextShelfNumber(shelves: List<Bookshelf>): Int {
     val newBookshelfPattern = Regex("^New Bookshelf (\\d+)$")

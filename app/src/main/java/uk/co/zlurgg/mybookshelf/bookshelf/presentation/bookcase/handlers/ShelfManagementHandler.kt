@@ -3,13 +3,15 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.TutorialAccessResult
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.HandleTutorialAccessUseCase
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
+// Depends on welcome/ for tutorial shelf access (help icon → tutorial restore).
+// This cross-feature dependency is intentional and injected via Koin.
 class ShelfManagementHandler(
     private val bookcaseUseCases: BookcaseUseCases,
     private val handleTutorialAccess: HandleTutorialAccessUseCase,

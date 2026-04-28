@@ -2,22 +2,8 @@ package uk.co.zlurgg.mybookshelf.bookshelf.di
 
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import uk.co.zlurgg.mybookshelf.bookshelf.data.mappers.BookshelfExportMapper
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidBookshelfExportService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.AndroidShareService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.BookshelfImportValidatorImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.DatabaseBookshelfDataOrchestrator
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.JsonBookshelfSerializer
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.UrlEncodedShareTokenService
-import uk.co.zlurgg.mybookshelf.bookshelf.data.service.WelcomeService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfDataOrchestrator
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfExportService
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfImportValidator
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.BookshelfSerializer
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.service.ShareTokenService
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.AddBookToShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookdetail.BookDetailUseCases
@@ -57,65 +43,13 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshel
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.ShareBookshelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.UpdateShelfTidyModeUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.deeplink.DeepLinkImportUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.CheckImportConflictUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ExportBookshelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ExportBookshelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.export.ImportBookshelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialShelfUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialShelfUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.HandleTutorialAccessUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.InitializeWelcomeUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.MarkWelcomeShownUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.MarkWelcomeShownUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookdetail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfManagementHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.deeplink.DeepLinkViewModel
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.welcome.WelcomeViewModel
 
 val bookshelfModule = module {
-    // Export/Import Services
-    single<ShareTokenService> { UrlEncodedShareTokenService() }
-    singleOf(::AndroidBookshelfExportService).bind<BookshelfExportService>()
-    singleOf(::AndroidShareService)
-    singleOf(::JsonBookshelfSerializer).bind<BookshelfSerializer>()
-    singleOf(::BookshelfImportValidatorImpl).bind<BookshelfImportValidator>()
-    singleOf(::DatabaseBookshelfDataOrchestrator).bind<BookshelfDataOrchestrator>()
-    singleOf(::BookshelfExportMapper)
-
-    // Welcome & Tutorial Services
-    single { WelcomeService(get()) }
-
-    // Tutorial UseCases
-    singleOf(::GetOrCreateTutorialBookUseCaseImpl).bind<GetOrCreateTutorialBookUseCase>()
-    singleOf(::GetOrCreateTutorialShelfUseCaseImpl).bind<GetOrCreateTutorialShelfUseCase>()
-    singleOf(::HandleTutorialAccessUseCaseImpl).bind<HandleTutorialAccessUseCase>()
-
-    // Welcome UseCases
-    singleOf(::InitializeWelcomeUseCaseImpl).bind<InitializeWelcomeUseCase>()
-    singleOf(::ShouldShowWelcomeUseCaseImpl).bind<ShouldShowWelcomeUseCase>()
-    singleOf(::MarkWelcomeShownUseCaseImpl).bind<MarkWelcomeShownUseCase>()
-
-    // Export/Import UseCases
-    singleOf(::ExportBookshelfUseCaseImpl).bind<ExportBookshelfUseCase>()
-    singleOf(::ImportBookshelfUseCaseImpl).bind<ImportBookshelfUseCase>()
-    singleOf(::CheckImportConflictUseCaseImpl).bind<CheckImportConflictUseCase>()
-
-    // DeepLink UseCase
-    singleOf(::DeepLinkImportUseCaseImpl).bind<DeepLinkImportUseCase>()
-
     // Book Detail UseCases
     singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
     singleOf(::RemoveBookFromShelfUseCaseImpl).bind<RemoveBookFromShelfUseCase>()
@@ -181,9 +115,6 @@ val bookshelfModule = module {
     single { ShelfManagementHandler(get(), get(), get()) }
 
     // ViewModels
-    viewModelOf(::DeepLinkViewModel)
-    viewModelOf(::WelcomeViewModel)
-
     viewModel { (shelfId: String) ->
         BookshelfViewModel(
             bookshelfUseCases = get(),

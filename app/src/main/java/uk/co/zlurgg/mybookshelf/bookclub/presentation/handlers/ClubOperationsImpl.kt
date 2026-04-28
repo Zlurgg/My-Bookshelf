@@ -20,6 +20,10 @@ class ClubOperationsImpl(
     private val bookClubRepository: BookClubRepository
 ) : ClubOperations {
 
+    // @Volatile provides visibility across coroutine dispatchers.
+    // A theoretical race exists between lookup and join, but in practice all
+    // calls originate from the same ViewModel scope on Main dispatcher.
+    // If multi-dispatcher usage is needed, replace with AtomicReference.
     @Volatile
     private var lastLookedUpCode: String? = null
 

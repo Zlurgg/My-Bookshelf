@@ -24,7 +24,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreResult
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.welcome.ShouldShowWelcomeUseCase
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo

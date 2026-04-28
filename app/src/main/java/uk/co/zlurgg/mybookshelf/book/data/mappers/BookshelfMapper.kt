@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.book.data.mappers
 
-import uk.co.zlurgg.mybookshelf.bookshelf.data.export.BookIdentifier
-import uk.co.zlurgg.mybookshelf.bookshelf.data.export.ExportedBookshelf
+import uk.co.zlurgg.mybookshelf.sharing.data.export.BookIdentifier
+import uk.co.zlurgg.mybookshelf.sharing.data.export.ExportedBookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 
 /**

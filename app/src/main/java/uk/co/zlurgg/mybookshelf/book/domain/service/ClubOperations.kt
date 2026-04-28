@@ -8,7 +8,11 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Interface for book club operations consumed by bookshelf screens.
  * Provides a bridge between bookshelf and bookclub without direct dependency.
  *
- * High-level operations used by BookcaseClubActionHandler and BookcaseViewModel.
+ * This is a single interface rather than split by consumer because all methods
+ * serve "things bookshelf screens need from clubs" — not a God interface.
+ * Consumers are injected via Koin and only call the methods they need.
+ * If the interface grows beyond ~20 methods, consider splitting by concern
+ * (e.g. ClubMembershipOps, ClubSyncOps).
  */
 interface ClubOperations {
 

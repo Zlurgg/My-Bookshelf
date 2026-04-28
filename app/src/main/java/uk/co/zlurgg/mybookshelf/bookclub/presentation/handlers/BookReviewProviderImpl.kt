@@ -81,6 +81,8 @@ class BookReviewProviderImpl(
         bookId: String,
         text: String
     ): Result<Unit, DataError.Sync> {
+        // Use case returns Result<String> (comment ID) but callers don't use it —
+        // BookDetailViewModel clears input and reloads all comments after adding.
         return when (val result = reviewUseCases.addBookClubComment(clubCode, bookId, text)) {
             is Result.Success -> Result.Success(Unit)
             is Result.Error -> Result.Error(result.error)

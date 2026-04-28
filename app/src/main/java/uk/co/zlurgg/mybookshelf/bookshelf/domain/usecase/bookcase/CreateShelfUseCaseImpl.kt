@@ -3,7 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.tutorial.GetOrCreateTutorialBookUseCase
+import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.GetOrCreateTutorialBookUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -12,6 +12,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
+// Depends on welcome/ for tutorial book creation when a tutorial shelf is made.
+// This cross-feature dependency is intentional and injected via Koin.
 class CreateShelfUseCaseImpl(
     private val repository: BookcaseRepository,
     private val idGenerator: IdGenerator,
