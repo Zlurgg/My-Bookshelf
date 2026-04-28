@@ -7,7 +7,7 @@ Patterns for implementing data access through repositories.
 Repository interfaces live in the domain layer and define the contract:
 
 ```kotlin
-// In bookshelf/domain/repository/
+// In book/domain/repository/
 interface BookRepository {
     suspend fun getBookById(id: String): Book?
     suspend fun upsertBook(book: Book)
@@ -29,7 +29,7 @@ interface BookRepository {
 Repository implementations live in the data layer:
 
 ```kotlin
-// In bookshelf/data/repository/
+// In book/data/repository/
 class BookRepositoryImpl(
     private val dao: BookshelfDao
 ) : BookRepository {
@@ -71,7 +71,7 @@ override suspend fun getShelfById(id: String): Result<Bookshelf?, DataError.Loca
 Keep mappers as extension functions:
 
 ```kotlin
-// In bookshelf/data/mapper/
+// In book/data/mappers/
 fun BookshelfEntity.toDomain(): Bookshelf {
     return Bookshelf(
         id = id,

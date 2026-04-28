@@ -45,6 +45,22 @@ All fallible operations return `Result<T, DataError>`, never throw. Use `ErrorMa
 - Release: `app/src/release/` (production stubs)
 - No `BuildConfig.DEBUG` runtime checks for dev-only code
 
+## Package Structure
+
+| Package | Purpose |
+|---------|---------|
+| `app/` | Application entry, navigation, `MyBookShelfApp` |
+| `core/` | Infrastructure (database, network, preferences) |
+| `auth/` | Authentication (sign-in, user provider) |
+| `sync/` | Cloud sync (Firestore sync engine) |
+| `book/` | Shared book domain (models, repos, interfaces, preview data) |
+| `bookshelf/` | Shelf screens (bookcase, shelf view, book detail) |
+| `bookclub/` | Book club feature (club models, repos, use cases, UI) |
+| `sharing/` | Deeplinks, export/import |
+| `welcome/` | Tutorial, onboarding |
+
+Dependencies flow downward: `bookshelf/` → `book/` (shared models), `bookclub/` → `book/`. Cross-feature communication uses interfaces in `book/domain/service/` (`ClubOperations`, `BookReviewProvider`).
+
 ## Key Locations
 
 | Component | Location |
@@ -53,5 +69,7 @@ All fallible operations return `Result<T, DataError>`, never throw. Use `ErrorMa
 | UseCases | `*/domain/usecase/` |
 | Repositories | `*/data/repository/` |
 | ViewModels | `*/presentation/*/ViewModel.kt` |
+| Cross-feature interfaces | `book/domain/service/` |
+| Shared domain models | `book/domain/model/` |
 | Test Utilities | `app/src/test/.../testutil/` |
 | Detekt Config | `app/detekt.yml` |
