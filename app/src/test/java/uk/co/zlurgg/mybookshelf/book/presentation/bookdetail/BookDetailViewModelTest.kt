@@ -36,7 +36,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.ToggleBookPurchaseUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpdateBookMetadataUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService

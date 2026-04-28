@@ -4,6 +4,7 @@ import org.koin.dsl.module
 import uk.co.zlurgg.mybookshelf.auth.di.authModule
 import uk.co.zlurgg.mybookshelf.book.di.bookModule
 import uk.co.zlurgg.mybookshelf.bookclub.di.bookClubModule
+import uk.co.zlurgg.mybookshelf.bookcase.di.bookcaseModule
 import uk.co.zlurgg.mybookshelf.bookshelf.di.bookshelfModule
 import uk.co.zlurgg.mybookshelf.core.di.coreModule
 import uk.co.zlurgg.mybookshelf.sharing.di.sharingModule
@@ -28,6 +29,7 @@ val appModule = module {
         syncModule,
         bookModule,
         bookClubModule,
+        bookcaseModule,
         bookshelfModule,
         sharingModule,
         welcomeModule

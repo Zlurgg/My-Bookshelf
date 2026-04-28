@@ -20,7 +20,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookcase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.bookshelf.SearchBooksUseCase
@@ -31,15 +30,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDuplicateShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockShareBookshelfUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -136,18 +127,7 @@ class BookshelfViewModelTest {
             shareBookshelf = mockShareBookshelf,
             updateShelfTidyMode = mockUpdateShelfTidyMode
         )
-        val bookcaseUseCases = BookcaseUseCases(
-            getAllShelves = MockGetAllShelvesUseCase(),
-            createShelf = MockCreateShelfUseCase(),
-            deleteShelf = MockDeleteShelfUseCase(),
-            reorderShelves = MockReorderShelvesUseCase(),
-            getShelfById = mockGetShelfById,
-            renameShelf = MockRenameShelfUseCase(),
-            updateShelfStyle = MockUpdateShelfStyleUseCase(),
-            duplicateShelf = MockDuplicateShelfUseCase(),
-            shareShelf = MockShareBookshelfUseCase()
-        )
-        return BookshelfViewModel(bookshelfUseCases, bookcaseUseCases, stubClubOperations, shelfId)
+        return BookshelfViewModel(bookshelfUseCases, mockGetShelfById, stubClubOperations, shelfId)
     }
 
     @Test

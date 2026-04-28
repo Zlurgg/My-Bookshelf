@@ -1,0 +1,67 @@
+package uk.co.zlurgg.mybookshelf.bookcase.domain.usecase
+
+import kotlinx.coroutines.flow.first
+import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
+import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+
+class DuplicateShelfUseCaseImpl(
+    private val bookcaseRepository: BookcaseRepository,
+    private val bookshelfRepository: BookshelfRepository,
+    private val idGenerator: IdGenerator,
+    private val syncSchedulerService: SyncSchedulerService
+) : DuplicateShelfUseCase {
+
+    override suspend operator fun invoke(shelfId: String): Result<Bookshelf, DataError.Local> {
+        // Get the original shelf
+        val originalShelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+            is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)
+            is Result.Error -> return getResult
+        }
+
+        // Get all books from the original shelf
+        val books = bookshelfRepository.getBooksForShelf(shelfId).first()
+
+        // Generate name for duplicate
+        // Note: Duplicate names are allowed - users can have multiple shelves with the same name
+        val duplicateName = if (originalShelf.isBookClub) originalShelf.name else "Copy of ${originalShelf.name}"
+
+        // Create duplicated shelf with new ID and name
+        // Always create as personal shelf (reset book club properties)
+        val duplicatedShelf = originalShelf.copy(
+            id = idGenerator.generateId(),
+            name = duplicateName,
+            books = books,
+            position = Int.MAX_VALUE, // Will be positioned at the end
+            isBookClub = false,
+            clubCode = null,
+            clubCreatorId = null
+        )
+
+        // Add the duplicated shelf
+        when (val addResult = bookcaseRepository.addShelf(duplicatedShelf)) {
+            is Result.Success -> { /* continue */ }
+            is Result.Error -> return addResult
+        }
+
+        // Add all books to the duplicated shelf
+        for (book in books) {
+            when (val addBookResult = bookshelfRepository.addBookToShelf(duplicatedShelf.id, book.id)) {
+                is Result.Success -> { /* continue */ }
+                is Result.Error -> return addBookResult
+            }
+        }
+
+        // Trigger sync to upload the new personal shelf to Firebase
+        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: DuplicateShelf")
+        syncSchedulerService.triggerImmediateSync()
+
+        return Result.Success(duplicatedShelf)
+    }
+}

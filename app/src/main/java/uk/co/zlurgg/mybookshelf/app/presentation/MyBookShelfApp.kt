@@ -20,9 +20,9 @@ import uk.co.zlurgg.mybookshelf.auth.presentation.SignInScreenRoot
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.InitializeWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.book.presentation.bookdetail.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.book.presentation.bookdetail.BookDetailsScreenRoot
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseAction
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseScreenRoot
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel
+import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseAction
+import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseScreenRoot
+import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel
