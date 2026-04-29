@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
@@ -40,6 +41,7 @@ class GoogleAuthUiClient(
                     UserData(
                         userId = user.uid,
                         username = user.displayName,
+                        email = user.email,
                         profilePictureUrl = user.photoUrl?.toString()
                     )
                 )
@@ -72,8 +74,50 @@ class GoogleAuthUiClient(
             UserData(
                 userId = user.uid,
                 username = user.displayName,
+                email = user.email,
                 profilePictureUrl = user.photoUrl?.toString()
             )
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
+    override suspend fun deleteAccount(): Result<Unit, DataError.Local> {
+        Timber.tag(TAG).d("=== DELETE ACCOUNT START ===")
+        val user = auth.currentUser
+        if (user == null) {
+            Timber.tag(TAG).e("No current user for account deletion")
+            return Result.Error(DataError.Local.AUTH_FAILED)
+        }
+        return try {
+            user.delete().await()
+            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            Timber.tag(TAG).d("=== DELETE ACCOUNT COMPLETE ===")
+            Result.Success(Unit)
+        } catch (e: FirebaseAuthRecentLoginRequiredException) {
+            Timber.tag(TAG).w("Account deletion requires recent login")
+            Result.Error(DataError.Local.REQUIRES_RECENT_LOGIN)
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "Account deletion failed")
+            Result.Error(DataError.Local.AUTH_FAILED)
+        }
+    }
+
+    @Suppress("TooGenericExceptionCaught")
+    override suspend fun reauthenticate(idToken: String): Result<Unit, DataError.Local> {
+        Timber.tag(TAG).d("=== REAUTHENTICATE START ===")
+        val user = auth.currentUser
+        if (user == null) {
+            Timber.tag(TAG).e("No current user for re-authentication")
+            return Result.Error(DataError.Local.AUTH_FAILED)
+        }
+        return try {
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+            user.reauthenticate(credential).await()
+            Timber.tag(TAG).d("=== REAUTHENTICATE COMPLETE ===")
+            Result.Success(Unit)
+        } catch (e: Exception) {
+            Timber.tag(TAG).e(e, "Re-authentication failed")
+            Result.Error(DataError.Local.AUTH_FAILED)
         }
     }
 }

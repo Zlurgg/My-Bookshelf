@@ -9,8 +9,9 @@ import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
 
 /**
- * Remote book club operations: CRUD, membership, books, reviews, comments.
+ * Remote book club operations: CRUD, membership, books, reviews, comments, and account deletion.
  */
+@Suppress("TooManyFunctions") // Covers CRUD, membership, books, reviews, comments, and account deletion
 interface BookClubRemoteDataSource {
     suspend fun createBookClub(code: String, metadata: BookClubMetadataDto): Result<Unit, DataError.Sync>
     suspend fun getBookClubMetadata(code: String): Result<BookClubMetadataDto?, DataError.Sync>
@@ -47,4 +48,7 @@ interface BookClubRemoteDataSource {
         newText: String,
     ): Result<Unit, DataError.Sync>
     suspend fun deleteBookComment(clubCode: String, bookId: String, commentId: String): Result<Unit, DataError.Sync>
+    suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync>
+    suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync>
+    suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync>
 }

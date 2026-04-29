@@ -13,4 +13,5 @@ interface BookSyncDataSource {
     suspend fun downloadBooksSince(userId: String, sinceTimestamp: Long): Result<List<BookFirestoreDto>, DataError.Sync>
     suspend fun deleteBook(userId: String, bookId: String): Result<Unit, DataError.Sync>
     suspend fun uploadBooks(userId: String, books: List<BookFirestoreDto>): Result<Int, DataError.Sync>
+    suspend fun deleteAllBooks(userId: String): Result<Unit, DataError.Sync>
 }

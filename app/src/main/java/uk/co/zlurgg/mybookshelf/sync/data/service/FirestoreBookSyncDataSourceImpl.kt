@@ -104,4 +104,23 @@ internal class FirestoreBookSyncDataSourceImpl(
             books.size
         }
     }
+
+    override suspend fun deleteAllBooks(userId: String): Result<Unit, DataError.Sync> {
+        return helper.execute("deleteAllBooks") {
+            val booksCollection = firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(BOOKS_COLLECTION)
+
+            val docs = booksCollection.get().await().documents
+            docs.chunked(BATCH_LIMIT).forEach { chunk ->
+                val batch = firestore.batch()
+                chunk.forEach { doc -> batch.delete(doc.reference) }
+                batch.commit().await()
+            }
+        }
+    }
+
+    companion object {
+        private const val BATCH_LIMIT = 500
+    }
 }

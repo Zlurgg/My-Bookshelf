@@ -24,7 +24,12 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
+import uk.co.zlurgg.mybookshelf.auth.presentation.profile.ProfileViewModel
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCaseImpl
 
@@ -53,9 +58,12 @@ val authModule = module {
     single<SignOutUseCase> { SignOutUseCaseImpl(get(), get(), get(), get(), get(), get()) }
     single<CheckSignInStatusUseCase> { CheckSignInStatusUseCaseImpl(get(), get()) }
     single<GetCurrentUserIdUseCase> { GetCurrentUserIdUseCaseImpl(get()) }
-    single { AuthUseCases(get(), get(), get(), get()) }
+    single<DeleteAccountUseCase> { DeleteAccountUseCaseImpl(get(), get(), get(), get(), get(), get(), get(), get()) }
+    single<GetSignedInUserUseCase> { GetSignedInUserUseCaseImpl(get()) }
+    single { AuthUseCases(get(), get(), get(), get(), get(), get()) }
 
-    // ViewModel
+    // ViewModels
+    viewModel { ProfileViewModel(get()) }
     viewModel {
         SignInViewModel(
             authUseCases = get(),

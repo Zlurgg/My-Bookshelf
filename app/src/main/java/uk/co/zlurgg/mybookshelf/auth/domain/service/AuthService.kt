@@ -18,4 +18,8 @@ interface AuthService {
     suspend fun signOut(): Result<Unit, DataError.Local>
 
     fun getSignedInUser(): UserData?
+
+    suspend fun deleteAccount(): Result<Unit, DataError.Local>
+
+    suspend fun reauthenticate(idToken: String): Result<Unit, DataError.Local>
 }

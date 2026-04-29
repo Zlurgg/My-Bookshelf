@@ -91,6 +91,24 @@ interface SyncRepository {
     suspend fun getPendingChangesCount(userId: String): Int
 
     /**
+     * Checks whether any remote data exists for a user.
+     * Used as a lightweight precondition check before retry-after-reauth.
+     *
+     * @param userId Firebase UID of the user
+     * @return true if remote data still exists, false if already deleted
+     */
+    suspend fun hasRemoteData(userId: String): Boolean
+
+    /**
+     * Deletes all of a user's remote data (books, shelves, preferences).
+     * Does NOT handle book club cleanup — that's the use case's responsibility.
+     *
+     * @param userId Firebase UID of the user
+     * @return Result indicating success or error
+     */
+    suspend fun deleteAllRemoteData(userId: String): Result<Unit, DataError.Sync>
+
+    /**
      * Cancels any ongoing sync operation.
      */
     suspend fun cancelSync()

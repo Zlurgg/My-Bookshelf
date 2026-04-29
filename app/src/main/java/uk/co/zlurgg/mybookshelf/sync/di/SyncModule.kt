@@ -62,7 +62,10 @@ val syncModule = module {
             syncDao = get(),
             bookshelfDao = get(),
             connectivityMonitor = get(),
-            timeProvider = get()
+            timeProvider = get(),
+            bookSyncDataSource = get(),
+            shelfSyncDataSource = get(),
+            userPreferencesDataSource = get(),
         )
     }
     single<UserPreferencesRepository> { UserPreferencesRepositoryImpl(get(), get(), get()) }

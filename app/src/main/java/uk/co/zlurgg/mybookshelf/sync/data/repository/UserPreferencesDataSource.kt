@@ -13,4 +13,5 @@ interface UserPreferencesDataSource {
         userId: String,
         preferences: UserPreferencesFirestoreDto,
     ): Result<Unit, DataError.Sync>
+    suspend fun deleteUserPreferences(userId: String): Result<Unit, DataError.Sync>
 }

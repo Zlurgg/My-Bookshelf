@@ -34,6 +34,7 @@ sealed interface DataError : Error {
         PERMISSION_DENIED,
         MAX_SHELVES_REACHED,
         MAX_BOOKS_REACHED,
+        REQUIRES_RECENT_LOGIN,
         UNKNOWN
     }
 

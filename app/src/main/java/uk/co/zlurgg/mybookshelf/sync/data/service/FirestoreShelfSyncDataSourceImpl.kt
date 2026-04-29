@@ -166,4 +166,23 @@ internal class FirestoreShelfSyncDataSourceImpl(
                 .await()
         }
     }
+
+    override suspend fun deleteAllBookshelves(userId: String): Result<Unit, DataError.Sync> {
+        return helper.execute("deleteAllBookshelves") {
+            val shelvesCollection = firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(BOOKSHELVES_COLLECTION)
+
+            val docs = shelvesCollection.get().await().documents
+            docs.chunked(BATCH_LIMIT).forEach { chunk ->
+                val batch = firestore.batch()
+                chunk.forEach { doc -> batch.delete(doc.reference) }
+                batch.commit().await()
+            }
+        }
+    }
+
+    companion object {
+        private const val BATCH_LIMIT = 500
+    }
 }

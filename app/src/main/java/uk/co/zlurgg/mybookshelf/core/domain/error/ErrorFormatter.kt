@@ -63,6 +63,7 @@ object ErrorFormatter {
         DataError.Local.AUTH_NO_CREDENTIAL,
         DataError.Local.AUTH_FAILED,
         DataError.Local.AUTH_NETWORK_ERROR,
+        DataError.Local.REQUIRES_RECENT_LOGIN,
         -> formatLocalAuthError(error)
     }
 

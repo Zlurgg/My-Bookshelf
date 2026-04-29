@@ -22,4 +22,5 @@ interface ShelfSyncDataSource {
     suspend fun getSharedShelf(shareCode: String): Result<SharedShelfDto?, DataError.Sync>
     suspend fun subscribeToShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync>
     suspend fun unsubscribeFromShelf(shareCode: String, userId: String): Result<Unit, DataError.Sync>
+    suspend fun deleteAllBookshelves(userId: String): Result<Unit, DataError.Sync>
 }

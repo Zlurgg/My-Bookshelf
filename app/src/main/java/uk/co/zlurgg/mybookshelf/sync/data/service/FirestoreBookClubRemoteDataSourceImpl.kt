@@ -23,6 +23,8 @@ import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.REVIEWS_C
 import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.SETTINGS_COLLECTION
 import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.USERS_COLLECTION
 
+// Implements BookClubRemoteDataSource: CRUD, membership, books, reviews, comments, and account deletion
+@Suppress("TooManyFunctions")
 internal class FirestoreBookClubRemoteDataSourceImpl(
     private val firestore: FirebaseFirestore,
 ) : BookClubRemoteDataSource {
@@ -374,6 +376,75 @@ internal class FirestoreBookClubRemoteDataSourceImpl(
                 .collection(COMMENTS_COLLECTION)
                 .document(commentId)
                 .delete()
+                .await()
+        }
+    }
+
+    override suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync> {
+        return helper.execute("getClubsCreatedByUser") {
+            val snapshot = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .whereEqualTo("created_by", userId)
+                .get()
+                .await()
+
+            snapshot.documents.map { it.id }
+        }
+    }
+
+    override suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync> {
+        return helper.execute("getClubMembershipsForUser") {
+            val snapshot = firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(SETTINGS_COLLECTION)
+                .document(PREFERENCES_DOCUMENT)
+                .get()
+                .await()
+
+            if (snapshot.exists()) {
+                @Suppress("UNCHECKED_CAST")
+                val memberships = snapshot.get(FIELD_CLUB_MEMBERSHIPS) as? List<String>
+                memberships.orEmpty()
+            } else {
+                emptyList()
+            }
+        }
+    }
+
+    override suspend fun removeUserFromClub(
+        clubCode: String,
+        userId: String,
+    ): Result<Unit, DataError.Sync> {
+        return helper.execute("removeUserFromClub") {
+            // Remove member doc
+            firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(MEMBERS_COLLECTION)
+                .document(userId)
+                .delete()
+                .await()
+
+            // Remove user's reviews across all books in the club
+            val books = firestore.collection(BOOK_CLUBS_COLLECTION)
+                .document(clubCode)
+                .collection(CLUB_BOOKS_COLLECTION)
+                .get()
+                .await()
+
+            for (bookDoc in books.documents) {
+                bookDoc.reference
+                    .collection(REVIEWS_COLLECTION)
+                    .document(userId)
+                    .delete()
+                    .await()
+            }
+
+            // Remove club from user's membership list using merge for idempotency
+            val data = mapOf(FIELD_CLUB_MEMBERSHIPS to FieldValue.arrayRemove(clubCode))
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .collection(SETTINGS_COLLECTION)
+                .document(PREFERENCES_DOCUMENT)
+                .set(data, SetOptions.merge())
                 .await()
         }
     }

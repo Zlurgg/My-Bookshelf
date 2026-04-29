@@ -37,7 +37,10 @@ class SyncRepositoryImpl(
     private val syncDao: SyncDao,
     private val bookshelfDao: BookshelfDao,
     private val connectivityMonitor: ConnectivityMonitor,
-    private val timeProvider: TimeProvider
+    private val timeProvider: TimeProvider,
+    private val bookSyncDataSource: BookSyncDataSource,
+    private val shelfSyncDataSource: ShelfSyncDataSource,
+    private val userPreferencesDataSource: UserPreferencesDataSource,
 ) : SyncRepository {
 
     override suspend fun performSync(userId: String): Result<SyncResult, DataError.Sync> {
@@ -285,6 +288,41 @@ class SyncRepositoryImpl(
 
             else -> true
         }
+    }
+
+    override suspend fun hasRemoteData(userId: String): Boolean {
+        return when (val result = userPreferencesDataSource.getUserPreferences(userId)) {
+            is Result.Success -> result.data != null
+            is Result.Error -> {
+                Timber.tag(TAG).w("hasRemoteData check failed: %s, assuming data exists", result.error)
+                true
+            }
+        }
+    }
+
+    override suspend fun deleteAllRemoteData(userId: String): Result<Unit, DataError.Sync> {
+        Timber.tag(TAG).d("=== DELETE ALL REMOTE DATA for user: %s ===", userId)
+
+        val booksResult = bookSyncDataSource.deleteAllBooks(userId)
+        if (booksResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to delete remote books: %s", booksResult.error)
+            return booksResult
+        }
+
+        val shelvesResult = shelfSyncDataSource.deleteAllBookshelves(userId)
+        if (shelvesResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to delete remote shelves: %s", shelvesResult.error)
+            return shelvesResult
+        }
+
+        val prefsResult = userPreferencesDataSource.deleteUserPreferences(userId)
+        if (prefsResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to delete remote preferences: %s", prefsResult.error)
+            return prefsResult
+        }
+
+        Timber.tag(TAG).d("=== DELETE ALL REMOTE DATA COMPLETE ===")
+        return Result.Success(Unit)
     }
 
     companion object {
