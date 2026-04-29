@@ -20,7 +20,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.SyncMetadataEntity
         SyncMetadataEntity::class,
         BookClubMembershipEntity::class
     ],
-    version = 11,
+    version = 1,
     exportSchema = true
 )
 @TypeConverters(

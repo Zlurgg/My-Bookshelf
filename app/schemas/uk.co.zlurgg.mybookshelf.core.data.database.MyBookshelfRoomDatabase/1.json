@@ -1,8 +1,8 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 9,
-    "identityHash": "0bf240d5eb1cbde2e69faf541d7e87a6",
+    "version": 1,
+    "identityHash": "a34b984379363bb24fbe566ee1ca8c9b",
     "entities": [
       {
         "tableName": "BookEntity",
@@ -167,7 +167,7 @@
       },
       {
         "tableName": "BookshelfEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `shelfMaterial` TEXT NOT NULL, `position` INTEGER NOT NULL, `isTidyMode` INTEGER NOT NULL, `ownerId` TEXT, `lastModifiedAt` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, `cloudId` TEXT, `version` INTEGER NOT NULL, `isShared` INTEGER NOT NULL, `shareCode` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `shelfMaterial` TEXT NOT NULL, `position` INTEGER NOT NULL, `isTidyMode` INTEGER NOT NULL, `ownerId` TEXT, `lastModifiedAt` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, `cloudId` TEXT, `version` INTEGER NOT NULL, `isShared` INTEGER NOT NULL, `shareCode` TEXT, `isBookClub` INTEGER NOT NULL, `clubCode` TEXT, `clubCreatorId` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -237,6 +237,22 @@
             "fieldPath": "shareCode",
             "columnName": "shareCode",
             "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isBookClub",
+            "columnName": "isBookClub",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clubCode",
+            "columnName": "clubCode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clubCreatorId",
+            "columnName": "clubCreatorId",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -244,7 +260,18 @@
           "columnNames": [
             "id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_BookshelfEntity_clubCode",
+            "unique": false,
+            "columnNames": [
+              "clubCode"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_BookshelfEntity_clubCode` ON `${TABLE_NAME}` (`clubCode`)"
+          }
+        ]
       },
       {
         "tableName": "BookshelfBookCrossRef",
@@ -329,11 +356,79 @@
             "userId"
           ]
         }
+      },
+      {
+        "tableName": "book_club_memberships",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `clubCode` TEXT NOT NULL, `localShelfId` TEXT NOT NULL, `joinedAt` INTEGER NOT NULL, `lastSyncedAt` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clubCode",
+            "columnName": "clubCode",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localShelfId",
+            "columnName": "localShelfId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "joinedAt",
+            "columnName": "joinedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncedAt",
+            "columnName": "lastSyncedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "syncStatus",
+            "columnName": "syncStatus",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_book_club_memberships_clubCode",
+            "unique": true,
+            "columnNames": [
+              "clubCode"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_book_club_memberships_clubCode` ON `${TABLE_NAME}` (`clubCode`)"
+          },
+          {
+            "name": "index_book_club_memberships_localShelfId",
+            "unique": false,
+            "columnNames": [
+              "localShelfId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_book_club_memberships_localShelfId` ON `${TABLE_NAME}` (`localShelfId`)"
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0bf240d5eb1cbde2e69faf541d7e87a6')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a34b984379363bb24fbe566ee1ca8c9b')"
     ]
   }
 }

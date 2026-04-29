@@ -32,8 +32,8 @@ android {
         applicationId = "uk.co.zlurgg.mybookshelf"
         minSdk = 28
         targetSdk = 36
-        versionCode = 15
-        versionName = "1.2.1"
+        versionCode = 1
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -57,6 +57,7 @@ android {
             buildConfigField("String", "FIREBASE_EMULATOR_HOST", "\"$emulatorHost\"")
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
+            buildConfigField("String", "SITE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf\"")
             buildConfigField("String", "SHARE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf/share\"")
         }
         release {
@@ -69,6 +70,7 @@ android {
             )
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
+            buildConfigField("String", "SITE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf\"")
             buildConfigField("String", "SHARE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf/share\"")
         }
     }

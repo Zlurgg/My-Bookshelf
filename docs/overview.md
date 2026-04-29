@@ -75,7 +75,7 @@ uk.co.zlurgg.mybookshelf/
 - Min SDK: 28
 - Java: 11
 - R8/ProGuard enabled for release
-- Room schema version: 8
+- Room schema version: 1
 
 ## Source Sets
 
