@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
@@ -38,7 +39,6 @@ import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
-import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignOutDialog
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
@@ -71,7 +71,7 @@ fun BookcaseScreenRoot(
     onBookDetailClick: (String, String) -> Unit,
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
     onSignIn: () -> Unit = {},
-    onSignOut: () -> Unit = {},
+    onProfileClick: (Boolean) -> Unit = {},
     switchToBookClubs: Boolean = false
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -126,13 +126,6 @@ fun BookcaseScreenRoot(
         }
     }
 
-    // Handle sign out success - navigate to sign in screen
-    LaunchedEffect(state.signedOutSuccessfully) {
-        if (state.signedOutSuccessfully) {
-            onSignOut()
-        }
-    }
-
     // Switch to My Shelves tab after creating a personal copy
     LaunchedEffect(state.switchToPersonalTab) {
         if (state.switchToPersonalTab) {
@@ -147,14 +140,6 @@ fun BookcaseScreenRoot(
             selectedTab = BookcaseTab.BOOK_CLUBS
             viewModel.onAction(BookcaseAction.ResetSwitchToBookClubsTab)
         }
-    }
-
-    // Show sign out confirmation dialog
-    if (state.showSignOutDialog) {
-        SignOutDialog(
-            onConfirm = { viewModel.onAction(BookcaseAction.ConfirmSignOut) },
-            onDismiss = { viewModel.onAction(BookcaseAction.DismissSignOutDialog) }
-        )
     }
 
     // Sign in required dialog for guest users attempting Book Clubs
@@ -202,7 +187,8 @@ fun BookcaseScreenRoot(
                 }
                 else -> viewModel.onAction(action)
             }
-        }
+        },
+        onProfileClick = { onProfileClick(state.isSignedIn) },
     )
 }
 
@@ -214,7 +200,8 @@ fun BookcaseScreen(
     onTabSelected: (BookcaseTab) -> Unit,
     showAddBookshelfDialog: Boolean,
     onShowAddBookshelfDialogChange: (Boolean) -> Unit,
-    onAction: (BookcaseAction) -> Unit
+    onAction: (BookcaseAction) -> Unit,
+    onProfileClick: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -284,13 +271,18 @@ fun BookcaseScreen(
                             )
                         }
                     }
+                    // Profile icon
+                    IconButton(onClick = onProfileClick) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = stringResource(R.string.cd_profile)
+                        )
+                    }
                     SettingsMenu(
-                        isSignedIn = state.isSignedIn,
                         onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
                         onShowAbout = { showAboutDialog = true },
                         onJoinBookClub = { onAction(BookcaseAction.ShowJoinBookClubDialog) },
-                        onSignIn = { onAction(BookcaseAction.OnSignInClick) },
-                        onSignOut = { onAction(BookcaseAction.ShowSignOutDialog) }
+                        isSignedIn = state.isSignedIn,
                     )
                 }
             )

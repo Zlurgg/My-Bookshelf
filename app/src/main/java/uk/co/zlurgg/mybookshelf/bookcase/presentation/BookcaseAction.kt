@@ -50,9 +50,6 @@ sealed interface BookcaseAction {
     // Auth Actions
     data object OnSignInClick : BookcaseAction
     data object ResetNavigateToSignIn : BookcaseAction
-    data object ShowSignOutDialog : BookcaseAction
-    data object DismissSignOutDialog : BookcaseAction
-    data object ConfirmSignOut : BookcaseAction
 
     // Deleted book clubs notification
     data object DismissDeletedBookClubsNotification : BookcaseAction

@@ -25,8 +25,6 @@ data class BookcaseState(
     // Auth state
     val isSignedIn: Boolean = false,
     val currentUserId: String? = null,
-    val showSignOutDialog: Boolean = false,
-    val signedOutSuccessfully: Boolean = false,
     val navigateToSignIn: Boolean = false,
 
     // Book Club invite state

@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.BookcaseUseCases
@@ -110,9 +109,6 @@ class BookcaseViewModel(
             // Auth actions
             is BookcaseAction.OnSignInClick -> _state.update { it.copy(navigateToSignIn = true) }
             is BookcaseAction.ResetNavigateToSignIn -> _state.update { it.copy(navigateToSignIn = false) }
-            is BookcaseAction.ShowSignOutDialog -> _state.update { it.copy(showSignOutDialog = true) }
-            is BookcaseAction.DismissSignOutDialog -> _state.update { it.copy(showSignOutDialog = false) }
-            is BookcaseAction.ConfirmSignOut -> signOut()
 
             // Book club actions — delegated to handler
             is BookcaseAction.OnCreateBookClub,
@@ -288,33 +284,5 @@ class BookcaseViewModel(
                 is Result.Error -> _state.update { it.withError(duplicateResult.error, "duplicate shelf") }
             }
         }
-    }
-
-    private fun signOut() {
-        viewModelScope.launch {
-            Timber.tag(TAG).d("User confirmed sign out")
-            _state.update { it.copy(isLoading = true) }
-
-            when (val result = authUseCases.signOut()) {
-                is Result.Success -> {
-                    _state.update {
-                        it.copy(isLoading = false, showSignOutDialog = false, signedOutSuccessfully = true)
-                    }
-                }
-                is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            showSignOutDialog = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(result.error, "sign out")
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    companion object {
-        private const val TAG = "BookcaseVM"
     }
 }

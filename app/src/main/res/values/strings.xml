@@ -326,4 +326,18 @@
     <string name="shelf_book_count">%1$d / %2$d</string>
     <string name="book_limit_reached_title">Book Limit Reached</string>
     <string name="book_limit_reached_message">This shelf has reached its maximum of %1$d books. Remove some books to add more.</string>
+
+    <!-- Profile screen -->
+    <string name="profile_title">Account</string>
+    <string name="profile_sign_out">Sign Out</string>
+    <string name="profile_delete_account">Delete Account</string>
+    <string name="profile_delete_confirm_title">Delete Account?</string>
+    <string name="profile_delete_confirm_message">This will permanently delete:\n\n• All your cloud data (books, shelves, preferences)\n• Any book clubs you created\n• Your reviews and comments\n• Your Firebase account\n\nThis action cannot be undone.</string>
+    <string name="profile_delete_confirm_button">Delete My Account</string>
+    <string name="profile_deleting">Deleting account…</string>
+    <string name="profile_reauth_title">Re-authentication Required</string>
+    <string name="profile_reauth_message">For security, please sign in again to confirm account deletion.</string>
+    <string name="profile_reauth_confirm">Sign In Again</string>
+    <string name="profile_delete_error">Failed to delete account. Please try again.</string>
+    <string name="cd_profile">Account</string>
 </resources>

@@ -21,6 +21,7 @@ import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.InitializeWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailsScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseAction
+import uk.co.zlurgg.mybookshelf.auth.presentation.profile.ProfileScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfAction
@@ -131,11 +132,15 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                                 popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
                             }
                         },
-                        onSignOut = {
-                            navController.navigate(NavigationRoute.SignIn.createRoute()) {
-                                popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
+                        onProfileClick = { isSignedIn ->
+                            if (isSignedIn) {
+                                navController.navigate(NavigationRoute.Profile.createRoute())
+                            } else {
+                                navController.navigate(NavigationRoute.SignIn.createRoute()) {
+                                    popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
+                                }
                             }
-                        }
+                        },
                     )
 
                     // Show add dialog if we're coming back from creating a new shelf
@@ -145,6 +150,19 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                             viewModel.onAction(BookcaseAction.ShowAddDialog(true))
                         }
                     }
+                }
+
+                composable(
+                    route = NavigationRoute.Profile.ROUTE,
+                ) {
+                    ProfileScreenRoot(
+                        onNavigateToSignIn = {
+                            navController.navigate(NavigationRoute.SignIn.createRoute()) {
+                                popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
+                            }
+                        },
+                        onBack = { navController.popBackStack() },
+                    )
                 }
 
                 composable(
