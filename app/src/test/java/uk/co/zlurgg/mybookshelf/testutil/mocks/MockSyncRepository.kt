@@ -41,6 +41,17 @@ class MockSyncRepository : SyncRepository {
 
     override suspend fun getPendingChangesCount(userId: String): Int = 0
 
+    var hasRemoteDataResult: Boolean = false
+    var deleteAllRemoteDataResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    var deleteAllRemoteDataCalled = false
+
+    override suspend fun hasRemoteData(userId: String): Boolean = hasRemoteDataResult
+
+    override suspend fun deleteAllRemoteData(userId: String): Result<Unit, DataError.Sync> {
+        deleteAllRemoteDataCalled = true
+        return deleteAllRemoteDataResult
+    }
+
     override suspend fun cancelSync() = Unit
 
     override suspend fun clearSyncData(userId: String) {
@@ -76,5 +87,8 @@ class MockSyncRepository : SyncRepository {
         lastMigrateOrphanDataUserId = null
         getOrphanDataCountsResult = Result.Success(GuestDataInfo(bookCount = 0, shelfCount = 0))
         getOrphanDataCountsCalled = false
+        hasRemoteDataResult = false
+        deleteAllRemoteDataResult = Result.Success(Unit)
+        deleteAllRemoteDataCalled = false
     }
 }

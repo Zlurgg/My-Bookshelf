@@ -23,6 +23,10 @@ class CheckSignInStatusUseCaseTest {
         )
         override suspend fun signOut(): Result<Unit, DataError.Local> = Result.Success(Unit)
         override fun getSignedInUser(): UserData? = mockCurrentUser
+        override suspend fun deleteAccount(): Result<Unit, DataError.Local> = Result.Error(DataError.Local.AUTH_FAILED)
+        override suspend fun reauthenticate(
+            idToken: String,
+        ): Result<Unit, DataError.Local> = Result.Error(DataError.Local.AUTH_FAILED)
     }
 
     private val mockAuthStateRepository = object : AuthStateRepository {

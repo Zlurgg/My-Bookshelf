@@ -18,7 +18,9 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
@@ -58,6 +60,13 @@ class SignInViewModelTest {
         override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> = mockSignInResult
         override suspend fun signOut(): Result<Unit, DataError.Local> = mockSignOutResult
         override fun getSignedInUser(): UserData? = mockCurrentUser
+        override suspend fun deleteAccount(): Result<Unit, DataError.Local> =
+            Result.Error(DataError.Local.AUTH_FAILED)
+
+        override suspend fun reauthenticate(
+            idToken: String,
+        ): Result<Unit, DataError.Local> =
+            Result.Error(DataError.Local.AUTH_FAILED)
     }
 
     private val mockAuthStateRepository = object : AuthStateRepository {
@@ -130,7 +139,19 @@ class SignInViewModelTest {
             signIn = signInUseCase,
             signOut = signOutUseCase,
             checkSignInStatus = checkSignInStatusUseCase,
-            getCurrentUserId = getCurrentUserIdUseCase
+            getCurrentUserId = getCurrentUserIdUseCase,
+            deleteAccount = object : DeleteAccountUseCase {
+                override suspend fun invoke(): Result<Unit, DataError> =
+                    Result.Error(DataError.Local.AUTH_FAILED)
+
+                override suspend fun retryAfterReAuth(
+                    idToken: String,
+                ): Result<Unit, DataError> =
+                    Result.Error(DataError.Local.AUTH_FAILED)
+            },
+            getSignedInUser = object : GetSignedInUserUseCase {
+                override fun invoke(): UserData? = null
+            },
         )
 
         return SignInViewModel(

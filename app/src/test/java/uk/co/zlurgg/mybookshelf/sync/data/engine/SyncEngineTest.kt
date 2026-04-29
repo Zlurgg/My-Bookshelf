@@ -744,5 +744,18 @@ class SyncEngineTest {
         ): Result<Unit, DataError.Sync> = Result.Success(
             Unit
         )
+
+        // Account deletion methods (not used by SyncEngine, but required by interface)
+        override suspend fun deleteAllBooks(userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun deleteAllBookshelves(userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun deleteUserPreferences(userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync> =
+            Result.Success(emptyList())
+        override suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync> =
+            Result.Success(emptyList())
+        override suspend fun removeUserFromClub(
+            clubCode: String,
+            userId: String
+        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
     }
 }

@@ -19,6 +19,8 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
@@ -81,6 +83,8 @@ class BookDetailViewModelTest {
         override suspend fun signIn(idToken: String) = Result.Success(UserData("test", "Test", null))
         override suspend fun signOut() = Result.Success(Unit)
         override fun getSignedInUser() = null
+        override suspend fun deleteAccount() = Result.Error(DataError.Local.AUTH_FAILED)
+        override suspend fun reauthenticate(idToken: String) = Result.Error(DataError.Local.AUTH_FAILED)
     }
     private val mockAuthStateRepository = object : AuthStateRepository {
         override suspend fun isSignedIn() = Result.Success(false)
@@ -113,11 +117,27 @@ class BookDetailViewModelTest {
         override operator fun invoke(): String? = "test-user"
     }
 
+    private val mockDeleteAccountUseCase = object : DeleteAccountUseCase {
+        override suspend fun invoke(): uk.co.zlurgg.mybookshelf.core.domain.result.Result<Unit, DataError> =
+            uk.co.zlurgg.mybookshelf.core.domain.result.Result.Error(DataError.Local.AUTH_FAILED)
+        override suspend fun retryAfterReAuth(
+            idToken: String,
+        ): uk.co.zlurgg.mybookshelf.core.domain.result.Result<Unit, DataError> =
+            uk.co.zlurgg.mybookshelf.core.domain.result.Result.Error(
+                DataError.Local.AUTH_FAILED,
+            )
+    }
+    private val mockGetSignedInUserUseCase = object : GetSignedInUserUseCase {
+        override fun invoke(): UserData? = null
+    }
+
     private val mockAuthUseCases = AuthUseCases(
         signIn = mockSignInUseCase,
         signOut = mockSignOutUseCase,
         checkSignInStatus = mockCheckSignInStatusUseCase,
-        getCurrentUserId = mockGetCurrentUserIdUseCase
+        getCurrentUserId = mockGetCurrentUserIdUseCase,
+        deleteAccount = mockDeleteAccountUseCase,
+        getSignedInUser = mockGetSignedInUserUseCase,
     )
 
     private val stubBookReviewProvider = object : BookReviewProvider {

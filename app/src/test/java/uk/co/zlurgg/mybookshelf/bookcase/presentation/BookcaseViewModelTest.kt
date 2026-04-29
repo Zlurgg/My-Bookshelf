@@ -15,7 +15,9 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
@@ -152,6 +154,13 @@ class BookcaseViewModelTest {
             )
             override suspend fun signOut() = Result.Success(Unit)
             override fun getSignedInUser() = null
+            override suspend fun deleteAccount(): Result<Unit, DataError.Local> =
+                Result.Error(DataError.Local.AUTH_FAILED)
+
+            override suspend fun reauthenticate(
+                idToken: String,
+            ): Result<Unit, DataError.Local> =
+                Result.Error(DataError.Local.AUTH_FAILED)
         }
         val mockAuthStateRepository = object : uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository {
             override suspend fun isSignedIn(): Result<Boolean, DataError.Local> = Result.Success(false)
@@ -188,7 +197,19 @@ class BookcaseViewModelTest {
             signIn = mockSignIn,
             signOut = mockSignOut,
             checkSignInStatus = mockCheckSignInStatus,
-            getCurrentUserId = mockGetCurrentUserIdUseCase
+            getCurrentUserId = mockGetCurrentUserIdUseCase,
+            deleteAccount = object : DeleteAccountUseCase {
+                override suspend fun invoke(): Result<Unit, DataError> =
+                    Result.Error(DataError.Local.AUTH_FAILED)
+
+                override suspend fun retryAfterReAuth(
+                    idToken: String,
+                ): Result<Unit, DataError> =
+                    Result.Error(DataError.Local.AUTH_FAILED)
+            },
+            getSignedInUser = object : GetSignedInUserUseCase {
+                override fun invoke(): uk.co.zlurgg.mybookshelf.auth.domain.model.UserData? = null
+            },
         )
 
         return BookcaseViewModel(
