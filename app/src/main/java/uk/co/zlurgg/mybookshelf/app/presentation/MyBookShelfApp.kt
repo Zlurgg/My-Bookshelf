@@ -18,8 +18,8 @@ import uk.co.zlurgg.mybookshelf.app.NavigationRoute
 import uk.co.zlurgg.mybookshelf.auth.presentation.PostSignInDestination
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInScreenRoot
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.InitializeWelcomeUseCase
-import uk.co.zlurgg.mybookshelf.book.presentation.bookdetail.BookDetailViewModel
-import uk.co.zlurgg.mybookshelf.book.presentation.bookdetail.BookDetailsScreenRoot
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailViewModel
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailsScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseAction
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel

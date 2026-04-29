@@ -4,6 +4,7 @@ import org.koin.dsl.module
 import uk.co.zlurgg.mybookshelf.auth.di.authModule
 import uk.co.zlurgg.mybookshelf.book.di.bookModule
 import uk.co.zlurgg.mybookshelf.bookclub.di.bookClubModule
+import uk.co.zlurgg.mybookshelf.bookdetail.di.bookDetailModule
 import uk.co.zlurgg.mybookshelf.bookcase.di.bookcaseModule
 import uk.co.zlurgg.mybookshelf.bookshelf.di.bookshelfModule
 import uk.co.zlurgg.mybookshelf.core.di.coreModule
@@ -18,7 +19,8 @@ import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
  * - coreModule: Infrastructure (database, network, preferences, core services)
  * - authModule: Authentication (Google Sign-In, auth state, user provider)
  * - syncModule: Cloud sync (Firestore sync engine, connectivity, migration)
- * - bookModule: Shared book domain (models, repos, network) + bookdetail feature
+ * - bookModule: Shared book domain (models, repos, network, shared use cases)
+ * - bookDetailModule: Book detail screen (view/edit book metadata)
  * - bookClubModule: Book club feature (use cases, handler)
  * - bookcaseModule: Home screen (shelf list, create/delete/rename shelves)
  * - bookshelfModule: Shelf screen (viewing books, searching, adding)
@@ -33,6 +35,7 @@ val appModule = module {
         syncModule,
         bookModule,
         bookClubModule,
+        bookDetailModule,
         bookcaseModule,
         bookshelfModule,
         sharingModule,

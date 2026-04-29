@@ -131,7 +131,7 @@ private fun BookcaseScreenPreview() {
 Extract reusable components to `components/` package:
 
 ```
-bookshelf/presentation/bookcase/
+bookcase/presentation/
 ├── BookcaseScreenRoot.kt
 ├── BookcaseScreen.kt
 ├── BookcaseViewModel.kt
