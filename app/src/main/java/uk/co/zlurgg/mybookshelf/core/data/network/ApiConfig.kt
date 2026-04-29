@@ -5,8 +5,14 @@ import uk.co.zlurgg.mybookshelf.BuildConfig
 object ApiConfig {
 
     private val openLibraryBaseUrl: String = BuildConfig.OPEN_LIBRARY_BASE_URL
+    private val siteBaseUrl: String = BuildConfig.SITE_BASE_URL
     val shareBaseUrl: String = BuildConfig.SHARE_BASE_URL
     val httpTimeoutMillis: Long = BuildConfig.HTTP_TIMEOUT_MILLIS
+
+    object Site {
+        val privacyPolicyUrl: String = "$siteBaseUrl/privacy.html"
+        val deleteAccountUrl: String = "$siteBaseUrl/delete-account.html"
+    }
 
     object OpenLibrary {
         val baseUrl: String = openLibraryBaseUrl

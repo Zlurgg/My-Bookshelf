@@ -273,6 +273,7 @@
     <string name="about_description_content">My Bookshelf is a personal book collection organizer that lets you create, customize, and organize your books on beautiful virtual shelves.</string>
     <string name="about_privacy_title">Privacy</string>
     <string name="about_privacy_content">Your data is stored locally on your device. Optional Google sign-in enables cloud sync via secure cloud storage. We don\'t collect analytics or share your data with third parties.</string>
+    <string name="about_privacy_link">View full privacy policy</string>
     <string name="about_open_source_title">Open Source</string>
     <string name="about_open_source_content">Book data is provided by the Open Library API, a project of the Internet Archive.</string>
     <string name="about_credits_title">Credits</string>
