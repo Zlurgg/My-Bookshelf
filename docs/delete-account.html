@@ -185,58 +185,62 @@
         </header>
 
         <section class="content-card">
-            <h2>How to Delete Your Account</h2>
-            <p>You can delete your account and all associated data directly within the My Bookshelf app.</p>
+            <h2>Request Account Deletion</h2>
+            <p>
+                To request full deletion of your account and all associated data, please open an issue on our
+                GitHub repository or email the developer directly:
+            </p>
 
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <strong>Open the app</strong>
-                        <span>Launch My Bookshelf on your device</span>
+                        <strong>Submit a request</strong>
+                        <span>Open an issue on our <a href="https://github.com/Zlurgg/My-Bookshelf/issues" target="_blank">GitHub repository</a> with the subject "Account Deletion Request"</span>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <strong>Open the menu</strong>
-                        <span>Tap the three-dot menu icon in the top bar</span>
+                        <strong>Provide your email</strong>
+                        <span>Include the Google account email address you used to sign in</span>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <strong>Sign Out</strong>
-                        <span>Select "Sign Out" to disconnect your Google account</span>
+                        <strong>We process your request</strong>
+                        <span>We will delete all your cloud data and Firebase account within 7 days</span>
                     </div>
                 </div>
-
-                <div class="step">
-                    <div class="step-number">4</div>
-                    <div class="step-content">
-                        <strong>Confirm sign out</strong>
-                        <span>Review the confirmation and confirm to sign out and clear your cloud data</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="warning">
-                <strong>Warning:</strong>
-                <p>Signing out removes all synced data from the cloud and revokes Book Club memberships. Local bookshelf data remains on your device. To fully remove local data, uninstall the app.</p>
             </div>
         </section>
 
         <section class="content-card">
             <h2>What Gets Deleted</h2>
-            <p>When you sign out and delete your account data, the following is permanently removed from the cloud:</p>
+            <p>When you request account deletion, the following is permanently removed:</p>
             <ul style="margin-left: 20px; color: var(--text-secondary);">
-                <li>All bookshelves and books synced to the cloud</li>
+                <li>All bookshelves and books stored in the cloud</li>
                 <li>All Book Club memberships, reviews, and comments</li>
-                <li>Your Firebase Authentication session</li>
+                <li>Your Firebase Authentication account</li>
             </ul>
-            <p>Local data on your device (bookshelves, books) is retained so you can continue using the app as a guest. To remove local data, uninstall the app.</p>
+
+            <div class="warning">
+                <strong>Note:</strong>
+                <p>Local data on your device is not affected by account deletion. To remove local data, uninstall the app or sign out within the app first.</p>
+            </div>
+        </section>
+
+        <section class="content-card">
+            <h2>Signing Out</h2>
+            <p>
+                Signing out from the app (Menu &rarr; Sign Out) disconnects your Google account and
+                clears your local data. However, signing out does <strong>not</strong> delete your
+                cloud data or Firebase account. To fully delete your account, please submit a
+                deletion request as described above.
+            </p>
         </section>
 
         <section class="content-card">
@@ -250,7 +254,7 @@
         <section class="content-card">
             <h2>Need Help?</h2>
             <p>
-                If you're unable to access the app or need assistance, please open an issue on our
+                If you have questions about data deletion, please open an issue on our
                 <a href="https://github.com/Zlurgg/My-Bookshelf/issues" target="_blank">GitHub repository</a>.
             </p>
         </section>
