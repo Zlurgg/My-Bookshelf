@@ -1,12 +1,16 @@
 package uk.co.zlurgg.mybookshelf.bookcase.domain.usecase
 
+import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
+import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class ReorderShelvesUseCaseImpl(
-    private val repository: BookcaseRepository
+    private val repository: BookcaseRepository,
+    private val syncSchedulerService: SyncSchedulerService,
 ) : ReorderShelvesUseCase {
 
     override suspend operator fun invoke(
@@ -43,6 +47,9 @@ class ReorderShelvesUseCaseImpl(
                 is Result.Error -> return updateResult
             }
         }
+
+        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: ReorderShelves")
+        syncSchedulerService.triggerImmediateSync()
 
         return Result.Success(updatedShelves)
     }
