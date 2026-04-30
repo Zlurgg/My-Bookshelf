@@ -20,11 +20,10 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.ResumeSessionUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
-import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershipsUseCase
-import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreResult
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -33,7 +32,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
-import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -83,6 +81,13 @@ class SignInViewModelTest {
         override fun cancelAllSync() = Unit
     }
 
+    private var resumeSessionCallCount = 0
+    private val mockResumeSession = object : ResumeSessionUseCase {
+        override suspend fun invoke() {
+            resumeSessionCallCount++
+        }
+    }
+
     private var mockMigrationResult: Result<MigrationResult, DataError.Sync> = Result.Success(
         MigrationResult.NO_MIGRATION_NEEDED
     )
@@ -110,18 +115,8 @@ class SignInViewModelTest {
 
     private val mockSyncRepository = MockSyncRepository()
 
-    private var mockSyncUserPreferencesResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
-    private val mockSyncUserPreferencesUseCase = object : SyncUserPreferencesUseCase {
-        override suspend operator fun invoke(): Result<Unit, DataError.Sync> = mockSyncUserPreferencesResult
-    }
-
-    private var mockRestoreResult: Result<RestoreResult, DataError.Sync> = Result.Success(RestoreResult(0, 0))
-    private val mockRestoreBookClubMembershipsUseCase = object : RestoreBookClubMembershipsUseCase {
-        override suspend fun invoke(): Result<RestoreResult, DataError.Sync> = mockRestoreResult
-    }
-
     private fun createViewModel(): SignInViewModel {
-        val signInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        val signInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
         val signOutUseCase =
             SignOutUseCaseImpl(
                 mockAuthService,
@@ -149,8 +144,7 @@ class SignInViewModelTest {
             mockShouldShowWelcomeUseCase,
             mockHasGuestDataUseCase,
             mockMigrateLocalDataUseCase,
-            mockSyncUserPreferencesUseCase,
-            mockRestoreBookClubMembershipsUseCase
+            mockResumeSession,
         )
     }
 
@@ -166,7 +160,7 @@ class SignInViewModelTest {
         mockShouldShowWelcome = false
         mockGuestDataInfo = GuestDataInfo(bookCount = 0, shelfCount = 0)
         mockMigrationResult = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
-        mockSyncUserPreferencesResult = Result.Success(Unit)
+        resumeSessionCallCount = 0
     }
 
     // ============================================================================
@@ -341,5 +335,34 @@ class SignInViewModelTest {
         advanceUntilIdle()
 
         assertNull("Error should be cleared", viewModel.state.value.errorMessage)
+    }
+
+    // ============================================================================
+    // ResumeSession Tests
+    // ============================================================================
+
+    @Test
+    fun `auto sign-in - triggers resumeSession`() = runTest(testDispatcher) {
+        resetMocks()
+        mockIsSignedIn = true
+        mockCurrentUser = UserData("existing-user", "Existing User", null)
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        assertTrue("Should be signed in", viewModel.state.value.isSignInSuccessful)
+        assertTrue("Should have called resumeSession", resumeSessionCallCount > 0)
+    }
+
+    @Test
+    fun `not signed in - does not trigger resumeSession`() = runTest(testDispatcher) {
+        resetMocks()
+        mockIsSignedIn = false
+
+        val viewModel = createViewModel()
+        advanceUntilIdle()
+
+        assertFalse("Should not be signed in", viewModel.state.value.isSignInSuccessful)
+        assertTrue("Should not have called resumeSession", resumeSessionCallCount == 0)
     }
 }

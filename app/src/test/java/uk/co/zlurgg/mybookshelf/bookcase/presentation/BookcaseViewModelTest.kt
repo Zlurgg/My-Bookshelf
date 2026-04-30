@@ -182,7 +182,7 @@ class BookcaseViewModelTest {
             override fun getCurrentUserId(): String = "test-user-id"
         }
         val mockSyncRepository = MockSyncRepository()
-        val mockSignIn = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+        val mockSignIn = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
         val mockCheckSignInStatus = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
         val mockSignOut = SignOutUseCaseImpl(
             mockAuthService,

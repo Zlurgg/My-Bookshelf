@@ -11,15 +11,18 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class ToggleBookPurchaseUseCaseTest {
 
     private val mockBookRepository = MockBookRepository()
-    private val useCase = ToggleBookPurchaseUseCaseImpl(mockBookRepository)
+    private val mockSyncSchedulerService = MockSyncSchedulerService()
+    private val useCase = ToggleBookPurchaseUseCaseImpl(mockBookRepository, mockSyncSchedulerService)
 
     @After
     fun tearDown() {
         mockBookRepository.reset()
+        mockSyncSchedulerService.reset()
     }
 
     @Test

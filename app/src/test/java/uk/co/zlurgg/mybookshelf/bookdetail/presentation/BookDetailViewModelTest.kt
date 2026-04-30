@@ -102,7 +102,7 @@ class BookDetailViewModelTest {
     }
     private val mockSyncRepository = MockSyncRepository()
 
-    private val mockSignInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository, mockSyncScheduler)
+    private val mockSignInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
     private val mockSignOutUseCase = SignOutUseCaseImpl(
         mockAuthService,
         mockAuthStateRepository,

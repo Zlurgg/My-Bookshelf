@@ -142,3 +142,40 @@ class CreateShelfUseCaseTest {
     }
 }
 ```
+
+## Sync After Mutation
+
+All mutating use cases (create, update, delete) must trigger an immediate sync after a successful local mutation so changes push to Firestore without waiting for the 15-minute periodic sync.
+
+### Pattern
+
+```kotlin
+class CreateShelfUseCaseImpl(
+    private val repository: BookcaseRepository,
+    private val syncSchedulerService: SyncSchedulerService,
+) : CreateShelfUseCase {
+
+    override suspend operator fun invoke(...): Result<Bookshelf, DataError.Local> {
+        // ... perform mutation ...
+
+        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: CreateShelf")
+        syncSchedulerService.triggerImmediateSync()
+
+        return Result.Success(newShelf)
+    }
+}
+```
+
+### Rules
+
+- Inject `SyncSchedulerService` and call `triggerImmediateSync()` after the successful mutation path
+- Use `SyncConstants.TAG_SYNC_TRIGGER` as the Timber log tag for all sync trigger logs
+- Only trigger sync on success — error paths should not trigger sync
+- **Building-block use cases** (e.g., `UpsertBookUseCaseImpl`) that are only called by parent use cases which handle sync themselves may skip the sync trigger, but must document this with a KDoc warning
+- **Conditional sync**: If a use case handles both personal and club data, only trigger sync for personal data (club data pushes to Firestore directly and is excluded from the sync engine)
+
+### Tech Debt
+
+This is a manual convention with no compile-time enforcement. Every new mutating use case must remember to add this call. Future options to reduce risk:
+- Repository write observer that auto-triggers sync on Room mutations
+- UseCase decorator/wrapper that adds sync after any successful mutation
