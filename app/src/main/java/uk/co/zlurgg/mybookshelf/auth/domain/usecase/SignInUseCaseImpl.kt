@@ -6,12 +6,10 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class SignInUseCaseImpl(
     private val authService: AuthService,
     private val authStateRepository: AuthStateRepository,
-    private val syncScheduler: SyncSchedulerService
 ) : SignInUseCase {
     companion object {
         private const val TAG = "SignIn"
@@ -33,11 +31,6 @@ class SignInUseCaseImpl(
 
                 // Note: Guest data migration is handled separately by the ViewModel
                 // after asking the user if they want to import guest data
-
-                // Start background sync after successful sign-in
-                Timber.tag(TAG).d("Scheduling sync after sign-in")
-                syncScheduler.schedulePeriodicSync()
-                syncScheduler.triggerImmediateSync()
 
                 Timber.tag(TAG).d("=== SIGN-IN COMPLETE ===")
                 signInResult

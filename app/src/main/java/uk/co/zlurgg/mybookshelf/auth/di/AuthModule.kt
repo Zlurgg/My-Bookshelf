@@ -27,6 +27,8 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCaseImpl
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.ResumeSessionUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.ResumeSessionUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCaseImpl
@@ -51,7 +53,8 @@ val authModule = module {
 
     // UseCases
     // Note: DevSignInUseCase is provided by DebugModule in debug builds
-    single<SignInUseCase> { SignInUseCaseImpl(get(), get(), get()) }
+    single<SignInUseCase> { SignInUseCaseImpl(get(), get()) }
+    single<ResumeSessionUseCase> { ResumeSessionUseCaseImpl(get(), get(), get()) }
     singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
     single<SignOutUseCase> { SignOutUseCaseImpl(get(), get(), get(), get(), get(), get()) }
     single<CheckSignInStatusUseCase> { CheckSignInStatusUseCaseImpl(get(), get()) }
@@ -66,8 +69,7 @@ val authModule = module {
             shouldShowWelcome = get(),
             hasGuestDataUseCase = get(),
             migrateLocalDataUseCase = get(),
-            syncUserPreferencesUseCase = get(),
-            restoreBookClubMembershipsUseCase = get(),
+            resumeSession = get(),
             devSignInUseCase = if (BuildConfig.DEBUG) getOrNull() else null
         )
     }

@@ -11,22 +11,20 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DevSignInUseCase
-import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershipsUseCase
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.ResumeSessionUseCase
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
-import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 
 class SignInViewModel(
     private val authUseCases: AuthUseCases,
     private val shouldShowWelcome: ShouldShowWelcomeUseCase,
     private val hasGuestDataUseCase: HasGuestDataUseCase,
     private val migrateLocalDataUseCase: MigrateLocalDataUseCase,
-    private val syncUserPreferencesUseCase: SyncUserPreferencesUseCase,
-    private val restoreBookClubMembershipsUseCase: RestoreBookClubMembershipsUseCase,
+    private val resumeSession: ResumeSessionUseCase,
     private val devSignInUseCase: DevSignInUseCase? = null // Only injected in debug builds
 ) : ViewModel() {
 
@@ -71,9 +69,7 @@ class SignInViewModel(
                 is Result.Success -> {
                     Timber.tag(TAG).d("Dev sign-in successful: %s", result.data.userId)
 
-                    // Perform same post-sign-in steps as regular sign-in
-                    syncUserPreferencesUseCase()
-                    restoreBookClubMemberships()
+                    resumeSession()
 
                     val destination = determineDestination()
                     _state.update {
@@ -112,11 +108,7 @@ class SignInViewModel(
         viewModelScope.launch {
             val isSignedIn = authUseCases.checkSignInStatus()
             if (isSignedIn) {
-                // Sync user preferences from cloud (handles offline gracefully)
-                syncUserPreferencesUseCase()
-
-                // Restore book club memberships from Firestore
-                restoreBookClubMemberships()
+                resumeSession()
 
                 val destination = determineDestination()
                 _state.update {
@@ -152,11 +144,7 @@ class SignInViewModel(
             val idToken = (credentialResult as Result.Success).data
             when (val result = authUseCases.signIn(idToken)) {
                 is Result.Success -> {
-                    // Sync user preferences from cloud (handles offline gracefully)
-                    syncUserPreferencesUseCase()
-
-                    // Restore book club memberships from Firestore
-                    restoreBookClubMemberships()
+                    resumeSession()
 
                     // Check for guest data before navigating
                     val guestDataInfo = hasGuestDataUseCase()
@@ -263,23 +251,6 @@ class SignInViewModel(
                 showGuestDataImportDialog = false,
                 guestDataInfo = null
             )
-        }
-    }
-
-    private suspend fun restoreBookClubMemberships() {
-        Timber.tag(TAG).d("Restoring book club memberships...")
-        when (val result = restoreBookClubMembershipsUseCase()) {
-            is Result.Success -> {
-                Timber.tag(TAG).d(
-                    "Book club memberships restored: %d restored, %d failed",
-                    result.data.restoredCount,
-                    result.data.failedCount
-                )
-            }
-            is Result.Error -> {
-                // Log but don't fail the sign-in flow
-                Timber.tag(TAG).w("Failed to restore book club memberships: %s", result.error)
-            }
         }
     }
 }
