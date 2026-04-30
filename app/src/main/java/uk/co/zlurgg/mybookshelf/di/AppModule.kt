@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.di
 
 import org.koin.dsl.module
+import uk.co.zlurgg.mybookshelf.account.di.accountModule
 import uk.co.zlurgg.mybookshelf.auth.di.authModule
 import uk.co.zlurgg.mybookshelf.book.di.bookModule
 import uk.co.zlurgg.mybookshelf.bookclub.di.bookClubModule
@@ -31,6 +32,7 @@ import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
 val appModule = module {
     includes(
         coreModule,
+        accountModule,
         authModule,
         syncModule,
         bookModule,

@@ -297,6 +297,14 @@ class MockBookClubRepository : BookClubRepository {
         return clearAllMembershipsResult
     }
 
+    var getClubsCreatedByUserResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
+    override suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync> =
+        getClubsCreatedByUserResult
+
+    var removeUserFromClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> =
+        removeUserFromClubResult
+
     // Helper methods for test setup
     fun reset() {
         createBookClubResult = Result.Success("TEST1234")

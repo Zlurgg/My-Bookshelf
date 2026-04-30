@@ -12,16 +12,17 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.data.config.AuthConfig
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.auth.presentation.service.CredentialFetcher
 
 class GoogleCredentialFetcher(
     private val authConfig: AuthConfig
-) {
+) : CredentialFetcher {
     companion object {
         private const val TAG = "GoogleCredential"
     }
 
     @Suppress("TooGenericExceptionCaught")
-    suspend fun fetch(activity: Activity): Result<String, DataError.Local> {
+    override suspend fun fetch(activity: Activity): Result<String, DataError.Local> {
         Timber.tag(TAG).d("Requesting credential from CredentialManager...")
 
         return try {

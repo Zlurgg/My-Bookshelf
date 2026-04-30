@@ -71,7 +71,7 @@ fun BookcaseScreenRoot(
     onBookDetailClick: (String, String) -> Unit,
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
     onSignIn: () -> Unit = {},
-    onProfileClick: (Boolean) -> Unit = {},
+    onAccountClick: (Boolean) -> Unit = {},
     switchToBookClubs: Boolean = false
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -188,7 +188,7 @@ fun BookcaseScreenRoot(
                 else -> viewModel.onAction(action)
             }
         },
-        onProfileClick = { onProfileClick(state.isSignedIn) },
+        onAccountClick = { onAccountClick(state.isSignedIn) },
     )
 }
 
@@ -201,7 +201,7 @@ fun BookcaseScreen(
     showAddBookshelfDialog: Boolean,
     onShowAddBookshelfDialogChange: (Boolean) -> Unit,
     onAction: (BookcaseAction) -> Unit,
-    onProfileClick: () -> Unit = {},
+    onAccountClick: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -272,7 +272,7 @@ fun BookcaseScreen(
                         }
                     }
                     // Profile icon
-                    IconButton(onClick = onProfileClick) {
+                    IconButton(onClick = onAccountClick) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = stringResource(R.string.cd_profile)

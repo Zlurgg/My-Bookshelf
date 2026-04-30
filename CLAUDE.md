@@ -51,7 +51,8 @@ All fallible operations return `Result<T, DataError>`, never throw. Use `ErrorMa
 |---------|---------|
 | `app/` | Application entry, navigation, `MyBookShelfApp` |
 | `core/` | Infrastructure (database, network, preferences) |
-| `auth/` | Authentication (sign-in, user provider) |
+| `account/` | Account management (profile display, account deletion) |
+| `auth/` | Authentication (sign-in, sign-out, user provider, credential fetching) |
 | `sync/` | Cloud sync (Firestore sync engine) |
 | `book/` | Shared book domain (models, repos, network, preview, shared use cases) |
 | `bookcase/` | Home screen (shelf list, create/delete/rename shelves) |
@@ -61,7 +62,7 @@ All fallible operations return `Result<T, DataError>`, never throw. Use `ErrorMa
 | `sharing/` | Deeplinks, export/import |
 | `welcome/` | Tutorial, onboarding |
 
-Dependencies flow downward: `bookshelf/` → `bookcase/` (GetShelfByIdUseCase) → `book/` → `core/`. `bookdetail/` → `book/`. `bookclub/` → `book/`. Cross-feature communication uses interfaces in `book/domain/service/` (`ClubOperations`, `BookReviewProvider`).
+Dependencies flow downward: `bookshelf/` → `bookcase/` (GetShelfByIdUseCase) → `book/` → `core/`. `bookdetail/` → `book/`. `bookclub/` → `book/`. `account/` → `auth/` + `sync/` + `book/` (via `ClubOperations`). Cross-feature communication uses interfaces in `book/domain/service/` (`ClubOperations`, `BookReviewProvider`) and `auth/presentation/service/` (`CredentialFetcher`).
 
 ## Key Locations
 

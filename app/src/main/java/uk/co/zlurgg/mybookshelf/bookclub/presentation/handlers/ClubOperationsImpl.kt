@@ -138,4 +138,16 @@ class ClubOperationsImpl(
     override suspend fun renameBookClub(clubCode: String, newName: String): Result<Unit, DataError> {
         return bookClubRepository.renameBookClub(clubCode, newName)
     }
+
+    override suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync> {
+        return bookClubRepository.getClubsCreatedByUser(userId)
+    }
+
+    override suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync> {
+        return bookClubRepository.getRemoteClubMemberships(userId)
+    }
+
+    override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> {
+        return bookClubRepository.removeUserFromClub(clubCode, userId)
+    }
 }

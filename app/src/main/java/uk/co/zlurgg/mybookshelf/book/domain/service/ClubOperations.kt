@@ -66,4 +66,10 @@ interface ClubOperations {
     suspend fun clearAllMemberships(): Result<Unit, DataError.Local>
 
     suspend fun renameBookClub(clubCode: String, newName: String): Result<Unit, DataError>
+
+    suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync>
+
+    suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync>
+
+    suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync>
 }

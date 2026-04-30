@@ -115,6 +115,10 @@ class BookshelfViewModelTest {
             clubCode: String,
             newName: String,
         ): Result<Unit, DataError> = Result.Success(Unit)
+        override suspend fun getClubsCreatedByUser(userId: String) = Result.Success(emptyList<String>())
+        override suspend fun getClubMembershipsForUser(userId: String) = Result.Success(emptyList<String>())
+        override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
     }
 
     private fun createViewModel(shelfId: String = "test-shelf"): BookshelfViewModel {

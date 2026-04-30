@@ -1,215 +1,456 @@
-# Handover: Profile + Delete Account — Code Review Fixes
+# Refactor: Profile → Account Screen + Simplified Deletion
 
 ## Context
 
-The Profile screen and account deletion flow were implemented on the `profile-page` branch. A code review identified 10 issues. This document is the plan for a follow-up session to review each finding, decide keep/fix/skip, and implement the fixes.
+The Profile screen and account deletion were implemented on `profile-page` branch. Two review passes found 17 issues. Rather than patching incrementally, we're refactoring:
 
-The implementation is across 4 commits:
-```
-8173be6 docs: Add profile and delete account specs
-dd53e3c test(auth): Add DeleteAccountUseCase and ProfileViewModel tests
-af1887e feat(auth): Add Profile screen and move auth out of bookcase
-e70c19e feat(auth): Add account deletion domain and data layer
-```
+1. **Move** `auth/presentation/profile/` → top-level `account/` feature package (matching `bookcase/`, `bookdetail/`, etc.)
+2. **Fix** the screen to match our Root/Screen pattern and constitution
+3. **Simplify** `DeleteAccountUseCase` — delete Firestore data + Firebase Auth, no local cleanup
 
-Build, tests, and detekt all pass. No regressions.
+### Why refactor instead of patch
+
+- Profile was buried in `auth/` — but account management is a distinct feature, not authentication
+- The Screen composable had side effects (re-auth `LaunchedEffect`), data layer imports (`GoogleCredentialFetcher`), and Root/Screen in a single file — all spec violations
+- `DeleteAccountUseCase` was over-implemented: local cleanup is unnecessary (scoped by ownerId, removed on uninstall), `retryAfterReAuth` with precondition guard added complexity that isn't needed
+- The incremental fix list (17 issues) touched the same files repeatedly — a clean rewrite is less churn
+
+### What stays the same
+
+- Club cleanup logic (cross-user data must be cleaned)
+- Firestore batch deletion methods (`deleteAllRemoteData`, etc.)
+- `REQUIRES_RECENT_LOGIN` handling
+- Confirmation dialog before destructive action
+- Navigation route and bookcase top bar profile icon
 
 ## Before You Start
 
-Read these files to understand the current state:
-- `docs/specs/plans/profile-delete-account.md` — the original architectural plan
-- `app/src/main/java/uk/co/zlurgg/mybookshelf/auth/domain/usecase/DeleteAccountUseCaseImpl.kt` — the core use case
-- `app/src/main/java/uk/co/zlurgg/mybookshelf/auth/presentation/profile/ProfileScreen.kt` — the UI
-- `app/src/main/java/uk/co/zlurgg/mybookshelf/auth/presentation/profile/ProfileViewModel.kt`
+Read these specs — the refactored code must comply:
 
-## Issues to Review
+| Spec | Key rule |
+|------|----------|
+| `docs/specs/constitution.md` | Presentation NEVER imports Data. Domain has NO Android imports. |
+| `docs/specs/patterns/compose-screens.md` | Root/Screen in **separate files**. Side effects only in Root. Screen is pure. |
+| `docs/specs/patterns/state-management.md` | Single StateFlow, sealed Action interface, `_state.update { it.copy(...) }` |
+| `docs/specs/patterns/usecase.md` | Interface + Impl, one business operation |
+| `docs/specs/style/code-style.md` | Naming, testing conventions |
 
-Each issue has a recommendation, but all should be reviewed with fresh eyes — the recommendation may be wrong.
-
----
-
-### Issue 1: `getClubMembershipsForUser` returns ALL memberships, not "member but not creator"
-
-**Severity**: Minor bug (redundant no-op Firestore calls, misleading logs)
-
-**Location**: `DeleteAccountUseCaseImpl.cleanUpBookClubs()` (lines 133-178)
-
-**Problem**: `cleanUpBookClubs` first deletes clubs created by the user via `clubOperations.deleteBookClub(code)`, then calls `getClubMembershipsForUser(userId)` to remove the user from remaining clubs. But `getClubMembershipsForUser` reads the full `club_memberships` array from `users/{uid}/settings/preferences` — it includes clubs the user created, not just ones they joined.
-
-After deleting club-A (step 1), the code then tries `removeUserFromClub("club-A", userId)` (step 2) on a club that was just fully deleted. Firestore `delete()` on a non-existent doc is a no-op, so this doesn't crash, but:
-- Wasted network calls (member doc delete, book query, review deletes, preferences merge)
-- Log lines like "Removing user from club: club-A" after "Deleting club created by user: club-A" are confusing
-
-**The plan said**: "`getClubMembershipsForUser` returns club codes where user is member but not creator." The Firestore implementation doesn't filter.
-
-**Options**:
-1. Filter in the use case: subtract `createdClubCodes` from the membership list before iterating
-2. Filter in the data source query: cross-reference with club metadata `created_by` field
-3. Accept the redundancy: document it as idempotent by design
-
-**Recommendation**: Option 1 — simplest, one line in the use case. Pass the created club codes list and subtract.
+Also read for reference:
+- `bookdetail/` — cleanest example of a small top-level feature package (di/, domain/usecase/, presentation/)
+- `auth/domain/usecase/SignOutUseCaseImpl.kt` — pattern for auth lifecycle use case
 
 ---
 
-### Issue 2: `removeUserFromClub` deletes reviews but not comments
+## New Package Structure
 
-**Severity**: Design question
+```
+account/
+├── di/
+│   └── AccountModule.kt
+├── domain/
+│   └── usecase/
+│       ├── DeleteAccountUseCase.kt          (interface)
+│       └── DeleteAccountUseCaseImpl.kt       (simplified)
+└── presentation/
+    ├── AccountScreenRoot.kt                  (side effects, navigation, credential fetch)
+    ├── AccountScreen.kt                      (pure UI — no LaunchedEffect, no injections)
+    ├── AccountState.kt
+    ├── AccountAction.kt
+    ├── AccountViewModel.kt
+    └── components/
+        └── DeleteAccountConfirmDialog.kt
+```
 
-**Location**: `FirestoreBookClubRemoteDataSourceImpl.removeUserFromClub()` (lines 413-449)
-
-**Problem**: The method removes the member doc and iterates all books to delete the user's reviews (`reviews/{userId}`), but doesn't touch comments. Comments use auto-generated IDs (not userId), so deleting them requires a query (`where userId == X`), not a direct doc path.
-
-**Question**: Is this intentional? Two reasonable positions:
-- **Keep comments**: They're part of the discussion. Removing them creates confusing gaps (replies to deleted comments). Attribution stays — username is embedded in the comment doc.
-- **Delete comments**: Privacy-first. When a user leaves/deletes, their content should go. But this is heavier (query + batch delete per book).
-
-The plan doesn't mention comments in `removeUserFromClub`. The existing `deleteBookClub` method also doesn't individually delete comments — it deletes the entire club doc tree.
-
-**Recommendation**: Keep as-is for now. Comments persist when leaving a club, which is standard social behavior. Account deletion already removes the club membership list doc (via `deleteAllRemoteData`), and the comments become "orphaned attribution" — the user's name stays but the account is gone. If privacy is a concern for Play Store review, revisit. Document the decision.
-
----
-
-### Issue 3: Domain use case imports data layer `BookClubRemoteDataSource`
-
-**Severity**: Architecture violation
-
-**Location**: `DeleteAccountUseCaseImpl.kt` line 13
-
-**Problem**: `DeleteAccountUseCaseImpl` (domain layer, `auth/domain/usecase/`) imports `BookClubRemoteDataSource` from `sync/data/repository/`. The constitution says domain depends on nothing from data layers.
-
-`SyncRepository` (which the use case also depends on) is fine — it lives in `sync/domain/repository/`. But `BookClubRemoteDataSource` is in `sync/data/`.
-
-**Why it happened**: The three methods needed (`getClubsCreatedByUser`, `getClubMembershipsForUser`, `removeUserFromClub`) don't exist on any domain-layer interface. The existing `ClubOperations` domain interface has `deleteBookClub` and `clearAllMemberships` but not the discovery/removal methods.
-
-**Options**:
-1. Add the three methods to `ClubOperations` (domain interface) and implement in `ClubOperationsImpl`. Remove `BookClubRemoteDataSource` dependency from the use case.
-2. Create a new domain interface (e.g., `ClubCleanupOperations`) with just these three methods.
-3. Move `BookClubRemoteDataSource` to domain layer — but it exposes DTOs, so this is worse.
-
-**Recommendation**: Option 1. `ClubOperations` already has `deleteBookClub` and `clearAllMemberships`. Adding `getClubsCreatedByUser`, `getClubMembershipsForUser`, and `removeUserFromClub` keeps the "things the app needs from clubs" contract cohesive. The impl delegates to `BookClubRemoteDataSource` internally.
-
-**Impact**: `DeleteAccountUseCaseImpl` constructor drops `bookClubRemoteDataSource` parameter. DI wiring in `AuthModule` simplifies. Tests simplify (no more `StubBookClubRemoteDataSource`).
+Dependencies flow: `account/` → `auth/` (domain: `AuthUseCases`; presentation: `CredentialFetcher`) → `book/` (domain: `ClubOperations`) → `sync/` (domain: `SyncRepository`). Same direction as existing features. The `CredentialFetcher` import is presentation-to-presentation cross-feature, not a layer violation.
 
 ---
 
-### Issue 4: Re-auth dialog flashes before Google picker covers it
+## Key Design Decisions
 
-**Severity**: UX polish
+### Deletion ordering: clubs → Firestore → auth
 
-**Location**: `ProfileScreen.kt` lines 256-272
+The `invoke()` flow is: cancel sync → delete clubs → delete Firestore data → delete Firebase Auth.
 
-**Problem**: When `showReAuthDialog` becomes true, the dialog renders AND `LaunchedEffect(Unit)` immediately triggers `onReAuthFetchCredential()`, which launches the Google credential picker. The user sees the dialog text ("For security, please sign in again...") for a fraction of a second before the picker covers it.
+**Why this order:**
+- Must query club memberships before deleting Firestore user data (memberships are stored in `users/{uid}/settings/preferences`)
+- Club cleanup affects other users' data — must happen while we have the membership list
+- Firestore deletion is user-only data — must fully succeed before the irreversible auth deletion
 
-The dialog serves no purpose if it's immediately covered.
+**Partial failure scenario:** If clubs succeed (step 3) but Firestore fails (step 4), the user's clubs are deleted but their account still exists. On retry: `getClubsCreatedByUser` returns empty (clubs gone), `getClubMembershipsForUser` still returns the list (preferences doc still exists), `removeUserFromClub` no-ops on already-cleaned clubs (idempotent), Firestore deletion retries. This is accepted — the user confirmed the destructive action, and the ordering is constrained by data dependencies.
 
-**Options**:
-1. Remove the dialog entirely — trigger the picker directly when `REQUIRES_RECENT_LOGIN` is received, skip the dialog state
-2. Keep the dialog with a confirm button — user taps "Sign In Again" to trigger the picker
-3. Keep as-is — the Google picker is self-explanatory
+### retryAfterReAuth: only re-auth + delete auth
 
-**Recommendation**: Option 1. The dialog adds a UI step that communicates nothing. Remove `showReAuthDialog` from state, trigger the credential fetch directly in the Root's `LaunchedEffect` when the ViewModel signals re-auth is needed. Add a new one-shot state field like `requestReAuth: Boolean` that the Root observes.
+`REQUIRES_RECENT_LOGIN` only fires from `authService.deleteAccount()` at step 5. By that point steps 1-4 have all succeeded — clubs are cleaned, Firestore data is deleted. So `retryAfterReAuth` only needs to: reauthenticate → delete auth. Two lines, no wasted network calls. KDoc documents the precondition: "Must only be called after invoke() returned REQUIRES_RECENT_LOGIN, meaning all remote data is already deleted."
 
----
+### One-shot state fields use boolean flags + LaunchedEffect + reset action
 
-### Issue 5: Re-auth credential fetch failure silently dismisses
+This is the established pattern in the codebase — `BookcaseScreenRoot` uses it in at least 5 places (`navigateToSignIn`, `operationSuccess`, `tutorialShelfIdForNavigation`, `switchToPersonalTab`, `switchToBookClubsTab`). Channels/SharedFlow are not used anywhere for one-shot events. The double-fire risk is mitigated by the reset action being dispatched inside the `LaunchedEffect` — once reset, the condition is false and the effect won't re-trigger on recomposition.
 
-**Severity**: UX bug
+### CredentialFetcher is a presentation-layer interface, not domain
 
-**Location**: `ProfileScreen.kt` lines 86-94
+`CredentialFetcher` depends on `android.app.Activity` — an Android framework class. The constitution says domain has "NO Android imports, NO UI, NO frameworks." So `CredentialFetcher` lives in `auth/presentation/service/`, not `auth/domain/service/`. This is correct — credential fetching is inherently platform-coupled. The implementation (`GoogleCredentialFetcher`) stays in `auth/data/service/`. Presentation depends on its own interface, data implements it.
 
-**Problem**: In `ProfileScreenRoot`, when `credentialFetcher.fetch()` returns `Result.Error`, the code dispatches `ProfileAction.DismissReAuth`. The re-auth dialog disappears with no feedback. The user is back on the profile screen with no error message and no indication of what happened or that they can retry.
+### Guest users never reach the Account screen
 
-**Fix**: On credential fetch failure, dispatch an action that sets an error message instead of silently dismissing. Could map the credential error to a user-facing message like "Sign-in was cancelled" or "Failed to authenticate."
+Navigation handles this. `BookcaseScreenRoot` receives `onAccountClick: (isSignedIn: Boolean) -> Unit`. When tapped:
+- Signed in → navigate to `Account` route
+- Guest → navigate to `SignIn` route
 
-**Recommendation**: Add a `ProfileAction.OnReAuthFailed` action that sets `errorMessage` and clears `showReAuthDialog`. Or reuse the existing error handling — set `errorMessage` from the credential error.
+The Account screen itself does not guard against guests. If a guest somehow reached it (impossible through normal navigation), `getSignedInUser()` returns null and the screen shows empty state. No delete/sign-out buttons appear because `isSignedIn = false`.
 
----
+### ClubOperations grows to 17 methods
 
-### Issue 6: `deleteAllRemoteData` doesn't delete the `users/{uid}` doc itself
-
-**Severity**: Cosmetic / minor
-
-**Location**: `SyncRepositoryImpl.deleteAllRemoteData()` (lines 303-326)
-
-**Problem**: Deletes books, shelves, and preferences subcollections but not the `users/{uid}` parent document. This leaves a potentially empty document in Firestore.
-
-**Reality check**: In Firestore, parent documents are not required for subcollections to exist. The `users/{uid}` document may never have been explicitly created — Firestore auto-creates the path when subcollection docs are written. After deleting all subcollection docs, the parent doc may or may not exist.
-
-**Recommendation**: Add a final `firestore.collection("users").document(userId).delete().await()` at the end of `deleteAllRemoteData`. One extra call, full cleanup. But verify this doesn't affect other code that checks for the user doc's existence.
+Adding `getClubsCreatedByUser`, `getClubMembershipsForUser`, `removeUserFromClub` takes the interface from 14 to 17 methods. The interface's KDoc already notes: "If the interface grows beyond ~20 methods, consider splitting by concern (e.g. ClubMembershipOps, ClubSyncOps)." We're close but under. These three methods fit "things the app needs from clubs" and splitting now would be premature. Noted for future reference.
 
 ---
 
-### Issue 7: Same `onProfileClick` name at two levels with different signatures
+## Implementation
 
-**Severity**: Readability
+### Step 1: Add ClubOperations methods (fixes Issue 3)
 
-**Location**: `BookcaseScreenRoot` (line 74) vs `BookcaseScreen` (line 201)
+`DeleteAccountUseCaseImpl` currently imports `BookClubRemoteDataSource` (data layer) directly. Fix by adding the three methods to the existing domain interface.
 
-**Problem**: `BookcaseScreenRoot` has `onProfileClick: (Boolean) -> Unit` (receives `isSignedIn`), while `BookcaseScreen` has `onProfileClick: () -> Unit` (no args). The Root wraps it: `onProfileClick = { onProfileClick(state.isSignedIn) }`. Same name, different types — confusing when reading.
+**File:** `book/domain/service/ClubOperations.kt` — add:
+```kotlin
+suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync>
+suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync>
+suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync>
+```
 
-**Recommendation**: Rename the Screen's callback to `onProfileIconClick: () -> Unit` to distinguish it from the Root's navigation callback. Small change, clearer intent.
+**File:** `ClubOperationsImpl` — implement by delegating to `BookClubRemoteDataSource` (data layer stays internal to impl).
+
+**File:** Test stubs/mocks for `ClubOperations` — add stubs for the new methods.
+
+### Step 2: Extract CredentialFetcher interface (fixes Issue 15)
+
+**New file:** `auth/presentation/service/CredentialFetcher.kt`
+```kotlin
+interface CredentialFetcher {
+    suspend fun fetch(activity: Activity): Result<String, DataError.Local>
+}
+```
+
+This is a presentation-layer interface (Activity dependency makes it platform-coupled). NOT domain.
+
+**File:** `auth/data/service/GoogleCredentialFetcher.kt` — implement `CredentialFetcher` interface.
+
+**File:** `auth/di/AuthModule.kt` — bind `GoogleCredentialFetcher` to `CredentialFetcher`.
+
+### Step 3: Fix GoogleAuthUiClient.deleteAccount() (fixes Issue 11)
+
+Wrap `credentialManager.clearCredentialState()` in its own try-catch after `user.delete().await()` succeeds. Account deletion is the point of no return — credential clearing is best-effort:
+
+```kotlin
+user.delete().await()
+// Best-effort — account is already deleted, credential clearing is cleanup
+try {
+    credentialManager.clearCredentialState(ClearCredentialStateRequest())
+} catch (e: Exception) {
+    Timber.tag(TAG).w(e, "Credential state clear failed after account deletion")
+}
+```
+
+### Step 4: Simplified DeleteAccountUseCase
+
+**New file:** `account/domain/usecase/DeleteAccountUseCase.kt`
+```kotlin
+interface DeleteAccountUseCase {
+    suspend operator fun invoke(): Result<Unit, DataError>
+    suspend fun retryAfterReAuth(idToken: String): Result<Unit, DataError>
+}
+```
+
+**New file:** `account/domain/usecase/DeleteAccountUseCaseImpl.kt`
+
+**Dependencies** (5, down from 8):
+- `CurrentUserProvider` — verify user is signed in
+- `SyncSchedulerService` — cancel sync
+- `SyncRepository` — delete Firestore data
+- `ClubOperations` — club cleanup (domain interface, no data layer import)
+- `AuthService` — delete Firebase Auth account + reauthenticate
+
+**Removed dependencies:**
+- ~~`ClearUserDataUseCase`~~ — local data scoped by ownerId, invisible to other users, removed on uninstall
+- ~~`AuthStateRepository`~~ — no need to set signed-in state, app navigates to sign-in screen
+- ~~`BookClubRemoteDataSource`~~ — replaced by `ClubOperations` (domain interface)
+
+**`invoke()` flow:**
+1. Verify user is signed in (fail fast)
+2. Cancel sync (`syncScheduler.cancelAllSync()` — no wait, just cancel)
+3. Clean up clubs via `ClubOperations`:
+   - `getClubsCreatedByUser(userId)` → `deleteBookClub(code)` for each
+   - `getClubMembershipsForUser(userId)` → subtract created club codes (fixes Issue 1) → `removeUserFromClub(code, userId)` for remaining
+4. Delete Firestore data (`syncRepository.deleteAllRemoteData(userId)`) — must succeed before proceeding
+5. Delete Firebase Auth account (`authService.deleteAccount()`) — on `REQUIRES_RECENT_LOGIN`, return error to ViewModel
+
+**`retryAfterReAuth(idToken)` flow:**
+
+`REQUIRES_RECENT_LOGIN` only fires at step 5. By that point steps 1-4 have succeeded. So:
+```kotlin
+/**
+ * Retries account deletion after re-authentication.
+ * Must only be called after [invoke] returned [DataError.Local.REQUIRES_RECENT_LOGIN],
+ * meaning clubs are cleaned and all remote data is already deleted.
+ */
+override suspend fun retryAfterReAuth(idToken: String): Result<Unit, DataError> {
+    val reAuthResult = authService.reauthenticate(idToken)
+    if (reAuthResult is Result.Error) return reAuthResult
+    return authService.deleteAccount()
+}
+```
+
+No club cleanup, no Firestore deletion, no precondition guard. Two operations.
+
+**Removed:**
+- ~~`cleanUpLocalData()`~~ — unnecessary
+- ~~`waitForSyncIdle()`~~ — unnecessary complexity, just cancel
+- ~~Precondition guard / `hasRemoteData` check~~ — unnecessary, retryAfterReAuth has a clear precondition documented via KDoc
+
+### Step 5: AccountState + AccountAction
+
+**New file:** `account/presentation/AccountState.kt`
+```kotlin
+data class AccountState(
+    val userEmail: String? = null,
+    val userName: String? = null,
+    val profilePictureUrl: String? = null,
+    val isSignedIn: Boolean = false,
+    val showSignOutDialog: Boolean = false,
+    val showDeleteConfirmDialog: Boolean = false,
+    val isDeleting: Boolean = false,
+    val requestReAuth: Boolean = false,       // one-shot, Root observes — triggers Google picker
+    val navigateToSignIn: Boolean = false,     // one-shot
+    val errorMessage: String? = null,
+)
+```
+
+**New file:** `account/presentation/AccountAction.kt`
+```kotlin
+sealed interface AccountAction {
+    data object ShowSignOutDialog : AccountAction
+    data object DismissSignOutDialog : AccountAction
+    data object ConfirmSignOut : AccountAction
+    data object RequestDeleteAccount : AccountAction
+    data object DismissDeleteConfirm : AccountAction
+    data object ConfirmDeleteAccount : AccountAction
+    data class OnReAuthCompleted(val idToken: String) : AccountAction
+    data object OnReAuthFailed : AccountAction           // fixes Issue 5
+    data object DismissError : AccountAction
+    data object ResetNavigation : AccountAction
+    data object ResetReAuth : AccountAction
+}
+```
+
+Changes from ProfileState/Action:
+- `showReAuthDialog` → `requestReAuth` (one-shot observed by Root, not a dialog — fixes Issue 4)
+- Added `OnReAuthFailed` action (fixes Issue 5)
+- Added `ResetReAuth` action
+
+### Step 6: AccountViewModel
+
+**New file:** `account/presentation/AccountViewModel.kt`
+
+**Dependencies:**
+- `AuthUseCases` — for `getSignedInUser()` and `signOut()`
+- `DeleteAccountUseCase` — for deletion (injected directly, not via `AuthUseCases`)
+
+```kotlin
+class AccountViewModel(
+    private val authUseCases: AuthUseCases,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
+) : ViewModel()
+```
+
+Key differences from ProfileViewModel:
+- `deleteAccount()` has `isDeleting` guard (fixes Issue 12):
+  ```kotlin
+  private fun deleteAccount() {
+      if (_state.value.isDeleting) return
+      viewModelScope.launch { ... }
+  }
+  ```
+- `handleDeleteError` sets `requestReAuth = true` (not `showReAuthDialog`) for `REQUIRES_RECENT_LOGIN`
+- `OnReAuthFailed` sets `errorMessage` instead of silently dismissing
+
+### Step 7: AccountScreenRoot (separate file)
+
+**New file:** `account/presentation/AccountScreenRoot.kt`
+
+**All side effects live here:**
+- `LaunchedEffect(state.navigateToSignIn)` → navigate + reset
+- `LaunchedEffect(state.errorMessage)` → show snackbar + dismiss
+- `LaunchedEffect(state.requestReAuth)` → fetch credential → dispatch `OnReAuthCompleted` or `OnReAuthFailed` + reset (fixes Issues 4, 5)
+
+**Credential fetching** — injects `CredentialFetcher` (presentation-layer interface, not `GoogleCredentialFetcher`):
+```kotlin
+@Composable
+fun AccountScreenRoot(
+    viewModel: AccountViewModel = koinViewModel(),
+    credentialFetcher: CredentialFetcher = koinInject(),
+    onNavigateToSignIn: () -> Unit,
+    onBack: () -> Unit,
+)
+```
+
+No data layer imports. Re-auth triggers the Google picker directly from Root's `LaunchedEffect` — no intermediate dialog (fixes Issue 4).
+
+### Step 8: AccountScreen (separate file, pure)
+
+**New file:** `account/presentation/AccountScreen.kt`
+
+Pure composable — receives state and callbacks, zero side effects:
+```kotlin
+@Composable
+fun AccountScreen(
+    state: AccountState,
+    snackbarHostState: SnackbarHostState,
+    onAction: (AccountAction) -> Unit,
+    onBack: () -> Unit,
+)
+```
+
+Contains:
+- TopAppBar with back button
+- Profile header (avatar, name, email)
+- Sign out button (outlined)
+- Delete account button (error color, `DeleteForever` icon)
+- Sign out confirmation dialog (pure — just state-driven visibility)
+- Delete confirmation dialog (`DeleteAccountConfirmDialog`)
+- Deleting progress dialog (non-dismissible)
+
+**No `LaunchedEffect` in this composable.** No credential fetching. No snackbar triggering. Pure rendering.
+
+Preview at the bottom.
+
+### Step 9: DeleteAccountConfirmDialog
+
+**New file:** `account/presentation/components/DeleteAccountConfirmDialog.kt`
+
+Same as current implementation — move from `auth/presentation/profile/components/`.
+
+### Step 10: AccountModule DI
+
+**New file:** `account/di/AccountModule.kt`
+```kotlin
+val accountModule = module {
+    singleOf(::DeleteAccountUseCaseImpl).bind<DeleteAccountUseCase>()
+    viewModel { AccountViewModel(get(), get()) }
+}
+```
+
+Register in app's module list.
+
+### Step 11: Navigation + Bookcase cleanup
+
+**File:** `app/NavigationRoute.kt` — rename `Profile` → `Account` (route string: `"account"`)
+
+**File:** `app/presentation/MyBookShelfApp.kt` — update composable to use `AccountScreenRoot`
+
+**File:** `bookcase/presentation/BookcaseScreen.kt`:
+- Rename `onProfileClick` → `onAccountClick` in both Root and Screen (fixes Issue 7)
+- Update content description on the `AccountCircle` icon button
+- Update any related string resources
+
+**File:** `bookcase/presentation/BookcaseScreenRoot.kt` (or wherever Root lives):
+- Rename callback parameter to `onAccountClick: (Boolean) -> Unit`
+
+### Step 12: Remove old profile code
+
+Delete from `auth/`:
+- `auth/presentation/profile/ProfileScreen.kt`
+- `auth/presentation/profile/ProfileState.kt`
+- `auth/presentation/profile/ProfileAction.kt`
+- `auth/presentation/profile/ProfileViewModel.kt`
+- `auth/presentation/profile/components/DeleteAccountConfirmDialog.kt`
+- `auth/domain/usecase/DeleteAccountUseCase.kt`
+- `auth/domain/usecase/DeleteAccountUseCaseImpl.kt`
+- `auth/domain/usecase/GetSignedInUserUseCase.kt` — keep (still used by AccountViewModel via AuthUseCases)
+- `auth/domain/usecase/GetSignedInUserUseCaseImpl.kt` — keep
+
+**File:** `auth/domain/usecase/AuthUseCases.kt` — remove `deleteAccount` field. `DeleteAccountUseCase` is now in `account/` and injected directly into `AccountViewModel`, not via the aggregator.
+
+**Verify:** No other ViewModel references `authUseCases.deleteAccount` before removing.
+
+**File:** `auth/di/AuthModule.kt` — remove `DeleteAccountUseCaseImpl` and `ProfileViewModel` registrations.
+
+### Step 13: Issue 10 — AuthUseCases over-injection tech debt
+
+The constitution says: "Never describe a violation as 'acceptable' or 'consistent with existing patterns'." `BookcaseViewModel` now uses 2 of 5 use cases from `AuthUseCases`. Since we're already touching `AuthUseCases` (removing `deleteAccount`), add a tech-debt comment:
+
+**File:** `bookcase/presentation/BookcaseViewModel.kt` — add comment at injection site:
+```kotlin
+// TODO: BookcaseViewModel only uses checkSignInStatus + getCurrentUserId from AuthUseCases.
+// Inject the two individual use cases instead of the full aggregator.
+```
+
+### Step 14: Update tests
+
+**New file:** `account/domain/usecase/DeleteAccountUseCaseTest.kt`
+- Simplified — no local cleanup tests, no precondition guard test, no sync wait test
+- Cover: full success, Firestore failure stops auth deletion, club cleanup failure stops cascade, `REQUIRES_RECENT_LOGIN`, `retryAfterReAuth` success, `retryAfterReAuth` re-auth failure, not signed in, club filtering (created clubs excluded from membership removal)
+- Mock `ClubOperations` instead of `StubBookClubRemoteDataSource` (fixes Issue 3 test simplification)
+
+**New file:** `account/presentation/AccountViewModelTest.kt`
+- Same coverage as ProfileViewModelTest plus:
+  - `OnReAuthFailed` sets error message (Issue 5)
+  - Double-tap guard: `ConfirmDeleteAccount` while `isDeleting` is a no-op (Issues 12, 17)
+  - Re-auth succeeds but `retryAfterReAuth` fails → shows error (Issue 16)
+
+**Delete:**
+- `auth/domain/usecase/DeleteAccountUseCaseTest.kt`
+- `auth/presentation/profile/ProfileViewModelTest.kt`
+
+**Update:**
+- `testutil/mocks/MockAuthService.kt` — add `email` parameter to `configureSignedIn` with default `"test@example.com"` (Issue 8)
+
+### Step 15: Remaining targeted fixes
+
+**Issue 6** — `SyncRepositoryImpl.deleteAllRemoteData()`: add `firestore.collection("users").document(userId).delete().await()` at the end.
+
+**Issue 2** — Document decision: comments persist when user leaves/deletes account. Standard social behavior. Add a comment in `removeUserFromClub` explaining this:
+```kotlin
+// Reviews are keyed by userId (direct delete). Comments use auto-generated IDs
+// and are intentionally kept — removing them creates gaps in discussions.
+// The user's attribution remains but the account is gone.
+```
+
+**Issue 9** — Resolved by rewrite (new `DeleteAccountUseCaseImpl` won't have the unnecessary suppressions).
 
 ---
 
-### Issue 8: `MockAuthService.configureSignedIn` doesn't set email
+## Issues Resolved by This Refactor
 
-**Severity**: Test gap
-
-**Location**: `testutil/mocks/MockAuthService.kt` line 46
-
-**Problem**: `configureSignedIn` creates `UserData(userId, username, profilePictureUrl = null)` without email. Tests using this mock won't have email in the user data.
-
-**Fix**: Add `email` parameter with default: `configureSignedIn(userId, username, email = "test@example.com")`
-
----
-
-### Issue 9: Unnecessary `@Suppress("TooGenericExceptionCaught")` annotations
-
-**Severity**: Cleanup
-
-**Location**: `DeleteAccountUseCaseImpl.kt` lines 29, 85
-
-**Problem**: Both `invoke()` and `retryAfterReAuth()` have `@Suppress("TooGenericExceptionCaught")` but neither method has a `catch` block. The `invoke()` method has a `try/catch(Exception)` around `waitForSyncIdle()`, but the suppress annotation is on the method, not the try block. `retryAfterReAuth` has no try/catch at all.
-
-**Fix**: Remove `"TooGenericExceptionCaught"` from both suppressions. Keep `"ReturnCount"`. For the try/catch in `invoke()`, either add `@Suppress` to the try block itself, or restructure `waitForSyncIdle` to catch internally (it already uses `withTimeoutOrNull` which doesn't throw).
+| Issue | How resolved |
+|-------|-------------|
+| 1. Membership list includes created clubs | Subtract in use case |
+| 3. Domain imports data layer | `ClubOperations` domain interface |
+| 4. Re-auth dialog flashes | Replaced with one-shot `requestReAuth` in Root |
+| 5. Silent re-auth failure | `OnReAuthFailed` action sets error message |
+| 7. `onProfileClick` name collision | Renamed to `onAccountClick` |
+| 9. Unnecessary `@Suppress` | Clean rewrite |
+| 10. Over-injection accepted as tech debt | Tech-debt TODO comment added (constitution compliant) |
+| 11. Credential clear masks deletion | Try-catch in `GoogleAuthUiClient` |
+| 12. No double-tap guard | `isDeleting` guard in ViewModel |
+| 13. `retryAfterReAuth` recursion | Simplified — reauthenticate + deleteAccount only |
+| 14. Local cleanup errors swallowed | Local cleanup removed entirely |
+| 15. Data layer import in Screen | `CredentialFetcher` presentation-layer interface |
+| 16. Missing retry-failure test | Added in new test file |
+| 17. Missing concurrent deletion test | Added in new test file |
 
 ---
-
-### Issue 10: `BookcaseViewModel` over-injects via full `AuthUseCases`
-
-**Severity**: Design / low priority
-
-**Location**: `BookcaseViewModel.kt` line 33
-
-**Problem**: After removing sign-out, `BookcaseViewModel` only calls `checkSignInStatus()` and `getCurrentUserId()` from `AuthUseCases`. But it receives the full aggregator which now includes `signIn`, `signOut`, `deleteAccount`, and `getSignedInUser` — 4 unused dependencies.
-
-**Context**: This is an existing pattern. The `AuthUseCases` aggregator was designed for ViewModels that need multiple auth operations. Before this change, BookcaseViewModel used 3 of 4. Now it uses 2 of 6. The ratio got worse.
-
-**Options**:
-1. Inject the two individual use cases instead of the aggregator
-2. Leave as-is — it's the existing pattern and changing it is churn
-
-**Recommendation**: Leave as-is. The aggregator pattern is established. Splitting for BookcaseViewModel alone would be inconsistent. If the pattern becomes a problem across the app, refactor all ViewModels at once.
-
----
-
-## Suggested Fix Order
-
-1. **Issue 9** — Remove unnecessary suppressions (trivial, no behavior change)
-2. **Issue 8** — Fix mock email (trivial, improves test fidelity)
-3. **Issue 5** — Fix silent re-auth failure (UX bug, small change)
-4. **Issue 1** — Filter created clubs from membership list (minor bug, one-line fix)
-5. **Issue 3** — Move club cleanup methods to `ClubOperations` domain interface (architecture fix, moderate effort)
-6. **Issue 4** — Simplify re-auth flow (UX polish, tied to issue 5)
-7. **Issue 7** — Rename `onProfileClick` in Screen (readability, trivial)
-8. **Issue 6** — Delete parent user doc (cosmetic, verify no side effects)
-9. **Issue 2** — Decide on comment deletion policy (document decision)
-10. **Issue 10** — Skip (accepted tech debt)
 
 ## Verification
 
-After fixes:
 - `./gradlew assembleDebug` passes
-- `./gradlew test` passes
 - `./gradlew detekt` passes
-- Existing manual test scenarios from the original handover still work
+- `./gradlew test` passes (all existing + new tests)
+- Guest: account icon → sign-in screen (never reaches Account screen)
+- Signed in: account icon → account screen with email/name
+- Sign out from account → sign-in screen
+- Delete account → confirm → loading → sign-in screen
+- Delete with stale session → Google picker → completion
+- Delete with network failure → error shown, still signed in, retry works
+- Delete as club creator → club deleted
+- Firebase Console: user subcollections empty, Auth account gone
+- No orphaned `auth/presentation/profile/` files remain
+- No ProGuard/R8 issues with new `account/` package (verify in release build)

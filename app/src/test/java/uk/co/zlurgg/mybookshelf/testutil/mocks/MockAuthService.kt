@@ -61,8 +61,12 @@ class MockAuthService : AuthService {
         reauthenticateResult = Result.Success(Unit)
     }
 
-    fun configureSignedIn(userId: String = "test-user", username: String = "Test User") {
-        currentUser = UserData(userId = userId, username = username, profilePictureUrl = null)
+    fun configureSignedIn(
+        userId: String = "test-user",
+        username: String = "Test User",
+        email: String = "test@example.com",
+    ) {
+        currentUser = UserData(userId = userId, username = username, email = email, profilePictureUrl = null)
     }
 
     fun configureSignedOut() {

@@ -336,6 +336,14 @@ internal class BookClubManagementRepositoryImpl(
         return helper.convertToPersonalShelf(code)
     }
 
+    override suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync> {
+        return remoteDataSource.getClubsCreatedByUser(userId)
+    }
+
+    override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> {
+        return remoteDataSource.removeUserFromClub(clubCode, userId)
+    }
+
     companion object {
         private const val TAG = "BookClubMgmtRepo"
     }

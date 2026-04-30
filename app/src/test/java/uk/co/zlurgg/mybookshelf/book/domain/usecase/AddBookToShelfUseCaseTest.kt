@@ -40,6 +40,9 @@ class AddBookToShelfUseCaseTest {
         override suspend fun updateClubStyle(clubCode: String, styleName: String) = throw NotImplementedError()
         override suspend fun clearAllMemberships() = throw NotImplementedError()
         override suspend fun renameBookClub(clubCode: String, newName: String) = throw NotImplementedError()
+        override suspend fun getClubsCreatedByUser(userId: String) = throw NotImplementedError()
+        override suspend fun getClubMembershipsForUser(userId: String) = throw NotImplementedError()
+        override suspend fun removeUserFromClub(clubCode: String, userId: String) = throw NotImplementedError()
     }
     private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = AddBookToShelfUseCaseImpl(

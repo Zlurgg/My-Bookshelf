@@ -59,4 +59,13 @@ internal class FirestoreUserPreferencesDataSourceImpl(
                 .await()
         }
     }
+
+    override suspend fun deleteUserDocument(userId: String): Result<Unit, DataError.Sync> {
+        return helper.execute("deleteUserDocument") {
+            firestore.collection(USERS_COLLECTION)
+                .document(userId)
+                .delete()
+                .await()
+        }
+    }
 }

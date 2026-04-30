@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.auth.presentation.profile.components
+package uk.co.zlurgg.mybookshelf.account.presentation.components
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults

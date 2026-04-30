@@ -749,6 +749,7 @@ class SyncEngineTest {
         override suspend fun deleteAllBooks(userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun deleteAllBookshelves(userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun deleteUserPreferences(userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
+        override suspend fun deleteUserDocument(userId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
         override suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync> =
             Result.Success(emptyList())
         override suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync> =

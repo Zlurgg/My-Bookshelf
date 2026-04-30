@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.auth.domain.usecase
+package uk.co.zlurgg.mybookshelf.account.domain.usecase
 
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -9,8 +9,7 @@ interface DeleteAccountUseCase {
     /**
      * Retries account deletion after re-authentication.
      * Must only be called after [invoke] returned [DataError.Local.REQUIRES_RECENT_LOGIN],
-     * meaning remote data is already deleted. Performs a lightweight precondition check
-     * and falls back to [invoke] if remote data still exists.
+     * meaning clubs are cleaned and all remote data is already deleted.
      *
      * @param idToken Fresh Google ID token from re-authentication
      */

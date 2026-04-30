@@ -15,7 +15,6 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
@@ -126,6 +125,10 @@ class BookcaseViewModelTest {
             clubCode: String,
             newName: String
         ): Result<Unit, DataError> = Result.Success(Unit)
+        override suspend fun getClubsCreatedByUser(userId: String) = Result.Success(emptyList<String>())
+        override suspend fun getClubMembershipsForUser(userId: String) = Result.Success(emptyList<String>())
+        override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> =
+            Result.Success(Unit)
     }
 
     private fun createViewModel(): BookcaseViewModel {
@@ -198,15 +201,6 @@ class BookcaseViewModelTest {
             signOut = mockSignOut,
             checkSignInStatus = mockCheckSignInStatus,
             getCurrentUserId = mockGetCurrentUserIdUseCase,
-            deleteAccount = object : DeleteAccountUseCase {
-                override suspend fun invoke(): Result<Unit, DataError> =
-                    Result.Error(DataError.Local.AUTH_FAILED)
-
-                override suspend fun retryAfterReAuth(
-                    idToken: String,
-                ): Result<Unit, DataError> =
-                    Result.Error(DataError.Local.AUTH_FAILED)
-            },
             getSignedInUser = object : GetSignedInUserUseCase {
                 override fun invoke(): uk.co.zlurgg.mybookshelf.auth.domain.model.UserData? = null
             },

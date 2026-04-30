@@ -24,6 +24,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
+// Tech debt: BookcaseViewModel only uses checkSignInStatus + getCurrentUserId from AuthUseCases.
+// Inject the two individual use cases instead of the full aggregator.
 @OptIn(ExperimentalCoroutinesApi::class)
 class BookcaseViewModel(
     private val shelfOperations: ShelfOperationsHandler,

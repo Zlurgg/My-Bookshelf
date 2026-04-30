@@ -321,6 +321,13 @@ class SyncRepositoryImpl(
             return prefsResult
         }
 
+        // Delete the user document itself
+        val userDocResult = userPreferencesDataSource.deleteUserDocument(userId)
+        if (userDocResult is Result.Error) {
+            Timber.tag(TAG).e("Failed to delete user document: %s", userDocResult.error)
+            return userDocResult
+        }
+
         Timber.tag(TAG).d("=== DELETE ALL REMOTE DATA COMPLETE ===")
         return Result.Success(Unit)
     }

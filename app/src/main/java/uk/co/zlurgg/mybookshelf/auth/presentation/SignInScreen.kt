@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
-import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleCredentialFetcher
+import uk.co.zlurgg.mybookshelf.auth.presentation.service.CredentialFetcher
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.BuildConfig
@@ -33,7 +33,7 @@ import uk.co.zlurgg.mybookshelf.auth.presentation.components.WelcomeHeader
 @Composable
 fun SignInScreenRoot(
     viewModel: SignInViewModel = koinViewModel(),
-    credentialFetcher: GoogleCredentialFetcher = koinInject(),
+    credentialFetcher: CredentialFetcher = koinInject(),
     onNavigate: (PostSignInDestination) -> Unit
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

@@ -90,7 +90,12 @@ class GoogleAuthUiClient(
         }
         return try {
             user.delete().await()
-            credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            // Best-effort — account is already deleted, credential clearing is cleanup
+            try {
+                credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            } catch (e: Exception) {
+                Timber.tag(TAG).w(e, "Credential state clear failed after account deletion")
+            }
             Timber.tag(TAG).d("=== DELETE ACCOUNT COMPLETE ===")
             Result.Success(Unit)
         } catch (e: FirebaseAuthRecentLoginRequiredException) {

@@ -18,7 +18,6 @@ import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
@@ -140,15 +139,6 @@ class SignInViewModelTest {
             signOut = signOutUseCase,
             checkSignInStatus = checkSignInStatusUseCase,
             getCurrentUserId = getCurrentUserIdUseCase,
-            deleteAccount = object : DeleteAccountUseCase {
-                override suspend fun invoke(): Result<Unit, DataError> =
-                    Result.Error(DataError.Local.AUTH_FAILED)
-
-                override suspend fun retryAfterReAuth(
-                    idToken: String,
-                ): Result<Unit, DataError> =
-                    Result.Error(DataError.Local.AUTH_FAILED)
-            },
             getSignedInUser = object : GetSignedInUserUseCase {
                 override fun invoke(): UserData? = null
             },

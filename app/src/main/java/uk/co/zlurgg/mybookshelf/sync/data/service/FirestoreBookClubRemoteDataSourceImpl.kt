@@ -437,6 +437,9 @@ internal class FirestoreBookClubRemoteDataSourceImpl(
                     .delete()
                     .await()
             }
+            // Reviews are keyed by userId (direct delete). Comments use auto-generated IDs
+            // and are intentionally kept — removing them creates gaps in discussions.
+            // The user's attribution remains but the account is gone.
 
             // Remove club from user's membership list using merge for idempotency
             val data = mapOf(FIELD_CLUB_MEMBERSHIPS to FieldValue.arrayRemove(clubCode))

@@ -133,11 +133,19 @@ fun `searchBooks - when no internet - returns NoInternet error`()
 
 ```
 app/src/test/java/uk/co/zlurgg/mybookshelf/
+├── account/               # Account feature tests
+│   ├── domain/usecase/    # DeleteAccountUseCaseTest
+│   └── presentation/      # AccountViewModelTest
+├── auth/                  # Auth tests (SignInViewModel)
 ├── book/                  # Shared book data tests (repos, mappers, network)
-├── bookshelf/             # Bookshelf feature tests
+├── bookcase/              # Bookcase feature tests
 │   ├── domain/usecase/    # UseCase tests
 │   └── presentation/      # ViewModel tests
 ├── bookclub/              # Book club use case tests
+├── bookdetail/            # Book detail tests
+├── bookshelf/             # Bookshelf feature tests
+│   ├── domain/usecase/    # UseCase tests
+│   └── presentation/      # ViewModel tests
 ├── sharing/               # Export/import, deeplink tests
 ├── core/domain/service/   # Core service tests
 ├── sync/                  # Sync engine tests

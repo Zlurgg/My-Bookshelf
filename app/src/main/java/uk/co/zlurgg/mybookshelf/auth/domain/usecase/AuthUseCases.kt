@@ -9,6 +9,5 @@ data class AuthUseCases(
     val signOut: SignOutUseCase,
     val checkSignInStatus: CheckSignInStatusUseCase,
     val getCurrentUserId: GetCurrentUserIdUseCase,
-    val deleteAccount: DeleteAccountUseCase,
     val getSignedInUser: GetSignedInUserUseCase,
 )

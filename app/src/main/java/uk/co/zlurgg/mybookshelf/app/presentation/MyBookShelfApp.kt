@@ -21,7 +21,7 @@ import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.InitializeWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailsScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseAction
-import uk.co.zlurgg.mybookshelf.auth.presentation.profile.ProfileScreenRoot
+import uk.co.zlurgg.mybookshelf.account.presentation.AccountScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseScreenRoot
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfAction
@@ -132,9 +132,9 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                                 popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
                             }
                         },
-                        onProfileClick = { isSignedIn ->
+                        onAccountClick = { isSignedIn ->
                             if (isSignedIn) {
-                                navController.navigate(NavigationRoute.Profile.createRoute())
+                                navController.navigate(NavigationRoute.Account.createRoute())
                             } else {
                                 navController.navigate(NavigationRoute.SignIn.createRoute()) {
                                     popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
@@ -153,9 +153,9 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
                 }
 
                 composable(
-                    route = NavigationRoute.Profile.ROUTE,
+                    route = NavigationRoute.Account.ROUTE,
                 ) {
-                    ProfileScreenRoot(
+                    AccountScreenRoot(
                         onNavigateToSignIn = {
                             navController.navigate(NavigationRoute.SignIn.createRoute()) {
                                 popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }

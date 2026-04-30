@@ -1,6 +1,5 @@
-package uk.co.zlurgg.mybookshelf.auth.presentation.profile
+package uk.co.zlurgg.mybookshelf.account.presentation
 
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -31,9 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,67 +39,18 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.koinInject
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleCredentialFetcher
-import uk.co.zlurgg.mybookshelf.auth.presentation.profile.components.DeleteAccountConfirmDialog
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.account.presentation.components.DeleteAccountConfirmDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
-
-@Composable
-fun ProfileScreenRoot(
-    viewModel: ProfileViewModel = koinViewModel(),
-    credentialFetcher: GoogleCredentialFetcher = koinInject(),
-    onNavigateToSignIn: () -> Unit,
-    onBack: () -> Unit,
-) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarHostState = remember { SnackbarHostState() }
-    val activity = LocalActivity.current
-
-    LaunchedEffect(state.navigateToSignIn) {
-        if (state.navigateToSignIn) {
-            onNavigateToSignIn()
-            viewModel.onAction(ProfileAction.ResetNavigation)
-        }
-    }
-
-    LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let {
-            snackbarHostState.showSnackbar(it)
-            viewModel.onAction(ProfileAction.DismissError)
-        }
-    }
-
-    ProfileScreen(
-        state = state,
-        snackbarHostState = snackbarHostState,
-        onAction = viewModel::onAction,
-        onBack = onBack,
-        onReAuthFetchCredential = {
-            val currentActivity = activity
-                ?: return@ProfileScreen
-            val result = credentialFetcher.fetch(currentActivity)
-            if (result is Result.Success) {
-                viewModel.onAction(ProfileAction.OnReAuthCompleted(result.data))
-            } else if (result is Result.Error) {
-                viewModel.onAction(ProfileAction.DismissReAuth)
-            }
-        },
-    )
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
-    state: ProfileState,
+fun AccountScreen(
+    state: AccountState,
     snackbarHostState: SnackbarHostState,
-    onAction: (ProfileAction) -> Unit,
+    onAction: (AccountAction) -> Unit,
     onBack: () -> Unit,
-    onReAuthFetchCredential: suspend () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
@@ -172,7 +119,7 @@ fun ProfileScreen(
 
             // Sign out button
             OutlinedButton(
-                onClick = { onAction(ProfileAction.ShowSignOutDialog) },
+                onClick = { onAction(AccountAction.ShowSignOutDialog) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.profile_sign_out))
@@ -184,7 +131,7 @@ fun ProfileScreen(
 
             // Delete account button
             Button(
-                onClick = { onAction(ProfileAction.RequestDeleteAccount) },
+                onClick = { onAction(AccountAction.RequestDeleteAccount) },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.error,
@@ -205,16 +152,16 @@ fun ProfileScreen(
     // Sign out confirmation dialog
     if (state.showSignOutDialog) {
         AlertDialog(
-            onDismissRequest = { onAction(ProfileAction.DismissSignOutDialog) },
+            onDismissRequest = { onAction(AccountAction.DismissSignOutDialog) },
             title = { Text(stringResource(R.string.sign_out_title)) },
             text = { Text(stringResource(R.string.sign_out_message)) },
             confirmButton = {
-                TextButton(onClick = { onAction(ProfileAction.ConfirmSignOut) }) {
+                TextButton(onClick = { onAction(AccountAction.ConfirmSignOut) }) {
                     Text(stringResource(R.string.sign_out_confirm))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { onAction(ProfileAction.DismissSignOutDialog) }) {
+                TextButton(onClick = { onAction(AccountAction.DismissSignOutDialog) }) {
                     Text(stringResource(R.string.cancel))
                 }
             },
@@ -224,8 +171,8 @@ fun ProfileScreen(
     // Delete account confirmation dialog
     if (state.showDeleteConfirmDialog) {
         DeleteAccountConfirmDialog(
-            onConfirm = { onAction(ProfileAction.ConfirmDeleteAccount) },
-            onDismiss = { onAction(ProfileAction.DismissDeleteConfirm) },
+            onConfirm = { onAction(AccountAction.ConfirmDeleteAccount) },
+            onDismiss = { onAction(AccountAction.DismissDeleteConfirm) },
         )
     }
 
@@ -251,33 +198,14 @@ fun ProfileScreen(
             properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
         )
     }
-
-    // Re-auth dialog — auto-triggers credential fetch when shown
-    if (state.showReAuthDialog) {
-        AlertDialog(
-            onDismissRequest = { onAction(ProfileAction.DismissReAuth) },
-            title = { Text(stringResource(R.string.profile_reauth_title)) },
-            text = { Text(stringResource(R.string.profile_reauth_message)) },
-            confirmButton = { },
-            dismissButton = {
-                TextButton(onClick = { onAction(ProfileAction.DismissReAuth) }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            },
-        )
-
-        LaunchedEffect(Unit) {
-            onReAuthFetchCredential()
-        }
-    }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun ProfileScreenPreview() {
+private fun AccountScreenPreview() {
     MyBookshelfTheme {
-        ProfileScreen(
-            state = ProfileState(
+        AccountScreen(
+            state = AccountState(
                 userName = "John Doe",
                 userEmail = "john@example.com",
                 isSignedIn = true,

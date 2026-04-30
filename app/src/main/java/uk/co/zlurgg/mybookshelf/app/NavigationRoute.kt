@@ -39,8 +39,8 @@ sealed interface NavigationRoute {
     }
 
     @Serializable
-    data object Profile : NavigationRoute {
-        const val ROUTE = "profile"
+    data object Account : NavigationRoute {
+        const val ROUTE = "account"
         fun createRoute() = ROUTE
     }
 

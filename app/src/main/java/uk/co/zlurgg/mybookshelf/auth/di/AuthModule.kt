@@ -12,6 +12,7 @@ import uk.co.zlurgg.mybookshelf.auth.data.repository.AuthStateRepositoryImpl
 import uk.co.zlurgg.mybookshelf.auth.data.service.CurrentUserProviderImpl
 import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleAuthUiClient
 import uk.co.zlurgg.mybookshelf.auth.data.service.GoogleCredentialFetcher
+import uk.co.zlurgg.mybookshelf.auth.presentation.service.CredentialFetcher
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
@@ -24,12 +25,9 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCase
-import uk.co.zlurgg.mybookshelf.auth.domain.usecase.DeleteAccountUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInViewModel
-import uk.co.zlurgg.mybookshelf.auth.presentation.profile.ProfileViewModel
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCaseImpl
 
@@ -42,7 +40,7 @@ val authModule = module {
     }
 
     // Services
-    single { GoogleCredentialFetcher(authConfig = get()) }
+    single<CredentialFetcher> { GoogleCredentialFetcher(authConfig = get()) }
     single<AuthService> {
         GoogleAuthUiClient(
             context = get()
@@ -58,12 +56,10 @@ val authModule = module {
     single<SignOutUseCase> { SignOutUseCaseImpl(get(), get(), get(), get(), get(), get()) }
     single<CheckSignInStatusUseCase> { CheckSignInStatusUseCaseImpl(get(), get()) }
     single<GetCurrentUserIdUseCase> { GetCurrentUserIdUseCaseImpl(get()) }
-    single<DeleteAccountUseCase> { DeleteAccountUseCaseImpl(get(), get(), get(), get(), get(), get(), get(), get()) }
     single<GetSignedInUserUseCase> { GetSignedInUserUseCaseImpl(get()) }
-    single { AuthUseCases(get(), get(), get(), get(), get(), get()) }
+    single { AuthUseCases(get(), get(), get(), get(), get()) }
 
     // ViewModels
-    viewModel { ProfileViewModel(get()) }
     viewModel {
         SignInViewModel(
             authUseCases = get(),
