@@ -1,13 +1,10 @@
 package uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase
 
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of UpdateBookMetadataUseCase.
@@ -19,7 +16,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 class UpdateBookMetadataUseCaseImpl(
     private val bookRepository: BookRepository,
     private val timeProvider: TimeProvider,
-    private val syncSchedulerService: SyncSchedulerService
 ) : UpdateBookMetadataUseCase {
 
     companion object {
@@ -63,14 +59,6 @@ class UpdateBookMetadataUseCaseImpl(
         )
 
         // Save updated book
-        return when (val upsertResult = bookRepository.upsertBook(updatedBook)) {
-            is Result.Success -> {
-                // Trigger sync after successful metadata update
-                Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: UpdateBookMetadata")
-                syncSchedulerService.triggerImmediateSync()
-                Result.Success(Unit)
-            }
-            is Result.Error -> upsertResult
-        }
+        return bookRepository.upsertBook(updatedBook)
     }
 }

@@ -6,13 +6,10 @@ import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class DeleteShelfUseCaseImpl(
     private val repository: BookcaseRepository,
     private val clubOperations: ClubOperations,
-    private val syncSchedulerService: SyncSchedulerService
 ) : DeleteShelfUseCase {
 
     companion object {
@@ -34,10 +31,7 @@ class DeleteShelfUseCaseImpl(
         }
 
         when (deleteResult) {
-            is Result.Success -> {
-                Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: DeleteShelf")
-                syncSchedulerService.triggerImmediateSync()
-            }
+            is Result.Success -> { /* continue */ }
             is Result.Error -> return deleteResult
         }
 
@@ -61,15 +55,6 @@ class DeleteShelfUseCaseImpl(
     }
 
     override suspend fun restore(shelf: Bookshelf): Result<Unit, DataError.Local> {
-        when (val addResult = repository.addShelf(shelf)) {
-            is Result.Success -> { /* continue */ }
-            is Result.Error -> return addResult
-        }
-
-        // Trigger sync after successful shelf restoration
-        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: RestoreShelf")
-        syncSchedulerService.triggerImmediateSync()
-
-        return Result.Success(Unit)
+        return repository.addShelf(shelf)
     }
 }

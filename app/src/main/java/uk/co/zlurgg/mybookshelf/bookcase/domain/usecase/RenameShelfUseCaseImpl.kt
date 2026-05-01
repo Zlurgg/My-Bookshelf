@@ -1,11 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookcase.domain.usecase
 
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of RenameShelfUseCase.
@@ -14,7 +11,6 @@ import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
  */
 class RenameShelfUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val syncSchedulerService: SyncSchedulerService
 ) : RenameShelfUseCase {
 
     override suspend operator fun invoke(shelfId: String, newName: String): Result<Unit, DataError.Local> {
@@ -29,14 +25,6 @@ class RenameShelfUseCaseImpl(
         }
 
         val updatedShelf = shelfToRename.copy(name = trimmedName)
-        when (val updateResult = bookcaseRepository.updateShelf(updatedShelf)) {
-            is Result.Success -> {
-                Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: RenameShelf")
-                syncSchedulerService.triggerImmediateSync()
-            }
-            is Result.Error -> return updateResult
-        }
-
-        return Result.Success(Unit)
+        return bookcaseRepository.updateShelf(updatedShelf)
     }
 }

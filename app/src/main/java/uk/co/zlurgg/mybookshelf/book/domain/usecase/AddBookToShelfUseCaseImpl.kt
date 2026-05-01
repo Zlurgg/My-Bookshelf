@@ -10,8 +10,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of AddBookToShelfUseCase that orchestrates book persistence and shelf association.
@@ -24,7 +22,6 @@ class AddBookToShelfUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
     private val clubOperations: ClubOperations,
-    private val syncSchedulerService: SyncSchedulerService
 ) : AddBookToShelfUseCase {
 
     override suspend operator fun invoke(book: Book, shelfId: String): Result<Unit, DataError.Local> {
@@ -86,10 +83,6 @@ class AddBookToShelfUseCaseImpl(
                 // Don't fail the whole operation - local add succeeded
             }
         }
-
-        // Trigger sync after successful book addition
-        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: AddBookToShelf")
-        syncSchedulerService.triggerImmediateSync()
 
         return Result.Success(Unit)
     }

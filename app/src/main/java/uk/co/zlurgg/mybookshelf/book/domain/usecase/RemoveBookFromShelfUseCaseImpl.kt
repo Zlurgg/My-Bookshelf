@@ -6,8 +6,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of RemoveBookFromShelfUseCase that handles removing book-shelf associations.
@@ -18,7 +16,6 @@ class RemoveBookFromShelfUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
     private val clubOperations: ClubOperations,
-    private val syncSchedulerService: SyncSchedulerService
 ) : RemoveBookFromShelfUseCase {
 
     override suspend operator fun invoke(bookId: String, shelfId: String): Result<Unit, DataError.Local> {
@@ -42,10 +39,6 @@ class RemoveBookFromShelfUseCaseImpl(
                 // Don't fail the whole operation - local remove succeeded
             }
         }
-
-        // Trigger sync after successful book removal
-        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: RemoveBookFromShelf")
-        syncSchedulerService.triggerImmediateSync()
 
         return Result.Success(Unit)
     }

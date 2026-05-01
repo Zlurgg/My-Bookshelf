@@ -5,11 +5,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
-/**
- * WARNING: Does not trigger sync. This is intentional — UpsertBook is a building-block
- * used by parent use cases (AddBookToShelf, etc.) that handle sync themselves.
- * If you call this directly for a user-facing mutation, you must trigger sync separately.
- */
 class UpsertBookUseCaseImpl(
     private val bookRepository: BookRepository
 ) : UpsertBookUseCase {

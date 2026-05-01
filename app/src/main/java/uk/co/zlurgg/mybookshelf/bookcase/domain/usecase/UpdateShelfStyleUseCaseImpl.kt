@@ -7,8 +7,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 /**
  * Implementation of UpdateShelfStyleUseCase.
@@ -19,7 +17,6 @@ class UpdateShelfStyleUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
     private val clubOperations: ClubOperations,
     private val authService: AuthService,
-    private val syncSchedulerService: SyncSchedulerService,
 ) : UpdateShelfStyleUseCase {
 
     companion object {
@@ -53,15 +50,6 @@ class UpdateShelfStyleUseCaseImpl(
 
         // Update the shelf with new style locally
         val updatedShelf = shelfToUpdate.copy(shelfStyle = newStyle)
-        return when (val result = bookcaseRepository.updateShelf(updatedShelf)) {
-            is Result.Success -> {
-                if (!shelfToUpdate.isBookClub) {
-                    Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: UpdateShelfStyle")
-                    syncSchedulerService.triggerImmediateSync()
-                }
-                result
-            }
-            is Result.Error -> result
-        }
+        return bookcaseRepository.updateShelf(updatedShelf)
     }
 }

@@ -1,16 +1,13 @@
 package uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase
 
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 class ToggleBookPurchaseUseCaseImpl(
     private val bookRepository: BookRepository,
-    private val syncSchedulerService: SyncSchedulerService,
 ) : ToggleBookPurchaseUseCase {
 
     override suspend operator fun invoke(book: Book, purchased: Boolean): Result<Book, DataError.Local> {
@@ -35,13 +32,6 @@ class ToggleBookPurchaseUseCaseImpl(
             book.copy(purchased = purchased)
         }
 
-        return when (val upsertResult = bookRepository.upsertBook(updatedBook)) {
-            is Result.Success -> {
-                Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: ToggleBookPurchase")
-                syncSchedulerService.triggerImmediateSync()
-                Result.Success(updatedBook)
-            }
-            is Result.Error -> upsertResult
-        }
+        return bookRepository.upsertBook(updatedBook).map { updatedBook }
     }
 }

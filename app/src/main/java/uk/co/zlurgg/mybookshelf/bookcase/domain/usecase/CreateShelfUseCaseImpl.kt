@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookcase.domain.usecase
 
-import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.GetOrCreateTutorialBookUseCase
@@ -9,8 +8,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 // Depends on welcome/ for tutorial book creation when a tutorial shelf is made.
 // This cross-feature dependency is intentional and injected via Koin.
@@ -18,7 +15,6 @@ class CreateShelfUseCaseImpl(
     private val repository: BookcaseRepository,
     private val idGenerator: IdGenerator,
     private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase,
-    private val syncSchedulerService: SyncSchedulerService
 ) : CreateShelfUseCase {
 
     override suspend operator fun invoke(
@@ -44,10 +40,6 @@ class CreateShelfUseCaseImpl(
         if (name == BookshelfConstants.TUTORIAL_SHELF_NAME) {
             getOrCreateTutorialBook(newShelf.id)
         }
-
-        // Trigger sync after successful shelf creation
-        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: CreateShelf")
-        syncSchedulerService.triggerImmediateSync()
 
         return Result.Success(newShelf)
     }
