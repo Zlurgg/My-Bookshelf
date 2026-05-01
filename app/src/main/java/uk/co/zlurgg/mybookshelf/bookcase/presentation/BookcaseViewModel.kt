@@ -63,8 +63,19 @@ class BookcaseViewModel(
         viewModelScope.launch {
             val deletedClubNames = bookClubOperations.validateMemberships()
             if (deletedClubNames.isNotEmpty()) {
-                _state.update { it.copy(deletedBookClubNames = deletedClubNames) }
+                val message = formatDeletedClubsMessage(deletedClubNames)
+                _state.update {
+                    it.copy(deletedBookClubNames = deletedClubNames, deletedBookClubsMessage = message)
+                }
             }
+        }
+    }
+
+    private fun formatDeletedClubsMessage(names: List<String>): String {
+        return if (names.size == 1) {
+            "'${names.first()}' was deleted by owner — converted to personal shelf"
+        } else {
+            "${names.size} book clubs were deleted — converted to personal shelves"
         }
     }
 

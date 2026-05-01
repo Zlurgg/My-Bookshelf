@@ -63,6 +63,7 @@ data class BookcaseState(
 
     // Converted book clubs notification (clubs deleted by creator, converted to personal shelves)
     val deletedBookClubNames: List<String> = emptyList(),
+    val deletedBookClubsMessage: String? = null,
 
     // Shelf limits
     val personalShelfCount: Int = 0,

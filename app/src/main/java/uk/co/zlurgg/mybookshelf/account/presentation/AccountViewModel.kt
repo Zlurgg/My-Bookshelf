@@ -37,7 +37,12 @@ class AccountViewModel(
             is AccountAction.OnReAuthCompleted -> retryAfterReAuth(action.idToken)
             AccountAction.OnReAuthFailed -> {
                 _state.update {
-                    it.copy(errorMessage = "Sign-in was cancelled or failed")
+                    it.copy(
+                        errorMessage = ErrorFormatter.formatDataErrorMessage(
+                            DataError.Local.AUTH_FAILED,
+                            "re-authenticate",
+                        )
+                    )
                 }
             }
             AccountAction.DismissError -> _state.update { it.copy(errorMessage = null) }

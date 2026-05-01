@@ -33,7 +33,10 @@ class CheckSignInStatusUseCaseImpl(
         // Assumes Firebase Auth is fully initialized by this point — this runs from
         // SignInViewModel.init after Koin and FirebaseEmulatorConfig setup.
         if (!isSignedIn) {
-            bookcaseRepository.revertOrphanedDataToGuest()
+            when (val revertResult = bookcaseRepository.revertOrphanedDataToGuest()) {
+                is Result.Success -> Timber.tag(TAG).d("Orphaned data reverted to guest")
+                is Result.Error -> Timber.tag(TAG).e("Failed to revert orphaned data: %s", revertResult.error)
+            }
         }
 
         Timber.tag(TAG).d(

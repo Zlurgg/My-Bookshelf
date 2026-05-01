@@ -60,7 +60,7 @@ internal class BookcaseClubActionHandler(
             }
             is BookcaseAction.HandleInviteLink -> handleInviteLink(action.code)
             is BookcaseAction.DismissDeletedBookClubsNotification -> {
-                state.update { it.copy(deletedBookClubNames = emptyList()) }
+                state.update { it.copy(deletedBookClubNames = emptyList(), deletedBookClubsMessage = null) }
             }
             is BookcaseAction.DismissBookClubLimitDialog -> {
                 state.update { it.copy(showBookClubLimitDialog = false) }

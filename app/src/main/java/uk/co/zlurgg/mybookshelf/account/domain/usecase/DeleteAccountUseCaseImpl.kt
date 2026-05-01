@@ -85,7 +85,10 @@ class DeleteAccountUseCaseImpl(
             is Result.Error -> Timber.tag(TAG).e("Failed to revert local data: %s", result.error)
         }
         syncRepository.clearSyncData(userId)
-        authStateRepository.setSignedInState(false)
+        when (val authResult = authStateRepository.setSignedInState(false)) {
+            is Result.Success -> Unit
+            is Result.Error -> Timber.tag(TAG).e("Failed to clear signed-in state: %s", authResult.error)
+        }
     }
 
     companion object {

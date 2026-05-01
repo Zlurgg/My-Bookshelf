@@ -84,7 +84,10 @@ class SignInViewModel(
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = "Dev sign-in failed. Is the Auth emulator running?"
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                result.error,
+                                "dev sign-in",
+                            )
                         )
                     }
                 }
