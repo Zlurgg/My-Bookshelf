@@ -14,12 +14,10 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class UpdateShelfStyleUseCaseTest {
 
     private val mockRepository = MockBookcaseRepository()
-    private val mockSyncSchedulerService = MockSyncSchedulerService()
 
     private val mockAuthService = object : AuthService {
         override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> =
@@ -72,17 +70,15 @@ class UpdateShelfStyleUseCaseTest {
         mockRepository,
         mockClubOperations,
         mockAuthService,
-        mockSyncSchedulerService,
     )
 
     @After
     fun tearDown() {
         mockRepository.reset()
-        mockSyncSchedulerService.reset()
     }
 
     @Test
-    fun `personal shelf - triggers sync after update`() = runTest {
+    fun `personal shelf - updates style successfully`() = runTest {
         val personalShelf = TestShelfBuilder()
             .withId("personal-shelf")
             .withName("My Books")
@@ -94,11 +90,12 @@ class UpdateShelfStyleUseCaseTest {
         val result = useCase("personal-shelf", ShelfStyle.SilverMetal)
 
         assertTrue("Should return success", result is Result.Success)
-        assertEquals(1, mockSyncSchedulerService.triggerImmediateSyncCallCount)
+        assertTrue("Should call updateShelf", mockRepository.updateShelfCalled)
+        assertEquals("Should update to new style", ShelfStyle.SilverMetal, mockRepository.lastUpdatedShelf?.shelfStyle)
     }
 
     @Test
-    fun `book club shelf - does NOT trigger sync`() = runTest {
+    fun `book club shelf - updates style for creator`() = runTest {
         val clubShelf = TestShelfBuilder()
             .withId("club-shelf")
             .withName("Club Books")
@@ -112,6 +109,7 @@ class UpdateShelfStyleUseCaseTest {
         val result = useCase("club-shelf", ShelfStyle.SilverMetal)
 
         assertTrue("Should return success", result is Result.Success)
-        assertEquals(0, mockSyncSchedulerService.triggerImmediateSyncCallCount)
+        assertTrue("Should call updateShelf", mockRepository.updateShelfCalled)
+        assertEquals("Should update to new style", ShelfStyle.SilverMetal, mockRepository.lastUpdatedShelf?.shelfStyle)
     }
 }

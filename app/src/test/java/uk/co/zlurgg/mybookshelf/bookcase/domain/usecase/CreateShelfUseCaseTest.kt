@@ -13,7 +13,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.TestIdGenerator
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 /**
  * Clean UseCase test demonstrating focused testing principles:
@@ -26,7 +25,6 @@ class CreateShelfUseCaseTest {
 
     private val mockRepository = MockBookcaseRepository()
     private val testIdGenerator = TestIdGenerator()
-    private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val mockGetOrCreateTutorialBook = object : GetOrCreateTutorialBookUseCase {
         override suspend operator fun invoke(tutorialShelfId: String): Result<String, DataError.Local> {
             return Result.Success("tutorial-book-id")
@@ -36,7 +34,6 @@ class CreateShelfUseCaseTest {
         mockRepository,
         testIdGenerator,
         mockGetOrCreateTutorialBook,
-        mockSyncSchedulerService
     )
 
     @Test

@@ -143,39 +143,58 @@ class CreateShelfUseCaseTest {
 }
 ```
 
-## Sync After Mutation
+## Sync After Mutation — Repository Decorator Pattern
 
-All mutating use cases (create, update, delete) must trigger an immediate sync after a successful local mutation so changes push to Firestore without waiting for the 15-minute periodic sync.
+Sync triggering is handled automatically by repository decorators using Kotlin `by` delegation. Use cases do NOT inject `SyncSchedulerService` or call `triggerImmediateSync()`.
 
-### Pattern
+### How It Works
 
-```kotlin
-class CreateShelfUseCaseImpl(
-    private val repository: BookcaseRepository,
-    private val syncSchedulerService: SyncSchedulerService,
-) : CreateShelfUseCase {
+Three decorator classes in `sync/domain/repository/` wrap the user-facing repository interfaces:
 
-    override suspend operator fun invoke(...): Result<Bookshelf, DataError.Local> {
-        // ... perform mutation ...
+| Decorator | Wraps | Overridden Methods |
+|-----------|-------|--------------------|
+| `SyncingBookcaseRepository` | `BookcaseRepository` | `addShelf`, `removeShelf`, `updateShelf` |
+| `SyncingBookRepository` | `BookRepository` | `upsertBook`, `deleteBook` |
+| `SyncingBookshelfRepository` | `BookshelfRepository` | `addBookToShelf`, `removeBookFromShelf` |
 
-        Timber.tag(SyncConstants.TAG_SYNC_TRIGGER).d("Sync triggered by: CreateShelf")
-        syncSchedulerService.triggerImmediateSync()
+Each overridden method calls the delegate, then on `Result.Success` logs with `SyncConstants.TAG_SYNC_TRIGGER` and calls `syncScheduler.triggerImmediateSync()`. On error, no sync is triggered.
 
-        return Result.Success(newShelf)
-    }
-}
-```
+All other methods (reads, Flows, system operations) delegate directly via `by` with zero overhead.
 
-### Rules
+### DI Wiring
 
-- Inject `SyncSchedulerService` and call `triggerImmediateSync()` after the successful mutation path
-- Use `SyncConstants.TAG_SYNC_TRIGGER` as the Timber log tag for all sync trigger logs
-- Only trigger sync on success — error paths should not trigger sync
-- **Building-block use cases** (e.g., `UpsertBookUseCaseImpl`) that are only called by parent use cases which handle sync themselves may skip the sync trigger, but must document this with a KDoc warning
-- **Conditional sync**: If a use case handles both personal and club data, only trigger sync for personal data (club data pushes to Firestore directly and is excluded from the sync engine)
+- `BookModule` registers concrete repository implementations (`BookRepositoryImpl`, etc.) without interface binding
+- `SyncModule` wraps them with decorators and binds the interfaces:
+  ```kotlin
+  single<BookRepository> { SyncingBookRepository(get<BookRepositoryImpl>(), get()) }
+  ```
+- This keeps `book/` unaware of sync (correct dependency direction: `sync` → `book`)
 
-### Tech Debt
+### Deliberately NOT Overridden
 
-This is a manual convention with no compile-time enforcement. Every new mutating use case must remember to add this call. Future options to reduce risk:
-- Repository write observer that auto-triggers sync on Room mutations
-- UseCase decorator/wrapper that adds sync after any successful mutation
+| Method | Reason |
+|--------|--------|
+| `hardDeleteShelf` | Club-only; entity is gone from Room, sync engine excludes clubs |
+| `addSystemShelf` | System shelves are not synced to cloud |
+| `upsertSystemBook` | System books are not synced to cloud |
+| `clearUserData` | Sign-out cleanup; no sync after wiping data |
+
+### No Infinite Loop
+
+The sync engine (`SyncWorker` → `SyncRepository` → `SyncEngine`) writes directly to DAOs, completely bypassing user-facing repositories. The decorators only wrap user-facing interfaces, so sync engine writes never pass through them.
+
+### Exceptions (Manual Sync Required)
+
+Three use cases still call `triggerImmediateSync()` directly because they write through non-decorated paths:
+
+1. `ResumeSessionUseCaseImpl` — session setup, not a repository mutation
+2. `MigrateLocalDataUseCaseImpl` — writes through `SyncRepository` → DAO directly
+3. `ValidateBookClubMembershipsUseCaseImpl` — writes through `bookshelfDao.upsertShelf()` via `BookClubRepositoryHelper`
+
+### Eventually Consistent
+
+Multi-write use cases like `DuplicateShelfUseCase` fire multiple sync triggers (one per `addShelf` + N per `addBookToShelf`). `ExistingWorkPolicy.REPLACE` de-duplicates — only the last enqueue results in actual sync work. Intermediate state (e.g., shelf with zero books) may briefly appear server-side. Harmless.
+
+### Architecture Test Enforcement
+
+`SyncDecoratorCoverageTest` uses reflection with inclusion lists to verify all write methods are overridden. If a new write method is added to a repository interface, the test fails until the decorator is updated.

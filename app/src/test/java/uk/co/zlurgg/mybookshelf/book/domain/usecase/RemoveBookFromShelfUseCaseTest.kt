@@ -12,7 +12,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class RemoveBookFromShelfUseCaseTest {
 
@@ -39,19 +38,16 @@ class RemoveBookFromShelfUseCaseTest {
         override suspend fun getClubMembershipsForUser(userId: String) = throw NotImplementedError()
         override suspend fun removeUserFromClub(clubCode: String, userId: String) = throw NotImplementedError()
     }
-    private val mockSyncSchedulerService = MockSyncSchedulerService()
     private val useCase = RemoveBookFromShelfUseCaseImpl(
         mockBookshelfRepository,
         mockBookcaseRepository,
         mockClubOperations,
-        mockSyncSchedulerService
     )
 
     @After
     fun tearDown() {
         mockBookshelfRepository.reset()
         mockBookcaseRepository.reset()
-        mockSyncSchedulerService.reset()
     }
 
     @Test
