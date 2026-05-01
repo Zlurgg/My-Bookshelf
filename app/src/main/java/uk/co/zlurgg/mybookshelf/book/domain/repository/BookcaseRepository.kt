@@ -32,4 +32,16 @@ interface BookcaseRepository {
      * @return The total count of items deleted (shelves + books)
      */
     suspend fun clearUserData(userId: String): Result<Int, DataError.Local>
+
+    /**
+     * Reverts user-owned data to guest ownership after account deletion.
+     * Sets ownerId to null and syncStatus to SYNCED to prevent sync pushes.
+     */
+    suspend fun revertUserDataToGuest(userId: String): Result<Unit, DataError.Local>
+
+    /**
+     * Recovers orphaned user data by reverting it to guest ownership.
+     * Used at startup to handle crashes between auth deletion and local revert.
+     */
+    suspend fun revertOrphanedDataToGuest(): Result<Unit, DataError.Local>
 }

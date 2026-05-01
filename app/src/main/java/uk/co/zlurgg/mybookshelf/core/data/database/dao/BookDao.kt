@@ -39,6 +39,9 @@ interface BookDao {
     @Query("DELETE FROM BookEntity WHERE ownerId = :ownerId")
     suspend fun deleteAllBooksForOwner(ownerId: String)
 
+    @Query("UPDATE BookEntity SET ownerId = NULL, syncStatus = 'SYNCED' WHERE ownerId = :userId")
+    suspend fun revertBooksToGuest(userId: String)
+
     @Transaction
     suspend fun upsertBookWithSyncInit(book: BookEntity, initialTimestamp: Long) {
         val existing = getBookById(book.id)

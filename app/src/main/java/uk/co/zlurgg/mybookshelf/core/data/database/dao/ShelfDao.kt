@@ -62,6 +62,30 @@ interface ShelfDao {
     @Query("DELETE FROM BookshelfEntity WHERE ownerId = :ownerId")
     suspend fun deleteAllShelvesForOwner(ownerId: String)
 
+    @Query(
+        """
+        UPDATE BookshelfEntity SET
+            ownerId = NULL,
+            syncStatus = 'SYNCED',
+            isShared = 0,
+            shareCode = NULL
+        WHERE ownerId = :userId
+        """
+    )
+    suspend fun revertShelvesToGuest(userId: String)
+
+    @Query("DELETE FROM BookshelfEntity WHERE ownerId = :userId AND isBookClub = 1")
+    suspend fun deleteClubShelvesForOwner(userId: String)
+
+    @Query(
+        """
+        SELECT DISTINCT ownerId FROM BookshelfEntity
+        WHERE ownerId IS NOT NULL AND ownerId != '__system_tutorial__'
+        LIMIT 1
+        """
+    )
+    suspend fun findOrphanedOwnerId(): String?
+
     @Transaction
     suspend fun upsertShelfWithSyncInit(shelf: BookshelfEntity, initialTimestamp: Long) {
         val existing = getShelfById(shelf.id)

@@ -41,6 +41,7 @@ import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
@@ -111,7 +112,11 @@ class BookDetailViewModelTest {
         mockCurrentUserProvider,
         mockSyncRepository
     )
-    private val mockCheckSignInStatusUseCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
+    private val mockCheckSignInStatusUseCase = CheckSignInStatusUseCaseImpl(
+        mockAuthService,
+        mockAuthStateRepository,
+        MockBookcaseRepository(),
+    )
     private val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
         override operator fun invoke(): String? = "test-user"
     }

@@ -32,6 +32,7 @@ import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -126,7 +127,11 @@ class SignInViewModelTest {
                 mockCurrentUserProvider,
                 mockSyncRepository
             )
-        val checkSignInStatusUseCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
+        val checkSignInStatusUseCase = CheckSignInStatusUseCaseImpl(
+            mockAuthService,
+            mockAuthStateRepository,
+            MockBookcaseRepository(),
+        )
         val getCurrentUserIdUseCase = GetCurrentUserIdUseCaseImpl(mockCurrentUserProvider)
 
         val useCases = AuthUseCases(

@@ -124,6 +124,25 @@ class MockBookcaseRepository : BookcaseRepository {
     var clearUserDataCalled = false
     var lastClearedUserId: String? = null
 
+    // Tracking properties for revert methods
+    var revertUserDataToGuestCalled = false
+    var lastRevertedUserId: String? = null
+    var revertOrphanedDataToGuestCalled = false
+    var revertErrorToReturn: DataError.Local? = null
+
+    override suspend fun revertUserDataToGuest(userId: String): Result<Unit, DataError.Local> {
+        revertUserDataToGuestCalled = true
+        lastRevertedUserId = userId
+        revertErrorToReturn?.let { return Result.Error(it) }
+        return Result.Success(Unit)
+    }
+
+    override suspend fun revertOrphanedDataToGuest(): Result<Unit, DataError.Local> {
+        revertOrphanedDataToGuestCalled = true
+        revertErrorToReturn?.let { return Result.Error(it) }
+        return Result.Success(Unit)
+    }
+
     // Helper methods for test setup
     fun reset() {
         shelves.clear()
@@ -149,6 +168,10 @@ class MockBookcaseRepository : BookcaseRepository {
         lastUpdatedShelf = null
         clearUserDataCalled = false
         lastClearedUserId = null
+        revertUserDataToGuestCalled = false
+        lastRevertedUserId = null
+        revertOrphanedDataToGuestCalled = false
+        revertErrorToReturn = null
     }
 
     fun configureShelves(shelves: List<Bookshelf>) {

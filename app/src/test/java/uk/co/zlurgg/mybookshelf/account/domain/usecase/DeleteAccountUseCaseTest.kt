@@ -6,12 +6,14 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockAuthService
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 class DeleteAccountUseCaseTest {
@@ -29,6 +31,18 @@ class DeleteAccountUseCaseTest {
 
     private val mockAuthService = MockAuthService()
     private val mockSyncRepository = MockSyncRepository()
+    private val mockBookcaseRepository = MockBookcaseRepository()
+
+    // Auth state tracking
+    private var authStateSignedIn: Boolean? = null
+    private val mockAuthStateRepository = object : AuthStateRepository {
+        override suspend fun isSignedIn(): Result<Boolean, DataError.Local> =
+            Result.Success(true)
+        override suspend fun setSignedInState(isSignedIn: Boolean): Result<Unit, DataError.Local> {
+            authStateSignedIn = isSignedIn
+            return Result.Success(Unit)
+        }
+    }
 
     private val mockCurrentUserProvider = object : CurrentUserProvider {
         override fun getCurrentUserId(): String? = mockCurrentUserId
@@ -93,6 +107,8 @@ class DeleteAccountUseCaseTest {
         mockAuthService.deleteAccountResult = Result.Success(Unit)
         mockSyncRepository.reset()
         mockSyncRepository.deleteAllRemoteDataResult = Result.Success(Unit)
+        mockBookcaseRepository.reset()
+        authStateSignedIn = null
 
         useCase = DeleteAccountUseCaseImpl(
             currentUserProvider = mockCurrentUserProvider,
@@ -100,6 +116,8 @@ class DeleteAccountUseCaseTest {
             syncRepository = mockSyncRepository,
             clubOperations = mockClubOperations,
             authService = mockAuthService,
+            bookcaseRepository = mockBookcaseRepository,
+            authStateRepository = mockAuthStateRepository,
         )
     }
 
@@ -217,5 +235,73 @@ class DeleteAccountUseCaseTest {
 
         assertTrue("Should return error", result is Result.Error)
         assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
+    }
+
+    // ==================== Local Data Revert ====================
+
+    @Test
+    fun `invoke - success - reverts local data to guest`() = runTest {
+        useCase()
+
+        assertTrue("Should revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
+        assertEquals("test-user-id", mockBookcaseRepository.lastRevertedUserId)
+    }
+
+    @Test
+    fun `invoke - success - sets auth state to false`() = runTest {
+        useCase()
+
+        assertEquals(false, authStateSignedIn)
+    }
+
+    @Test
+    fun `invoke - success - clears sync data`() = runTest {
+        useCase()
+
+        assertEquals("test-user-id", mockSyncRepository.clearedSyncDataForUserId)
+    }
+
+    @Test
+    fun `invoke - auth fails - does NOT revert local data`() = runTest {
+        mockAuthService.deleteAccountResult = Result.Error(DataError.Local.AUTH_FAILED)
+
+        useCase()
+
+        assertFalse("Should NOT revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
+    }
+
+    @Test
+    fun `invoke - REQUIRES_RECENT_LOGIN - does NOT revert local data`() = runTest {
+        mockAuthService.deleteAccountResult = Result.Error(DataError.Local.REQUIRES_RECENT_LOGIN)
+
+        useCase()
+
+        assertFalse("Should NOT revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
+    }
+
+    @Test
+    fun `retryAfterReAuth - success - reverts local data to guest`() = runTest {
+        useCase.retryAfterReAuth("fresh-token")
+
+        assertTrue("Should revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
+        assertEquals("test-user-id", mockBookcaseRepository.lastRevertedUserId)
+    }
+
+    @Test
+    fun `retryAfterReAuth - success - sets auth state to false`() = runTest {
+        useCase.retryAfterReAuth("fresh-token")
+
+        assertEquals(false, authStateSignedIn)
+    }
+
+    @Test
+    fun `invoke - revert fails - still clears sync data and auth state`() = runTest {
+        mockBookcaseRepository.revertErrorToReturn = DataError.Local.UNKNOWN
+
+        useCase()
+
+        assertTrue("Revert should be attempted", mockBookcaseRepository.revertUserDataToGuestCalled)
+        assertEquals("Sync data should still be cleared", "test-user-id", mockSyncRepository.clearedSyncDataForUserId)
+        assertEquals("Auth state should still be set", false, authStateSignedIn)
     }
 }

@@ -34,6 +34,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDuplicateShelfUseCase
@@ -183,7 +184,11 @@ class BookcaseViewModelTest {
         }
         val mockSyncRepository = MockSyncRepository()
         val mockSignIn = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
-        val mockCheckSignInStatus = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
+        val mockCheckSignInStatus = CheckSignInStatusUseCaseImpl(
+            mockAuthService,
+            mockAuthStateRepository,
+            MockBookcaseRepository(),
+        )
         val mockSignOut = SignOutUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,

@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.core.data.database.dao
 
 import androidx.room.Dao
+import androidx.room.Transaction
 
 /**
  * Composite DAO providing access to all bookshelf-related database operations.
@@ -13,4 +14,23 @@ import androidx.room.Dao
  * - [CrossRefDao]: Book-shelf relationship operations (11 functions)
  */
 @Dao
-interface BookshelfDao : BookDao, ShelfDao, CrossRefDao
+interface BookshelfDao : BookDao, ShelfDao, CrossRefDao {
+
+    @Transaction
+    suspend fun revertAllUserDataToGuest(userId: String) {
+        // Delete club shelves entirely — the clubs are already deleted from Firestore
+        deleteCrossRefsForClubShelves(userId)
+        deleteClubShelvesForOwner(userId)
+        // Revert remaining user data to guest ownership
+        resetCrossRefSyncStatusForOwner(userId)
+        revertBooksToGuest(userId)
+        revertShelvesToGuest(userId)
+    }
+
+    @Transaction
+    suspend fun revertOrphanedDataToGuest(): Boolean {
+        val orphanedUserId = findOrphanedOwnerId() ?: return false
+        revertAllUserDataToGuest(orphanedUserId)
+        return true
+    }
+}

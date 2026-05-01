@@ -59,4 +59,20 @@ interface CrossRefDao {
         "DELETE FROM BookshelfBookCrossRef WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :ownerId)"
     )
     suspend fun deleteAllCrossRefsForOwner(ownerId: String)
+
+    @Query(
+        """
+        DELETE FROM BookshelfBookCrossRef
+        WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :userId AND isBookClub = 1)
+        """
+    )
+    suspend fun deleteCrossRefsForClubShelves(userId: String)
+
+    @Query(
+        """
+        UPDATE BookshelfBookCrossRef SET syncStatus = 'SYNCED'
+        WHERE shelfId IN (SELECT id FROM BookshelfEntity WHERE ownerId = :userId)
+        """
+    )
+    suspend fun resetCrossRefSyncStatusForOwner(userId: String)
 }

@@ -34,6 +34,8 @@ class SyncingBookcaseRepositoryTest {
         override suspend fun hardDeleteShelf(shelfId: String) = hardDeleteShelfResult
         override suspend fun addSystemShelf(shelf: Bookshelf) = addSystemShelfResult
         override suspend fun clearUserData(userId: String) = clearUserDataResult
+        override suspend fun revertUserDataToGuest(userId: String): Result<Unit, DataError.Local> = Result.Success(Unit)
+        override suspend fun revertOrphanedDataToGuest(): Result<Unit, DataError.Local> = Result.Success(Unit)
     }
 
     private val repository = SyncingBookcaseRepository(delegate, mockSyncScheduler)

@@ -503,6 +503,12 @@ class SyncEngineTest {
         override suspend fun deleteAllShelvesForOwner(ownerId: String) {
             shelves.entries.removeIf { it.value.ownerId == ownerId }
         }
+        override suspend fun revertBooksToGuest(userId: String) = Unit
+        override suspend fun revertShelvesToGuest(userId: String) = Unit
+        override suspend fun findOrphanedOwnerId(): String? = null
+        override suspend fun resetCrossRefSyncStatusForOwner(userId: String) = Unit
+        override suspend fun deleteClubShelvesForOwner(userId: String) = Unit
+        override suspend fun deleteCrossRefsForClubShelves(userId: String) = Unit
     }
 
     private class FakeRemoteSyncDataSource : RemoteSyncDataSource {

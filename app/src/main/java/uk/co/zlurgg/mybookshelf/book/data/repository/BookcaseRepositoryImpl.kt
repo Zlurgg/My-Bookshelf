@@ -101,6 +101,18 @@ class BookcaseRepositoryImpl(
         }
     }
 
+    override suspend fun revertUserDataToGuest(userId: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.revertAllUserDataToGuest(userId)
+        }
+    }
+
+    override suspend fun revertOrphanedDataToGuest(): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.revertOrphanedDataToGuest()
+        }
+    }
+
     companion object {
         private const val TAG = "BookcaseRepository"
     }

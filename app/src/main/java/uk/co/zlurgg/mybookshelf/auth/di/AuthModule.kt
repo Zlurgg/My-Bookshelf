@@ -57,7 +57,7 @@ val authModule = module {
     single<ResumeSessionUseCase> { ResumeSessionUseCaseImpl(get(), get(), get()) }
     singleOf(::ClearUserDataUseCaseImpl).bind<ClearUserDataUseCase>()
     single<SignOutUseCase> { SignOutUseCaseImpl(get(), get(), get(), get(), get(), get()) }
-    single<CheckSignInStatusUseCase> { CheckSignInStatusUseCaseImpl(get(), get()) }
+    single<CheckSignInStatusUseCase> { CheckSignInStatusUseCaseImpl(get(), get(), get()) }
     single<GetCurrentUserIdUseCase> { GetCurrentUserIdUseCaseImpl(get()) }
     single<GetSignedInUserUseCase> { GetSignedInUserUseCaseImpl(get()) }
     single { AuthUseCases(get(), get(), get(), get(), get()) }
