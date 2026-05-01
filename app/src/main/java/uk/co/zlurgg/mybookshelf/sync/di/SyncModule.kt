@@ -30,6 +30,15 @@ import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCaseImpl
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
 import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.data.repository.BookRepositoryImpl
+import uk.co.zlurgg.mybookshelf.book.data.repository.BookcaseRepositoryImpl
+import uk.co.zlurgg.mybookshelf.book.data.repository.BookshelfRepositoryImpl
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncingBookRepository
+import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncingBookcaseRepository
+import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncingBookshelfRepository
 
 val syncModule = module {
     // Services
@@ -54,6 +63,11 @@ val syncModule = module {
             timeProvider = get()
         )
     }
+
+    // Repository decorators — sync-aware wrappers of book domain repositories
+    single<BookshelfRepository> { SyncingBookshelfRepository(get<BookshelfRepositoryImpl>(), get()) }
+    single<BookcaseRepository> { SyncingBookcaseRepository(get<BookcaseRepositoryImpl>(), get()) }
+    single<BookRepository> { SyncingBookRepository(get<BookRepositoryImpl>(), get()) }
 
     // Repositories
     single<SyncRepository> {

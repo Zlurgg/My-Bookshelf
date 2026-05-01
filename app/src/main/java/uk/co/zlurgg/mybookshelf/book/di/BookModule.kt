@@ -10,9 +10,6 @@ import uk.co.zlurgg.mybookshelf.book.data.network.api.OpenLibraryBookApi
 import uk.co.zlurgg.mybookshelf.book.data.repository.BookRepositoryImpl
 import uk.co.zlurgg.mybookshelf.book.data.repository.BookcaseRepositoryImpl
 import uk.co.zlurgg.mybookshelf.book.data.repository.BookshelfRepositoryImpl
-import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
-import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
-import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
@@ -25,10 +22,11 @@ val bookModule = module {
     singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
     singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
 
-    // Repositories
-    singleOf(::BookshelfRepositoryImpl).bind<BookshelfRepository>()
-    singleOf(::BookcaseRepositoryImpl).bind<BookcaseRepository>()
-    singleOf(::BookRepositoryImpl).bind<BookRepository>()
+    // Repositories — concrete types only, no interface binding.
+    // SyncModule wires decorators that bind the interfaces.
+    single { BookshelfRepositoryImpl(get(), get()) }
+    single { BookcaseRepositoryImpl(get(), get(), get()) }
+    single { BookRepositoryImpl(get(), get(), get(), get()) }
 
     // Shared UseCases (used by both bookdetail and bookshelf)
     singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
