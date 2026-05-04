@@ -1,6 +1,8 @@
 package uk.co.zlurgg.mybookshelf.di
 
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import uk.co.zlurgg.mybookshelf.app.presentation.theme.ThemeViewModel
 import uk.co.zlurgg.mybookshelf.account.di.accountModule
 import uk.co.zlurgg.mybookshelf.auth.di.authModule
 import uk.co.zlurgg.mybookshelf.book.di.bookModule
@@ -44,4 +46,6 @@ val appModule = module {
         welcomeModule
     )
     DebugModuleProvider.getModules().forEach { includes(it) }
+
+    viewModelOf(::ThemeViewModel)
 }

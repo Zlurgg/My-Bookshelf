@@ -1,6 +1,10 @@
 package uk.co.zlurgg.mybookshelf.core.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import coil3.ImageLoader
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.android.Android
@@ -12,10 +16,12 @@ import uk.co.zlurgg.mybookshelf.core.data.database.DatabaseFactory
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.data.image.ImageLoaderFactory
 import uk.co.zlurgg.mybookshelf.core.data.network.HttpClientFactory
+import uk.co.zlurgg.mybookshelf.core.data.preferences.ThemePreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.data.preferences.WelcomePreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.UuidIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.ThemePreferences
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
@@ -40,6 +46,11 @@ val coreModule = module {
     single { get<MyBookshelfRoomDatabase>().bookClubDao }
 
     // Preferences
-    single { WelcomePreferencesImpl(get()) }
-    single<WelcomePreferences> { get<WelcomePreferencesImpl>() }
+    single<DataStore<Preferences>> {
+        PreferenceDataStoreFactory.create {
+            get<Context>().preferencesDataStoreFile("app_preferences")
+        }
+    }
+    singleOf(::WelcomePreferencesImpl).bind<WelcomePreferences>()
+    singleOf(::ThemePreferencesImpl).bind<ThemePreferences>()
 }

@@ -1,16 +1,12 @@
 package uk.co.zlurgg.mybookshelf.core.data.preferences
 
-import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
-
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "welcome_preferences")
 
 /**
  * DataStore-based implementation of WelcomePreferences.
@@ -19,8 +15,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
  * Welcome state is stored per-user using keys like "welcome_shown_<userId>" or "welcome_shown_guest".
  */
 class WelcomePreferencesImpl(
-    private val context: Context,
-    private val dataStore: DataStore<Preferences> = context.dataStore
+    private val dataStore: DataStore<Preferences>
 ) : WelcomePreferences {
 
     private object PreferencesKeys {
