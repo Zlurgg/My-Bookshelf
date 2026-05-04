@@ -3,9 +3,11 @@ package uk.co.zlurgg.mybookshelf.bookcase.presentation.components
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.HelpOutline
+import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -29,6 +31,8 @@ import uk.co.zlurgg.mybookshelf.R
 fun SettingsMenu(
     onShowHelp: () -> Unit,
     onShowAbout: () -> Unit,
+    onShowThemeSelector: () -> Unit,
+    onRateApp: () -> Unit,
     onJoinBookClub: () -> Unit,
     isSignedIn: Boolean,
     modifier: Modifier = Modifier
@@ -48,6 +52,36 @@ fun SettingsMenu(
             onDismissRequest = { expanded = false },
             modifier = Modifier.align(Alignment.TopEnd)
         ) {
+            // Theme
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_theme)) },
+                onClick = {
+                    expanded = false
+                    onShowThemeSelector()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Brightness6,
+                        contentDescription = null
+                    )
+                }
+            )
+
+            // Rate This App
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.menu_rate_this_app)) },
+                onClick = {
+                    expanded = false
+                    onRateApp()
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null
+                    )
+                }
+            )
+
             // Help & Tutorial
             DropdownMenuItem(
                 text = { Text(stringResource(R.string.menu_help)) },

@@ -35,8 +35,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.BuildConfig
+import uk.co.zlurgg.mybookshelf.app.presentation.theme.ThemeAction
+import uk.co.zlurgg.mybookshelf.app.presentation.theme.ThemeViewModel
+import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.ThemeSelectorDialog
+import uk.co.zlurgg.mybookshelf.core.presentation.util.launchInAppReview
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
@@ -78,6 +84,13 @@ fun BookcaseScreenRoot(
     var showDialog by remember { mutableStateOf(false) }
     var selectedTab by rememberSaveable { mutableStateOf(BookcaseTab.MY_SHELVES) }
     var showSignInRequiredDialog by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
+
+    val activity = LocalActivity.current as ComponentActivity
+    val themeViewModel = koinViewModel<ThemeViewModel>(
+        viewModelStoreOwner = activity
+    )
+    val themeState by themeViewModel.state.collectAsStateWithLifecycle()
 
     // Observe deep link ViewModel for pending book club invites
     val deepLinkViewModel = koinViewModelCompose<DeepLinkViewModel>()
@@ -189,7 +202,21 @@ fun BookcaseScreenRoot(
             }
         },
         onAccountClick = { onAccountClick(state.isSignedIn) },
+        onShowThemeSelector = { showThemeDialog = true },
+        onRateApp = { launchInAppReview(activity) },
     )
+
+    // Theme Selector Dialog
+    if (showThemeDialog) {
+        ThemeSelectorDialog(
+            currentTheme = themeState.themeMode,
+            onThemeSelected = { mode ->
+                themeViewModel.onAction(ThemeAction.SetThemeMode(mode))
+                showThemeDialog = false
+            },
+            onDismiss = { showThemeDialog = false }
+        )
+    }
 }
 
 @Composable
@@ -202,6 +229,8 @@ fun BookcaseScreen(
     onShowAddBookshelfDialogChange: (Boolean) -> Unit,
     onAction: (BookcaseAction) -> Unit,
     onAccountClick: () -> Unit = {},
+    onShowThemeSelector: () -> Unit = {},
+    onRateApp: () -> Unit = {},
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     var showAboutDialog by remember { mutableStateOf(false) }
@@ -276,6 +305,8 @@ fun BookcaseScreen(
                     SettingsMenu(
                         onShowHelp = { onAction(BookcaseAction.OnTutorialShelfClick) },
                         onShowAbout = { showAboutDialog = true },
+                        onShowThemeSelector = onShowThemeSelector,
+                        onRateApp = onRateApp,
                         onJoinBookClub = { onAction(BookcaseAction.ShowJoinBookClubDialog) },
                         isSignedIn = state.isSignedIn,
                     )

@@ -2,8 +2,14 @@ package uk.co.zlurgg.mybookshelf.app.presentation
 
 import android.content.Intent
 import android.net.Uri
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.compose.LocalActivity
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -17,6 +23,8 @@ import org.koin.core.parameter.parametersOf
 import uk.co.zlurgg.mybookshelf.app.NavigationRoute
 import uk.co.zlurgg.mybookshelf.auth.presentation.PostSignInDestination
 import uk.co.zlurgg.mybookshelf.auth.presentation.SignInScreenRoot
+import uk.co.zlurgg.mybookshelf.app.presentation.theme.ThemeViewModel
+import uk.co.zlurgg.mybookshelf.core.domain.model.ThemeMode
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.InitializeWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailViewModel
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailsScreenRoot
@@ -38,7 +46,36 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
 fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
-    MyBookshelfTheme {
+    val activity = LocalActivity.current as ComponentActivity
+
+    val themeViewModel = koinViewModel<ThemeViewModel>(
+        viewModelStoreOwner = activity
+    )
+    val themeState by themeViewModel.state.collectAsStateWithLifecycle()
+    val darkTheme = when (themeState.themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+
+    LaunchedEffect(darkTheme) {
+        activity.enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                android.graphics.Color.TRANSPARENT,
+                android.graphics.Color.TRANSPARENT,
+            ) { darkTheme },
+            navigationBarStyle = if (darkTheme) {
+                SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+            } else {
+                SystemBarStyle.light(
+                    android.graphics.Color.TRANSPARENT,
+                    android.graphics.Color.TRANSPARENT,
+                )
+            },
+        )
+    }
+
+    MyBookshelfTheme(darkTheme = darkTheme) {
         val navController = rememberNavController()
         val deepLinkViewModel = koinViewModel<DeepLinkViewModel>()
         val deepLinkState = deepLinkViewModel.state.collectAsStateWithLifecycle().value
