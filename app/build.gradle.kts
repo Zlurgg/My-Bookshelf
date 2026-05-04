@@ -118,6 +118,7 @@ dependencies {
 
     implementation(libs.datastore.preferences)
     implementation(libs.timber)
+    implementation(libs.play.review.ktx)
 
     // Firebase & Google Auth
     implementation(libs.firebase.auth)
