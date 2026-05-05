@@ -133,9 +133,21 @@ fun MyBookShelfApp() {
                         NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS
                     ) ?: false
 
+                    // Observe result from BookshelfScreen's "Create Book Club" FAB
+                    val createClubForShelfId by backStackEntry.savedStateHandle
+                        .getStateFlow<String?>(
+                            NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF,
+                            null
+                        )
+                        .collectAsStateWithLifecycle()
+
                     BookcaseScreenRoot(
                         viewModel = viewModel,
                         switchToBookClubs = switchToBookClubs,
+                        createClubForShelfId = createClubForShelfId,
+                        onCreateClubConsumed = {
+                            backStackEntry.savedStateHandle[NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF] = null
+                        },
                         onBookshelfClick = { shelf ->
                             navController.navigate(NavigationRoute.Bookshelf.createRoute(shelf.id))
                         },
@@ -166,7 +178,6 @@ fun MyBookShelfApp() {
                     // Show add dialog if we're coming back from creating a new shelf
                     if (isNewShelf) {
                         LaunchedEffect(Unit) {
-                            // Trigger showing the add dialog
                             viewModel.onAction(BookcaseAction.ShowAddDialog(true))
                         }
                     }
@@ -215,6 +226,13 @@ fun MyBookShelfApp() {
                             }
                         },
                         onBackClick = { navController.popBackStack() },
+                        onCreateBookClub = {
+                            navController.previousBackStackEntry?.savedStateHandle?.set(
+                                NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF,
+                                shelfId
+                            )
+                            navController.popBackStack()
+                        },
                         shelfName = state.shelfName,
                         shelfMaterial = state.shelfMaterial,
                     )

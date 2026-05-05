@@ -75,7 +75,9 @@ fun BookcaseScreenRoot(
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
     onSignIn: () -> Unit = {},
     onAccountClick: (Boolean) -> Unit = {},
-    switchToBookClubs: Boolean = false
+    switchToBookClubs: Boolean = false,
+    createClubForShelfId: String? = null,
+    onCreateClubConsumed: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
@@ -93,6 +95,21 @@ fun BookcaseScreenRoot(
     LaunchedEffect(switchToBookClubs) {
         if (switchToBookClubs) {
             selectedTab = BookcaseTab.BOOK_CLUBS
+        }
+    }
+
+    // Create book club for shelf navigated from BookshelfScreen FAB
+    LaunchedEffect(createClubForShelfId, state.bookshelves) {
+        if (createClubForShelfId != null && state.bookshelves.isNotEmpty()) {
+            onCreateClubConsumed()
+            val shelf = state.bookshelves.find { it.id == createClubForShelfId }
+            if (shelf != null) {
+                if (!state.isSignedIn) {
+                    showSignInRequiredDialog = true
+                } else {
+                    viewModel.onAction(BookcaseAction.OnCreateBookClub(shelf))
+                }
+            }
         }
     }
 

@@ -170,6 +170,12 @@
     <string name="menu_create_book_club">Create Book Club</string>
     <string name="menu_invite_to_club">Invite</string>
 
+    <!-- Create Book Club confirmation dialog -->
+    <string name="create_book_club_title">Create Book Club</string>
+    <string name="create_book_club_message">Create a Book Club from this shelf? Members will be able to see and add books to this shelf.</string>
+    <string name="create_book_club_confirm">Create</string>
+    <string name="cd_create_book_club">Create Book Club</string>
+
     <string name="action_import">Import</string>
     <string name="action_ok">OK</string>
 

@@ -25,6 +25,7 @@ sealed interface NavigationRoute {
         const val ROUTE = "bookcase"
         const val ARG_NEW_SHELF = "new_shelf"
         const val ARG_SWITCH_TO_BOOK_CLUBS = "switch_to_book_clubs"
+        const val ARG_CREATE_CLUB_FOR_SHELF = "create_club_for_shelf"
         fun createRoute(isNew: Boolean = false, switchToBookClubs: Boolean = false) =
             "bookcase?$ARG_NEW_SHELF=$isNew&$ARG_SWITCH_TO_BOOK_CLUBS=$switchToBookClubs"
     }

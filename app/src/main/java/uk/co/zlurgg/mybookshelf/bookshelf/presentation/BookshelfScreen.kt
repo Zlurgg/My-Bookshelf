@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -21,9 +23,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -54,6 +60,7 @@ fun BookshelfScreenRoot(
     onAddBookClick: (Book) -> Unit,
     onBookClick: (Book) -> Unit,
     onBackClick: () -> Unit,
+    onCreateBookClub: () -> Unit = {},
     shelfName: String? = null,
     shelfMaterial: ShelfMaterial? = null,
 ) {
@@ -71,6 +78,7 @@ fun BookshelfScreenRoot(
                 is BookshelfAction.OnBookClick -> onBookClick(action.book)
                 is BookshelfAction.OnAddBookClick -> onAddBookClick(action.book)
                 is BookshelfAction.OnBackClick -> onBackClick()
+                BookshelfAction.OnCreateBookClub -> onCreateBookClub()
                 else -> viewModel.onAction(action)
             }
         }
@@ -84,6 +92,8 @@ fun BookshelfScreen(
     state: BookshelfState,
     onAction: (BookshelfAction) -> Unit,
 ) {
+    var showCreateBookClubDialog by remember { mutableStateOf(false) }
+
     // Use books in their original order (no forced sorting)
     val books = state.books
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
@@ -146,15 +156,28 @@ fun BookshelfScreen(
             )
         },
         floatingActionButton = {
-            // Hide FAB for tutorial shelf - users shouldn't add tutorial content
+            // Hide FABs for tutorial shelf - users shouldn't modify tutorial content
             if (!state.isTutorialShelf) {
-                FloatingActionButton(
-                    onClick = { onAction(BookshelfAction.OnSearchClick) }
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Add,
-                        contentDescription = "Add book to shelf"
-                    )
+                Row {
+                    if (!state.isBookClub) {
+                        FloatingActionButton(
+                            onClick = { showCreateBookClubDialog = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Groups,
+                                contentDescription = stringResource(R.string.cd_create_book_club)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
+                    FloatingActionButton(
+                        onClick = { onAction(BookshelfAction.OnSearchClick) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = stringResource(R.string.cd_add_book_to_shelf)
+                        )
+                    }
                 }
             }
         }
@@ -309,6 +332,30 @@ fun BookshelfScreen(
                 }
             }
         }
+    }
+
+    // Create Book Club confirmation dialog
+    if (showCreateBookClubDialog) {
+        AlertDialog(
+            onDismissRequest = { showCreateBookClubDialog = false },
+            title = { Text(stringResource(R.string.create_book_club_title)) },
+            text = { Text(stringResource(R.string.create_book_club_message)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showCreateBookClubDialog = false
+                        onAction(BookshelfAction.OnCreateBookClub)
+                    }
+                ) {
+                    Text(stringResource(R.string.create_book_club_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showCreateBookClubDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
     }
 
     // Search dialog
