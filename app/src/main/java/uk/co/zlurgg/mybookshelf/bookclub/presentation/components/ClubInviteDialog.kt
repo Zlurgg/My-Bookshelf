@@ -108,6 +108,7 @@ fun ClubInviteDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Action buttons
+                val codeCopiedText = stringResource(R.string.code_copied)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -115,11 +116,7 @@ fun ClubInviteDialog(
                     IconButton(
                         onClick = {
                             copyToClipboard(context, clubCode)
-                            Toast.makeText(
-                                context,
-                                context.getString(R.string.code_copied),
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            Toast.makeText(context, codeCopiedText, Toast.LENGTH_SHORT).show()
                         }
                     ) {
                         Icon(
