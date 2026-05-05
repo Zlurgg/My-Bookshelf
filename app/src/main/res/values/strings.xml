@@ -165,22 +165,13 @@
     <string name="menu_rename_shelf">Rename</string>
     <string name="menu_change_style">Change Style</string>
     <string name="menu_delete_shelf">Delete</string>
-    <string name="menu_share_shelf">Share</string>
     <string name="menu_duplicate_shelf">Duplicate</string>
     <string name="menu_save_personal_copy">Save Personal Copy</string>
     <string name="menu_create_book_club">Create Book Club</string>
     <string name="menu_invite_to_club">Invite</string>
 
-    <!-- Deep link import -->
-    <string name="import_success_title">Import Successful</string>
-    <string name="import_success_message">Bookshelf imported successfully!</string>
-    <string name="import_error_title">Import Failed</string>
-    <string name="import_name_conflict_title">Shelf Name Conflict</string>
-    <string name="import_name_conflict_message">A shelf named \"%s\" already exists. Please choose a new name:</string>
-    <string name="import_new_name_label">New Shelf Name</string>
     <string name="action_import">Import</string>
     <string name="action_ok">OK</string>
-    <string name="importing_shelf">Importing shelf…</string>
 
     <!-- Welcome screen -->
     <string name="welcome_title">Welcome to My Bookshelf</string>
@@ -213,8 +204,6 @@
     <string name="error_validation_error">Data validation failed.</string>
     <string name="error_name_conflict">Name already exists.</string>
     <string name="error_unsupported_format_version">Unsupported file format version.</string>
-    <string name="error_share_failed">Sharing failed.</string>
-    <string name="error_share_link_too_large">This bookshelf is too large to share. Try sharing a smaller shelf or splitting it into multiple shelves.</string>
     <string name="error_permission_denied">You don\'t have permission to perform this action.</string>
     <string name="error_unknown_local">Unknown local error occurred.</string>
 

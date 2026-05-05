@@ -11,7 +11,6 @@ import uk.co.zlurgg.mybookshelf.bookdetail.di.bookDetailModule
 import uk.co.zlurgg.mybookshelf.bookcase.di.bookcaseModule
 import uk.co.zlurgg.mybookshelf.bookshelf.di.bookshelfModule
 import uk.co.zlurgg.mybookshelf.core.di.coreModule
-import uk.co.zlurgg.mybookshelf.sharing.di.sharingModule
 import uk.co.zlurgg.mybookshelf.sync.di.syncModule
 import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
 
@@ -27,7 +26,6 @@ import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
  * - bookClubModule: Book club feature (use cases, handler)
  * - bookcaseModule: Home screen (shelf list, create/delete/rename shelves)
  * - bookshelfModule: Shelf screen (viewing books, searching, adding)
- * - sharingModule: Deeplinks, export/import
  * - welcomeModule: Tutorial, onboarding
  * - debugModule: Debug-only dependencies (only in debug builds via DebugModuleProvider)
  */
@@ -42,7 +40,6 @@ val appModule = module {
         bookDetailModule,
         bookcaseModule,
         bookshelfModule,
-        sharingModule,
         welcomeModule
     )
     DebugModuleProvider.getModules().forEach { includes(it) }

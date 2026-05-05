@@ -20,7 +20,6 @@ data class BookshelfState(
     val errorMessage: String? = null,
     val shelfMaterial: ShelfMaterial = ShelfMaterial.DarkWood,
     val isTidyMode: Boolean = false,
-    val isShareLoading: Boolean = false,
     val isTutorialShelf: Boolean = false, // Tutorial shelf has restricted actions
 
     // Book Club state (read-only for display)

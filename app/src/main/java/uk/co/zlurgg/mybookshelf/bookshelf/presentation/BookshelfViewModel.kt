@@ -114,9 +114,6 @@ class BookshelfViewModel(
                 _state.update { it.copy(isTidyMode = newTidyMode) }
                 persistTidyMode(newTidyMode)
             }
-            BookshelfAction.OnShareShelf -> {
-                shareShelf()
-            }
             BookshelfAction.OnToggleSearchByTitle -> {
                 _state.update { it.copy(searchByTitle = !it.searchByTitle) }
 
@@ -298,27 +295,6 @@ class BookshelfViewModel(
             .onError { error ->
                 _state.update { it.withSearchError(error) }
             }
-    }
-
-    private fun shareShelf() {
-        viewModelScope.launch {
-            _state.update { it.copy(isShareLoading = true, errorMessage = null) }
-
-            when (val shareResult = bookshelfUseCases.shareBookshelf(shelfId)) {
-                is Result.Success -> {
-                    // Share sheet opened successfully - no success dialog needed
-                    _state.update { it.copy(isShareLoading = false) }
-                }
-                is Result.Error -> {
-                    _state.update {
-                        it.copy(
-                            isShareLoading = false,
-                            errorMessage = ErrorFormatter.formatDataErrorMessage(shareResult.error, "share bookshelf")
-                        )
-                    }
-                }
-            }
-        }
     }
 
     // ============================================================================

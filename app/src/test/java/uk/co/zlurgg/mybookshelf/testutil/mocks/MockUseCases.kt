@@ -256,26 +256,3 @@ class MockDuplicateShelfUseCase : DuplicateShelfUseCase {
     }
 }
 
-class MockShareBookshelfUseCase : uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.ShareBookshelfUseCase {
-    var callCount = 0
-    var lastShelfId: String? = null
-    var shouldReturnError = false
-    var errorToReturn: DataError.Local = DataError.Local.UNKNOWN
-
-    override suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local> {
-        callCount++
-        lastShelfId = shelfId
-        return if (shouldReturnError) {
-            Result.Error(errorToReturn)
-        } else {
-            Result.Success(Unit)
-        }
-    }
-
-    fun reset() {
-        callCount = 0
-        lastShelfId = null
-        shouldReturnError = false
-        errorToReturn = DataError.Local.UNKNOWN
-    }
-}

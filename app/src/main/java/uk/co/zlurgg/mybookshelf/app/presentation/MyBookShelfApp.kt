@@ -1,7 +1,5 @@
 package uk.co.zlurgg.mybookshelf.app.presentation
 
-import android.content.Intent
-import android.net.Uri
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.LocalActivity
@@ -35,17 +33,11 @@ import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfViewModel
-import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkAction
-import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkViewModel
-import uk.co.zlurgg.mybookshelf.sharing.presentation.components.ImportErrorDialog
-import uk.co.zlurgg.mybookshelf.sharing.presentation.components.ImportLoadingDialog
-import uk.co.zlurgg.mybookshelf.sharing.presentation.components.ImportNameConflictDialog
-import uk.co.zlurgg.mybookshelf.sharing.presentation.components.ImportSuccessDialog
 import uk.co.zlurgg.mybookshelf.welcome.presentation.WelcomeScreenRoot
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
 @Composable
-fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
+fun MyBookShelfApp() {
     val activity = LocalActivity.current as ComponentActivity
 
     val themeViewModel = koinViewModel<ThemeViewModel>(
@@ -77,20 +69,11 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
 
     MyBookshelfTheme(darkTheme = darkTheme) {
         val navController = rememberNavController()
-        val deepLinkViewModel = koinViewModel<DeepLinkViewModel>()
-        val deepLinkState = deepLinkViewModel.state.collectAsStateWithLifecycle().value
         val initializeWelcome = koinInject<InitializeWelcomeUseCase>()
 
         // Initialize welcome on first app launch
         LaunchedEffect(Unit) {
             initializeWelcome()
-        }
-
-        // Handle deep links at the app composition level
-        LaunchedEffect(deepLinkIntent) {
-            deepLinkIntent?.data?.let { uri ->
-                handleDeepLink(uri, deepLinkViewModel)
-            }
         }
 
         // Always start at SignIn - it will auto-navigate if already signed in
@@ -267,65 +250,5 @@ fun MyBookShelfApp(deepLinkIntent: Intent? = null) {
             }
         }
 
-        // Deep link import dialogs
-        when {
-            deepLinkState.isLoading -> {
-                ImportLoadingDialog()
-            }
-            deepLinkState.importSuccessful -> {
-                ImportSuccessDialog(
-                    onDismiss = {
-                        deepLinkViewModel.onAction(DeepLinkAction.OnDismissSuccess)
-                    }
-                )
-            }
-            deepLinkState.error != null -> {
-                ImportErrorDialog(
-                    errorMessage = deepLinkState.error,
-                    onDismiss = {
-                        deepLinkViewModel.onAction(DeepLinkAction.OnDismissError)
-                    }
-                )
-            }
-            deepLinkState.conflictExistingName != null && deepLinkState.conflictJsonData != null -> {
-                ImportNameConflictDialog(
-                    existingName = deepLinkState.conflictExistingName,
-                    isLoading = deepLinkState.isLoading,
-                    errorMessage = deepLinkState.conflictError,
-                    onDismiss = {
-                        deepLinkViewModel.onAction(DeepLinkAction.OnDismissNameConflict)
-                    },
-                    onResolveConflict = { newName ->
-                        deepLinkViewModel.onAction(
-                            DeepLinkAction.ResolveNameConflictWithNewName(
-                                jsonData = deepLinkState.conflictJsonData,
-                                newName = newName
-                            )
-                        )
-                    }
-                )
-            }
-        }
-    }
-}
-
-private fun handleDeepLink(uri: Uri, deepLinkViewModel: DeepLinkViewModel) {
-    if (uri.scheme != "mybookshelf") return
-
-    when (uri.host) {
-        "share" -> {
-            // Personal shelf import: mybookshelf://share/{token}
-            val token = uri.path?.removePrefix("/")
-            if (!token.isNullOrBlank()) {
-                deepLinkViewModel.onAction(DeepLinkAction.ImportFromToken(token))
-            }
-        }
-        "club" -> {
-            // Book club invite: mybookshelf://club/{code}
-            val code = uri.path?.removePrefix("/")
-            if (!code.isNullOrBlank()) {
-                deepLinkViewModel.onAction(DeepLinkAction.ReceiveBookClubInvite(code))
-            }
-        }
     }
 }

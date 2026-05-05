@@ -13,8 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -148,49 +146,15 @@ fun BookshelfScreen(
             )
         },
         floatingActionButton = {
-            // Hide FABs for tutorial shelf - users shouldn't add/share tutorial content
+            // Hide FAB for tutorial shelf - users shouldn't add tutorial content
             if (!state.isTutorialShelf) {
-                Row {
-                    // Share FAB - only for personal shelves, not Book Clubs
-                    // Book Clubs have their own invite sharing via the club invite code
-                    if (!state.isBookClub) {
-                        FloatingActionButton(
-                            onClick = {
-                                if (state.books.isNotEmpty()) {
-                                    onAction(BookshelfAction.OnShareShelf)
-                                }
-                            },
-                            modifier = Modifier.size(56.dp),
-                            containerColor = if (state.books.isEmpty()) {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            } else {
-                                MaterialTheme.colorScheme.primaryContainer
-                            }
-                        ) {
-                            if (state.isShareLoading) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.Share,
-                                    contentDescription = "Share bookshelf",
-                                    tint = if (state.books.isEmpty()) {
-                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                                    } else {
-                                        MaterialTheme.colorScheme.onPrimaryContainer
-                                    }
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
-                    FloatingActionButton(
-                        onClick = { onAction(BookshelfAction.OnSearchClick) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "Add book to shelf"
-                        )
-                    }
+                FloatingActionButton(
+                    onClick = { onAction(BookshelfAction.OnSearchClick) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "Add book to shelf"
+                    )
                 }
             }
         }

@@ -9,7 +9,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -23,7 +22,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.ShareBookshelfUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -52,7 +50,6 @@ class BookshelfViewModelTest {
     private val mockAddBookToShelf = SimpleAddBookToShelfUseCase()
     private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
     private val mockUpsertBook = SimpleUpsertBookUseCase()
-    private val mockShareBookshelf = SimpleShareBookshelfUseCase()
     private val mockUpdateShelfTidyMode = SimpleUpdateShelfTidyModeUseCase()
     private val mockGetShelfById = MockGetShelfByIdUseCase()
 
@@ -63,7 +60,6 @@ class BookshelfViewModelTest {
         mockAddBookToShelf.reset()
         mockRemoveBookFromShelf.reset()
         mockUpsertBook.reset()
-        mockShareBookshelf.reset()
         mockGetShelfById.reset()
     }
 
@@ -123,47 +119,9 @@ class BookshelfViewModelTest {
             addBookToShelf = mockAddBookToShelf,
             removeBookFromShelf = mockRemoveBookFromShelf,
             upsertBook = mockUpsertBook,
-            shareBookshelf = mockShareBookshelf,
             updateShelfTidyMode = mockUpdateShelfTidyMode
         )
         return BookshelfViewModel(bookshelfUseCases, mockGetShelfById, stubClubOperations, shelfId)
-    }
-
-    @Test
-    fun `share shelf success updates state correctly`() = runTest(testDispatcher) {
-        // Given
-        mockShareBookshelf.shouldSucceed = true
-        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
-        val viewModel = createViewModel()
-        val stateHelper = viewModel.state.testHelper(this)
-
-        // When
-        val stateAfterShare = stateHelper.executeAndGetState {
-            viewModel.onAction(BookshelfAction.OnShareShelf)
-        }
-
-        // Then - Share sheet opened, no success dialog shown
-        assertFalse("Should clear loading flag", stateAfterShare?.isShareLoading == true)
-        stateHelper.cleanup()
-    }
-
-    @Test
-    fun `share shelf error updates error message`() = runTest(testDispatcher) {
-        // Given
-        mockShareBookshelf.shouldSucceed = false
-        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
-        val viewModel = createViewModel()
-        val stateHelper = viewModel.state.testHelper(this)
-
-        // When
-        val stateAfterShare = stateHelper.executeAndGetState {
-            viewModel.onAction(BookshelfAction.OnShareShelf)
-        }
-
-        // Then
-        assertNotNull("Should set error message", stateAfterShare?.errorMessage)
-        assertFalse("Should clear loading flag", stateAfterShare?.isShareLoading == true)
-        stateHelper.cleanup()
     }
 
     @Test
@@ -388,17 +346,6 @@ class BookshelfViewModelTest {
         var shouldSucceed = true
 
         override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> =
-            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
-
-        fun reset() {
-            shouldSucceed = true
-        }
-    }
-
-    private class SimpleShareBookshelfUseCase : ShareBookshelfUseCase {
-        var shouldSucceed = true
-
-        override suspend operator fun invoke(shelfId: String): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {

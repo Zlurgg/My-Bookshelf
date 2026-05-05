@@ -25,8 +25,6 @@ sealed interface DataError : Error {
         SERIALIZATION_ERROR,
         VALIDATION_ERROR,
         NAME_CONFLICT,
-        SHARE_FAILED,
-        SHARE_LINK_TOO_LARGE,
         AUTH_CANCELLED,
         AUTH_NO_CREDENTIAL,
         AUTH_FAILED,

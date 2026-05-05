@@ -14,5 +14,4 @@ sealed interface BookshelfAction {
     data class OnAddBookClick(val book: Book) : BookshelfAction
     data object OnBackClick : BookshelfAction
     data object OnToggleTidyMode : BookshelfAction
-    data object OnShareShelf : BookshelfAction
 }

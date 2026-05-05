@@ -99,14 +99,6 @@ class ErrorFormatterTest {
             ErrorFormatter.formatDataErrorMessage(DataError.Local.NAME_CONFLICT)
         )
         assertEquals(
-            "Sharing failed.",
-            ErrorFormatter.formatDataErrorMessage(DataError.Local.SHARE_FAILED)
-        )
-        assertEquals(
-            "This bookshelf is too large to share. Try sharing a smaller shelf or splitting it into multiple shelves.",
-            ErrorFormatter.formatDataErrorMessage(DataError.Local.SHARE_LINK_TOO_LARGE)
-        )
-        assertEquals(
             "Unknown local error occurred.",
             ErrorFormatter.formatDataErrorMessage(DataError.Local.UNKNOWN)
         )

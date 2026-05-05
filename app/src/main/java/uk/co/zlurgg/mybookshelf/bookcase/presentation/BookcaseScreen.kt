@@ -63,12 +63,9 @@ import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.DeleteBookClubD
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.ClubInviteDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.JoinBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.LeaveBookClubDialog
-import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkAction
-import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkViewModel
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.bookshelves
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.components.AboutDialog
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
-import org.koin.compose.viewmodel.koinViewModel as koinViewModelCompose
 
 @Composable
 fun BookcaseScreenRoot(
@@ -91,18 +88,6 @@ fun BookcaseScreenRoot(
         viewModelStoreOwner = activity
     )
     val themeState by themeViewModel.state.collectAsStateWithLifecycle()
-
-    // Observe deep link ViewModel for pending book club invites
-    val deepLinkViewModel = koinViewModelCompose<DeepLinkViewModel>()
-    val deepLinkState by deepLinkViewModel.state.collectAsStateWithLifecycle()
-
-    // Handle pending book club invite from deep link
-    LaunchedEffect(deepLinkState.pendingClubCode) {
-        deepLinkState.pendingClubCode?.let { code ->
-            viewModel.onAction(BookcaseAction.HandleInviteLink(code))
-            deepLinkViewModel.onAction(DeepLinkAction.ClearBookClubInvite)
-        }
-    }
 
     // Switch to book clubs tab when navigating back from creating a book club
     LaunchedEffect(switchToBookClubs) {
