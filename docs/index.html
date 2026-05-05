@@ -305,7 +305,7 @@
                 <li><span class="feature-icon">⭐</span>Rate books, write reviews, and add comments</li>
                 <li><span class="feature-icon">🎨</span>Custom shelf organization with different wood styles</li>
                 <li><span class="feature-icon">☁️</span>Optional cloud sync with Google Sign-In</li>
-                <li><span class="feature-icon">🔗</span>Share collections via deep links</li>
+                <li><span class="feature-icon">🔗</span>Create and join book clubs with invite codes</li>
                 <li><span class="feature-icon">📴</span>Offline-first design — works without an account</li>
             </ul>
         </div>
@@ -328,15 +328,5 @@
         </div>
     </div>
 
-    <script>
-        // Handle deep link redirects from old share format
-        window.onload = function() {
-            const hash = window.location.hash;
-            if (hash && hash.startsWith('#share-')) {
-                const token = hash.substring(7);
-                window.location.href = `./share/#${token}`;
-            }
-        };
-    </script>
 </body>
 </html>

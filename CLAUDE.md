@@ -59,7 +59,6 @@ All fallible operations return `Result<T, DataError>`, never throw. Use `ErrorMa
 | `bookdetail/` | Book detail screen (view/edit book metadata, purchase toggle) |
 | `bookshelf/` | Shelf screen (viewing books on a shelf, searching, adding) |
 | `bookclub/` | Book club feature (club models, repos, use cases, UI) |
-| `sharing/` | Deeplinks, export/import |
 | `welcome/` | Tutorial, onboarding |
 
 Dependencies flow downward: `bookshelf/` → `bookcase/` (GetShelfByIdUseCase) → `book/` → `core/`. `bookdetail/` → `book/`. `bookclub/` → `book/`. `account/` → `auth/` + `sync/` + `book/` (via `ClubOperations`). Cross-feature communication uses interfaces in `book/domain/service/` (`ClubOperations`, `BookReviewProvider`) and `auth/presentation/service/` (`CredentialFetcher`).

@@ -52,8 +52,7 @@ data class BookcaseUseCases(
     val getShelfById: GetShelfByIdUseCase,
     val renameShelf: RenameShelfUseCase,
     val updateShelfStyle: UpdateShelfStyleUseCase,
-    val duplicateShelf: DuplicateShelfUseCase,
-    val shareShelf: ShareBookshelfUseCase
+    val duplicateShelf: DuplicateShelfUseCase
 )
 
 // ViewModel constructor

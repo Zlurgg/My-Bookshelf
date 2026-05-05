@@ -146,7 +146,6 @@ app/src/test/java/uk/co/zlurgg/mybookshelf/
 ├── bookshelf/             # Bookshelf feature tests
 │   ├── domain/usecase/    # UseCase tests
 │   └── presentation/      # ViewModel tests
-├── sharing/               # Export/import, deeplink tests
 ├── core/domain/service/   # Core service tests
 ├── sync/                  # Sync engine tests
 └── testutil/              # Shared test utilities

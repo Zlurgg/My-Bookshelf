@@ -6,7 +6,7 @@
 
 > 📚 Organize your collection.
 > 🔍 Discover new books.
-> 📤 Share your shelves with friends.
+> 👥 Share your shelves with friends.
 
 ---
 
@@ -14,8 +14,7 @@
 
 - 🧱 **Custom Shelf Organization** – Create and rearrange shelves in your bookcase
 - 🔍 **Search & Add Books** – Use Open Library API for easy book lookup
-- 🔗 **Bookshelf Sharing** – Export and share your shelves via deep links
-- 👥 **Book Clubs** – Create collaborative shelves with friends, share ratings and comments
+- 👥 **Book Clubs** – Create and join book clubs with invite codes, share ratings and comments
 - 🎨 **Custom Shelf Styles** – Choose from different materials and colors
 - ☁️ **Cloud Sync** – Optional Google sign-in to sync across devices
 - 📱 **Offline-First** – Works without an account, data stored locally
@@ -49,7 +48,6 @@
 - **Image Loading**: Coil3 with Ktor3 network integration
 - **Dependency Injection**: Koin
 - **Navigation**: Jetpack Navigation Compose
-- **Sharing**: Deep link sharing system
 - **Code Quality**: Detekt with ktlint formatting
 
 ---
@@ -111,11 +109,6 @@ Instructions for setting up the project locally will be added here.
 <div style="text-align: center;">
   <img src="docs/screenshots/bookdetails-top.jpg" width="400" alt="Book Details - Top">
   <img src="docs/screenshots/bookdetails-bottom.jpg" width="400" alt="Book Details - Bottom">
-</div>
-
-### Sharing
-<div style="text-align: center;">
-  <img src="docs/screenshots/share-shelf.jpg" width="400" alt="Share Shelf">
 </div>
 
 ### Book Clubs
