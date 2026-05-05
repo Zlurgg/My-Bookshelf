@@ -27,19 +27,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import uk.co.zlurgg.mybookshelf.R
 
 /**
- * Dialog showing the invite link for a book club.
- * Allows users to copy the link or share it via other apps.
+ * Dialog showing the invite code for a book club.
+ * Allows users to copy the code or share it via other apps.
  */
 @Composable
-fun InviteLinkDialog(
+fun ClubInviteDialog(
     clubCode: String,
-    inviteLink: String,
     clubName: String,
     isNewClub: Boolean = true,
     onDismiss: () -> Unit,
@@ -101,19 +102,23 @@ fun InviteLinkDialog(
                 ) {
                     IconButton(
                         onClick = {
-                            copyToClipboard(context, inviteLink)
-                            Toast.makeText(context, "Link copied!", Toast.LENGTH_SHORT).show()
+                            copyToClipboard(context, clubCode)
+                            Toast.makeText(
+                                context,
+                                context.getString(R.string.code_copied),
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     ) {
                         Icon(
                             imageVector = Icons.Filled.ContentCopy,
-                            contentDescription = "Copy link",
+                            contentDescription = stringResource(R.string.copy_code),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
                     Text(
-                        text = "Copy Link",
+                        text = stringResource(R.string.copy_code),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -122,12 +127,12 @@ fun InviteLinkDialog(
 
                     IconButton(
                         onClick = {
-                            shareLink(context, inviteLink, clubName)
+                            shareCode(context, clubCode, clubName)
                         }
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Share,
-                            contentDescription = "Share link",
+                            contentDescription = "Share",
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -152,14 +157,17 @@ fun InviteLinkDialog(
 
 private fun copyToClipboard(context: Context, text: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText("Book Club Invite Link", text)
+    val clip = ClipData.newPlainText("Book Club Invite Code", text)
     clipboard.setPrimaryClip(clip)
 }
 
-private fun shareLink(context: Context, link: String, clubName: String) {
+private fun shareCode(context: Context, clubCode: String, clubName: String) {
     val sendIntent = Intent().apply {
         action = Intent.ACTION_SEND
-        putExtra(Intent.EXTRA_TEXT, "Join my book club \"$clubName\"!\n\n$link")
+        putExtra(
+            Intent.EXTRA_TEXT,
+            "Join my book club \"$clubName\" on MyBookshelf!\n\nCode: $clubCode"
+        )
         type = "text/plain"
     }
     val shareIntent = Intent.createChooser(sendIntent, "Share Book Club Invite")

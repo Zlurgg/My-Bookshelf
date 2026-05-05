@@ -65,7 +65,6 @@ class DeleteAccountUseCaseTest {
         override suspend fun joinBookClub() = Result.Error(DataError.Sync.UNKNOWN)
         override suspend fun joinBookClub(code: String) = Result.Error(DataError.Sync.UNKNOWN)
         override fun clearLookupState() = Unit
-        override fun generateInviteLink(clubCode: String, shelfName: String) = ""
         override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) =
             Result.Error(DataError.Sync.UNKNOWN)
         override suspend fun leaveBookClub(shelfId: String) = Result.Error(DataError.Sync.UNKNOWN)

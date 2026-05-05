@@ -24,7 +24,6 @@ class RemoveBookFromShelfUseCaseTest {
         override suspend fun joinBookClub() = throw NotImplementedError()
         override suspend fun joinBookClub(code: String) = throw NotImplementedError()
         override fun clearLookupState() = throw NotImplementedError()
-        override fun generateInviteLink(clubCode: String, shelfName: String) = throw NotImplementedError()
         override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) = throw NotImplementedError()
         override suspend fun leaveBookClub(shelfId: String) = throw NotImplementedError()
         override suspend fun validateMemberships() = throw NotImplementedError()

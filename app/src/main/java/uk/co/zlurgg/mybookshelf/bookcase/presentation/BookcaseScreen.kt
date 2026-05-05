@@ -60,7 +60,7 @@ import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.createShelfCall
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.BookClubPreviewDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.DeleteBookClubDialog
-import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.InviteLinkDialog
+import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.ClubInviteDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.JoinBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.LeaveBookClubDialog
 import uk.co.zlurgg.mybookshelf.sharing.presentation.DeepLinkAction
@@ -469,11 +469,10 @@ fun BookcaseScreen(
         )
     }
 
-    // Book club invite link dialog
-    state.bookClubInviteLink?.let { inviteLink ->
-        InviteLinkDialog(
-            clubCode = state.bookClubCode ?: "",
-            inviteLink = inviteLink,
+    // Book club invite code dialog
+    state.bookClubCode?.let { code ->
+        ClubInviteDialog(
+            clubCode = code,
             clubName = state.bookClubName ?: "",
             isNewClub = state.isNewlyCreatedBookClub,
             onDismiss = { onAction(BookcaseAction.DismissInviteLink) }

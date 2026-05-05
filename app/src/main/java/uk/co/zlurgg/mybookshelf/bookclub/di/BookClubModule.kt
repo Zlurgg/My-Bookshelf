@@ -30,8 +30,6 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubReviewUseC
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubReviewUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.EditBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.EditBookClubCommentUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GenerateInviteLinkUseCase
-import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GenerateInviteLinkUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetBookClubCommentsUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetBookClubCommentsUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetBookClubPreviewUseCase
@@ -54,7 +52,6 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidateBookClubMembersh
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidateBookClubMembershipsUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.handlers.BookReviewProviderImpl
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.handlers.ClubOperationsImpl
-import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 val bookClubModule = module {
     // Services
@@ -125,7 +122,6 @@ val bookClubModule = module {
 
     // UseCases
     singleOf(::CreateBookClubUseCaseImpl).bind<CreateBookClubUseCase>()
-    single<GenerateInviteLinkUseCase> { GenerateInviteLinkUseCaseImpl(ApiConfig.shareBaseUrl) }
     single<ParseClubCodeUseCase> { ParseClubCodeUseCaseImpl() }
     singleOf(::GetBookClubPreviewUseCaseImpl).bind<GetBookClubPreviewUseCase>()
     singleOf(::JoinBookClubUseCaseImpl).bind<JoinBookClubUseCase>()
@@ -145,7 +141,6 @@ val bookClubModule = module {
     single {
         BookClubOperationUseCases(
             createBookClub = get(),
-            generateInviteLink = get(),
             parseClubCode = get(),
             getBookClubPreview = get(),
             joinBookClub = get(),

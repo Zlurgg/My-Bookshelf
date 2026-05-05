@@ -17,8 +17,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 interface ClubOperations {
 
     data class BookClubCreationResult(
-        val clubCode: String,
-        val inviteLink: String
+        val clubCode: String
     )
 
     sealed class LookupResult {
@@ -46,8 +45,6 @@ interface ClubOperations {
     suspend fun joinBookClub(code: String): Result<JoinResult, DataError.Sync>
 
     fun clearLookupState()
-
-    fun generateInviteLink(clubCode: String, shelfName: String = "Book Club"): String
 
     suspend fun syncBooksFromClub(clubCode: String, localShelfId: String): Result<SyncResult, DataError.Sync>
 

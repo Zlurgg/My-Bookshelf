@@ -255,9 +255,13 @@
     <string name="sign_in_required_book_clubs_title">Sign In Required</string>
     <string name="sign_in_required_book_clubs_message">Book Clubs require an account. Please sign in to access this feature.</string>
 
+    <!-- Club Invite dialog -->
+    <string name="copy_code">Copy Code</string>
+    <string name="code_copied">Code copied!</string>
+
     <!-- Join Book Club dialog -->
     <string name="join_book_club_title">Join Book Club</string>
-    <string name="join_book_club_hint">Enter code or paste invite link</string>
+    <string name="join_book_club_hint">Enter invite code</string>
     <string name="join_book_club_lookup">Look Up</string>
     <string name="join_book_club_success">Successfully joined \"%s\"!</string>
 

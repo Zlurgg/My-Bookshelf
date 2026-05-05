@@ -82,10 +82,7 @@ class BookcaseViewModelTest {
             shelfName: String,
         ): Result<ClubOperations.BookClubCreationResult, DataError.Sync> =
             Result.Success(
-                ClubOperations.BookClubCreationResult(
-                    "ABC12345",
-                    "https://mybookshelf.app/join/ABC12345",
-                ),
+                ClubOperations.BookClubCreationResult("ABC12345"),
             )
         override suspend fun lookupBookClub(codeOrUrl: String): ClubOperations.LookupResult =
             ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
@@ -94,8 +91,6 @@ class BookcaseViewModelTest {
         override suspend fun joinBookClub(code: String): Result<ClubOperations.JoinResult, DataError.Sync> =
             Result.Success(ClubOperations.JoinResult.Success("Test Shelf"))
         override fun clearLookupState() = Unit
-        override fun generateInviteLink(clubCode: String, shelfName: String) =
-            "https://mybookshelf.app/join/$clubCode"
         override suspend fun syncBooksFromClub(
             clubCode: String,
             localShelfId: String

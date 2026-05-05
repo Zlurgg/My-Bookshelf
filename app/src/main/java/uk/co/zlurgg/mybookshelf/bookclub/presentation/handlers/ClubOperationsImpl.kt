@@ -34,8 +34,7 @@ class ClubOperationsImpl(
         return when (val createResult = bookClubUseCases.createBookClub(shelfId)) {
             is Result.Success -> {
                 val clubCode = createResult.data
-                val inviteLink = bookClubUseCases.generateInviteLink(clubCode, shelfName)
-                Result.Success(BookClubCreationResult(clubCode, inviteLink))
+                Result.Success(BookClubCreationResult(clubCode))
             }
             is Result.Error -> Result.Error(createResult.error)
         }
@@ -88,10 +87,6 @@ class ClubOperationsImpl(
 
     override fun clearLookupState() {
         lastLookedUpCode = null
-    }
-
-    override fun generateInviteLink(clubCode: String, shelfName: String): String {
-        return bookClubUseCases.generateInviteLink(clubCode, shelfName)
     }
 
     override suspend fun syncBooksFromClub(

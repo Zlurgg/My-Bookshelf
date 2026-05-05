@@ -29,7 +29,6 @@ data class BookcaseState(
 
     // Book Club invite state
     val isCreatingBookClub: Boolean = false,
-    val bookClubInviteLink: String? = null,
     val bookClubCode: String? = null,
     val bookClubName: String? = null,
     val isNewlyCreatedBookClub: Boolean = true,

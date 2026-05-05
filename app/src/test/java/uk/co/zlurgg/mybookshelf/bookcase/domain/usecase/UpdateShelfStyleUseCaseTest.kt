@@ -40,7 +40,6 @@ class UpdateShelfStyleUseCaseTest {
         override suspend fun joinBookClub(code: String) =
             Result.Error(DataError.Sync.NOT_SIGNED_IN)
         override fun clearLookupState() = Unit
-        override fun generateInviteLink(clubCode: String, shelfName: String) = ""
         override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) =
             Result.Error(DataError.Sync.NOT_SIGNED_IN)
         override suspend fun leaveBookClub(shelfId: String) =

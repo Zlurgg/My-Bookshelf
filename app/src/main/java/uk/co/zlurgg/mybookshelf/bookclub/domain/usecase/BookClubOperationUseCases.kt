@@ -6,7 +6,6 @@ package uk.co.zlurgg.mybookshelf.bookclub.domain.usecase
  */
 class BookClubOperationUseCases(
     val createBookClub: CreateBookClubUseCase,
-    val generateInviteLink: GenerateInviteLinkUseCase,
     val parseClubCode: ParseClubCodeUseCase,
     val getBookClubPreview: GetBookClubPreviewUseCase,
     val joinBookClub: JoinBookClubUseCase,
