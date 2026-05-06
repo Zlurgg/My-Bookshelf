@@ -5,6 +5,9 @@
     <!-- Bookshelf screen -->
     <string name="bookshelf_empty_state_hint">This shelf is empty. Tap + to add a book</string>
     <string name="cd_add_book_to_shelf">Add a book to this shelf</string>
+    <string name="bookshelf_book_club_badge">BC</string>
+    <string name="cd_switch_to_natural_arrangement">Switch to natural arrangement</string>
+    <string name="cd_tidy_shelf">Tidy shelf</string>
 
     <!-- Add shelf dialog -->
     <string name="dialog_add_shelf_title">Add New Shelf</string>

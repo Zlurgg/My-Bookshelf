@@ -115,7 +115,7 @@ fun BookshelfScreen(
                                 shape = RoundedCornerShape(4.dp)
                             ) {
                                 Text(
-                                    text = "BC",
+                                    text = stringResource(R.string.bookshelf_book_club_badge),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
@@ -144,9 +144,9 @@ fun BookshelfScreen(
                                     ImageVector.vectorResource(R.drawable.ic_tidy_books)
                                 },
                                 contentDescription = if (state.isTidyMode) {
-                                    "Switch to natural arrangement"
+                                    stringResource(R.string.cd_switch_to_natural_arrangement)
                                 } else {
-                                    "Tidy shelf"
+                                    stringResource(R.string.cd_tidy_shelf)
                                 },
                                 modifier = Modifier.size(28.dp)
                             )
