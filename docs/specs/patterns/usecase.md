@@ -82,7 +82,19 @@ factory {
 
 ## Error Handling in UseCases
 
-### Simple UseCases: Use ErrorMapper.safeSuspendCall()
+### Pure Delegation UseCases: Direct return
+
+When a UseCase delegates to a repository that already returns `Result<T, DataError>`, return the result directly. The repository has already caught exceptions internally — wrapping in `safeSuspendCall()` would double-handle errors and mask contract violations that should surface as crashes during development.
+
+```kotlin
+override suspend fun invoke(code: String): Result<Unit, DataError.Sync> {
+    return bookClubRepository.deleteBookClub(code)
+}
+```
+
+### Simple UseCases with raw data sources: Use ErrorMapper.safeSuspendCall()
+
+When a UseCase calls a data source that may throw (e.g. raw DAO or network call not wrapped in `Result`), use `safeSuspendCall()` to catch exceptions at the UseCase boundary:
 
 ```kotlin
 override suspend fun invoke(id: String): Result<Book?, DataError.Local> {
