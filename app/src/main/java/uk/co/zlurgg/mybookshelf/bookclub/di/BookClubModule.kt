@@ -22,8 +22,16 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.AddBookClubCommentUseCas
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.AddBookClubCommentUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.BookClubOperationUseCases
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.BookClubReviewUseCases
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ClearClubMembershipsUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ClearClubMembershipsUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.CreateBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.CreateBookClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetClubMembershipsForUserUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetClubMembershipsForUserUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetClubsCreatedByUserUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetClubsCreatedByUserUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubCommentUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubCommentUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubReviewUseCase
@@ -42,10 +50,20 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.LeaveBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.LeaveBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ParseClubCodeUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ParseClubCodeUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveBookFromClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveBookFromClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveUserFromClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveUserFromClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RenameBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RenameBookClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershipsUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookToClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookToClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.UpdateClubStyleUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.UpdateClubStyleUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.UpsertBookClubReviewUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.UpsertBookClubReviewUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidateBookClubMembershipsUseCase
@@ -137,6 +155,17 @@ val bookClubModule = module {
     singleOf(::EditBookClubCommentUseCaseImpl).bind<EditBookClubCommentUseCase>()
     singleOf(::DeleteBookClubCommentUseCaseImpl).bind<DeleteBookClubCommentUseCase>()
 
+    // Club management UseCases (pure delegation)
+    singleOf(::DeleteBookClubUseCaseImpl).bind<DeleteBookClubUseCase>()
+    singleOf(::SyncBookToClubUseCaseImpl).bind<SyncBookToClubUseCase>()
+    singleOf(::RemoveBookFromClubUseCaseImpl).bind<RemoveBookFromClubUseCase>()
+    singleOf(::UpdateClubStyleUseCaseImpl).bind<UpdateClubStyleUseCase>()
+    singleOf(::ClearClubMembershipsUseCaseImpl).bind<ClearClubMembershipsUseCase>()
+    singleOf(::RenameBookClubUseCaseImpl).bind<RenameBookClubUseCase>()
+    singleOf(::GetClubsCreatedByUserUseCaseImpl).bind<GetClubsCreatedByUserUseCase>()
+    singleOf(::GetClubMembershipsForUserUseCaseImpl).bind<GetClubMembershipsForUserUseCase>()
+    singleOf(::RemoveUserFromClubUseCaseImpl).bind<RemoveUserFromClubUseCase>()
+
     // UseCase Aggregators
     single {
         BookClubOperationUseCases(
@@ -147,7 +176,16 @@ val bookClubModule = module {
             syncBookClub = get(),
             restoreBookClubMemberships = get(),
             leaveBookClub = get(),
-            validateMemberships = get()
+            validateMemberships = get(),
+            deleteBookClub = get(),
+            syncBookToClub = get(),
+            removeBookFromClub = get(),
+            updateClubStyle = get(),
+            clearClubMemberships = get(),
+            renameBookClub = get(),
+            getClubsCreatedByUser = get(),
+            getClubMembershipsForUser = get(),
+            removeUserFromClub = get()
         )
     }
 
@@ -164,6 +202,6 @@ val bookClubModule = module {
     }
 
     // Interface implementations for cross-feature bridges
-    single<ClubOperations> { ClubOperationsImpl(get(), get()) }
+    single<ClubOperations> { ClubOperationsImpl(get()) }
     single<BookReviewProvider> { BookReviewProviderImpl(get()) }
 }

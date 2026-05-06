@@ -6,18 +6,16 @@ import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.BookClubCreat
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.JoinResult
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.LookupResult
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.SyncResult
-import uk.co.zlurgg.mybookshelf.bookclub.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.BookClubOperationUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
- * Implementation of ClubOperations that delegates to book club use cases and repository.
+ * Implementation of ClubOperations that delegates to book club use cases.
  * This bridges bookshelf screens to bookclub functionality without direct imports.
  */
 class ClubOperationsImpl(
-    private val bookClubUseCases: BookClubOperationUseCases,
-    private val bookClubRepository: BookClubRepository
+    private val bookClubUseCases: BookClubOperationUseCases
 ) : ClubOperations {
 
     // @Volatile provides visibility across coroutine dispatchers.
@@ -111,38 +109,38 @@ class ClubOperationsImpl(
     }
 
     override suspend fun deleteBookClub(clubCode: String): Result<Unit, DataError.Sync> {
-        return bookClubRepository.deleteBookClub(clubCode)
+        return bookClubUseCases.deleteBookClub(clubCode)
     }
 
     override suspend fun syncBookToClub(clubCode: String, book: Book): Result<Unit, DataError.Sync> {
-        return bookClubRepository.syncBookToClub(clubCode, book)
+        return bookClubUseCases.syncBookToClub(clubCode, book)
     }
 
     override suspend fun removeBookFromClub(clubCode: String, bookId: String): Result<Unit, DataError.Sync> {
-        return bookClubRepository.removeBookFromClub(clubCode, bookId)
+        return bookClubUseCases.removeBookFromClub(clubCode, bookId)
     }
 
     override suspend fun updateClubStyle(clubCode: String, styleName: String): Result<Unit, DataError.Sync> {
-        return bookClubRepository.updateClubStyle(clubCode, styleName)
+        return bookClubUseCases.updateClubStyle(clubCode, styleName)
     }
 
     override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> {
-        return bookClubRepository.clearAllMemberships()
+        return bookClubUseCases.clearClubMemberships()
     }
 
     override suspend fun renameBookClub(clubCode: String, newName: String): Result<Unit, DataError> {
-        return bookClubRepository.renameBookClub(clubCode, newName)
+        return bookClubUseCases.renameBookClub(clubCode, newName)
     }
 
     override suspend fun getClubsCreatedByUser(userId: String): Result<List<String>, DataError.Sync> {
-        return bookClubRepository.getClubsCreatedByUser(userId)
+        return bookClubUseCases.getClubsCreatedByUser(userId)
     }
 
     override suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync> {
-        return bookClubRepository.getRemoteClubMemberships(userId)
+        return bookClubUseCases.getClubMembershipsForUser(userId)
     }
 
     override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> {
-        return bookClubRepository.removeUserFromClub(clubCode, userId)
+        return bookClubUseCases.removeUserFromClub(clubCode, userId)
     }
 }

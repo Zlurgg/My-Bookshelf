@@ -5,31 +5,38 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.BookClubCreationResult
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.JoinResult
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.LookupResult
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations.SyncResult
 import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.BookClubOperationUseCases
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ClearClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.CreateBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetBookClubPreviewUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetClubMembershipsForUserUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.GetClubsCreatedByUserUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.JoinBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.LeaveBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ParseClubCodeUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveBookFromClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveUserFromClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RenameBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreResult
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookToClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.UpdateClubStyleUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidateBookClubMembershipsUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookClubRepository
 import uk.co.zlurgg.mybookshelf.bookclub.domain.repository.SyncResult as DomainSyncResult
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.JoinResult as DomainJoinResult
 
 class ClubOperationsImplTest {
-
-    private val mockRepository = MockBookClubRepository()
 
     // Configurable use case stubs
     private var createBookClubResult: Result<String, DataError.Sync> = Result.Success("TESTCODE")
@@ -41,10 +48,20 @@ class ClubOperationsImplTest {
         Result.Success(DomainSyncResult(0, 0))
     private var leaveBookClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
     private var validateMembershipsResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
+    private var deleteBookClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private var syncBookToClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private var removeBookFromClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private var updateClubStyleResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private var clearClubMembershipsResult: Result<Unit, DataError.Local> = Result.Success(Unit)
+    private var renameBookClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private var getClubsCreatedByUserResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
+    private var getClubMembershipsForUserResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
+    private var removeUserFromClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
 
     private var lastJoinCode: String? = null
     private var lastSyncClubCode: String? = null
     private var lastSyncShelfId: String? = null
+    private var lastDeleteCode: String? = null
 
     private fun createClubOperations(): ClubOperationsImpl {
         val useCases = BookClubOperationUseCases(
@@ -81,14 +98,43 @@ class ClubOperationsImplTest {
             },
             validateMemberships = object : ValidateBookClubMembershipsUseCase {
                 override suspend fun invoke() = validateMembershipsResult
+            },
+            deleteBookClub = object : DeleteBookClubUseCase {
+                override suspend fun invoke(code: String): Result<Unit, DataError.Sync> {
+                    lastDeleteCode = code
+                    return deleteBookClubResult
+                }
+            },
+            syncBookToClub = object : SyncBookToClubUseCase {
+                override suspend fun invoke(code: String, book: Book) = syncBookToClubResult
+            },
+            removeBookFromClub = object : RemoveBookFromClubUseCase {
+                override suspend fun invoke(code: String, bookId: String) = removeBookFromClubResult
+            },
+            updateClubStyle = object : UpdateClubStyleUseCase {
+                override suspend fun invoke(code: String, style: String) = updateClubStyleResult
+            },
+            clearClubMemberships = object : ClearClubMembershipsUseCase {
+                override suspend fun invoke() = clearClubMembershipsResult
+            },
+            renameBookClub = object : RenameBookClubUseCase {
+                override suspend fun invoke(code: String, newName: String) = renameBookClubResult
+            },
+            getClubsCreatedByUser = object : GetClubsCreatedByUserUseCase {
+                override suspend fun invoke(userId: String) = getClubsCreatedByUserResult
+            },
+            getClubMembershipsForUser = object : GetClubMembershipsForUserUseCase {
+                override suspend fun invoke(userId: String) = getClubMembershipsForUserResult
+            },
+            removeUserFromClub = object : RemoveUserFromClubUseCase {
+                override suspend fun invoke(code: String, userId: String) = removeUserFromClubResult
             }
         )
-        return ClubOperationsImpl(useCases, mockRepository)
+        return ClubOperationsImpl(useCases)
     }
 
     @After
     fun tearDown() {
-        mockRepository.reset()
         createBookClubResult = Result.Success("TESTCODE")
         parseClubCodeResult = Result.Success("TESTCODE")
         getBookClubPreviewResult = Result.Success(null)
@@ -98,9 +144,19 @@ class ClubOperationsImplTest {
         syncBookClubResult = Result.Success(DomainSyncResult(0, 0))
         leaveBookClubResult = Result.Success(Unit)
         validateMembershipsResult = Result.Success(emptyList())
+        deleteBookClubResult = Result.Success(Unit)
+        syncBookToClubResult = Result.Success(Unit)
+        removeBookFromClubResult = Result.Success(Unit)
+        updateClubStyleResult = Result.Success(Unit)
+        clearClubMembershipsResult = Result.Success(Unit)
+        renameBookClubResult = Result.Success(Unit)
+        getClubsCreatedByUserResult = Result.Success(emptyList())
+        getClubMembershipsForUserResult = Result.Success(emptyList())
+        removeUserFromClubResult = Result.Success(Unit)
         lastJoinCode = null
         lastSyncClubCode = null
         lastSyncShelfId = null
+        lastDeleteCode = null
     }
 
     // ========== lookupBookClub Tests ==========
@@ -438,12 +494,12 @@ class ClubOperationsImplTest {
         assertEquals(emptyList<String>(), result)
     }
 
-    // ========== Repository Pass-Through Test ==========
+    // ========== UseCase Pass-Through Tests ==========
 
     @Test
-    fun `deleteBookClub - delegates to repository`() = runTest {
-        // Given — representative test for all repository pass-through methods
-        mockRepository.deleteBookClubResult = Result.Success(Unit)
+    fun `deleteBookClub - delegates to use case`() = runTest {
+        // Given — representative test for all pass-through methods
+        deleteBookClubResult = Result.Success(Unit)
         val ops = createClubOperations()
 
         // When
@@ -451,7 +507,6 @@ class ClubOperationsImplTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertTrue("Should call repository", mockRepository.deleteBookClubCalled)
-        assertEquals("CLUB_CODE", mockRepository.lastDeleteCode)
+        assertEquals("CLUB_CODE", lastDeleteCode)
     }
 }
