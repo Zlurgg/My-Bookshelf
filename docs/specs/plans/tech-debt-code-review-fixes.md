@@ -2,7 +2,7 @@
 
 ## Context
 
-Issues identified during code review of the `remove-sharing-add-qr-code-bc` branch. All are pre-existing — none were introduced by the sharing removal or QR code work.
+Issues identified during code review of the `remove-sharing-add-qr-code-bc` branch. Most are pre-existing patterns; item 3 (dead state fields) was introduced in this branch.
 
 ## Issues
 
@@ -24,13 +24,13 @@ Generated codes are logged via Timber at debug level. Verify that the release Ti
 
 **Fix:** Audit `Application.onCreate()` Timber setup. If release builds plant a tree, change log to `"Generated code attempt %d"` without the code value.
 
-### 3. Dead state fields: syncMessage / isSyncing
+### 3. Unrendered state fields: syncMessage / isSyncing
 
 **Files:** `BookshelfState.kt`, `BookshelfViewModel.kt`, `BookshelfScreen.kt`
 
-`syncMessage` and `isSyncing` are set in state but never rendered in the UI. Either display them (e.g. a snackbar or banner during sync) or remove them.
+`syncMessage` and `isSyncing` are actively set during `syncBookClubBooks()` in the ViewModel but never rendered in the UI. The fields are not dead — they are maintained correctly — but the user never sees sync status.
 
-**Fix:** Decide: display sync status to the user, or remove the dead fields.
+**Fix:** Decide: display sync status to the user (e.g. a snackbar or progress indicator), or remove the fields and the code that sets them.
 
 ### 4. Missing tests: BookClubCodeGeneratorImpl
 
@@ -52,13 +52,13 @@ Non-trivial logic (two-step lookup/join flow, `@Volatile lastLookedUpCode`, resu
 
 **Fix:** Add test class covering lookup → join flow, error mapping, and concurrent access edge cases.
 
-### 6. Magic number: book club limit
+### 6. Magic number: book club limit (duplicated constant)
 
-**Files:** `BookcaseScreen.kt` (~line 354, 538)
+**Files:** `BookcaseScreen.kt` (~line 354, 538), `CreateBookClubUseCaseImpl.kt`, `JoinBookClubUseCaseImpl.kt`
 
-`5` is hardcoded for the book club limit. `ShelfOperationsHandler.MAX_PERSONAL_SHELVES` exists for personal shelves — book clubs should have a similar constant.
+`5` is hardcoded for the book club limit in `BookcaseScreen.kt`. `MAX_BOOK_CLUBS = 5` already exists but is duplicated across two use case companions (`CreateBookClubUseCaseImpl` and `JoinBookClubUseCaseImpl`), and the UI references neither — it hardcodes the literal.
 
-**Fix:** Add `MAX_BOOK_CLUBS` constant, reference it from UI and handler.
+**Fix:** Define a single `MAX_BOOK_CLUBS` constant in one canonical location (e.g. a domain-level companion or constants object). Remove the duplicates in both use cases and the hardcoded `5` in BookcaseScreen, referencing the single constant everywhere.
 
 ### 7. ClubOperationsImpl bypasses UseCase layer
 
@@ -95,10 +95,10 @@ The explicit `as` cast is redundant after the `is` check. A `when` block is clea
 |---|--------|------|----------|
 | 1 | Small  | Low  | Do first — quick string extraction |
 | 2 | Small  | Med  | Verify Timber config, quick fix |
-| 3 | Small  | Low  | Decide display vs remove |
+| 3 | Small  | Low  | Decide display vs remove (fields are active, just unrendered) |
 | 4 | Medium | Med  | Important for regression safety |
 | 5 | Medium | Med  | Important for regression safety |
-| 6 | Small  | Low  | Quick constant extraction |
+| 6 | Small  | Low  | Consolidate duplicated constant + UI reference |
 | 7 | Large  | Low  | Architectural consistency, own PR |
 | 8 | Small  | Low  | Nitpick, do with other refactors |
 | 9 | Small  | Low  | Compile-time safety improvement |
