@@ -352,7 +352,11 @@ fun BookcaseScreen(
         modifier = Modifier.fillMaxSize()
     ) { padding ->
         // Counter showing current/max shelves
-        val maxCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) BookClub.MAX_BOOK_CLUBS else ShelfOperationsHandler.MAX_PERSONAL_SHELVES
+        val maxCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+            BookClub.MAX_BOOK_CLUBS
+        } else {
+            ShelfOperationsHandler.MAX_PERSONAL_SHELVES
+        }
         val currentCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) state.bookClubCount else state.personalShelfCount
 
         if (!state.isLoading && displayedShelves.isEmpty()) {
