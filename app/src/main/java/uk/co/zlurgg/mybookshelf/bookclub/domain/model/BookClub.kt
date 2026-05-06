@@ -15,4 +15,8 @@ data class BookClub(
     val createdByName: String,
     val bookCount: Int,
     val memberCount: Int
-)
+) {
+    companion object {
+        const val MAX_BOOK_CLUBS = 5
+    }
+}

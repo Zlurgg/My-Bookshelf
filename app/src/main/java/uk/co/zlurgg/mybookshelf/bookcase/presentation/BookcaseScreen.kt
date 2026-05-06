@@ -58,6 +58,7 @@ import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.ShelfDisplaySta
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.ShelfLimitDialog
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.createShelfCallbacks
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.handlers.ShelfOperationsHandler
+import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.BookClubPreviewDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.DeleteBookClubDialog
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.components.ClubInviteDialog
@@ -351,7 +352,7 @@ fun BookcaseScreen(
         modifier = Modifier.fillMaxSize()
     ) { padding ->
         // Counter showing current/max shelves
-        val maxCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) 5 else ShelfOperationsHandler.MAX_PERSONAL_SHELVES
+        val maxCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) BookClub.MAX_BOOK_CLUBS else ShelfOperationsHandler.MAX_PERSONAL_SHELVES
         val currentCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) state.bookClubCount else state.personalShelfCount
 
         if (!state.isLoading && displayedShelves.isEmpty()) {
@@ -534,7 +535,7 @@ fun BookcaseScreen(
     if (state.showBookClubLimitDialog) {
         ShelfLimitDialog(
             title = stringResource(R.string.book_club_limit_reached_title),
-            message = stringResource(R.string.book_club_limit_reached_message, 5),
+            message = stringResource(R.string.book_club_limit_reached_message, BookClub.MAX_BOOK_CLUBS),
             onDismiss = { onAction(BookcaseAction.DismissBookClubLimitDialog) }
         )
     }

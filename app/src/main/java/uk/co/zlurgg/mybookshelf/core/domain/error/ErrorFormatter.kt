@@ -1,5 +1,7 @@
 package uk.co.zlurgg.mybookshelf.core.domain.error
 
+import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClub
+
 object ErrorFormatter {
 
     /**
@@ -101,7 +103,8 @@ object ErrorFormatter {
         DataError.Sync.NOT_MEMBER -> "You're not a member of this book club."
         DataError.Sync.CREATOR_CANNOT_LEAVE ->
             "As the creator, you cannot leave. Delete the club instead."
-        DataError.Sync.MAX_BOOK_CLUBS_REACHED -> "You can have a maximum of 5 book clubs."
+        DataError.Sync.MAX_BOOK_CLUBS_REACHED ->
+            "You can have a maximum of ${BookClub.MAX_BOOK_CLUBS} book clubs."
         DataError.Sync.INVALID_INPUT -> "Invalid input. Please check your data."
         DataError.Sync.UNKNOWN -> "Unknown sync error occurred."
     }

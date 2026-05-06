@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookclub.domain.usecase
 
 import kotlinx.coroutines.flow.first
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookclub.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -18,7 +19,6 @@ class CreateBookClubUseCaseImpl(
 
     companion object {
         private const val TAG = "CreateBookClub"
-        const val MAX_BOOK_CLUBS = 5
     }
 
     override suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync> {
@@ -26,8 +26,8 @@ class CreateBookClubUseCaseImpl(
 
         // Check book club limit before creating
         val currentBookClubs = bookClubRepository.observeMyBookClubs().first()
-        if (currentBookClubs.size >= MAX_BOOK_CLUBS) {
-            Timber.tag(TAG).w("User has reached max book clubs limit: %d", MAX_BOOK_CLUBS)
+        if (currentBookClubs.size >= BookClub.MAX_BOOK_CLUBS) {
+            Timber.tag(TAG).w("User has reached max book clubs limit: %d", BookClub.MAX_BOOK_CLUBS)
             return Result.Error(DataError.Sync.MAX_BOOK_CLUBS_REACHED)
         }
 
