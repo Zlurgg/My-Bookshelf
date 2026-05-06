@@ -42,23 +42,23 @@ class ClubOperationsImpl(
 
     override suspend fun lookupBookClub(codeOrUrl: String): LookupResult {
         val parseResult = bookClubUseCases.parseClubCode(codeOrUrl)
-        if (parseResult is Result.Error) {
-            return LookupResult.InvalidCode(parseResult.error)
-        }
-
-        val code = (parseResult as Result.Success).data
-
-        return when (val previewResult = bookClubUseCases.getBookClubPreview(code)) {
+        when (parseResult) {
+            is Result.Error -> return LookupResult.InvalidCode(parseResult.error)
             is Result.Success -> {
-                val bookClub = previewResult.data
-                if (bookClub != null) {
-                    lastLookedUpCode = code
-                    LookupResult.Found(bookClub.name, code, bookClub.memberCount)
-                } else {
-                    LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
+                val code = parseResult.data
+                return when (val previewResult = bookClubUseCases.getBookClubPreview(code)) {
+                    is Result.Success -> {
+                        val bookClub = previewResult.data
+                        if (bookClub != null) {
+                            lastLookedUpCode = code
+                            LookupResult.Found(bookClub.name, code, bookClub.memberCount)
+                        } else {
+                            LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
+                        }
+                    }
+                    is Result.Error -> LookupResult.NotFound(previewResult.error)
                 }
             }
-            is Result.Error -> LookupResult.NotFound(previewResult.error)
         }
     }
 
