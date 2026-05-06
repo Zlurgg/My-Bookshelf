@@ -55,7 +55,11 @@ fun ClubInviteDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                text = if (isNewClub) "Book Club Created!" else "Share Book Club",
+                text = if (isNewClub) {
+                    stringResource(R.string.club_invite_title_created)
+                } else {
+                    stringResource(R.string.club_invite_title_share)
+                },
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -66,7 +70,7 @@ fun ClubInviteDialog(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Share this code with friends to let them join \"$clubName\"",
+                    text = stringResource(R.string.club_invite_message, clubName),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center
@@ -77,7 +81,7 @@ fun ClubInviteDialog(
                 // QR code
                 Image(
                     painter = rememberQrCodePainter(data = clubCode),
-                    contentDescription = "QR code for club invite",
+                    contentDescription = stringResource(R.string.cd_club_invite_qr),
                     modifier = Modifier.size(200.dp)
                 )
 
@@ -109,13 +113,20 @@ fun ClubInviteDialog(
 
                 // Action buttons
                 val codeCopiedText = stringResource(R.string.code_copied)
+                val clipboardLabel = stringResource(R.string.club_invite_clipboard_label)
+                val shareText = stringResource(
+                    R.string.club_invite_share_text,
+                    clubName,
+                    clubCode
+                )
+                val shareChooserTitle = stringResource(R.string.club_invite_share_chooser)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
                         onClick = {
-                            copyToClipboard(context, clubCode)
+                            copyToClipboard(context, clubCode, clipboardLabel)
                             Toast.makeText(context, codeCopiedText, Toast.LENGTH_SHORT).show()
                         }
                     ) {
@@ -136,18 +147,18 @@ fun ClubInviteDialog(
 
                     IconButton(
                         onClick = {
-                            shareCode(context, clubCode, clubName)
+                            shareCode(context, shareText, shareChooserTitle)
                         }
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Share,
-                            contentDescription = "Share",
+                            contentDescription = stringResource(R.string.action_share),
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
 
                     Text(
-                        text = "Share",
+                        text = stringResource(R.string.action_share),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
@@ -156,7 +167,7 @@ fun ClubInviteDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Done")
+                Text(stringResource(R.string.action_done))
             }
         },
         containerColor = MaterialTheme.colorScheme.surface,
@@ -164,21 +175,18 @@ fun ClubInviteDialog(
     )
 }
 
-private fun copyToClipboard(context: Context, text: String) {
+private fun copyToClipboard(context: Context, text: String, label: String) {
     val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText("Book Club Invite Code", text)
+    val clip = ClipData.newPlainText(label, text)
     clipboard.setPrimaryClip(clip)
 }
 
-private fun shareCode(context: Context, clubCode: String, clubName: String) {
+private fun shareCode(context: Context, shareText: String, chooserTitle: String) {
     val sendIntent = Intent().apply {
         action = Intent.ACTION_SEND
-        putExtra(
-            Intent.EXTRA_TEXT,
-            "Join my book club \"$clubName\" on MyBookshelf!\n\nCode: $clubCode"
-        )
+        putExtra(Intent.EXTRA_TEXT, shareText)
         type = "text/plain"
     }
-    val shareIntent = Intent.createChooser(sendIntent, "Share Book Club Invite")
+    val shareIntent = Intent.createChooser(sendIntent, chooserTitle)
     context.startActivity(shareIntent)
 }

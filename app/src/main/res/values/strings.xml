@@ -251,8 +251,17 @@
     <string name="sign_in_required_book_clubs_message">Book Clubs require an account. Please sign in to access this feature.</string>
 
     <!-- Club Invite dialog -->
+    <string name="club_invite_title_created">Book Club Created!</string>
+    <string name="club_invite_title_share">Share Book Club</string>
+    <string name="club_invite_message">Share this code with friends to let them join \"%s\"</string>
+    <string name="club_invite_share_text">Join my book club \"%1$s\" on MyBookshelf!\n\nCode: %2$s</string>
+    <string name="club_invite_share_chooser">Share Book Club Invite</string>
+    <string name="club_invite_clipboard_label">Book Club Invite Code</string>
+    <string name="cd_club_invite_qr">QR code for club invite</string>
     <string name="copy_code">Copy Code</string>
     <string name="code_copied">Code copied!</string>
+    <string name="action_share">Share</string>
+    <string name="action_done">Done</string>
 
     <!-- Join Book Club dialog -->
     <string name="join_book_club_title">Join Book Club</string>

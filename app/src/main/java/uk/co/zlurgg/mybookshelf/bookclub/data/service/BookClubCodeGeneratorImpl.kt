@@ -6,7 +6,7 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.service.BookClubCodeGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
-import kotlin.random.Random
+import java.security.SecureRandom
 
 /**
  * Implementation of BookClubCodeGenerator that generates 12-character alphanumeric codes.
@@ -51,7 +51,7 @@ class BookClubCodeGeneratorImpl(
     private fun generateCode(): String {
         return buildString {
             repeat(BookClubCode.CODE_LENGTH) {
-                append(BookClubCode.VALID_CHARS[Random.nextInt(BookClubCode.VALID_CHARS.length)])
+                append(BookClubCode.VALID_CHARS[random.nextInt(BookClubCode.VALID_CHARS.length)])
             }
         }
     }
@@ -59,5 +59,6 @@ class BookClubCodeGeneratorImpl(
     companion object {
         private const val TAG = "BookClubCode"
         private const val MAX_RETRIES = 5
+        private val random = SecureRandom()
     }
 }
