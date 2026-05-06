@@ -132,7 +132,9 @@ class BookshelfViewModel(
                     queryFlow.value = currentQuery // Triggers debounced search
                 }
             }
-            else -> Unit
+            // Navigation actions handled by the UI layer
+            BookshelfAction.OnBackClick,
+            BookshelfAction.OnCreateBookClub -> Unit
         }
     }
 
@@ -184,25 +186,12 @@ class BookshelfViewModel(
 
     private fun syncBookClubBooks(clubCode: String, shelfId: String) {
         viewModelScope.launch {
-            _state.update { it.copy(isSyncing = true) }
             when (val syncResult = bookClubOperations.syncBooksFromClub(clubCode, shelfId)) {
-                is Result.Success -> {
-                    val result = syncResult.data
-                    _state.update {
-                        it.copy(
-                            isSyncing = false,
-                            syncMessage = if (result.booksAdded > 0 || result.booksRemoved > 0) {
-                                "Synced: +${result.booksAdded} / -${result.booksRemoved} books"
-                            } else {
-                                null
-                            }
-                        )
-                    }
-                }
+                // No state update needed — the book list refreshes via Flow collection
+                is Result.Success -> Unit
                 is Result.Error -> {
                     _state.update {
                         it.copy(
-                            isSyncing = false,
                             errorMessage = ErrorFormatter.formatDataErrorMessage(syncResult.error, "sync book club")
                         )
                     }

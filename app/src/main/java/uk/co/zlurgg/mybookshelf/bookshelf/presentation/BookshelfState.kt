@@ -24,7 +24,5 @@ data class BookshelfState(
 
     // Book Club state (read-only for display)
     val isBookClub: Boolean = false,
-    val clubCode: String? = null,
-    val isSyncing: Boolean = false,
-    val syncMessage: String? = null
+    val clubCode: String? = null
 )
