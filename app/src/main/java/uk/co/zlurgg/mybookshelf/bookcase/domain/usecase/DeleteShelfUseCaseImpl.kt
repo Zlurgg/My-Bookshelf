@@ -50,8 +50,8 @@ class DeleteShelfUseCaseImpl(
             }
             return Result.Error(localError)
         }
-        Timber.tag(TAG).d("Hard deleting local book club shelf: %s", shelfId)
-        return repository.hardDeleteShelf(shelfId)
+        Timber.tag(TAG).d("Deleting local book club shelf: %s", shelfId)
+        return repository.removeShelf(shelfId)
     }
 
     override suspend fun restore(shelf: Bookshelf): Result<Unit, DataError.Local> {

@@ -110,7 +110,7 @@ internal class BookClubRepositoryHelper(
         for (bookDto in clubBooks) {
             try {
                 val book = bookDto.toBookDomain()
-                val bookEntity = book.toBookEntity(userId)
+                val bookEntity = book.toBookEntity()
 
                 bookshelfDao.upsert(bookEntity)
 
@@ -168,11 +168,10 @@ internal class BookClubRepositoryHelper(
             val convertedShelf = shelfEntity.copy(
                 isBookClub = false,
                 clubCode = null,
-                clubCreatorId = null,
-                syncStatus = "PENDING"
+                clubCreatorId = null
             )
             bookshelfDao.upsertShelf(convertedShelf)
-            Timber.tag(TAG).d("Converted shelf '%s' to personal shelf (will sync)", shelfEntity.name)
+            Timber.tag(TAG).d("Converted shelf '%s' to personal shelf", shelfEntity.name)
         }
 
         bookClubDao.deleteMembership(code)

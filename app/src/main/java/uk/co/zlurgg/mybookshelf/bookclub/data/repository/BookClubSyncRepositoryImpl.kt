@@ -136,7 +136,7 @@ internal class BookClubSyncRepositoryImpl(
         for (bookDto in remoteBooks.filter { it.id in booksToAdd }) {
             try {
                 val book = bookDto.toBookDomain()
-                val bookEntity = book.toBookEntity(user.userId)
+                val bookEntity = book.toBookEntity()
                 bookshelfDao.upsert(bookEntity)
 
                 val crossRef = BookshelfBookCrossRef(

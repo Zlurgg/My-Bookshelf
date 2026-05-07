@@ -37,7 +37,7 @@ interface BookClubDao {
 
     // ========== Book Club Shelf Queries ==========
 
-    @Query("SELECT * FROM BookshelfEntity WHERE isBookClub = 1 AND syncStatus != 'DELETED'")
+    @Query("SELECT * FROM BookshelfEntity WHERE isBookClub = 1")
     fun observeBookClubShelves(): Flow<List<BookshelfEntity>>
 
     @Query("SELECT * FROM BookshelfEntity WHERE clubCode = :clubCode")
@@ -48,10 +48,7 @@ interface BookClubDao {
 
     // ========== Book Queries for Club Creation ==========
 
-    /**
-     * Gets all book IDs for a shelf (used when creating a book club from existing shelf).
-     */
-    @Query("SELECT bookId FROM BookshelfBookCrossRef WHERE shelfId = :shelfId AND syncStatus != 'DELETED'")
+    @Query("SELECT bookId FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
     suspend fun getBookIdsForShelf(shelfId: String): List<String>
 
     // ========== Sync Queries ==========

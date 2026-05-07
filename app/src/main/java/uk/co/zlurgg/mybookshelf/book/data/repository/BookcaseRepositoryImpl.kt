@@ -37,27 +37,12 @@ class BookcaseRepositoryImpl(
     override suspend fun addShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             val ownerId = currentUserProvider.getCurrentUserId()
-            dao.upsertShelfWithSyncInit(
-                shelf.toEntity(ownerId),
-                timeProvider.currentTimeMillis()
-            )
+            dao.upsertShelf(shelf.toEntity(ownerId))
         }
     }
 
     override suspend fun removeShelf(shelfId: String): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
-            val timestamp = timeProvider.currentTimeMillis()
-            // Soft delete: mark as DELETED so SyncEngine can push delete to Firestore
-            // SyncEngine will hard delete after successful remote delete
-            dao.markAllCrossRefsForShelfAs(shelfId, "DELETED", timestamp)
-            dao.updateShelfSyncStatus(shelfId, "DELETED", timestamp)
-        }
-    }
-
-    override suspend fun hardDeleteShelf(shelfId: String): Result<Unit, DataError.Local> {
-        return ErrorMapper.safeSuspendCall(TAG) {
-            // Hard delete: immediately remove from Room database
-            // Use for book clubs where Firestore is source of truth
             dao.deleteAllCrossRefsForShelf(shelfId)
             dao.deleteShelf(shelfId)
         }
@@ -66,50 +51,14 @@ class BookcaseRepositoryImpl(
     override suspend fun updateShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             val ownerId = currentUserProvider.getCurrentUserId()
-            dao.upsertShelfWithSyncInit(
-                shelf.toEntity(ownerId),
-                timeProvider.currentTimeMillis()
-            )
+            dao.upsertShelf(shelf.toEntity(ownerId))
         }
     }
 
     override suspend fun addSystemShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
-            // System shelves are never synced to cloud - set syncStatus = "SYNCED" to exclude from sync queries
             val entity = shelf.toEntity(ownerId = SystemOwnerIds.TUTORIAL)
-                .copy(syncStatus = "SYNCED")
             dao.upsertShelf(entity)
-        }
-    }
-
-    override suspend fun clearUserData(userId: String): Result<Int, DataError.Local> {
-        return ErrorMapper.safeSuspendCall(TAG) {
-            // Count items before deletion
-            val shelves = dao.getShelvesByOwner(userId)
-            val books = dao.getBooksByOwner(userId)
-            val totalItems = shelves.size + books.size
-
-            // Delete in correct order to respect foreign key constraints:
-            // 1. Cross-refs first (references both shelves and books)
-            // 2. Books second
-            // 3. Shelves last
-            dao.deleteAllCrossRefsForOwner(userId)
-            dao.deleteAllBooksForOwner(userId)
-            dao.deleteAllShelvesForOwner(userId)
-
-            totalItems
-        }
-    }
-
-    override suspend fun revertUserDataToGuest(userId: String): Result<Unit, DataError.Local> {
-        return ErrorMapper.safeSuspendCall(TAG) {
-            dao.revertAllUserDataToGuest(userId)
-        }
-    }
-
-    override suspend fun revertOrphanedDataToGuest(): Result<Unit, DataError.Local> {
-        return ErrorMapper.safeSuspendCall(TAG) {
-            dao.revertOrphanedDataToGuest()
         }
     }
 

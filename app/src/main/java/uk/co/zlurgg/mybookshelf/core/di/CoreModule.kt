@@ -42,7 +42,6 @@ val coreModule = module {
     single<DatabaseFactory> { DatabaseFactory(get()) }
     single { get<DatabaseFactory>().create() }
     single { get<MyBookshelfRoomDatabase>().bookshelfDao }
-    single { get<MyBookshelfRoomDatabase>().syncDao }
     single { get<MyBookshelfRoomDatabase>().bookClubDao }
 
     // Preferences

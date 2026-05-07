@@ -27,16 +27,12 @@ class BookshelfRepositoryImpl(
                     addedAt = now
                 )
             )
-            // Mark shelf as pending sync so bookIds list gets updated in Firestore
-            dao.updateShelfSyncStatus(shelfId, "PENDING", now)
         }
     }
 
     override suspend fun removeBookFromShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             dao.deleteCrossRef(shelfId, bookId)
-            // Mark shelf as pending sync so bookIds list gets updated in Firestore
-            dao.updateShelfSyncStatus(shelfId, "PENDING", timeProvider.currentTimeMillis())
         }
     }
 
