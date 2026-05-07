@@ -5,8 +5,8 @@ Non-negotiable architectural principles for MyBookshelf. These rules MUST be fol
 ## Core Principles
 
 - **Offline-first**: Room database is the primary data store; works without internet
-- **Privacy-focused**: No tracking, no analytics; cloud sync is OPT-IN only
-- **Optional auth**: Google Sign-In for book clubs and sync, not required for core bookshelf functionality
+- **Privacy-focused**: No tracking, no analytics; personal data stays on device
+- **Optional auth**: Google Sign-In for book clubs, not required for core bookshelf functionality
 - **Guest mode**: Full bookshelf experience without sign-in
 
 ## Clean Architecture
