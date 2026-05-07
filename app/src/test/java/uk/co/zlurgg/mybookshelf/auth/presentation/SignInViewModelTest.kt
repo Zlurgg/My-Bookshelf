@@ -23,17 +23,12 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.ResumeSessionUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.model.GuestDataInfo
-import uk.co.zlurgg.mybookshelf.sync.domain.model.MigrationResult
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
-import uk.co.zlurgg.mybookshelf.sync.domain.usecase.HasGuestDataUseCase
-import uk.co.zlurgg.mybookshelf.sync.domain.usecase.MigrateLocalDataUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -76,10 +71,34 @@ class SignInViewModelTest {
         }
     }
 
-    private val mockSyncScheduler = object : SyncSchedulerService {
-        override fun schedulePeriodicSync() = Unit
-        override fun triggerImmediateSync() = Unit
-        override fun cancelAllSync() = Unit
+    @Suppress("TooManyFunctions")
+    private val stubClubOperations = object : ClubOperations {
+        override suspend fun createBookClub(name: String, shelfStyle: String, sourceShelfId: String?) =
+            Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun lookupBookClub(codeOrUrl: String) =
+            ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
+        override suspend fun joinBookClub() = Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun joinBookClub(code: String) = Result.Error(DataError.Sync.UNKNOWN)
+        override fun clearLookupState() = Unit
+        override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) =
+            Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun leaveBookClub(shelfId: String) = Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun validateMemberships() = emptyList<String>()
+        override suspend fun deleteBookClub(clubCode: String) = Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun syncBookToClub(clubCode: String, book: Book) =
+            Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun removeBookFromClub(clubCode: String, bookId: String) =
+            Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun updateClubStyle(clubCode: String, styleName: String) =
+            Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> =
+            Result.Success(Unit)
+        override suspend fun renameBookClub(clubCode: String, newName: String): Result<Unit, DataError> =
+            Result.Error(DataError.Sync.UNKNOWN)
+        override suspend fun getClubsCreatedByUser(userId: String) = Result.Success(emptyList<String>())
+        override suspend fun getClubMembershipsForUser(userId: String) = Result.Success(emptyList<String>())
+        override suspend fun removeUserFromClub(clubCode: String, userId: String) =
+            Result.Error(DataError.Sync.UNKNOWN)
     }
 
     private var resumeSessionCallCount = 0
@@ -89,32 +108,14 @@ class SignInViewModelTest {
         }
     }
 
-    private var mockMigrationResult: Result<MigrationResult, DataError.Sync> = Result.Success(
-        MigrationResult.NO_MIGRATION_NEEDED
-    )
-    private val mockMigrateLocalDataUseCase = object : MigrateLocalDataUseCase {
-        override suspend operator fun invoke(): Result<MigrationResult, DataError.Sync> = mockMigrationResult
-    }
-
     private var mockShouldShowWelcome = false
     private val mockShouldShowWelcomeUseCase = object : ShouldShowWelcomeUseCase {
         override suspend operator fun invoke(): Boolean = mockShouldShowWelcome
     }
 
-    private var mockGuestDataInfo = GuestDataInfo(bookCount = 0, shelfCount = 0)
-    private val mockHasGuestDataUseCase = object : HasGuestDataUseCase {
-        override suspend operator fun invoke(): GuestDataInfo = mockGuestDataInfo
-    }
-
-    private val mockClearUserDataUseCase = object : ClearUserDataUseCase {
-        override suspend operator fun invoke(userId: String): Result<Int, DataError.Local> = Result.Success(0)
-    }
-
     private val mockCurrentUserProvider = object : CurrentUserProvider {
         override fun getCurrentUserId(): String = "test-user-id"
     }
-
-    private val mockSyncRepository = MockSyncRepository()
 
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
@@ -122,15 +123,13 @@ class SignInViewModelTest {
             SignOutUseCaseImpl(
                 mockAuthService,
                 mockAuthStateRepository,
-                mockSyncScheduler,
-                mockClearUserDataUseCase,
                 mockCurrentUserProvider,
-                mockSyncRepository
+                stubClubOperations,
+                MockBookcaseRepository(),
             )
         val checkSignInStatusUseCase = CheckSignInStatusUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,
-            MockBookcaseRepository(),
         )
         val getCurrentUserIdUseCase = GetCurrentUserIdUseCaseImpl(mockCurrentUserProvider)
 
@@ -147,8 +146,6 @@ class SignInViewModelTest {
         return SignInViewModel(
             useCases,
             mockShouldShowWelcomeUseCase,
-            mockHasGuestDataUseCase,
-            mockMigrateLocalDataUseCase,
             mockResumeSession,
         )
     }
@@ -163,8 +160,6 @@ class SignInViewModelTest {
         mockCurrentUser = null
         signInStateSet = null
         mockShouldShowWelcome = false
-        mockGuestDataInfo = GuestDataInfo(bookCount = 0, shelfCount = 0)
-        mockMigrationResult = Result.Success(MigrationResult.NO_MIGRATION_NEEDED)
         resumeSessionCallCount = 0
     }
 

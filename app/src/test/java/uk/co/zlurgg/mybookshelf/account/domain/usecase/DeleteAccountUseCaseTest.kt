@@ -14,12 +14,10 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockAuthService
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 
 class DeleteAccountUseCaseTest {
 
     private var mockCurrentUserId: String? = "test-user-id"
-    private var syncCancelled = false
 
     // Club tracking
     private var clubsCreatedByUser: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
@@ -30,7 +28,6 @@ class DeleteAccountUseCaseTest {
     private var removeUserResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
 
     private val mockAuthService = MockAuthService()
-    private val mockSyncRepository = MockSyncRepository()
     private val mockBookcaseRepository = MockBookcaseRepository()
 
     // Auth state tracking
@@ -46,14 +43,6 @@ class DeleteAccountUseCaseTest {
 
     private val mockCurrentUserProvider = object : CurrentUserProvider {
         override fun getCurrentUserId(): String? = mockCurrentUserId
-    }
-
-    private val mockSyncScheduler = object : uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService {
-        override fun schedulePeriodicSync() = Unit
-        override fun triggerImmediateSync() = Unit
-        override fun cancelAllSync() {
-            syncCancelled = true
-        }
     }
 
     @Suppress("TooManyFunctions")
@@ -95,7 +84,6 @@ class DeleteAccountUseCaseTest {
     @Before
     fun setup() {
         mockCurrentUserId = "test-user-id"
-        syncCancelled = false
         clubsCreatedByUser = Result.Success(emptyList())
         clubMemberships = Result.Success(emptyList())
         deletedClubs = mutableListOf()
@@ -104,15 +92,11 @@ class DeleteAccountUseCaseTest {
         removeUserResult = Result.Success(Unit)
         mockAuthService.reset()
         mockAuthService.deleteAccountResult = Result.Success(Unit)
-        mockSyncRepository.reset()
-        mockSyncRepository.deleteAllRemoteDataResult = Result.Success(Unit)
         mockBookcaseRepository.reset()
         authStateSignedIn = null
 
         useCase = DeleteAccountUseCaseImpl(
             currentUserProvider = mockCurrentUserProvider,
-            syncScheduler = mockSyncScheduler,
-            syncRepository = mockSyncRepository,
             clubOperations = mockClubOperations,
             authService = mockAuthService,
             bookcaseRepository = mockBookcaseRepository,
@@ -128,8 +112,6 @@ class DeleteAccountUseCaseTest {
 
         assertTrue("Should succeed", result is Result.Success)
         assertTrue("Auth should be deleted", mockAuthService.deleteAccountCalled)
-        assertTrue("Sync should be cancelled", syncCancelled)
-        assertTrue("Remote data should be deleted", mockSyncRepository.deleteAllRemoteDataCalled)
     }
 
     // ==================== Not Signed In ====================
@@ -148,37 +130,23 @@ class DeleteAccountUseCaseTest {
     // ==================== Club Query Failures ====================
 
     @Test
-    fun `invoke - club query fails - remote data NOT deleted`() = runTest {
+    fun `invoke - club query fails - auth NOT deleted`() = runTest {
         clubsCreatedByUser = Result.Error(DataError.Sync.NETWORK_ERROR)
 
         val result = useCase()
 
         assertTrue("Should return error", result is Result.Error)
-        assertFalse("Remote data must NOT be deleted", mockSyncRepository.deleteAllRemoteDataCalled)
         assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
     }
 
     @Test
-    fun `invoke - club delete fails - remote data NOT deleted`() = runTest {
+    fun `invoke - club delete fails - auth NOT deleted`() = runTest {
         clubsCreatedByUser = Result.Success(listOf("club-1"))
         deleteClubResult = Result.Error(DataError.Sync.NETWORK_ERROR)
 
         val result = useCase()
 
         assertTrue("Should return error", result is Result.Error)
-        assertFalse("Remote data must NOT be deleted", mockSyncRepository.deleteAllRemoteDataCalled)
-    }
-
-    // ==================== Firestore Failure ====================
-
-    @Test
-    fun `invoke - firestore deletion fails - auth NOT deleted`() = runTest {
-        mockSyncRepository.deleteAllRemoteDataResult = Result.Error(DataError.Sync.NETWORK_ERROR)
-
-        val result = useCase()
-
-        assertTrue("Should return error", result is Result.Error)
-        assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
     }
 
     // ==================== REQUIRES_RECENT_LOGIN ====================
@@ -236,14 +204,14 @@ class DeleteAccountUseCaseTest {
         assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
     }
 
-    // ==================== Local Data Revert ====================
+    // ==================== Local Data Cleanup ====================
 
     @Test
-    fun `invoke - success - reverts local data to guest`() = runTest {
+    fun `invoke - success - deletes club shelves`() = runTest {
         useCase()
 
-        assertTrue("Should revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
-        assertEquals("test-user-id", mockBookcaseRepository.lastRevertedUserId)
+        assertTrue("Should delete club shelves", mockBookcaseRepository.deleteClubShelvesCalled)
+        assertEquals("test-user-id", mockBookcaseRepository.lastDeleteClubShelvesUserId)
     }
 
     @Test
@@ -254,36 +222,29 @@ class DeleteAccountUseCaseTest {
     }
 
     @Test
-    fun `invoke - success - clears sync data`() = runTest {
-        useCase()
-
-        assertEquals("test-user-id", mockSyncRepository.clearedSyncDataForUserId)
-    }
-
-    @Test
-    fun `invoke - auth fails - does NOT revert local data`() = runTest {
+    fun `invoke - auth fails - does NOT delete club shelves`() = runTest {
         mockAuthService.deleteAccountResult = Result.Error(DataError.Local.AUTH_FAILED)
 
         useCase()
 
-        assertFalse("Should NOT revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
+        assertFalse("Should NOT delete club shelves", mockBookcaseRepository.deleteClubShelvesCalled)
     }
 
     @Test
-    fun `invoke - REQUIRES_RECENT_LOGIN - does NOT revert local data`() = runTest {
+    fun `invoke - REQUIRES_RECENT_LOGIN - does NOT delete club shelves`() = runTest {
         mockAuthService.deleteAccountResult = Result.Error(DataError.Local.REQUIRES_RECENT_LOGIN)
 
         useCase()
 
-        assertFalse("Should NOT revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
+        assertFalse("Should NOT delete club shelves", mockBookcaseRepository.deleteClubShelvesCalled)
     }
 
     @Test
-    fun `retryAfterReAuth - success - reverts local data to guest`() = runTest {
+    fun `retryAfterReAuth - success - deletes club shelves`() = runTest {
         useCase.retryAfterReAuth("fresh-token")
 
-        assertTrue("Should revert local data", mockBookcaseRepository.revertUserDataToGuestCalled)
-        assertEquals("test-user-id", mockBookcaseRepository.lastRevertedUserId)
+        assertTrue("Should delete club shelves", mockBookcaseRepository.deleteClubShelvesCalled)
+        assertEquals("test-user-id", mockBookcaseRepository.lastDeleteClubShelvesUserId)
     }
 
     @Test
@@ -291,16 +252,5 @@ class DeleteAccountUseCaseTest {
         useCase.retryAfterReAuth("fresh-token")
 
         assertEquals(false, authStateSignedIn)
-    }
-
-    @Test
-    fun `invoke - revert fails - still clears sync data and auth state`() = runTest {
-        mockBookcaseRepository.revertErrorToReturn = DataError.Local.UNKNOWN
-
-        useCase()
-
-        assertTrue("Revert should be attempted", mockBookcaseRepository.revertUserDataToGuestCalled)
-        assertEquals("Sync data should still be cleared", "test-user-id", mockSyncRepository.clearedSyncDataForUserId)
-        assertEquals("Auth state should still be set", false, authStateSignedIn)
     }
 }

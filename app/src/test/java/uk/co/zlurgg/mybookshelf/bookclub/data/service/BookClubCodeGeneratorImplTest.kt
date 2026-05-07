@@ -4,23 +4,15 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubCommentDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubMemberDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubMetadataDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubReviewDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.BookClubRemoteDataSource
 import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClubCode
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookshelfFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.SharedShelfDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.UserPreferencesFirestoreDto
-import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
-import uk.co.zlurgg.mybookshelf.sync.data.repository.BookSyncDataSource
-import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
-import uk.co.zlurgg.mybookshelf.sync.data.repository.ShelfSyncDataSource
-import uk.co.zlurgg.mybookshelf.sync.data.repository.UserPreferencesDataSource
 
 class BookClubCodeGeneratorImplTest {
 
@@ -32,7 +24,7 @@ class BookClubCodeGeneratorImplTest {
         val stub = StubBookClubRemoteDataSource(
             metadataResults = listOf(Result.Success(null))
         )
-        val generator = BookClubCodeGeneratorImpl(createRemoteSyncDataSource(stub))
+        val generator = BookClubCodeGeneratorImpl(stub)
 
         // When
         val result = generator.generateUniqueCode()
@@ -47,7 +39,7 @@ class BookClubCodeGeneratorImplTest {
         val stub = StubBookClubRemoteDataSource(
             metadataResults = List(100) { Result.Success(null) }
         )
-        val generator = BookClubCodeGeneratorImpl(createRemoteSyncDataSource(stub))
+        val generator = BookClubCodeGeneratorImpl(stub)
 
         // When / Then
         repeat(100) {
@@ -74,7 +66,7 @@ class BookClubCodeGeneratorImplTest {
                 Result.Success(null)
             )
         )
-        val generator = BookClubCodeGeneratorImpl(createRemoteSyncDataSource(stub))
+        val generator = BookClubCodeGeneratorImpl(stub)
 
         // When
         val result = generator.generateUniqueCode()
@@ -97,7 +89,7 @@ class BookClubCodeGeneratorImplTest {
                 Result.Success(null)
             )
         )
-        val generator = BookClubCodeGeneratorImpl(createRemoteSyncDataSource(stub))
+        val generator = BookClubCodeGeneratorImpl(stub)
 
         // When
         val result = generator.generateUniqueCode()
@@ -114,7 +106,7 @@ class BookClubCodeGeneratorImplTest {
         val stub = StubBookClubRemoteDataSource(
             metadataResults = List(5) { Result.Success(existingMetadata) }
         )
-        val generator = BookClubCodeGeneratorImpl(createRemoteSyncDataSource(stub))
+        val generator = BookClubCodeGeneratorImpl(stub)
 
         // When
         val result = generator.generateUniqueCode()
@@ -133,7 +125,7 @@ class BookClubCodeGeneratorImplTest {
         val stub = StubBookClubRemoteDataSource(
             metadataResults = listOf(Result.Error(DataError.Sync.NETWORK_ERROR))
         )
-        val generator = BookClubCodeGeneratorImpl(createRemoteSyncDataSource(stub))
+        val generator = BookClubCodeGeneratorImpl(stub)
 
         // When
         val result = generator.generateUniqueCode()
@@ -155,7 +147,7 @@ class BookClubCodeGeneratorImplTest {
                 Result.Error(DataError.Sync.NETWORK_ERROR)
             )
         )
-        val generator = BookClubCodeGeneratorImpl(createRemoteSyncDataSource(stub))
+        val generator = BookClubCodeGeneratorImpl(stub)
 
         // When
         val result = generator.generateUniqueCode()
@@ -213,52 +205,5 @@ private class StubBookClubRemoteDataSource(
     override suspend fun getClubMembershipsForUser(userId: String) = nie()
     override suspend fun removeUserFromClub(clubCode: String, userId: String) = nie()
 
-    private fun nie(): Nothing = throw NotImplementedError("Not used in BookClubCodeGeneratorImpl tests")
-}
-
-/**
- * Creates a RemoteSyncDataSource that delegates BookClubRemoteDataSource to the provided stub.
- * Other sub-interfaces throw NotImplementedError.
- */
-private fun createRemoteSyncDataSource(
-    clubDataSource: BookClubRemoteDataSource
-): RemoteSyncDataSource =
-    object :
-        RemoteSyncDataSource,
-        BookClubRemoteDataSource by clubDataSource,
-        BookSyncDataSource by StubBookSyncDataSource,
-        ShelfSyncDataSource by StubShelfSyncDataSource,
-        UserPreferencesDataSource by StubUserPreferencesDataSource {}
-
-private object StubBookSyncDataSource : BookSyncDataSource {
-    override suspend fun uploadBook(userId: String, book: BookFirestoreDto) = nie()
-    override suspend fun downloadBook(userId: String, bookId: String) = nie()
-    override suspend fun downloadBooksSince(userId: String, sinceTimestamp: Long) = nie()
-    override suspend fun deleteBook(userId: String, bookId: String) = nie()
-    override suspend fun uploadBooks(userId: String, books: List<BookFirestoreDto>) = nie()
-    override suspend fun deleteAllBooks(userId: String) = nie()
-    private fun nie(): Nothing = throw NotImplementedError("Not used in BookClubCodeGeneratorImpl tests")
-}
-
-private object StubShelfSyncDataSource : ShelfSyncDataSource {
-    override suspend fun uploadBookshelf(userId: String, shelf: BookshelfFirestoreDto) = nie()
-    override suspend fun downloadBookshelf(userId: String, shelfId: String) = nie()
-    override suspend fun downloadBookshelvesSince(userId: String, sinceTimestamp: Long) = nie()
-    override suspend fun deleteBookshelf(userId: String, shelfId: String) = nie()
-    override suspend fun uploadBookshelves(userId: String, shelves: List<BookshelfFirestoreDto>) = nie()
-    override suspend fun shareShelf(sharedShelf: SharedShelfDto) = nie()
-    override suspend fun unshareShelf(shareCode: String) = nie()
-    override suspend fun getSharedShelf(shareCode: String) = nie()
-    override suspend fun subscribeToShelf(shareCode: String, userId: String) = nie()
-    override suspend fun unsubscribeFromShelf(shareCode: String, userId: String) = nie()
-    override suspend fun deleteAllBookshelves(userId: String) = nie()
-    private fun nie(): Nothing = throw NotImplementedError("Not used in BookClubCodeGeneratorImpl tests")
-}
-
-private object StubUserPreferencesDataSource : UserPreferencesDataSource {
-    override suspend fun getUserPreferences(userId: String) = nie()
-    override suspend fun setUserPreferences(userId: String, preferences: UserPreferencesFirestoreDto) = nie()
-    override suspend fun deleteUserPreferences(userId: String) = nie()
-    override suspend fun deleteUserDocument(userId: String) = nie()
     private fun nie(): Nothing = throw NotImplementedError("Not used in BookClubCodeGeneratorImpl tests")
 }

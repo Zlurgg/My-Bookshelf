@@ -8,20 +8,8 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershi
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreResult
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.usecase.SyncUserPreferencesUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncSchedulerService
 
 class ResumeSessionUseCaseTest {
-
-    private val mockSyncScheduler = MockSyncSchedulerService()
-
-    private var syncPreferencesCallCount = 0
-    private val mockSyncUserPreferences = object : SyncUserPreferencesUseCase {
-        override suspend fun invoke(): Result<Unit, DataError.Sync> {
-            syncPreferencesCallCount++
-            return Result.Success(Unit)
-        }
-    }
 
     private var restoreCallCount = 0
     private var mockRestoreResult: Result<RestoreResult, DataError.Sync> =
@@ -34,24 +22,13 @@ class ResumeSessionUseCaseTest {
     }
 
     private val useCase = ResumeSessionUseCaseImpl(
-        mockSyncUserPreferences,
         mockRestoreBookClubMemberships,
-        mockSyncScheduler,
     )
 
     @After
     fun tearDown() {
-        syncPreferencesCallCount = 0
         restoreCallCount = 0
         mockRestoreResult = Result.Success(RestoreResult(restoredCount = 0, failedCount = 0))
-        mockSyncScheduler.reset()
-    }
-
-    @Test
-    fun `invoke - calls syncUserPreferences`() = runTest {
-        useCase()
-
-        assertEquals(1, syncPreferencesCallCount)
     }
 
     @Test
@@ -59,23 +36,5 @@ class ResumeSessionUseCaseTest {
         useCase()
 
         assertEquals(1, restoreCallCount)
-    }
-
-    @Test
-    fun `invoke - calls schedulePeriodicSync and triggerImmediateSync`() = runTest {
-        useCase()
-
-        assertEquals(1, mockSyncScheduler.schedulePeriodicSyncCallCount)
-        assertEquals(1, mockSyncScheduler.triggerImmediateSyncCallCount)
-    }
-
-    @Test
-    fun `invoke - club restoration failure does not prevent sync`() = runTest {
-        mockRestoreResult = Result.Error(DataError.Sync.NOT_SIGNED_IN)
-
-        useCase()
-
-        assertEquals(1, mockSyncScheduler.schedulePeriodicSyncCallCount)
-        assertEquals(1, mockSyncScheduler.triggerImmediateSyncCallCount)
     }
 }

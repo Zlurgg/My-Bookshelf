@@ -67,8 +67,6 @@ class BookRepositoryImplTest {
         repository = BookRepositoryImpl(
             mockRemoteDataSource,
             database.bookshelfDao,
-            mockCurrentUserProvider,
-            testTimeProvider
         )
     }
 

@@ -204,14 +204,12 @@ class BookcaseRepositoryImplTest {
         // When
         repository.removeShelf("delete-shelf")
 
-        // Then - Soft delete: shelf still exists but not visible to users
+        // Then - Hard delete: shelf is gone
         val allShelves = repository.getAllShelves().first()
-        assertTrue("Should have no visible shelves after soft deletion", allShelves.isEmpty())
+        assertTrue("Should have no visible shelves after deletion", allShelves.isEmpty())
 
-        // Shelf still exists in database for sync (soft delete)
-        val softDeletedEntity = database.bookshelfDao.getShelfById("delete-shelf")
-        assertNotNull("Soft deleted shelf should still exist in database", softDeletedEntity)
-        assertEquals("Shelf should be marked as DELETED", "DELETED", softDeletedEntity?.syncStatus)
+        val deletedEntity = database.bookshelfDao.getShelfById("delete-shelf")
+        assertNull("Shelf should be deleted from database", deletedEntity)
     }
 
     @Test
@@ -347,10 +345,9 @@ class BookcaseRepositoryImplTest {
         assertEquals("Should update shelf name", "Updated Second", remainingShelf1?.name)
         assertEquals("Should preserve other shelf", "Third", remainingShelf2?.name)
 
-        // Soft deleted shelf still exists in database but marked as DELETED
-        val softDeletedEntity = database.bookshelfDao.getShelfById("multi-1")
-        assertNotNull("Soft deleted shelf should still exist in database", softDeletedEntity)
-        assertEquals("Shelf should be marked as DELETED", "DELETED", softDeletedEntity?.syncStatus)
+        // Hard deleted shelf is gone from database
+        val deletedEntity = database.bookshelfDao.getShelfById("multi-1")
+        assertNull("Deleted shelf should be removed from database", deletedEntity)
     }
 
     @Test

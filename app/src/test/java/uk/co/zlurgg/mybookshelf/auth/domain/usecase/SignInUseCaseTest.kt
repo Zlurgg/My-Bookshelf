@@ -112,6 +112,4 @@ class SignInUseCaseTest {
     }
 
     // Note: Sync scheduling tests removed - sync is now handled by ResumeSessionUseCase
-    // Note: Migration tests removed - migration is now handled separately
-    // by the ViewModel via MigrateLocalDataUseCase after showing a dialog
 }

@@ -258,7 +258,7 @@ class DeleteShelfUseCaseTest {
     }
 
     @Test
-    fun `regular shelf uses soft delete (removeShelf)`() = runTest {
+    fun `regular shelf uses removeShelf`() = runTest {
         // Given - A regular shelf (not a book club)
         val shelfId = "regular-shelf"
         val shelf = TestShelfBuilder()
@@ -274,13 +274,12 @@ class DeleteShelfUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertTrue("Should call removeShelf (soft delete)", mockRepository.removeShelfCalled)
-        assertFalse("Should NOT call hardDeleteShelf", mockRepository.hardDeleteShelfCalled)
-        assertEquals("Should soft delete correct shelf", shelfId, mockRepository.lastRemovedShelfId)
+        assertTrue("Should call removeShelf", mockRepository.removeShelfCalled)
+        assertEquals("Should remove correct shelf", shelfId, mockRepository.lastRemovedShelfId)
     }
 
     @Test
-    fun `book club shelf uses hard delete after Firestore deletion`() = runTest {
+    fun `book club shelf uses removeShelf after Firestore deletion`() = runTest {
         // Given - A book club shelf
         val shelfId = "club-shelf"
         val clubCode = "ABC12345"
@@ -298,9 +297,8 @@ class DeleteShelfUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertTrue("Should call hardDeleteShelf", mockRepository.hardDeleteShelfCalled)
-        assertFalse("Should NOT call removeShelf (soft delete)", mockRepository.removeShelfCalled)
-        assertEquals("Should hard delete correct shelf", shelfId, mockRepository.lastHardDeletedShelfId)
+        assertTrue("Should call removeShelf", mockRepository.removeShelfCalled)
+        assertEquals("Should remove correct shelf", shelfId, mockRepository.lastRemovedShelfId)
         assertFalse("Shelf should be removed from repository", mockRepository.hasShelf(shelfId))
     }
 }

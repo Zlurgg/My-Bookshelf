@@ -23,7 +23,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookcase
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.BookcaseUseCases
-import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.HandleTutorialAccessUseCase
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.TutorialAccessResult
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
@@ -31,7 +30,6 @@ import uk.co.zlurgg.mybookshelf.bookcase.presentation.handlers.ShelfManagementHa
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.handlers.ShelfOperationsHandler
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
@@ -42,7 +40,6 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetAllShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockSyncRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
 
 /**
@@ -167,31 +164,20 @@ class BookcaseViewModelTest {
             override suspend fun setSignedInState(isSignedIn: Boolean): Result<Unit, DataError.Local> =
                 Result.Success(Unit)
         }
-        val mockSyncScheduler = object : SyncSchedulerService {
-            override fun schedulePeriodicSync() = Unit
-            override fun triggerImmediateSync() = Unit
-            override fun cancelAllSync() = Unit
-        }
-        val mockClearUserData = object : ClearUserDataUseCase {
-            override suspend operator fun invoke(userId: String): Result<Int, DataError.Local> = Result.Success(0)
-        }
         val mockCurrentUserProvider = object : CurrentUserProvider {
             override fun getCurrentUserId(): String = "test-user-id"
         }
-        val mockSyncRepository = MockSyncRepository()
         val mockSignIn = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
         val mockCheckSignInStatus = CheckSignInStatusUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,
-            MockBookcaseRepository(),
         )
         val mockSignOut = SignOutUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,
-            mockSyncScheduler,
-            mockClearUserData,
             mockCurrentUserProvider,
-            mockSyncRepository
+            stubClubOperations,
+            MockBookcaseRepository(),
         )
         val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
             override operator fun invoke(): String = "test-user-id"

@@ -10,7 +10,6 @@ import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 
 class CheckSignInStatusUseCaseTest {
 
@@ -37,16 +36,13 @@ class CheckSignInStatusUseCaseTest {
             Result.Success(Unit)
     }
 
-    private val mockBookcaseRepository = MockBookcaseRepository()
-
     private lateinit var useCase: CheckSignInStatusUseCase
 
     @Before
     fun setup() {
         mockIsSignedIn = false
         mockCurrentUser = null
-        mockBookcaseRepository.reset()
-        useCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository, mockBookcaseRepository)
+        useCase = CheckSignInStatusUseCaseImpl(mockAuthService, mockAuthStateRepository)
     }
 
     @Test
@@ -110,39 +106,5 @@ class CheckSignInStatusUseCaseTest {
         mockIsSignedIn = true
         mockCurrentUser = UserData("user-123", "Test User", null)
         assertTrue(useCase())
-    }
-
-    // ==================== Orphan Recovery ====================
-
-    @Test
-    fun `not signed in with orphaned data - reverts to guest`() = runTest {
-        mockIsSignedIn = false
-        mockCurrentUser = null
-
-        useCase()
-
-        assertTrue("Should attempt orphan recovery", mockBookcaseRepository.revertOrphanedDataToGuestCalled)
-    }
-
-    @Test
-    fun `signed in - does not revert`() = runTest {
-        mockIsSignedIn = true
-        mockCurrentUser = UserData("user-123", "Test User", null)
-
-        useCase()
-
-        assertFalse("Should NOT attempt orphan recovery", mockBookcaseRepository.revertOrphanedDataToGuestCalled)
-    }
-
-    @Test
-    fun `not signed in with no orphaned data - no-op`() = runTest {
-        mockIsSignedIn = false
-        mockCurrentUser = null
-
-        useCase()
-
-        // revertOrphanedDataToGuest is called but internally returns Success
-        // (no orphans found) — the important thing is it doesn't crash
-        assertTrue("Should attempt recovery check", mockBookcaseRepository.revertOrphanedDataToGuestCalled)
     }
 }

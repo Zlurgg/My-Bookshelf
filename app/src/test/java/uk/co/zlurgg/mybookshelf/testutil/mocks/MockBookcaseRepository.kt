@@ -28,16 +28,13 @@ class MockBookcaseRepository : BookcaseRepository {
     var addShelfCalled = false
     var addSystemShelfCalled = false
     var removeShelfCalled = false
-    var hardDeleteShelfCalled = false
     var updateShelfCalled = false
     var addShelfCallCount = 0
     var addSystemShelfCallCount = 0
     var removeShelfCallCount = 0
-    var hardDeleteShelfCallCount = 0
     var lastAddedShelf: Bookshelf? = null
     var lastAddedSystemShelf: Bookshelf? = null
     var lastRemovedShelfId: String? = null
-    var lastHardDeletedShelfId: String? = null
     var lastUpdatedShelf: Bookshelf? = null
 
     override fun getAllShelves(): Flow<List<Bookshelf>> = flow {
@@ -78,17 +75,6 @@ class MockBookcaseRepository : BookcaseRepository {
         return Result.Success(Unit)
     }
 
-    override suspend fun hardDeleteShelf(shelfId: String): Result<Unit, DataError.Local> {
-        hardDeleteShelfCalled = true
-        hardDeleteShelfCallCount++
-        lastHardDeletedShelfId = shelfId
-
-        errorToReturn?.let { return Result.Error(it) }
-
-        shelves.remove(shelfId)
-        return Result.Success(Unit)
-    }
-
     override suspend fun updateShelf(shelf: Bookshelf): Result<Unit, DataError.Local> {
         updateShelfCalled = true
         lastUpdatedShelf = shelf
@@ -109,37 +95,14 @@ class MockBookcaseRepository : BookcaseRepository {
         return Result.Success(Unit)
     }
 
-    override suspend fun clearUserData(userId: String): Result<Int, DataError.Local> {
-        clearUserDataCalled = true
-        lastClearedUserId = userId
+    // Tracking properties for deleteClubShelves
+    var deleteClubShelvesCalled = false
+    var lastDeleteClubShelvesUserId: String? = null
 
+    override suspend fun deleteClubShelves(userId: String): Result<Unit, DataError.Local> {
+        deleteClubShelvesCalled = true
+        lastDeleteClubShelvesUserId = userId
         errorToReturn?.let { return Result.Error(it) }
-
-        val count = shelves.size
-        shelves.clear()
-        return Result.Success(count)
-    }
-
-    // Tracking properties for clearUserData
-    var clearUserDataCalled = false
-    var lastClearedUserId: String? = null
-
-    // Tracking properties for revert methods
-    var revertUserDataToGuestCalled = false
-    var lastRevertedUserId: String? = null
-    var revertOrphanedDataToGuestCalled = false
-    var revertErrorToReturn: DataError.Local? = null
-
-    override suspend fun revertUserDataToGuest(userId: String): Result<Unit, DataError.Local> {
-        revertUserDataToGuestCalled = true
-        lastRevertedUserId = userId
-        revertErrorToReturn?.let { return Result.Error(it) }
-        return Result.Success(Unit)
-    }
-
-    override suspend fun revertOrphanedDataToGuest(): Result<Unit, DataError.Local> {
-        revertOrphanedDataToGuestCalled = true
-        revertErrorToReturn?.let { return Result.Error(it) }
         return Result.Success(Unit)
     }
 
@@ -155,23 +118,16 @@ class MockBookcaseRepository : BookcaseRepository {
         addShelfCalled = false
         addSystemShelfCalled = false
         removeShelfCalled = false
-        hardDeleteShelfCalled = false
         updateShelfCalled = false
         addShelfCallCount = 0
         addSystemShelfCallCount = 0
         removeShelfCallCount = 0
-        hardDeleteShelfCallCount = 0
         lastAddedShelf = null
         lastAddedSystemShelf = null
         lastRemovedShelfId = null
-        lastHardDeletedShelfId = null
         lastUpdatedShelf = null
-        clearUserDataCalled = false
-        lastClearedUserId = null
-        revertUserDataToGuestCalled = false
-        lastRevertedUserId = null
-        revertOrphanedDataToGuestCalled = false
-        revertErrorToReturn = null
+        deleteClubShelvesCalled = false
+        lastDeleteClubShelvesUserId = null
     }
 
     fun configureShelves(shelves: List<Bookshelf>) {
