@@ -5,7 +5,7 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClubCode
 import uk.co.zlurgg.mybookshelf.bookclub.domain.service.BookClubCodeGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.BookClubRemoteDataSource
 import java.security.SecureRandom
 
 /**

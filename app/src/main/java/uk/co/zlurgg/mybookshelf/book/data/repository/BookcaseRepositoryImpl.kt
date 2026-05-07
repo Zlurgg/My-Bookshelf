@@ -113,6 +113,14 @@ class BookcaseRepositoryImpl(
         }
     }
 
+    override suspend fun deleteClubShelves(userId: String): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            // Cross-refs first (no FK CASCADE), then shelves
+            dao.deleteCrossRefsForClubShelves(userId)
+            dao.deleteClubShelvesForOwner(userId)
+        }
+    }
+
     companion object {
         private const val TAG = "BookcaseRepository"
     }

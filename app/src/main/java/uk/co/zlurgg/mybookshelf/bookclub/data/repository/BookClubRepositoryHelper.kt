@@ -14,7 +14,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
-import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.BookClubRemoteDataSource
 
 /**
  * Shared operations used by multiple BookClub repository implementations.

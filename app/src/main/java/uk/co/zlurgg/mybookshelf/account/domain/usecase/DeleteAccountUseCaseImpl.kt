@@ -8,13 +8,9 @@ import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class DeleteAccountUseCaseImpl(
     private val currentUserProvider: CurrentUserProvider,
-    private val syncScheduler: SyncSchedulerService,
-    private val syncRepository: SyncRepository,
     private val clubOperations: ClubOperations,
     private val authService: AuthService,
     private val bookcaseRepository: BookcaseRepository,
@@ -25,8 +21,6 @@ class DeleteAccountUseCaseImpl(
     override suspend operator fun invoke(): Result<Unit, DataError> {
         val userId = currentUserProvider.getCurrentUserId()
             ?: return Result.Error(DataError.Local.AUTH_FAILED)
-
-        syncScheduler.cancelAllSync()
 
         // Delete clubs created by this user
         val createdResult = clubOperations.getClubsCreatedByUser(userId)
@@ -48,15 +42,11 @@ class DeleteAccountUseCaseImpl(
             if (removeResult is Result.Error) return removeResult
         }
 
-        // Delete Firestore data (books, shelves, preferences)
-        val deleteDataResult = syncRepository.deleteAllRemoteData(userId)
-        if (deleteDataResult is Result.Error) return deleteDataResult
-
         // Delete Firebase Auth account
         val authDeleteResult = authService.deleteAccount()
         if (authDeleteResult is Result.Error) return authDeleteResult
 
-        // Auth succeeded — now safe to revert local data to guest
+        // Auth succeeded — now safe to clean up local club data
         finalizeLocalCleanup(userId)
 
         return Result.Success(Unit)
@@ -73,18 +63,17 @@ class DeleteAccountUseCaseImpl(
         val deleteResult = authService.deleteAccount()
         if (deleteResult is Result.Error) return deleteResult
 
-        // Auth succeeded — now safe to revert local data to guest
+        // Auth succeeded — now safe to clean up local club data
         finalizeLocalCleanup(userId)
 
         return Result.Success(Unit)
     }
 
     private suspend fun finalizeLocalCleanup(userId: String) {
-        when (val result = bookcaseRepository.revertUserDataToGuest(userId)) {
-            is Result.Success -> Timber.tag(TAG).d("Local data reverted to guest")
-            is Result.Error -> Timber.tag(TAG).e("Failed to revert local data: %s", result.error)
+        when (val result = bookcaseRepository.deleteClubShelves(userId)) {
+            is Result.Success -> Timber.tag(TAG).d("Club shelves deleted")
+            is Result.Error -> Timber.tag(TAG).e("Failed to delete club shelves: %s", result.error)
         }
-        syncRepository.clearSyncData(userId)
         when (val authResult = authStateRepository.setSignedInState(false)) {
             is Result.Success -> Unit
             is Result.Error -> Timber.tag(TAG).e("Failed to clear signed-in state: %s", authResult.error)

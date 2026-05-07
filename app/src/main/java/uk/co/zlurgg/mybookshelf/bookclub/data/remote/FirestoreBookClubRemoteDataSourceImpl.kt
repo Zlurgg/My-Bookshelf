@@ -1,27 +1,26 @@
-package uk.co.zlurgg.mybookshelf.sync.data.service
+package uk.co.zlurgg.mybookshelf.bookclub.data.remote
 
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubCommentDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubMemberDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubMetadataDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubReviewDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.BOOK_CLUBS_COLLECTION
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.CLUB_BOOKS_COLLECTION
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.COMMENTS_COLLECTION
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.FIELD_CLUB_MEMBERSHIPS
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.MEMBERS_COLLECTION
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.PREFERENCES_DOCUMENT
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.REVIEWS_COLLECTION
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.SETTINGS_COLLECTION
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreCollections.USERS_COLLECTION
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
-import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.BOOK_CLUBS_COLLECTION
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.CLUB_BOOKS_COLLECTION
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.COMMENTS_COLLECTION
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.FIELD_CLUB_MEMBERSHIPS
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.MEMBERS_COLLECTION
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.PREFERENCES_DOCUMENT
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.REVIEWS_COLLECTION
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.SETTINGS_COLLECTION
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreCollections.USERS_COLLECTION
 
 // Implements BookClubRemoteDataSource: CRUD, membership, books, reviews, comments, and account deletion
 @Suppress("TooManyFunctions")

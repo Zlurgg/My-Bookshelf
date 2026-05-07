@@ -8,9 +8,9 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.repository.BookClubReviewReposit
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
-import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubCommentDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubReviewDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.BookClubRemoteDataSource
 
 internal class BookClubReviewRepositoryImpl(
     private val remoteDataSource: BookClubRemoteDataSource,

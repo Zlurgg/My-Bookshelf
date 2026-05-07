@@ -11,7 +11,6 @@ import uk.co.zlurgg.mybookshelf.bookdetail.di.bookDetailModule
 import uk.co.zlurgg.mybookshelf.bookcase.di.bookcaseModule
 import uk.co.zlurgg.mybookshelf.bookshelf.di.bookshelfModule
 import uk.co.zlurgg.mybookshelf.core.di.coreModule
-import uk.co.zlurgg.mybookshelf.sync.di.syncModule
 import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
 
 /**
@@ -20,7 +19,6 @@ import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
  * Module hierarchy:
  * - coreModule: Infrastructure (database, network, preferences, core services)
  * - authModule: Authentication (Google Sign-In, auth state, user provider)
- * - syncModule: Cloud sync (Firestore sync engine, connectivity, migration)
  * - bookModule: Shared book domain (models, repos, network, shared use cases)
  * - bookDetailModule: Book detail screen (view/edit book metadata)
  * - bookClubModule: Book club feature (use cases, handler)
@@ -34,7 +32,6 @@ val appModule = module {
         coreModule,
         accountModule,
         authModule,
-        syncModule,
         bookModule,
         bookClubModule,
         bookDetailModule,

@@ -70,8 +70,8 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidateBookClubMembersh
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidateBookClubMembershipsUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.handlers.BookReviewProviderImpl
 import uk.co.zlurgg.mybookshelf.bookclub.presentation.handlers.ClubOperationsImpl
-import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
-import uk.co.zlurgg.mybookshelf.sync.data.service.FirestoreBookClubRemoteDataSourceImpl
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.BookClubRemoteDataSource
+import uk.co.zlurgg.mybookshelf.bookclub.data.remote.FirestoreBookClubRemoteDataSourceImpl
 import com.google.firebase.firestore.FirebaseFirestore
 
 val bookClubModule = module {

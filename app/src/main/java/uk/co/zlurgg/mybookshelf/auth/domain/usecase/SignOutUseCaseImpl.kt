@@ -4,68 +4,56 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.ClearUserDataUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.repository.SyncRepository
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
 
 class SignOutUseCaseImpl(
     private val authService: AuthService,
     private val authStateRepository: AuthStateRepository,
-    private val syncScheduler: SyncSchedulerService,
-    private val clearUserData: ClearUserDataUseCase,
     private val currentUserProvider: CurrentUserProvider,
-    private val syncRepository: SyncRepository
+    private val clubOperations: ClubOperations,
+    private val bookcaseRepository: BookcaseRepository,
 ) : SignOutUseCase {
-    companion object {
-        private const val TAG = "SignOut"
-    }
 
     override suspend operator fun invoke(): Result<Unit, DataError.Local> {
         Timber.tag(TAG).d("=== SIGN-OUT START ===")
 
-        // Cancel all sync work before signing out
-        Timber.tag(TAG).d("Cancelling sync work")
-        syncScheduler.cancelAllSync()
-
-        // Clear user data before signing out (preserves guest and system data)
+        // Capture userId before sign-out (Firebase clears auth state on sign-out)
         val userId = currentUserProvider.getCurrentUserId()
+
+        // Step 1: Firebase sign-out first
+        val signOutResult = authService.signOut()
+        if (signOutResult is Result.Error) {
+            Timber.tag(TAG).e("Sign-out failed: %s", signOutResult.error)
+            return signOutResult
+        }
+
+        when (val stateResult = authStateRepository.setSignedInState(false)) {
+            is Result.Success -> { /* State saved successfully */ }
+            is Result.Error -> Timber.tag(TAG).w("Failed to save auth state: %s", stateResult.error)
+        }
+
+        // Step 2: Clear club memberships
         if (userId != null) {
-            Timber.tag(TAG).d("Clearing user data for: %s", userId)
-            when (val clearResult = clearUserData(userId)) {
-                is Result.Success -> {
-                    Timber.tag(TAG).d("Cleared %d items", clearResult.data)
-                }
-                is Result.Error -> {
-                    // Log but don't fail sign-out if clearing fails
-                    Timber.tag(TAG).w("Failed to clear user data: %s", clearResult.error)
-                }
+            when (val clearResult = clubOperations.clearAllMemberships()) {
+                is Result.Success -> Timber.tag(TAG).d("Club memberships cleared")
+                is Result.Error -> Timber.tag(TAG).w("Failed to clear memberships: %s", clearResult.error)
             }
 
-            // Clear sync metadata so next sign-in triggers a full sync
-            Timber.tag(TAG).d("Clearing sync metadata for: %s", userId)
-            syncRepository.clearSyncData(userId)
-        } else {
-            Timber.tag(TAG).d("No user signed in, skipping data clearing")
+            // Step 3: Delete club shelves
+            when (val deleteResult = bookcaseRepository.deleteClubShelves(userId)) {
+                is Result.Success -> Timber.tag(TAG).d("Club shelves deleted")
+                is Result.Error -> Timber.tag(TAG).w("Failed to delete club shelves: %s", deleteResult.error)
+            }
         }
 
-        return when (val result = authService.signOut()) {
-            is Result.Success -> {
-                when (val stateResult = authStateRepository.setSignedInState(false)) {
-                    is Result.Success -> { /* State saved successfully */ }
-                    is Result.Error -> {
-                        Timber.tag(TAG).w("Failed to save auth state: %s", stateResult.error)
-                        // Continue anyway - Firebase sign-out succeeded
-                    }
-                }
-                Timber.tag(TAG).d("=== SIGN-OUT COMPLETE ===")
-                Result.Success(Unit)
-            }
-            is Result.Error -> {
-                Timber.tag(TAG).e("Sign-out failed: %s", result.error)
-                result
-            }
-        }
+        Timber.tag(TAG).d("=== SIGN-OUT COMPLETE ===")
+        return Result.Success(Unit)
+    }
+
+    companion object {
+        private const val TAG = "SignOut"
     }
 }

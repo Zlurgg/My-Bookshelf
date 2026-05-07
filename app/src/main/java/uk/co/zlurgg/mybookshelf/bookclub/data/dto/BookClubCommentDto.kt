@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.sync.data.dto
+package uk.co.zlurgg.mybookshelf.bookclub.data.dto
 
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentId

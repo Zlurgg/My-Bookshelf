@@ -1,12 +1,12 @@
-package uk.co.zlurgg.mybookshelf.sync.data.repository
+package uk.co.zlurgg.mybookshelf.bookclub.data.remote
 
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubCommentDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubMemberDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubMetadataDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubReviewDto
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
 
 /**
  * Remote book club operations: CRUD, membership, books, reviews, comments, and account deletion.

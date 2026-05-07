@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.sync.data.service
+package uk.co.zlurgg.mybookshelf.bookclub.data.remote
 
 import com.google.firebase.firestore.FirebaseFirestoreException
 import timber.log.Timber

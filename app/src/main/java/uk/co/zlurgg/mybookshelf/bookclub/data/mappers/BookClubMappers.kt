@@ -5,8 +5,8 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookClubMembershipEntity
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubBookDto
-import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubBookDto
+import uk.co.zlurgg.mybookshelf.bookclub.data.dto.BookClubMetadataDto
 
 // ========== BookClub (DTO -> Domain) ==========
 

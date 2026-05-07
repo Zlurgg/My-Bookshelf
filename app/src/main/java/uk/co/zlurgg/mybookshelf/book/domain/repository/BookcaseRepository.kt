@@ -44,4 +44,10 @@ interface BookcaseRepository {
      * Used at startup to handle crashes between auth deletion and local revert.
      */
     suspend fun revertOrphanedDataToGuest(): Result<Unit, DataError.Local>
+
+    /**
+     * Deletes all book club shelves owned by the given user, including their cross-refs.
+     * Used during sign-out and account deletion to clean up identity-bound club data.
+     */
+    suspend fun deleteClubShelves(userId: String): Result<Unit, DataError.Local>
 }

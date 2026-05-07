@@ -26,7 +26,6 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.BuildConfig
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.ContinueAsGuestButton
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.DevSignInButton
-import uk.co.zlurgg.mybookshelf.auth.presentation.components.ImportGuestDataDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInButton
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.WelcomeHeader
 
@@ -52,17 +51,6 @@ fun SignInScreenRoot(
     LaunchedEffect(state.errorMessage) {
         state.errorMessage?.let { error ->
             snackbarHostState.showSnackbar(error)
-        }
-    }
-
-    // Show guest data import dialog if needed
-    state.guestDataInfo?.let { guestDataInfo ->
-        if (state.showGuestDataImportDialog) {
-            ImportGuestDataDialog(
-                guestDataInfo = guestDataInfo,
-                onImport = { viewModel.onAction(SignInAction.ImportGuestData) },
-                onSkip = { viewModel.onAction(SignInAction.SkipGuestDataImport) }
-            )
         }
     }
 
