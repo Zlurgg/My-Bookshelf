@@ -14,6 +14,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
@@ -52,6 +53,9 @@ class BookshelfViewModelTest {
     private val mockUpsertBook = SimpleUpsertBookUseCase()
     private val mockUpdateShelfTidyMode = SimpleUpdateShelfTidyModeUseCase()
     private val mockGetShelfById = MockGetShelfByIdUseCase()
+    private val stubCheckSignInStatus = object : CheckSignInStatusUseCase {
+        override suspend fun invoke(): Boolean = false
+    }
 
     @After
     fun tearDown() {
@@ -121,7 +125,13 @@ class BookshelfViewModelTest {
             upsertBook = mockUpsertBook,
             updateShelfTidyMode = mockUpdateShelfTidyMode
         )
-        return BookshelfViewModel(bookshelfUseCases, mockGetShelfById, stubClubOperations, shelfId)
+        return BookshelfViewModel(
+            bookshelfUseCases,
+            mockGetShelfById,
+            stubClubOperations,
+            stubCheckSignInStatus,
+            shelfId
+        )
     }
 
     @Test

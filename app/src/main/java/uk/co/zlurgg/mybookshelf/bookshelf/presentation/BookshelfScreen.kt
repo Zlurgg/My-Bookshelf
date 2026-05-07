@@ -48,6 +48,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelfcomponents.Books
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchState
+import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBooks
 import uk.co.zlurgg.mybookshelf.book.presentation.util.BookDisplayStyle
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
@@ -61,6 +62,7 @@ fun BookshelfScreenRoot(
     onBookClick: (Book) -> Unit,
     onBackClick: () -> Unit,
     onCreateBookClub: () -> Unit = {},
+    onSignIn: () -> Unit,
     shelfName: String? = null,
     shelfMaterial: ShelfMaterial? = null,
 ) {
@@ -81,7 +83,8 @@ fun BookshelfScreenRoot(
                 BookshelfAction.OnCreateBookClub -> onCreateBookClub()
                 else -> viewModel.onAction(action)
             }
-        }
+        },
+        onSignIn = onSignIn,
     )
 }
 
@@ -91,8 +94,10 @@ fun BookshelfScreenRoot(
 fun BookshelfScreen(
     state: BookshelfState,
     onAction: (BookshelfAction) -> Unit,
+    onSignIn: () -> Unit = {},
 ) {
     var showCreateBookClubDialog by remember { mutableStateOf(false) }
+    var showSignInRequiredDialog by remember { mutableStateOf(false) }
 
     // Use books in their original order (no forced sorting)
     val books = state.books
@@ -161,7 +166,13 @@ fun BookshelfScreen(
                 Row {
                     if (!state.isBookClub) {
                         FloatingActionButton(
-                            onClick = { showCreateBookClubDialog = true }
+                            onClick = {
+                                if (state.isSignedIn) {
+                                    showCreateBookClubDialog = true
+                                } else {
+                                    showSignInRequiredDialog = true
+                                }
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Groups,
@@ -355,6 +366,19 @@ fun BookshelfScreen(
                     Text(stringResource(R.string.action_cancel))
                 }
             }
+        )
+    }
+
+    // Sign-in required dialog (shown when guest user tries to create a book club)
+    if (showSignInRequiredDialog) {
+        SignInRequiredDialog(
+            title = stringResource(R.string.sign_in_required_book_clubs_title),
+            message = stringResource(R.string.sign_in_required_book_clubs_message),
+            onSignIn = {
+                showSignInRequiredDialog = false
+                onSignIn()
+            },
+            onDismiss = { showSignInRequiredDialog = false }
         )
     }
 

@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -159,18 +160,12 @@ fun MyBookShelfApp() {
                         onAddBookshelfClick = { name, style ->
                             viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
                         },
-                        onSignIn = {
-                            navController.navigate(NavigationRoute.SignIn.createRoute()) {
-                                popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
-                            }
-                        },
+                        onSignIn = { navigateToSignIn(navController) },
                         onAccountClick = { isSignedIn ->
                             if (isSignedIn) {
                                 navController.navigate(NavigationRoute.Account.createRoute())
                             } else {
-                                navController.navigate(NavigationRoute.SignIn.createRoute()) {
-                                    popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
-                                }
+                                navigateToSignIn(navController)
                             }
                         },
                     )
@@ -187,11 +182,7 @@ fun MyBookShelfApp() {
                     route = NavigationRoute.Account.ROUTE,
                 ) {
                     AccountScreenRoot(
-                        onNavigateToSignIn = {
-                            navController.navigate(NavigationRoute.SignIn.createRoute()) {
-                                popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
-                            }
-                        },
+                        onNavigateToSignIn = { navigateToSignIn(navController) },
                         onBack = { navController.popBackStack() },
                     )
                 }
@@ -233,6 +224,7 @@ fun MyBookShelfApp() {
                             )
                             navController.popBackStack()
                         },
+                        onSignIn = { navigateToSignIn(navController) },
                         shelfName = state.shelfName,
                         shelfMaterial = state.shelfMaterial,
                     )
@@ -267,5 +259,11 @@ fun MyBookShelfApp() {
                 }
             }
         }
+    }
+}
+
+private fun navigateToSignIn(navController: NavHostController) {
+    navController.navigate(NavigationRoute.SignIn.createRoute()) {
+        popUpTo(NavigationRoute.MyBookshelfGraph.ROUTE) { inclusive = true }
     }
 }

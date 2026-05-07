@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.GetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
@@ -28,6 +29,7 @@ class BookshelfViewModel(
     private val bookshelfUseCases: BookshelfUseCases,
     private val getShelfById: GetShelfByIdUseCase,
     private val bookClubOperations: ClubOperations,
+    private val checkSignInStatus: CheckSignInStatusUseCase,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -53,6 +55,14 @@ class BookshelfViewModel(
         observeDebouncedQuery()
         loadBooks()
         loadShelfDetails()
+        checkSignInStatus()
+    }
+
+    private fun checkSignInStatus() {
+        viewModelScope.launch {
+            val isSignedIn = checkSignInStatus.invoke()
+            _state.update { it.copy(isSignedIn = isSignedIn) }
+        }
     }
 
     fun onAction(action: BookshelfAction) {
