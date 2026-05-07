@@ -35,7 +35,8 @@ fun AddBookshelfDialog(
     onDismiss: () -> Unit,
     onAddShelf: (String, ShelfStyle) -> Unit,
     isLoading: Boolean,
-    defaultName: String
+    defaultName: String,
+    title: String? = null,
 ) {
     var name by remember { mutableStateOf(defaultName) }
     var hasBeenFocused by remember { mutableStateOf(false) }
@@ -45,7 +46,7 @@ fun AddBookshelfDialog(
         onDismissRequest = {
             if (!isLoading) onDismiss()
         },
-        title = { Text(stringResource(id = R.string.dialog_add_shelf_title)) },
+        title = { Text(title ?: stringResource(id = R.string.dialog_add_shelf_title)) },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 TextField(

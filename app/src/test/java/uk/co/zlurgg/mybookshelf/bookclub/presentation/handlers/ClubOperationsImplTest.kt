@@ -66,7 +66,11 @@ class ClubOperationsImplTest {
     private fun createClubOperations(): ClubOperationsImpl {
         val useCases = BookClubOperationUseCases(
             createBookClub = object : CreateBookClubUseCase {
-                override suspend fun invoke(shelfId: String) = createBookClubResult
+                override suspend fun invoke(
+                    name: String,
+                    shelfStyle: String,
+                    sourceShelfId: String?,
+                ) = createBookClubResult
             },
             parseClubCode = object : ParseClubCodeUseCase {
                 override fun invoke(input: String) = parseClubCodeResult
@@ -412,12 +416,29 @@ class ClubOperationsImplTest {
         val ops = createClubOperations()
 
         // When
-        val result = ops.createBookClub("shelf-1", "My Shelf")
+        val result = ops.createBookClub("My Shelf", "DarkWood", sourceShelfId = "shelf-1")
 
         // Then
         assertTrue("Should return success", result is Result.Success)
         assertEquals(
             BookClubCreationResult("NEW_CODE"),
+            (result as Result.Success).data
+        )
+    }
+
+    @Test
+    fun `createBookClub - direct creation without source shelf - succeeds`() = runTest {
+        // Given
+        createBookClubResult = Result.Success("DIRECT_CODE")
+        val ops = createClubOperations()
+
+        // When
+        val result = ops.createBookClub("My Club", "LightWood")
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals(
+            BookClubCreationResult("DIRECT_CODE"),
             (result as Result.Success).data
         )
     }
@@ -429,7 +450,7 @@ class ClubOperationsImplTest {
         val ops = createClubOperations()
 
         // When
-        val result = ops.createBookClub("shelf-1", "My Shelf")
+        val result = ops.createBookClub("My Shelf", "DarkWood", sourceShelfId = "shelf-1")
 
         // Then
         assertTrue("Should return error", result is Result.Error)

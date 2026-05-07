@@ -25,6 +25,8 @@ sealed interface BookcaseAction {
 
     // Book Club Actions
     data class OnCreateBookClub(val shelf: Bookshelf) : BookcaseAction
+    data class OnCreateBookClubDirect(val name: String, val style: ShelfStyle) : BookcaseAction
+    data class ShowCreateBookClubDialog(val showDialog: Boolean) : BookcaseAction
     data class OnInviteToClub(val shelf: Bookshelf) : BookcaseAction
     data object DismissInviteLink : BookcaseAction
 

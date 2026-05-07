@@ -2,9 +2,11 @@ package uk.co.zlurgg.mybookshelf.bookcase.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -12,7 +14,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -201,6 +203,13 @@ fun BookcaseScreenRoot(
                         viewModel.onAction(action)
                     }
                 }
+                is BookcaseAction.ShowCreateBookClubDialog -> {
+                    if (action.showDialog && !state.isSignedIn) {
+                        showSignInRequiredDialog = true
+                    } else {
+                        viewModel.onAction(action)
+                    }
+                }
                 else -> viewModel.onAction(action)
             }
         },
@@ -324,29 +333,35 @@ fun BookcaseScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (selectedTab == BookcaseTab.BOOK_CLUBS) {
-                        onAction(BookcaseAction.ShowJoinBookClubDialog)
-                    } else {
-                        onShowAddBookshelfDialogChange(true)
+            if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+                Row {
+                    FloatingActionButton(
+                        onClick = { onAction(BookcaseAction.ShowJoinBookClubDialog) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.GroupAdd,
+                            contentDescription = stringResource(R.string.fab_join_book_club)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    FloatingActionButton(
+                        onClick = { onAction(BookcaseAction.ShowCreateBookClubDialog(true)) }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(R.string.fab_create_book_club)
+                        )
                     }
                 }
-            ) {
-                Icon(
-                    imageVector = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
-                        Icons.Default.PersonAdd
-                    } else {
-                        Icons.Default.Add
-                    },
-                    contentDescription = stringResource(
-                        id = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
-                            R.string.fab_join_book_club
-                        } else {
-                            R.string.fab_add_shelf
-                        }
+            } else {
+                FloatingActionButton(
+                    onClick = { onShowAddBookshelfDialogChange(true) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.fab_add_shelf)
                     )
-                )
+                }
             }
         },
         modifier = Modifier.fillMaxSize()
@@ -440,6 +455,18 @@ fun BookcaseScreen(
             },
             isLoading = state.isLoading,
             defaultName = state.defaultShelfName
+        )
+    }
+
+    if (state.showCreateBookClubDialog) {
+        AddBookshelfDialog(
+            onDismiss = { onAction(BookcaseAction.ShowCreateBookClubDialog(false)) },
+            onAddShelf = { name, style ->
+                onAction(BookcaseAction.OnCreateBookClubDirect(name, style))
+            },
+            isLoading = state.isCreatingBookClub,
+            defaultName = stringResource(R.string.default_book_club_name),
+            title = stringResource(R.string.dialog_create_book_club_title)
         )
     }
 

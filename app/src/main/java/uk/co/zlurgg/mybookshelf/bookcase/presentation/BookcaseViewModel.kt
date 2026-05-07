@@ -125,6 +125,8 @@ class BookcaseViewModel(
 
             // Book club actions — delegated to handler
             is BookcaseAction.OnCreateBookClub,
+            is BookcaseAction.OnCreateBookClubDirect,
+            is BookcaseAction.ShowCreateBookClubDialog,
             is BookcaseAction.OnInviteToClub,
             is BookcaseAction.DismissInviteLink,
             is BookcaseAction.ShowDeleteBookClubDialog,

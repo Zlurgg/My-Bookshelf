@@ -21,8 +21,12 @@ class CreateBookClubUseCaseImpl(
         private const val TAG = "CreateBookClub"
     }
 
-    override suspend operator fun invoke(shelfId: String): Result<String, DataError.Sync> {
-        Timber.tag(TAG).d("Creating book club from shelf: %s", shelfId)
+    override suspend operator fun invoke(
+        name: String,
+        shelfStyle: String,
+        sourceShelfId: String?,
+    ): Result<String, DataError.Sync> {
+        Timber.tag(TAG).d("Creating book club: %s (source: %s)", name, sourceShelfId)
 
         // Check book club limit before creating
         val currentBookClubs = bookClubRepository.observeMyBookClubs().first()
@@ -31,7 +35,7 @@ class CreateBookClubUseCaseImpl(
             return Result.Error(DataError.Sync.MAX_BOOK_CLUBS_REACHED)
         }
 
-        val result = bookClubRepository.createBookClub(shelfId)
+        val result = bookClubRepository.createBookClub(name, shelfStyle, sourceShelfId)
 
         when (result) {
             is Result.Success -> {

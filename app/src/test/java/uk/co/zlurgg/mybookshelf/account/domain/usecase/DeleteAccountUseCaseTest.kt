@@ -58,7 +58,7 @@ class DeleteAccountUseCaseTest {
 
     @Suppress("TooManyFunctions")
     private val mockClubOperations = object : ClubOperations {
-        override suspend fun createBookClub(shelfId: String, shelfName: String) =
+        override suspend fun createBookClub(name: String, shelfStyle: String, sourceShelfId: String?) =
             Result.Error(DataError.Sync.UNKNOWN)
         override suspend fun lookupBookClub(codeOrUrl: String) =
             ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)

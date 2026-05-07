@@ -78,8 +78,9 @@ class BookcaseViewModelTest {
 
     private val stubClubOperations = object : ClubOperations {
         override suspend fun createBookClub(
-            shelfId: String,
-            shelfName: String,
+            name: String,
+            shelfStyle: String,
+            sourceShelfId: String?,
         ): Result<ClubOperations.BookClubCreationResult, DataError.Sync> =
             Result.Success(
                 ClubOperations.BookClubCreationResult("ABC12345"),

@@ -28,6 +28,7 @@ data class BookcaseState(
     val navigateToSignIn: Boolean = false,
 
     // Book Club invite state
+    val showCreateBookClubDialog: Boolean = false,
     val isCreatingBookClub: Boolean = false,
     val bookClubCode: String? = null,
     val bookClubName: String? = null,

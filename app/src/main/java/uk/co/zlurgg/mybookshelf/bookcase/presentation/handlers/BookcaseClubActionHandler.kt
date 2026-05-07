@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
+import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookClubPreview
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseAction
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseState
@@ -23,6 +24,10 @@ internal class BookcaseClubActionHandler(
     fun handleAction(action: BookcaseAction) {
         when (action) {
             is BookcaseAction.OnCreateBookClub -> createBookClub(action.shelf)
+            is BookcaseAction.OnCreateBookClubDirect -> createBookClubDirect(action.name, action.style)
+            is BookcaseAction.ShowCreateBookClubDialog -> {
+                state.update { it.copy(showCreateBookClubDialog = action.showDialog) }
+            }
             is BookcaseAction.OnInviteToClub -> showInviteForExistingClub(action.shelf)
             is BookcaseAction.DismissInviteLink -> {
                 state.update { it.copy(bookClubCode = null, bookClubName = null) }
@@ -73,33 +78,59 @@ internal class BookcaseClubActionHandler(
         scope.launch {
             state.update { it.copy(isCreatingBookClub = true, errorMessage = null) }
 
-            when (val createResult = bookClubOperations.createBookClub(shelf.id, shelf.name)) {
-                is Result.Success -> {
+            val createResult = bookClubOperations.createBookClub(
+                name = shelf.name,
+                shelfStyle = shelf.shelfStyle.name,
+                sourceShelfId = shelf.id
+            )
+            handleCreateResult(createResult, shelf.name)
+        }
+    }
+
+    private fun createBookClubDirect(name: String, style: ShelfStyle) {
+        scope.launch {
+            state.update {
+                it.copy(isCreatingBookClub = true, showCreateBookClubDialog = false, errorMessage = null)
+            }
+
+            val createResult = bookClubOperations.createBookClub(
+                name = name,
+                shelfStyle = style.name
+            )
+            handleCreateResult(createResult, name)
+        }
+    }
+
+    private fun handleCreateResult(
+        createResult: Result<ClubOperations.BookClubCreationResult, DataError.Sync>,
+        clubName: String,
+    ) {
+        when (createResult) {
+            is Result.Success -> {
+                state.update {
+                    it.copy(
+                        isCreatingBookClub = false,
+                        bookClubCode = createResult.data.clubCode,
+                        bookClubName = clubName,
+                        isNewlyCreatedBookClub = true,
+                        switchToBookClubsTab = true
+                    )
+                }
+            }
+            is Result.Error -> {
+                if (createResult.error == DataError.Sync.MAX_BOOK_CLUBS_REACHED) {
+                    state.update {
+                        it.copy(isCreatingBookClub = false, showBookClubLimitDialog = true)
+                    }
+                } else {
                     state.update {
                         it.copy(
                             isCreatingBookClub = false,
-                            bookClubCode = createResult.data.clubCode,
-                            bookClubName = shelf.name,
-                            isNewlyCreatedBookClub = true,
-                            switchToBookClubsTab = true
-                        )
-                    }
-                }
-                is Result.Error -> {
-                    if (createResult.error == DataError.Sync.MAX_BOOK_CLUBS_REACHED) {
-                        state.update {
-                            it.copy(isCreatingBookClub = false, showBookClubLimitDialog = true)
-                        }
-                    } else {
-                        state.update {
-                            it.copy(
-                                isCreatingBookClub = false,
-                                errorMessage = ErrorFormatter.formatDataErrorMessage(
-                                    createResult.error,
-                                    "create book club"
-                                )
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                createResult.error,
+                                "create book club"
                             )
-                        }
+                        )
                     }
                 }
             }

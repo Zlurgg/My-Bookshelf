@@ -31,7 +31,7 @@ class UpdateShelfStyleUseCaseTest {
     }
 
     private val mockClubOperations = object : ClubOperations {
-        override suspend fun createBookClub(shelfId: String, shelfName: String) =
+        override suspend fun createBookClub(name: String, shelfStyle: String, sourceShelfId: String?) =
             Result.Error(DataError.Sync.NOT_SIGNED_IN)
         override suspend fun lookupBookClub(codeOrUrl: String) =
             ClubOperations.LookupResult.NotFound(DataError.Sync.NOT_SIGNED_IN)

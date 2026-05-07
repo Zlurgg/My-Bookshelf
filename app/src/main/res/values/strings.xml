@@ -155,6 +155,9 @@
     <string name="bookcase_empty_personal">Your bookcase is empty. Tap + to create a shelf</string>
     <string name="bookcase_empty_book_clubs">No book clubs yet. Tap + to join one</string>
     <string name="fab_join_book_club">Join Book Club</string>
+    <string name="fab_create_book_club">Create book club</string>
+    <string name="dialog_create_book_club_title">Create Book Club</string>
+    <string name="default_book_club_name">My Book Club</string>
     <string name="reorder_shelves_title">Reorder Shelves</string>
     <string name="cd_lock_reorder_mode">Exit reorder mode</string>
     <string name="cd_unlock_reorder_mode">Enter reorder mode</string>

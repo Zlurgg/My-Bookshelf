@@ -26,10 +26,11 @@ class ClubOperationsImpl(
     private var lastLookedUpCode: String? = null
 
     override suspend fun createBookClub(
-        shelfId: String,
-        shelfName: String
+        name: String,
+        shelfStyle: String,
+        sourceShelfId: String?,
     ): Result<BookClubCreationResult, DataError.Sync> {
-        return when (val createResult = bookClubUseCases.createBookClub(shelfId)) {
+        return when (val createResult = bookClubUseCases.createBookClub(name, shelfStyle, sourceShelfId)) {
             is Result.Success -> {
                 val clubCode = createResult.data
                 Result.Success(BookClubCreationResult(clubCode))

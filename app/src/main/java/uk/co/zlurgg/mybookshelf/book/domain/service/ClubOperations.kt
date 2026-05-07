@@ -36,7 +36,11 @@ interface ClubOperations {
         data object AlreadyMember : JoinResult()
     }
 
-    suspend fun createBookClub(shelfId: String, shelfName: String): Result<BookClubCreationResult, DataError.Sync>
+    suspend fun createBookClub(
+        name: String,
+        shelfStyle: String,
+        sourceShelfId: String? = null,
+    ): Result<BookClubCreationResult, DataError.Sync>
 
     suspend fun lookupBookClub(codeOrUrl: String): LookupResult
 

@@ -19,7 +19,11 @@ class RemoveBookFromShelfUseCaseTest {
     private val mockBookcaseRepository = MockBookcaseRepository()
     private val mockClubOperations = object : ClubOperations {
         var removeBookFromClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun createBookClub(shelfId: String, shelfName: String) = throw NotImplementedError()
+        override suspend fun createBookClub(
+            name: String,
+            shelfStyle: String,
+            sourceShelfId: String?,
+        ) = throw NotImplementedError()
         override suspend fun lookupBookClub(codeOrUrl: String) = throw NotImplementedError()
         override suspend fun joinBookClub() = throw NotImplementedError()
         override suspend fun joinBookClub(code: String) = throw NotImplementedError()

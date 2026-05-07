@@ -8,7 +8,11 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  * Club lifecycle operations: create, get, delete, rename, update style, leave, convert.
  */
 interface BookClubManagementRepository {
-    suspend fun createBookClub(shelfId: String): Result<String, DataError.Sync>
+    suspend fun createBookClub(
+        name: String,
+        shelfStyle: String,
+        sourceShelfId: String? = null,
+    ): Result<String, DataError.Sync>
     suspend fun getBookClub(
         code: String,
     ): Result<BookClub?, DataError.Sync>

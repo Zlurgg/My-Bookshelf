@@ -42,7 +42,9 @@ class MockBookClubRepository : BookClubRepository {
     var getClubBooksCalled = false
     var getLocalShelfForClubCalled = false
 
-    var lastCreateShelfId: String? = null
+    var lastCreateName: String? = null
+    var lastCreateShelfStyle: String? = null
+    var lastCreateSourceShelfId: String? = null
     var lastGetBookClubCode: String? = null
     var lastDeleteCode: String? = null
     var lastIsMemberCode: String? = null
@@ -54,9 +56,15 @@ class MockBookClubRepository : BookClubRepository {
     var lastGetRemoteMembershipsUserId: String? = null
     var lastRestoreClubCode: String? = null
 
-    override suspend fun createBookClub(shelfId: String): Result<String, DataError.Sync> {
+    override suspend fun createBookClub(
+        name: String,
+        shelfStyle: String,
+        sourceShelfId: String?,
+    ): Result<String, DataError.Sync> {
         createBookClubCalled = true
-        lastCreateShelfId = shelfId
+        lastCreateName = name
+        lastCreateShelfStyle = shelfStyle
+        lastCreateSourceShelfId = sourceShelfId
         return createBookClubResult
     }
 
@@ -347,7 +355,9 @@ class MockBookClubRepository : BookClubRepository {
         editBookCommentCalled = false
         deleteBookCommentCalled = false
 
-        lastCreateShelfId = null
+        lastCreateName = null
+        lastCreateShelfStyle = null
+        lastCreateSourceShelfId = null
         lastGetBookClubCode = null
         lastDeleteCode = null
         lastIsMemberCode = null
