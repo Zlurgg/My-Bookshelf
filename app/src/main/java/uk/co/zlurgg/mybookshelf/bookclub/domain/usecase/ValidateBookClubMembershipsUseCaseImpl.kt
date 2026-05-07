@@ -7,9 +7,6 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.repository.BookClubRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.domain.SyncConstants
-import uk.co.zlurgg.mybookshelf.sync.domain.service.SyncSchedulerService
-
 /**
  * Implementation of ValidateBookClubMembershipsUseCase.
  *
@@ -21,7 +18,6 @@ class ValidateBookClubMembershipsUseCaseImpl(
     private val authService: AuthService,
     private val bookClubRepository: BookClubRepository,
     private val bookcaseRepository: BookcaseRepository,
-    private val syncSchedulerService: SyncSchedulerService
 ) : ValidateBookClubMembershipsUseCase {
 
     override suspend fun invoke(): Result<List<String>, DataError.Sync> {
@@ -75,14 +71,11 @@ class ValidateBookClubMembershipsUseCaseImpl(
         }
 
         if (convertedShelfNames.isNotEmpty()) {
-            Timber.tag(
-                TAG
-            ).d("Converted %d deleted clubs to personal shelves: %s", convertedShelfNames.size, convertedShelfNames)
-            // Trigger sync to upload converted shelves to user's personal Firestore
-            Timber.tag(
-                SyncConstants.TAG_SYNC_TRIGGER
-            ).d("Sync triggered by: ValidateBookClubMemberships (converted %d clubs)", convertedShelfNames.size)
-            syncSchedulerService.triggerImmediateSync()
+            Timber.tag(TAG).d(
+                "Converted %d deleted clubs to personal shelves: %s",
+                convertedShelfNames.size,
+                convertedShelfNames
+            )
         }
 
         return Result.Success(convertedShelfNames)

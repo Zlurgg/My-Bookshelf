@@ -14,7 +14,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
-import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
 
 /**
  * Shared operations used by multiple BookClub repository implementations.
@@ -23,7 +23,7 @@ import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
 internal class BookClubRepositoryHelper(
     private val bookClubDao: BookClubDao,
     private val bookshelfDao: BookshelfDao,
-    private val remoteDataSource: RemoteSyncDataSource,
+    private val remoteDataSource: BookClubRemoteDataSource,
     private val authService: AuthService,
     private val timeProvider: TimeProvider,
 ) {

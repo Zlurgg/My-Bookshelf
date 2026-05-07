@@ -19,12 +19,12 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
-import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
 
 internal class BookClubMembershipRepositoryImpl(
     private val bookClubDao: BookClubDao,
     private val bookshelfDao: BookshelfDao,
-    private val remoteDataSource: RemoteSyncDataSource,
+    private val remoteDataSource: BookClubRemoteDataSource,
     private val authService: AuthService,
     private val idGenerator: IdGenerator,
     private val timeProvider: TimeProvider,
@@ -135,16 +135,15 @@ internal class BookClubMembershipRepositoryImpl(
     override suspend fun getRemoteClubMemberships(userId: String): Result<List<String>, DataError.Sync> {
         Timber.tag(TAG).d("Getting remote club memberships for user: %s", userId)
 
-        val prefsResult = remoteDataSource.getUserPreferences(userId)
-        return when (prefsResult) {
+        val membershipsResult = remoteDataSource.getClubMembershipsForUser(userId)
+        return when (membershipsResult) {
             is Result.Success -> {
-                val memberships = prefsResult.data?.clubMemberships ?: emptyList()
-                Timber.tag(TAG).d("Found %d club memberships in user prefs", memberships.size)
-                Result.Success(memberships)
+                Timber.tag(TAG).d("Found %d club memberships", membershipsResult.data.size)
+                Result.Success(membershipsResult.data)
             }
             is Result.Error -> {
-                Timber.tag(TAG).e("Failed to get user preferences: %s", prefsResult.error)
-                Result.Error(prefsResult.error)
+                Timber.tag(TAG).e("Failed to get club memberships: %s", membershipsResult.error)
+                Result.Error(membershipsResult.error)
             }
         }
     }

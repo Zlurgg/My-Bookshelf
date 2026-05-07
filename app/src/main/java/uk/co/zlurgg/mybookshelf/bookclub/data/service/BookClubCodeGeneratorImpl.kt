@@ -5,7 +5,7 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClubCode
 import uk.co.zlurgg.mybookshelf.bookclub.domain.service.BookClubCodeGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
 import java.security.SecureRandom
 
 /**
@@ -15,7 +15,7 @@ import java.security.SecureRandom
  * when codes need to be manually entered.
  */
 class BookClubCodeGeneratorImpl(
-    private val remoteDataSource: RemoteSyncDataSource
+    private val remoteDataSource: BookClubRemoteDataSource
 ) : BookClubCodeGenerator {
 
     override suspend fun generateUniqueCode(): Result<String, DataError.Sync> {

@@ -10,10 +10,10 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubCommentDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubReviewDto
-import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
 
 internal class BookClubReviewRepositoryImpl(
-    private val remoteDataSource: RemoteSyncDataSource,
+    private val remoteDataSource: BookClubRemoteDataSource,
     private val authService: AuthService,
     private val timeProvider: TimeProvider,
 ) : BookClubReviewRepository {

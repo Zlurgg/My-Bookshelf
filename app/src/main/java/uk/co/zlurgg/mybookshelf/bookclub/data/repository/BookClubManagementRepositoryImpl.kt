@@ -20,12 +20,12 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
 import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMemberDto
 import uk.co.zlurgg.mybookshelf.sync.data.dto.BookClubMetadataDto
-import uk.co.zlurgg.mybookshelf.sync.data.repository.RemoteSyncDataSource
+import uk.co.zlurgg.mybookshelf.sync.data.repository.BookClubRemoteDataSource
 
 internal class BookClubManagementRepositoryImpl(
     private val bookClubDao: BookClubDao,
     private val bookshelfDao: BookshelfDao,
-    private val remoteDataSource: RemoteSyncDataSource,
+    private val remoteDataSource: BookClubRemoteDataSource,
     private val codeGenerator: BookClubCodeGenerator,
     private val authService: AuthService,
     private val idGenerator: IdGenerator,
