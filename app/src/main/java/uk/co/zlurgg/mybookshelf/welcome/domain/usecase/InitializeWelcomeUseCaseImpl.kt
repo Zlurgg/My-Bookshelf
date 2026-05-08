@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.welcome.domain.usecase
 
-import uk.co.zlurgg.mybookshelf.welcome.presentation.WelcomeService
+import kotlinx.coroutines.flow.first
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
@@ -8,22 +8,23 @@ import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class InitializeWelcomeUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
-    private val welcomeService: WelcomeService,
+    private val welcomePreferences: WelcomePreferences,
     private val getOrCreateTutorialBook: GetOrCreateTutorialBookUseCase
 ) : InitializeWelcomeUseCase {
 
     override suspend operator fun invoke(): Result<Unit, DataError> {
         return ErrorMapper.safeCall {
-            // Check if this is first launch
-            if (!welcomeService.isFirstLaunch()) {
+            // Check if welcome has already been shown on this device
+            if (welcomePreferences.hasShownWelcome().first()) {
                 return@safeCall
             }
 
-            // Check if tutorial shelf already exists (from previous install or help icon)
+            // Check if tutorial shelf already exists (from help icon)
             val existingShelf = when (val result = bookcaseRepository.getShelfById(SystemOwnerIds.TUTORIAL_SHELF_ID)) {
                 is Result.Success -> result.data
                 is Result.Error -> null
@@ -46,9 +47,6 @@ class InitializeWelcomeUseCaseImpl(
                 // Create and add tutorial book to the shelf
                 getOrCreateTutorialBook(tutorialShelf.id)
             }
-
-            // Mark welcome complete
-            welcomeService.markFirstLaunchComplete()
         }
     }
 }

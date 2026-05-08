@@ -6,22 +6,17 @@ import kotlinx.coroutines.flow.Flow
  * Repository contract for managing welcome screen preferences.
  * Part of the core domain layer - defines the contract for preference storage.
  *
- * Welcome state is stored per-user, so each user sees the welcome screen
- * on their first sign-in, even if another user has already seen it on the same device.
+ * Welcome state is per-device: once any user has seen the welcome screen,
+ * it won't show again regardless of which account signs in.
  */
 interface WelcomePreferences {
     /**
-     * Marks that the welcome screen has been shown to the specified user.
-     *
-     * @param userId The user ID (Firebase UID), or null for guest mode
+     * Marks that the welcome screen has been shown on this device.
      */
-    suspend fun setWelcomeShown(userId: String?)
+    suspend fun setWelcomeShown()
 
     /**
-     * Returns a flow indicating whether the welcome screen has been shown to the specified user.
-     *
-     * @param userId The user ID (Firebase UID), or null for guest mode
-     * @return Flow<Boolean> - true if welcome has been shown to this user, false otherwise
+     * Returns a flow indicating whether the welcome screen has been shown on this device.
      */
-    fun hasShownWelcome(userId: String?): Flow<Boolean>
+    fun hasShownWelcome(): Flow<Boolean>
 }

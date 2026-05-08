@@ -414,33 +414,50 @@ internal class FirestoreBookClubRemoteDataSourceImpl(
         userId: String,
     ): Result<Unit, DataError.Sync> {
         return helper.execute("removeUserFromClub") {
-            // Remove member doc
-            firestore.collection(BOOK_CLUBS_COLLECTION)
+            // Check if club still exists — it may have been deleted already
+            val clubDoc = firestore.collection(BOOK_CLUBS_COLLECTION)
                 .document(clubCode)
-                .collection(MEMBERS_COLLECTION)
-                .document(userId)
-                .delete()
-                .await()
-
-            // Remove user's reviews across all books in the club
-            val books = firestore.collection(BOOK_CLUBS_COLLECTION)
-                .document(clubCode)
-                .collection(CLUB_BOOKS_COLLECTION)
                 .get()
                 .await()
 
-            for (bookDoc in books.documents) {
-                bookDoc.reference
-                    .collection(REVIEWS_COLLECTION)
+            if (clubDoc.exists()) {
+                // Remove user's reviews BEFORE removing member doc — rules require
+                // membership to list books in the club
+                val books = firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(clubCode)
+                    .collection(CLUB_BOOKS_COLLECTION)
+                    .get()
+                    .await()
+
+                for (bookDoc in books.documents) {
+                    // Delete user's review (keyed by userId)
+                    bookDoc.reference
+                        .collection(REVIEWS_COLLECTION)
+                        .document(userId)
+                        .delete()
+                        .await()
+
+                    // Delete user's comments (auto-generated IDs, query by user_id)
+                    val userComments = bookDoc.reference
+                        .collection(COMMENTS_COLLECTION)
+                        .whereEqualTo("user_id", userId)
+                        .get()
+                        .await()
+                    for (comment in userComments.documents) {
+                        comment.reference.delete().await()
+                    }
+                }
+
+                // Remove member doc (after review cleanup)
+                firestore.collection(BOOK_CLUBS_COLLECTION)
+                    .document(clubCode)
+                    .collection(MEMBERS_COLLECTION)
                     .document(userId)
                     .delete()
                     .await()
             }
-            // Reviews are keyed by userId (direct delete). Comments use auto-generated IDs
-            // and are intentionally kept — removing them creates gaps in discussions.
-            // The user's attribution remains but the account is gone.
 
-            // Remove club from user's membership list using merge for idempotency
+            // Always clean up the user's membership list (even if club is gone)
             val data = mapOf(FIELD_CLUB_MEMBERSHIPS to FieldValue.arrayRemove(clubCode))
             firestore.collection(USERS_COLLECTION)
                 .document(userId)

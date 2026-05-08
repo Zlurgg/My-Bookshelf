@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -22,14 +21,12 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
-import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 
 @RunWith(RobolectricTestRunner::class)
 class BookcaseRepositoryImplTest {
 
     private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var repository: BookcaseRepositoryImpl
-    private val testTimeProvider = TestTimeProvider(currentTime = 1234567890L)
 
     // Mock that returns null (guest mode) so all orphan data is visible
     private val mockCurrentUserProvider = object : CurrentUserProvider {
@@ -44,7 +41,7 @@ class BookcaseRepositoryImplTest {
             MyBookshelfRoomDatabase::class.java
         ).allowMainThreadQueries().build()
 
-        repository = BookcaseRepositoryImpl(database.bookshelfDao, mockCurrentUserProvider, testTimeProvider)
+        repository = BookcaseRepositoryImpl(database.bookshelfDao, mockCurrentUserProvider)
     }
 
     @After

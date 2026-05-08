@@ -12,12 +12,10 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 class BookcaseRepositoryImpl(
     private val dao: BookshelfDao,
     private val currentUserProvider: CurrentUserProvider,
-    private val timeProvider: TimeProvider
 ) : BookcaseRepository {
 
     override fun getAllShelves(): Flow<List<Bookshelf>> {

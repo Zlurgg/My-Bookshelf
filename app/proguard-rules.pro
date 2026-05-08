@@ -10,14 +10,14 @@
 -keepattributes *Annotation*
 
 # ====== Application Classes ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.MyBookShelfAppKt { *; }
+-keep class uk.co.zlurgg.mybookshelf.app.presentation.MyBookShelfAppKt { *; }
 -keep class uk.co.zlurgg.mybookshelf.MainActivity { *; }
 
 # ====== Domain Models (needed for serialization/Room) ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Book { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookshelf { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.model.Bookcase { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.domain.util.ShelfStyle { *; }
+-keep class uk.co.zlurgg.mybookshelf.book.domain.model.Book { *; }
+-keep class uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf { *; }
+-keep class uk.co.zlurgg.mybookshelf.book.domain.model.Bookcase { *; }
+-keep class uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle { *; }
 
 # ====== Room Database ======
 -keep class uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase { *; }
@@ -25,18 +25,18 @@
 -keep class uk.co.zlurgg.mybookshelf.core.data.database.dao.** { *; }
 
 # ====== Network DTOs (for Kotlinx Serialization) ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** {
+-keep class uk.co.zlurgg.mybookshelf.book.data.dto.** {
     <fields>;
     <init>();
 }
--keepclassmembers class uk.co.zlurgg.mybookshelf.bookshelf.data.book.dto.** {
+-keepclassmembers class uk.co.zlurgg.mybookshelf.book.data.dto.** {
     *** Companion;
 }
 # ====== Firestore DTOs (for Firebase serialization) ======
 # These must preserve field names AND getters/setters for Firestore document mapping
 # Firestore uses reflection to match property names - ALL members must be kept
--keep class uk.co.zlurgg.mybookshelf.sync.data.dto.** { *; }
--keepclassmembers class uk.co.zlurgg.mybookshelf.sync.data.dto.** { *; }
+-keep class uk.co.zlurgg.mybookshelf.bookclub.data.dto.** { *; }
+-keepclassmembers class uk.co.zlurgg.mybookshelf.bookclub.data.dto.** { *; }
 
 # Keep Firebase annotations from being stripped
 -keep class com.google.firebase.firestore.PropertyName
@@ -49,14 +49,14 @@
 }
 
 # ====== ViewModels ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseViewModel { <init>(...); }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfViewModel { <init>(...); }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailViewModel { <init>(...); }
+-keep class uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel { <init>(...); }
+-keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfViewModel { <init>(...); }
+-keep class uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailViewModel { <init>(...); }
 
 # ====== UI State Classes ======
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookcase.BookcaseState { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelf.BookshelfState { *; }
--keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.book_detail.BookDetailState { *; }
+-keep class uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseState { *; }
+-keep class uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfState { *; }
+-keep class uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailState { *; }
 
 # ====== Koin DI Module ======
 -keep class uk.co.zlurgg.mybookshelf.di.AppModuleKt { *; }

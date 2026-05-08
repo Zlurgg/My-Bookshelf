@@ -95,7 +95,6 @@ internal class BookClubRepositoryHelper(
     suspend fun downloadClubBooksToShelf(
         clubCode: String,
         shelfId: String,
-        userId: String,
     ): Result<Int, DataError.Sync> {
         val booksResult = remoteDataSource.getClubBooks(clubCode)
 

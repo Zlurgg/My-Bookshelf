@@ -15,6 +15,7 @@ class DatabaseFactory(
             MyBookshelfRoomDatabase::class.java,
             dbFile.absolutePath,
         )
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
 }

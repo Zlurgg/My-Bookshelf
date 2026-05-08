@@ -167,7 +167,10 @@ class SignOutUseCaseTest {
 
         useCase()
 
-        assertNull("Should not delete club shelves when no user signed in", mockBookcaseRepository.lastDeleteClubShelvesUserId)
+        assertNull(
+            "Should not delete club shelves when no user signed in",
+            mockBookcaseRepository.lastDeleteClubShelvesUserId
+        )
     }
 
     @Test

@@ -27,7 +27,7 @@ val bookModule = module {
 
     // Repositories
     single<BookshelfRepository> { BookshelfRepositoryImpl(get(), get()) }
-    single<BookcaseRepository> { BookcaseRepositoryImpl(get(), get(), get()) }
+    single<BookcaseRepository> { BookcaseRepositoryImpl(get(), get()) }
     single<BookRepository> { BookRepositoryImpl(get(), get()) }
 
     // Shared UseCases (used by both bookdetail and bookshelf)

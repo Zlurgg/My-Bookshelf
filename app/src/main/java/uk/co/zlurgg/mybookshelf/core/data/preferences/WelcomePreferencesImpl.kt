@@ -10,36 +10,25 @@ import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 
 /**
  * DataStore-based implementation of WelcomePreferences.
- * Handles persistent storage of welcome screen state using AndroidX DataStore.
- *
- * Welcome state is stored per-user using keys like "welcome_shown_<userId>" or "welcome_shown_guest".
+ * Welcome state is per-device using a single key.
  */
 class WelcomePreferencesImpl(
     private val dataStore: DataStore<Preferences>
 ) : WelcomePreferences {
 
-    private object PreferencesKeys {
-        /**
-         * Creates a per-user welcome shown key.
-         * @param userId The user ID, or null for guest
-         */
-        fun welcomeShownKey(userId: String?): Preferences.Key<Boolean> {
-            val suffix = userId ?: "guest"
-            return booleanPreferencesKey("welcome_shown_$suffix")
-        }
-    }
-
-    override suspend fun setWelcomeShown(userId: String?) {
-        val key = PreferencesKeys.welcomeShownKey(userId)
+    override suspend fun setWelcomeShown() {
         dataStore.edit { preferences ->
-            preferences[key] = true
+            preferences[WELCOME_SHOWN_KEY] = true
         }
     }
 
-    override fun hasShownWelcome(userId: String?): Flow<Boolean> {
-        val key = PreferencesKeys.welcomeShownKey(userId)
+    override fun hasShownWelcome(): Flow<Boolean> {
         return dataStore.data.map { preferences ->
-            preferences[key] ?: false
+            preferences[WELCOME_SHOWN_KEY] ?: false
         }
+    }
+
+    companion object {
+        private val WELCOME_SHOWN_KEY = booleanPreferencesKey("welcome_shown")
     }
 }

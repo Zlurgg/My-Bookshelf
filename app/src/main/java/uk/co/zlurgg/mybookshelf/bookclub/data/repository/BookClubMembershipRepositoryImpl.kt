@@ -103,7 +103,7 @@ internal class BookClubMembershipRepositoryImpl(
             return Result.Error(memberResult.error)
         }
 
-        val booksResult = helper.downloadClubBooksToShelf(code, shelfId, user.userId)
+        val booksResult = helper.downloadClubBooksToShelf(code, shelfId)
         if (booksResult is Result.Error) {
             Timber.tag(TAG).w("Failed to download club books: %s", booksResult.error)
         }
@@ -191,7 +191,7 @@ internal class BookClubMembershipRepositoryImpl(
 
         bookshelfDao.upsertShelf(shelfEntity)
 
-        val booksResult = helper.downloadClubBooksToShelf(code, shelfId, user.userId)
+        val booksResult = helper.downloadClubBooksToShelf(code, shelfId)
         if (booksResult is Result.Error) {
             Timber.tag(TAG).w("Failed to download club books: %s", booksResult.error)
         }

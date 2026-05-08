@@ -16,13 +16,9 @@ import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.MarkWelcomeShownUseCase
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.MarkWelcomeShownUseCaseImpl
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCaseImpl
-import uk.co.zlurgg.mybookshelf.welcome.presentation.WelcomeService
 import uk.co.zlurgg.mybookshelf.welcome.presentation.WelcomeViewModel
 
 val welcomeModule = module {
-    // Services
-    single { WelcomeService(get()) }
-
     // Tutorial UseCases
     singleOf(::GetOrCreateTutorialBookUseCaseImpl).bind<GetOrCreateTutorialBookUseCase>()
     singleOf(::GetOrCreateTutorialShelfUseCaseImpl).bind<GetOrCreateTutorialShelfUseCase>()

@@ -11,12 +11,10 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
-import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRemoteBookDataSource
 
 @RunWith(RobolectricTestRunner::class)
@@ -25,11 +23,6 @@ class BookRepositoryImplTest {
     private lateinit var database: MyBookshelfRoomDatabase
     private lateinit var mockRemoteDataSource: MockRemoteBookDataSource
     private lateinit var repository: BookRepositoryImpl
-    private val testTimeProvider = TestTimeProvider(currentTime = 1234567890L)
-
-    private val mockCurrentUserProvider = object : CurrentUserProvider {
-        override fun getCurrentUserId(): String = "test-user-id"
-    }
 
     /** Helper to unwrap Result for test assertions */
     private suspend fun getBookOrNull(bookId: String) = when (val r = repository.getBookById(bookId)) {
