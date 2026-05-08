@@ -467,4 +467,19 @@ internal class FirestoreBookClubRemoteDataSourceImpl(
                 .await()
         }
     }
+
+    override suspend fun deleteUserDocument(userId: String): Result<Unit, DataError.Sync> {
+        return helper.execute("deleteUserDocument") {
+            val userRef = firestore.collection(USERS_COLLECTION).document(userId)
+
+            // Delete settings subcollection
+            val settings = userRef.collection(SETTINGS_COLLECTION).get().await()
+            for (doc in settings.documents) {
+                doc.reference.delete().await()
+            }
+
+            // Delete user document
+            userRef.delete().await()
+        }
+    }
 }

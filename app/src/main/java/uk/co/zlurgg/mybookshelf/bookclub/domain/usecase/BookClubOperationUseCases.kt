@@ -22,5 +22,6 @@ class BookClubOperationUseCases(
     val renameBookClub: RenameBookClubUseCase,
     val getClubsCreatedByUser: GetClubsCreatedByUserUseCase,
     val getClubMembershipsForUser: GetClubMembershipsForUserUseCase,
-    val removeUserFromClub: RemoveUserFromClubUseCase
+    val removeUserFromClub: RemoveUserFromClubUseCase,
+    val deleteUserDocument: DeleteUserDocumentUseCase
 )

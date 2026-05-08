@@ -73,4 +73,6 @@ interface ClubOperations {
     suspend fun getClubMembershipsForUser(userId: String): Result<List<String>, DataError.Sync>
 
     suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync>
+
+    suspend fun deleteUserDocument(userId: String): Result<Unit, DataError.Sync>
 }

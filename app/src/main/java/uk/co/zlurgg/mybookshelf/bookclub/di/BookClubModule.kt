@@ -52,6 +52,8 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ParseClubCodeUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ParseClubCodeUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveBookFromClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveBookFromClubUseCaseImpl
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteUserDocumentUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteUserDocumentUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveUserFromClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveUserFromClubUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RenameBookClubUseCase
@@ -172,6 +174,7 @@ val bookClubModule = module {
     singleOf(::GetClubsCreatedByUserUseCaseImpl).bind<GetClubsCreatedByUserUseCase>()
     singleOf(::GetClubMembershipsForUserUseCaseImpl).bind<GetClubMembershipsForUserUseCase>()
     singleOf(::RemoveUserFromClubUseCaseImpl).bind<RemoveUserFromClubUseCase>()
+    singleOf(::DeleteUserDocumentUseCaseImpl).bind<DeleteUserDocumentUseCase>()
 
     // UseCase Aggregators
     single {
@@ -192,7 +195,8 @@ val bookClubModule = module {
             renameBookClub = get(),
             getClubsCreatedByUser = get(),
             getClubMembershipsForUser = get(),
-            removeUserFromClub = get()
+            removeUserFromClub = get(),
+            deleteUserDocument = get()
         )
     }
 

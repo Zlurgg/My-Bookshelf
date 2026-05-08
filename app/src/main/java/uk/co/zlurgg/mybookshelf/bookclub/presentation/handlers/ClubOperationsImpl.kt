@@ -144,4 +144,8 @@ class ClubOperationsImpl(
     override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> {
         return bookClubUseCases.removeUserFromClub(clubCode, userId)
     }
+
+    override suspend fun deleteUserDocument(userId: String): Result<Unit, DataError.Sync> {
+        return bookClubUseCases.deleteUserDocument(userId)
+    }
 }
