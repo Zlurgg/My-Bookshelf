@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.bookclub.data.remote
 
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -211,14 +212,43 @@ internal class FirestoreBookClubRemoteDataSourceImpl(
         return helper.execute("deleteBookClub") {
             val clubRef = firestore.collection(BOOK_CLUBS_COLLECTION).document(code)
 
-            val members = clubRef.collection(MEMBERS_COLLECTION).get().await()
-            for (doc in members.documents) {
-                doc.reference.delete().await()
+            var batch = firestore.batch()
+            var opCount = 0
+
+            suspend fun batchDelete(ref: DocumentReference) {
+                batch.delete(ref)
+                opCount++
+                if (opCount >= BATCH_LIMIT) {
+                    batch.commit().await()
+                    batch = firestore.batch()
+                    opCount = 0
+                }
             }
 
+            // Delete members
+            val members = clubRef.collection(MEMBERS_COLLECTION).get().await()
+            for (doc in members.documents) {
+                batchDelete(doc.reference)
+            }
+
+            // Delete books and their subcollections (reviews + comments)
             val books = clubRef.collection(CLUB_BOOKS_COLLECTION).get().await()
-            for (doc in books.documents) {
-                doc.reference.delete().await()
+            for (bookDoc in books.documents) {
+                val reviews = bookDoc.reference.collection(REVIEWS_COLLECTION).get().await()
+                for (review in reviews.documents) {
+                    batchDelete(review.reference)
+                }
+
+                val comments = bookDoc.reference.collection(COMMENTS_COLLECTION).get().await()
+                for (comment in comments.documents) {
+                    batchDelete(comment.reference)
+                }
+
+                batchDelete(bookDoc.reference)
+            }
+
+            if (opCount > 0) {
+                batch.commit().await()
             }
 
             clubRef.delete().await()
@@ -466,6 +496,10 @@ internal class FirestoreBookClubRemoteDataSourceImpl(
                 .set(data, SetOptions.merge())
                 .await()
         }
+    }
+
+    companion object {
+        private const val BATCH_LIMIT = 450
     }
 
     override suspend fun deleteUserDocument(userId: String): Result<Unit, DataError.Sync> {
