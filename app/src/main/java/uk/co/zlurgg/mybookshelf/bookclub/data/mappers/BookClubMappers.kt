@@ -34,8 +34,6 @@ fun BookClubMembership.toMembershipEntity(id: String): BookClubMembershipEntity 
     clubCode = clubCode,
     localShelfId = localShelfId,
     joinedAt = joinedAt,
-    lastSyncedAt = lastSyncedAt,
-    syncStatus = "SYNCED"
 )
 
 /**
@@ -45,7 +43,6 @@ fun BookClubMembershipEntity.toMembership(): BookClubMembership = BookClubMember
     clubCode = clubCode,
     localShelfId = localShelfId,
     joinedAt = joinedAt,
-    lastSyncedAt = lastSyncedAt
 )
 
 // ========== BookClubBook (DTO <-> Domain) ==========

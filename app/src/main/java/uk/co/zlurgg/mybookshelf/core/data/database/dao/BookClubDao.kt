@@ -21,7 +21,7 @@ interface BookClubDao {
     @Query("SELECT * FROM book_club_memberships WHERE localShelfId = :shelfId")
     suspend fun getMembershipByShelfId(shelfId: String): BookClubMembershipEntity?
 
-    @Query("SELECT * FROM book_club_memberships WHERE syncStatus != 'DELETED'")
+    @Query("SELECT * FROM book_club_memberships")
     fun observeAllMemberships(): Flow<List<BookClubMembershipEntity>>
 
     @Query("DELETE FROM book_club_memberships WHERE clubCode = :clubCode")
@@ -29,11 +29,6 @@ interface BookClubDao {
 
     @Query("DELETE FROM book_club_memberships")
     suspend fun deleteAllMemberships()
-
-    @Query(
-        "UPDATE book_club_memberships SET syncStatus = :status, lastSyncedAt = :timestamp WHERE clubCode = :clubCode"
-    )
-    suspend fun updateMembershipSyncStatus(clubCode: String, status: String, timestamp: Long)
 
     // ========== Book Club Shelf Queries ==========
 
@@ -50,9 +45,4 @@ interface BookClubDao {
 
     @Query("SELECT bookId FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
     suspend fun getBookIdsForShelf(shelfId: String): List<String>
-
-    // ========== Sync Queries ==========
-
-    @Query("SELECT * FROM book_club_memberships WHERE syncStatus != 'SYNCED'")
-    suspend fun getPendingSyncMemberships(): List<BookClubMembershipEntity>
 }

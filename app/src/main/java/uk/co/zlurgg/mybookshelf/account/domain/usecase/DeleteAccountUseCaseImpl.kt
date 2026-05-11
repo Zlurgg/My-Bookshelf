@@ -44,9 +44,7 @@ class DeleteAccountUseCaseImpl(
 
         // Delete user's Firestore document (must be before auth deletion — rules require auth)
         val deleteDocResult = clubOperations.deleteUserDocument(userId)
-        if (deleteDocResult is Result.Error) {
-            Timber.tag(TAG).w("Failed to delete user document: %s", deleteDocResult.error)
-        }
+        if (deleteDocResult is Result.Error) return deleteDocResult
 
         // Delete Firebase Auth account
         val authDeleteResult = authService.deleteAccount()
@@ -65,6 +63,10 @@ class DeleteAccountUseCaseImpl(
 
         val reAuthResult = authService.reauthenticate(idToken)
         if (reAuthResult is Result.Error) return reAuthResult
+
+        // Retry user document deletion (may have failed in initial invoke())
+        val deleteDocResult = clubOperations.deleteUserDocument(userId)
+        if (deleteDocResult is Result.Error) return deleteDocResult
 
         val deleteResult = authService.deleteAccount()
         if (deleteResult is Result.Error) return deleteResult

@@ -197,7 +197,6 @@ internal class BookClubManagementRepositoryImpl(
             clubCode = clubCode,
             localShelfId = clubShelfId,
             joinedAt = now,
-            lastSyncedAt = now
         ).toMembershipEntity(idGenerator.generateId())
         bookClubDao.upsertMembership(membershipEntity)
 

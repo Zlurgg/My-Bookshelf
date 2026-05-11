@@ -169,13 +169,6 @@ internal class BookClubSyncRepositoryImpl(
             Timber.tag(TAG).d("Updated local shelf name to: %s", clubMetadata.name)
         }
 
-        // Update last synced timestamp
-        val membership = bookClubDao.getMembershipByClubCode(code)
-        if (membership != null) {
-            val updatedMembership = membership.copy(lastSyncedAt = timeProvider.currentTimeMillis())
-            bookClubDao.upsertMembership(updatedMembership)
-        }
-
         Timber.tag(TAG).d("Sync complete: added %d, removed %d books", booksAdded, booksRemoved)
         return Result.Success(SyncResult(booksAdded, booksRemoved))
     }

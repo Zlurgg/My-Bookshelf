@@ -127,7 +127,6 @@ class CreateBookClubUseCaseImplTest {
                 clubCode = "CLUB$it",
                 localShelfId = "shelf-$it",
                 joinedAt = 1000L,
-                lastSyncedAt = 1000L
             )
         }
         mockRepository.createBookClubResult = Result.Success("SHOULDNT_REACH")
@@ -148,7 +147,6 @@ class CreateBookClubUseCaseImplTest {
                 clubCode = "CLUB$it",
                 localShelfId = "shelf-$it",
                 joinedAt = 1000L,
-                lastSyncedAt = 1000L
             )
         }
 

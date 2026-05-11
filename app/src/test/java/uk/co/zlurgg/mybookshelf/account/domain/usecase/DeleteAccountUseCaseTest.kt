@@ -26,6 +26,8 @@ class DeleteAccountUseCaseTest {
     private var removedFromClubs = mutableListOf<String>()
     private var deleteClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
     private var removeUserResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private var deleteUserDocumentResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
+    private var deleteUserDocumentCalledWithUserId: String? = null
 
     private val mockAuthService = MockAuthService()
     private val mockBookcaseRepository = MockBookcaseRepository()
@@ -77,7 +79,10 @@ class DeleteAccountUseCaseTest {
             removedFromClubs.add(clubCode)
             return removeUserResult
         }
-        override suspend fun deleteUserDocument(userId: String) = Result.Success(Unit)
+        override suspend fun deleteUserDocument(userId: String): Result<Unit, DataError.Sync> {
+            deleteUserDocumentCalledWithUserId = userId
+            return deleteUserDocumentResult
+        }
     }
 
     private lateinit var useCase: DeleteAccountUseCase
@@ -91,6 +96,8 @@ class DeleteAccountUseCaseTest {
         removedFromClubs = mutableListOf()
         deleteClubResult = Result.Success(Unit)
         removeUserResult = Result.Success(Unit)
+        deleteUserDocumentResult = Result.Success(Unit)
+        deleteUserDocumentCalledWithUserId = null
         mockAuthService.reset()
         mockAuthService.deleteAccountResult = Result.Success(Unit)
         mockBookcaseRepository.reset()
@@ -253,5 +260,60 @@ class DeleteAccountUseCaseTest {
         useCase.retryAfterReAuth("fresh-token")
 
         assertEquals(false, authStateSignedIn)
+    }
+
+    // ==================== deleteUserDocument ====================
+
+    @Test
+    fun `invoke - deleteUserDocument fails - returns error, auth NOT deleted`() = runTest {
+        deleteUserDocumentResult = Result.Error(DataError.Sync.NETWORK_ERROR)
+
+        val result = useCase()
+
+        assertTrue("Should return error", result is Result.Error)
+        assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
+        assertFalse("Should NOT delete club shelves", mockBookcaseRepository.deleteClubShelvesCalled)
+    }
+
+    @Test
+    fun `retryAfterReAuth - calls deleteUserDocument before auth deletion`() = runTest {
+        useCase.retryAfterReAuth("fresh-token")
+
+        assertEquals("test-user-id", deleteUserDocumentCalledWithUserId)
+        assertTrue("Auth should be deleted", mockAuthService.deleteAccountCalled)
+    }
+
+    @Test
+    fun `retryAfterReAuth - deleteUserDocument fails - returns error, auth NOT deleted`() = runTest {
+        deleteUserDocumentResult = Result.Error(DataError.Sync.NETWORK_ERROR)
+
+        val result = useCase.retryAfterReAuth("fresh-token")
+
+        assertTrue("Should return error", result is Result.Error)
+        assertTrue("Should re-authenticate", mockAuthService.reauthenticateCalled)
+        assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
+    }
+
+    @Test
+    fun `invoke - retry after partial club cleanup succeeds`() = runTest {
+        // First attempt: clubs exist, but deleteUserDocument fails
+        clubsCreatedByUser = Result.Success(listOf("club-a"))
+        deleteUserDocumentResult = Result.Error(DataError.Sync.NETWORK_ERROR)
+
+        val firstResult = useCase()
+        assertTrue("First attempt should fail", firstResult is Result.Error)
+        assertEquals(listOf("club-a"), deletedClubs)
+
+        // Second attempt: club-a already deleted from Firestore, re-query returns empty
+        deletedClubs.clear()
+        clubsCreatedByUser = Result.Success(emptyList())
+        deleteUserDocumentResult = Result.Success(Unit)
+        mockAuthService.reset()
+        mockAuthService.deleteAccountResult = Result.Success(Unit)
+
+        val secondResult = useCase()
+        assertTrue("Second attempt should succeed", secondResult is Result.Success)
+        assertTrue("Empty — clubs already deleted", deletedClubs.isEmpty())
+        assertTrue("Auth should be deleted", mockAuthService.deleteAccountCalled)
     }
 }

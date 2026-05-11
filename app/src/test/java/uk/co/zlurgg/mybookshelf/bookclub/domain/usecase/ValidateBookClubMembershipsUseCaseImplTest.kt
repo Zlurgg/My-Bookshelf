@@ -76,7 +76,6 @@ class ValidateBookClubMembershipsUseCaseImplTest {
                 clubCode = "CLUB1234",
                 localShelfId = "local-shelf-1",
                 joinedAt = currentTime,
-                lastSyncedAt = currentTime
             )
         )
         mockBookClubRepository.getBookClubResult = Result.Success(
@@ -119,7 +118,6 @@ class ValidateBookClubMembershipsUseCaseImplTest {
                 clubCode = "CLUB1234",
                 localShelfId = "local-shelf-1",
                 joinedAt = currentTime,
-                lastSyncedAt = currentTime
             )
         )
         mockBookClubRepository.getBookClubResult = Result.Success(null) // Club deleted
@@ -146,13 +144,11 @@ class ValidateBookClubMembershipsUseCaseImplTest {
                 clubCode = "CLUB1",
                 localShelfId = "local-shelf-1",
                 joinedAt = currentTime,
-                lastSyncedAt = currentTime
             ),
             BookClubMembership(
                 clubCode = "CLUB2",
                 localShelfId = "local-shelf-2",
                 joinedAt = currentTime,
-                lastSyncedAt = currentTime
             )
         )
 
@@ -197,7 +193,6 @@ class ValidateBookClubMembershipsUseCaseImplTest {
                 clubCode = "CLUB1234",
                 localShelfId = "non-existent-shelf",
                 joinedAt = currentTime,
-                lastSyncedAt = currentTime
             )
         )
         mockBookClubRepository.getBookClubResult = Result.Success(null) // Club deleted
@@ -222,7 +217,6 @@ class ValidateBookClubMembershipsUseCaseImplTest {
                 clubCode = "CLUB1234",
                 localShelfId = "local-shelf-1",
                 joinedAt = currentTime,
-                lastSyncedAt = currentTime
             )
         )
         mockBookClubRepository.getBookClubResult = Result.Error(DataError.Sync.NETWORK_ERROR)
