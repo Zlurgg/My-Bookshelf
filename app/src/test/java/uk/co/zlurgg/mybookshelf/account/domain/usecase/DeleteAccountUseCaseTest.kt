@@ -148,6 +148,27 @@ class DeleteAccountUseCaseTest {
     }
 
     @Test
+    fun `invoke - membership query fails - returns error, auth NOT deleted`() = runTest {
+        clubMemberships = Result.Error(DataError.Sync.NETWORK_ERROR)
+
+        val result = useCase()
+
+        assertTrue("Should return error", result is Result.Error)
+        assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
+    }
+
+    @Test
+    fun `invoke - remove user from club fails - returns error, auth NOT deleted`() = runTest {
+        clubMemberships = Result.Success(listOf("club-x"))
+        removeUserResult = Result.Error(DataError.Sync.NETWORK_ERROR)
+
+        val result = useCase()
+
+        assertTrue("Should return error", result is Result.Error)
+        assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
+    }
+
+    @Test
     fun `invoke - club delete fails - auth NOT deleted`() = runTest {
         clubsCreatedByUser = Result.Success(listOf("club-1"))
         deleteClubResult = Result.Error(DataError.Sync.NETWORK_ERROR)
@@ -200,6 +221,17 @@ class DeleteAccountUseCaseTest {
         assertTrue("Should succeed", result is Result.Success)
         assertTrue("Should re-authenticate", mockAuthService.reauthenticateCalled)
         assertTrue("Auth should be deleted", mockAuthService.deleteAccountCalled)
+    }
+
+    @Test
+    fun `retryAfterReAuth - no signed in user - returns auth failed`() = runTest {
+        mockCurrentUserId = null
+
+        val result = useCase.retryAfterReAuth("fresh-token")
+
+        assertTrue("Should return error", result is Result.Error)
+        assertEquals(DataError.Local.AUTH_FAILED, (result as Result.Error).error)
+        assertFalse("Auth must NOT be deleted", mockAuthService.deleteAccountCalled)
     }
 
     @Test

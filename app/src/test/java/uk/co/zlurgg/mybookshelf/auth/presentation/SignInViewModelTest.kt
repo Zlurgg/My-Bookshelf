@@ -23,12 +23,11 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.ResumeSessionUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
-import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -71,35 +70,7 @@ class SignInViewModelTest {
         }
     }
 
-    @Suppress("TooManyFunctions")
-    private val stubClubOperations = object : ClubOperations {
-        override suspend fun createBookClub(name: String, shelfStyle: String, sourceShelfId: String?) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun lookupBookClub(codeOrUrl: String) =
-            ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
-        override suspend fun joinBookClub() = Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun joinBookClub(code: String) = Result.Error(DataError.Sync.UNKNOWN)
-        override fun clearLookupState() = Unit
-        override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun leaveBookClub(shelfId: String) = Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun validateMemberships() = emptyList<String>()
-        override suspend fun deleteBookClub(clubCode: String) = Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun syncBookToClub(clubCode: String, book: Book) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun removeBookFromClub(clubCode: String, bookId: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun updateClubStyle(clubCode: String, styleName: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> =
-            Result.Success(Unit)
-        override suspend fun renameBookClub(clubCode: String, newName: String): Result<Unit, DataError> =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun getClubsCreatedByUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun getClubMembershipsForUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun removeUserFromClub(clubCode: String, userId: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-    }
+    private val stubClubOperations = StubClubOperations()
 
     private var resumeSessionCallCount = 0
     private val mockResumeSession = object : ResumeSessionUseCase {

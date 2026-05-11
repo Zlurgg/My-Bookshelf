@@ -16,7 +16,6 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
@@ -30,6 +29,7 @@ import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -67,55 +67,7 @@ class BookshelfViewModelTest {
         mockGetShelfById.reset()
     }
 
-    private val stubClubOperations = object : ClubOperations {
-        override suspend fun createBookClub(
-            name: String,
-            shelfStyle: String,
-            sourceShelfId: String?,
-        ): Result<ClubOperations.BookClubCreationResult, DataError.Sync> =
-            Result.Success(
-                ClubOperations.BookClubCreationResult("ABC12345"),
-            )
-        override suspend fun lookupBookClub(codeOrUrl: String): ClubOperations.LookupResult =
-            ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
-        override suspend fun joinBookClub(): Result<ClubOperations.JoinResult, DataError.Sync> =
-            Result.Success(ClubOperations.JoinResult.Success("Test Shelf"))
-        override suspend fun joinBookClub(code: String): Result<ClubOperations.JoinResult, DataError.Sync> =
-            Result.Success(ClubOperations.JoinResult.Success("Test Shelf"))
-        override fun clearLookupState() = Unit
-        override suspend fun syncBooksFromClub(
-            clubCode: String,
-            localShelfId: String,
-        ): Result<ClubOperations.SyncResult, DataError.Sync> =
-            Result.Success(ClubOperations.SyncResult(0, 0))
-        override suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
-        override suspend fun validateMemberships(): List<String> = emptyList()
-        override suspend fun deleteBookClub(clubCode: String): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
-        override suspend fun syncBookToClub(
-            clubCode: String,
-            book: Book,
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeBookFromClub(
-            clubCode: String,
-            bookId: String,
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun updateClubStyle(
-            clubCode: String,
-            styleName: String,
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> =
-            Result.Success(Unit)
-        override suspend fun renameBookClub(
-            clubCode: String,
-            newName: String,
-        ): Result<Unit, DataError> = Result.Success(Unit)
-        override suspend fun getClubsCreatedByUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun getClubMembershipsForUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
-    }
+    private val stubClubOperations = StubClubOperations()
 
     private fun createViewModel(shelfId: String = "test-shelf"): BookshelfViewModel {
         val bookshelfUseCases = BookshelfUseCases(

@@ -19,9 +19,7 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignInUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
-import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.Bookcase
-import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.BookcaseUseCases
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.HandleTutorialAccessUseCase
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.TutorialAccessResult
@@ -41,6 +39,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRenameShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockReorderShelvesUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockUpdateShelfStyleUseCase
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -73,57 +72,7 @@ class BookcaseViewModelTest {
         mockUpdateShelfStyle.reset()
     }
 
-    private val stubClubOperations = object : ClubOperations {
-        override suspend fun createBookClub(
-            name: String,
-            shelfStyle: String,
-            sourceShelfId: String?,
-        ): Result<ClubOperations.BookClubCreationResult, DataError.Sync> =
-            Result.Success(
-                ClubOperations.BookClubCreationResult("ABC12345"),
-            )
-        override suspend fun lookupBookClub(codeOrUrl: String): ClubOperations.LookupResult =
-            ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
-        override suspend fun joinBookClub(): Result<ClubOperations.JoinResult, DataError.Sync> =
-            Result.Success(ClubOperations.JoinResult.Success("Test Shelf"))
-        override suspend fun joinBookClub(code: String): Result<ClubOperations.JoinResult, DataError.Sync> =
-            Result.Success(ClubOperations.JoinResult.Success("Test Shelf"))
-        override fun clearLookupState() = Unit
-        override suspend fun syncBooksFromClub(
-            clubCode: String,
-            localShelfId: String
-        ): Result<ClubOperations.SyncResult, DataError.Sync> =
-            Result.Success(ClubOperations.SyncResult(0, 0))
-        override suspend fun leaveBookClub(
-            shelfId: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun validateMemberships(): List<String> = emptyList()
-        override suspend fun deleteBookClub(
-            clubCode: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun syncBookToClub(
-            clubCode: String,
-            book: Book
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun removeBookFromClub(
-            clubCode: String,
-            bookId: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun updateClubStyle(
-            clubCode: String,
-            styleName: String
-        ): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> =
-            Result.Success(Unit)
-        override suspend fun renameBookClub(
-            clubCode: String,
-            newName: String
-        ): Result<Unit, DataError> = Result.Success(Unit)
-        override suspend fun getClubsCreatedByUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun getClubMembershipsForUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun removeUserFromClub(clubCode: String, userId: String): Result<Unit, DataError.Sync> =
-            Result.Success(Unit)
-    }
+    private val stubClubOperations = StubClubOperations()
 
     private fun createViewModel(): BookcaseViewModel {
         val useCases = BookcaseUseCases(

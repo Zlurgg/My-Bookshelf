@@ -10,11 +10,10 @@ import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
-import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
 
 class SignOutUseCaseTest {
 
@@ -22,7 +21,6 @@ class SignOutUseCaseTest {
     private var mockSignOutResult: Result<Unit, DataError.Local> = Result.Success(Unit)
     private var signedInStateSet: Boolean? = null
     private var mockCurrentUserId: String? = "test-user-id"
-    private var clearAllMembershipsCalled = false
     private val mockBookcaseRepository = MockBookcaseRepository()
 
     private val mockAuthService = object : AuthService {
@@ -46,37 +44,7 @@ class SignOutUseCaseTest {
         }
     }
 
-    @Suppress("TooManyFunctions")
-    private val mockClubOperations = object : ClubOperations {
-        override suspend fun createBookClub(name: String, shelfStyle: String, sourceShelfId: String?) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun lookupBookClub(codeOrUrl: String) =
-            ClubOperations.LookupResult.NotFound(DataError.Sync.CLUB_NOT_FOUND)
-        override suspend fun joinBookClub() = Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun joinBookClub(code: String) = Result.Error(DataError.Sync.UNKNOWN)
-        override fun clearLookupState() = Unit
-        override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun leaveBookClub(shelfId: String) = Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun validateMemberships() = emptyList<String>()
-        override suspend fun deleteBookClub(clubCode: String) = Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun syncBookToClub(clubCode: String, book: Book) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun removeBookFromClub(clubCode: String, bookId: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun updateClubStyle(clubCode: String, styleName: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> {
-            clearAllMembershipsCalled = true
-            return Result.Success(Unit)
-        }
-        override suspend fun renameBookClub(clubCode: String, newName: String): Result<Unit, DataError> =
-            Result.Error(DataError.Sync.UNKNOWN)
-        override suspend fun getClubsCreatedByUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun getClubMembershipsForUser(userId: String) = Result.Success(emptyList<String>())
-        override suspend fun removeUserFromClub(clubCode: String, userId: String) =
-            Result.Error(DataError.Sync.UNKNOWN)
-    }
+    private val mockClubOperations = StubClubOperations()
 
     private val mockCurrentUserProvider = object : CurrentUserProvider {
         override fun getCurrentUserId(): String? = mockCurrentUserId
@@ -87,7 +55,6 @@ class SignOutUseCaseTest {
     @Before
     fun setup() {
         signedInStateSet = null
-        clearAllMembershipsCalled = false
         mockBookcaseRepository.reset()
         mockSignOutResult = Result.Success(Unit)
         mockCurrentUserId = "test-user-id"
@@ -150,7 +117,7 @@ class SignOutUseCaseTest {
     fun `execute clears all memberships on success`() = runTest {
         useCase()
 
-        assertTrue("Memberships should be cleared", clearAllMembershipsCalled)
+        assertTrue("Memberships should be cleared", mockClubOperations.clearAllMembershipsCalled)
     }
 
     @Test
@@ -180,5 +147,32 @@ class SignOutUseCaseTest {
         useCase()
 
         assertEquals("specific-user-456", mockBookcaseRepository.lastDeleteClubShelvesUserId)
+    }
+
+    @Test
+    fun `execute still succeeds when clearAllMemberships fails`() = runTest {
+        val failingClubOps = StubClubOperations(
+            clearAllMembershipsResult = Result.Error(DataError.Local.DATABASE_ERROR),
+        )
+        useCase = SignOutUseCaseImpl(
+            mockAuthService, mockAuthStateRepository, mockCurrentUserProvider,
+            failingClubOps, mockBookcaseRepository,
+        )
+
+        val result = useCase()
+
+        assertTrue("Should still succeed", result is Result.Success)
+        assertEquals(false, signedInStateSet)
+    }
+
+    @Test
+    fun `execute still succeeds when deleteClubShelves fails`() = runTest {
+        mockBookcaseRepository.deleteClubShelvesResult =
+            Result.Error(DataError.Local.DATABASE_ERROR)
+
+        val result = useCase()
+
+        assertTrue("Should still succeed", result is Result.Success)
+        assertEquals(false, signedInStateSet)
     }
 }

@@ -6,41 +6,21 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
 
 class DeleteShelfUseCaseTest {
 
     private val mockRepository = MockBookcaseRepository()
-    private val mockClubOperations = object : ClubOperations {
-        override suspend fun createBookClub(
-            name: String,
-            shelfStyle: String,
-            sourceShelfId: String?,
-        ) = throw NotImplementedError()
-        override suspend fun lookupBookClub(codeOrUrl: String) = throw NotImplementedError()
-        override suspend fun joinBookClub() = throw NotImplementedError()
-        override suspend fun joinBookClub(code: String) = throw NotImplementedError()
-        override fun clearLookupState() = throw NotImplementedError()
-        override suspend fun syncBooksFromClub(clubCode: String, localShelfId: String) = throw NotImplementedError()
-        override suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun validateMemberships() = throw NotImplementedError()
-        override suspend fun deleteBookClub(clubCode: String): Result<Unit, DataError.Sync> = Result.Success(Unit)
-        override suspend fun syncBookToClub(clubCode: String, book: Book) = throw NotImplementedError()
-        override suspend fun removeBookFromClub(clubCode: String, bookId: String) = throw NotImplementedError()
-        override suspend fun updateClubStyle(clubCode: String, styleName: String) = throw NotImplementedError()
-        override suspend fun clearAllMemberships(): Result<Unit, DataError.Local> = Result.Success(Unit)
-        override suspend fun renameBookClub(clubCode: String, newName: String) = throw NotImplementedError()
-        override suspend fun getClubsCreatedByUser(userId: String) = throw NotImplementedError()
-        override suspend fun getClubMembershipsForUser(userId: String) = throw NotImplementedError()
-        override suspend fun removeUserFromClub(clubCode: String, userId: String) = throw NotImplementedError()
-    }
+    private val mockClubOperations = StubClubOperations(
+        leaveBookClubResult = Result.Success(Unit),
+        deleteBookClubResult = Result.Success(Unit),
+    )
     private val useCase = DeleteShelfUseCaseImpl(mockRepository, mockClubOperations)
 
     @After

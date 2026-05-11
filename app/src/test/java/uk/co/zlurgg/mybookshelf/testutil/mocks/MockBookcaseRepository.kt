@@ -98,10 +98,12 @@ class MockBookcaseRepository : BookcaseRepository {
     // Tracking properties for deleteClubShelves
     var deleteClubShelvesCalled = false
     var lastDeleteClubShelvesUserId: String? = null
+    var deleteClubShelvesResult: Result<Unit, DataError.Local>? = null
 
     override suspend fun deleteClubShelves(userId: String): Result<Unit, DataError.Local> {
         deleteClubShelvesCalled = true
         lastDeleteClubShelvesUserId = userId
+        deleteClubShelvesResult?.let { return it }
         errorToReturn?.let { return Result.Error(it) }
         return Result.Success(Unit)
     }
@@ -128,6 +130,7 @@ class MockBookcaseRepository : BookcaseRepository {
         lastUpdatedShelf = null
         deleteClubShelvesCalled = false
         lastDeleteClubShelvesUserId = null
+        deleteClubShelvesResult = null
     }
 
     fun configureShelves(shelves: List<Bookshelf>) {
