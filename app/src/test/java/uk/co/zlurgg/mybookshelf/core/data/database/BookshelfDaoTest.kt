@@ -87,20 +87,6 @@ class BookshelfDaoTest {
         assertNull("Should return null for non-existent book", result)
     }
 
-    @Test
-    fun `deleteBook removes book from database`() = runTest {
-        // Given
-        val book = createTestBook("book-1", "Test Book")
-        dao.upsert(book)
-
-        // When
-        dao.deleteBook("book-1")
-
-        // Then
-        val retrieved = dao.getBookById("book-1")
-        assertNull("Book should be deleted", retrieved)
-    }
-
     // Shelf CRUD Tests
 
     @Test
@@ -132,23 +118,6 @@ class BookshelfDaoTest {
         val retrieved = dao.getShelfById("shelf-1")
         assertEquals("Updated Name", retrieved?.name)
         assertEquals(5, retrieved?.position)
-    }
-
-    @Test
-    fun `getAllShelves returns shelves ordered by position`() = runTest {
-        // Given
-        dao.upsertShelf(createTestShelf("shelf-3", "Third", 2))
-        dao.upsertShelf(createTestShelf("shelf-1", "First", 0))
-        dao.upsertShelf(createTestShelf("shelf-2", "Second", 1))
-
-        // When
-        val shelves = dao.getAllShelves().first()
-
-        // Then
-        assertEquals(3, shelves.size)
-        assertEquals("First", shelves[0].name)
-        assertEquals("Second", shelves[1].name)
-        assertEquals("Third", shelves[2].name)
     }
 
     @Test

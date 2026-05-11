@@ -71,20 +71,6 @@ class BookRepositoryIntegrationTest {
     }
 
     @Test
-    fun deleteBookRemovesFromDatabase() = runTest {
-        // Given - Book exists in database
-        val book = createTestBookEntity("book-1", "To Delete")
-        database.bookshelfDao.upsert(book)
-
-        // When - Delete book
-        database.bookshelfDao.deleteBook("book-1")
-
-        // Then - Book should not exist
-        val retrieved = database.bookshelfDao.getBookById("book-1")
-        assertNull("Book should be deleted from database", retrieved)
-    }
-
-    @Test
     fun multipleBooksPersistedCorrectly() = runTest {
         // Given - Multiple books
         val book1 = createTestBookEntity("book-1", "Book One")

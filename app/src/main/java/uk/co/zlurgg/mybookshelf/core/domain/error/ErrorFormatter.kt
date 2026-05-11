@@ -87,10 +87,8 @@ object ErrorFormatter {
 
     private fun formatSyncError(error: DataError.Sync): String = when (error) {
         DataError.Sync.NOT_SIGNED_IN -> "Please sign in to sync your data."
-        DataError.Sync.SYNC_IN_PROGRESS -> "Sync is already in progress."
         DataError.Sync.CONFLICT_UNRESOLVED ->
             "There are unresolved conflicts that require your attention."
-        DataError.Sync.MIGRATION_FAILED -> "Failed to migrate local data. Please try again."
         DataError.Sync.QUOTA_EXCEEDED -> "Cloud storage quota exceeded."
         DataError.Sync.PERMISSION_DENIED -> "Permission denied. Please sign in again."
         DataError.Sync.DOCUMENT_NOT_FOUND -> "Requested data not found in cloud."

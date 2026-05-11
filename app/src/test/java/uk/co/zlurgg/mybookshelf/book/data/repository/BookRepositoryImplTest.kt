@@ -42,12 +42,6 @@ class BookRepositoryImplTest {
         if (result is Result.Error) throw AssertionError("Failed to save book: ${result.error}")
     }
 
-    /** Helper to delete book and throw on error */
-    private suspend fun removeBook(bookId: String) {
-        val result = repository.deleteBook(bookId)
-        if (result is Result.Error) throw AssertionError("Failed to delete book: ${result.error}")
-    }
-
     @Before
     fun setup() {
         // Create in-memory database for testing
@@ -174,41 +168,6 @@ class BookRepositoryImplTest {
         assertEquals("Should preserve edition count", completeBook.numEditions, retrievedBook.numEditions)
         assertEquals("Should preserve purchase status", completeBook.purchased, retrievedBook.purchased)
         assertEquals("Should preserve spine color", completeBook.spineColor, retrievedBook.spineColor)
-    }
-
-    @Test
-    fun `deleteBook removes book from database`() = runTest {
-        // Given
-        val book = TestBookBuilder()
-            .withId("book-to-delete")
-            .withTitle("Book for Deletion")
-            .build()
-
-        saveBook(book)
-
-        // Verify book exists
-        val beforeDeletion = getBookOrNull("book-to-delete")
-        assertEquals("Book should exist before deletion", book.id, beforeDeletion?.id)
-
-        // When
-        removeBook("book-to-delete")
-
-        // Then
-        val afterDeletion = getBookOrNull("book-to-delete")
-        assertNull("Book should not exist after deletion", afterDeletion)
-    }
-
-    @Test
-    fun `deleteBook handles non-existent book gracefully`() = runTest {
-        // Given
-        val nonExistentBookId = "does-not-exist"
-
-        // When - Should not throw exception
-        removeBook(nonExistentBookId)
-
-        // Then - Should complete successfully
-        val result = getBookOrNull(nonExistentBookId)
-        assertNull("Should return null for non-existent book", result)
     }
 
     @Test

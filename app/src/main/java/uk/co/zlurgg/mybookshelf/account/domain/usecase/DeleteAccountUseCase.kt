@@ -8,8 +8,9 @@ interface DeleteAccountUseCase {
 
     /**
      * Retries account deletion after re-authentication.
-     * Must only be called after [invoke] returned [DataError.Local.REQUIRES_RECENT_LOGIN],
-     * meaning clubs are cleaned and all remote data is already deleted.
+     * Called after [invoke] returned [DataError.Local.REQUIRES_RECENT_LOGIN].
+     * Re-attempts user document deletion defensively (may already be deleted
+     * from initial invoke), then deletes Firebase Auth and cleans up locally.
      *
      * @param idToken Fresh Google ID token from re-authentication
      */

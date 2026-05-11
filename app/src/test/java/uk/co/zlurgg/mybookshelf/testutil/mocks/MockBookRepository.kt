@@ -13,11 +13,9 @@ class MockBookRepository : BookRepository {
     var remoteErrorToReturn: DataError.Remote? = null
     var upsertBookCallCount = 0
     var upsertSystemBookCallCount = 0
-    var deleteBookCallCount = 0
     var getBookByIdCallCount = 0
     var lastUpsertedBook: Book? = null
     var lastUpsertedSystemBook: Book? = null
-    var lastDeletedBookId: String? = null
     var lastQueriedBookId: String? = null
 
     fun reset() {
@@ -26,11 +24,9 @@ class MockBookRepository : BookRepository {
         remoteErrorToReturn = null
         upsertBookCallCount = 0
         upsertSystemBookCallCount = 0
-        deleteBookCallCount = 0
         getBookByIdCallCount = 0
         lastUpsertedBook = null
         lastUpsertedSystemBook = null
-        lastDeletedBookId = null
         lastQueriedBookId = null
     }
 
@@ -55,14 +51,6 @@ class MockBookRepository : BookRepository {
         lastUpsertedBook = book
         errorToReturn?.let { return Result.Error(it) }
         books[book.id] = book
-        return Result.Success(Unit)
-    }
-
-    override suspend fun deleteBook(bookId: String): Result<Unit, DataError.Local> {
-        deleteBookCallCount++
-        lastDeletedBookId = bookId
-        errorToReturn?.let { return Result.Error(it) }
-        books.remove(bookId)
         return Result.Success(Unit)
     }
 

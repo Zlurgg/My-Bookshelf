@@ -18,9 +18,6 @@ interface BookClubDao {
     @Query("SELECT * FROM book_club_memberships WHERE clubCode = :clubCode")
     suspend fun getMembershipByClubCode(clubCode: String): BookClubMembershipEntity?
 
-    @Query("SELECT * FROM book_club_memberships WHERE localShelfId = :shelfId")
-    suspend fun getMembershipByShelfId(shelfId: String): BookClubMembershipEntity?
-
     @Query("SELECT * FROM book_club_memberships")
     fun observeAllMemberships(): Flow<List<BookClubMembershipEntity>>
 
@@ -30,18 +27,10 @@ interface BookClubDao {
     @Query("DELETE FROM book_club_memberships")
     suspend fun deleteAllMemberships()
 
-    // ========== Book Club Shelf Queries ==========
-
-    @Query("SELECT * FROM BookshelfEntity WHERE isBookClub = 1")
-    fun observeBookClubShelves(): Flow<List<BookshelfEntity>>
+    // ========== Shelf and Book Queries ==========
 
     @Query("SELECT * FROM BookshelfEntity WHERE clubCode = :clubCode")
     suspend fun getShelfByClubCode(clubCode: String): BookshelfEntity?
-
-    @Query("UPDATE BookshelfEntity SET isBookClub = :isBookClub, clubCode = :clubCode WHERE id = :shelfId")
-    suspend fun updateShelfBookClubStatus(shelfId: String, isBookClub: Boolean, clubCode: String?)
-
-    // ========== Book Queries for Club Creation ==========
 
     @Query("SELECT bookId FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
     suspend fun getBookIdsForShelf(shelfId: String): List<String>

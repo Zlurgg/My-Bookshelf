@@ -8,7 +8,6 @@ interface BookRepository {
     // Book CRUD operations
     suspend fun getBookById(bookId: String): Result<Book?, DataError.Local>
     suspend fun upsertBook(book: Book): Result<Unit, DataError.Local>
-    suspend fun deleteBook(bookId: String): Result<Unit, DataError.Local>
 
     // Book metadata operations
     suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote>

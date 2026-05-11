@@ -28,12 +28,6 @@ class BookRepositoryImpl(
         }
     }
 
-    override suspend fun deleteBook(bookId: String): Result<Unit, DataError.Local> {
-        return ErrorMapper.safeSuspendCall(TAG) {
-            dao.deleteBook(bookId)
-        }
-    }
-
     override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
         return remoteBookDataSource.getBookDetails(bookId)
             .map { bookDetails -> bookDetails.description }

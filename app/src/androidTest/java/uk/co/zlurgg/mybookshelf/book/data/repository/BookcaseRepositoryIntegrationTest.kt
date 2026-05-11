@@ -117,8 +117,7 @@ class BookcaseRepositoryIntegrationTest {
         repository.removeShelf("shelf-1")
 
         // Then - Shelf should not be visible in user-facing queries
-        // Note: removeShelf soft-deletes (marks as DELETED) for sync purposes
-        // The shelf still exists in DB but is filtered from getAllShelves()
+        // removeShelf hard-deletes the shelf and its cross-refs
         val allShelves = repository.getAllShelves().first()
         assertTrue("Shelf should not be visible after removal", allShelves.none { it.id == "shelf-1" })
     }
