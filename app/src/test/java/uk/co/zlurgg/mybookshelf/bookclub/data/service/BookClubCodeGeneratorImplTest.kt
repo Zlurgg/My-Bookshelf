@@ -204,6 +204,7 @@ private class StubBookClubRemoteDataSource(
     override suspend fun getClubsCreatedByUser(userId: String) = nie()
     override suspend fun getClubMembershipsForUser(userId: String) = nie()
     override suspend fun removeUserFromClub(clubCode: String, userId: String) = nie()
+    override suspend fun deleteUserDocument(userId: String) = nie()
 
     private fun nie(): Nothing = throw NotImplementedError("Not used in BookClubCodeGeneratorImpl tests")
 }

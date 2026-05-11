@@ -77,6 +77,7 @@ class DeleteAccountUseCaseTest {
             removedFromClubs.add(clubCode)
             return removeUserResult
         }
+        override suspend fun deleteUserDocument(userId: String) = Result.Success(Unit)
     }
 
     private lateinit var useCase: DeleteAccountUseCase

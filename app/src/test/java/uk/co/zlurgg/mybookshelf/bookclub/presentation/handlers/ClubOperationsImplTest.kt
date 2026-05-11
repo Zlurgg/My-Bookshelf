@@ -22,6 +22,7 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.JoinBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.LeaveBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ParseClubCodeUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveBookFromClubUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.DeleteUserDocumentUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RemoveUserFromClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RenameBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.RestoreBookClubMembershipsUseCase
@@ -132,6 +133,9 @@ class ClubOperationsImplTest {
             },
             removeUserFromClub = object : RemoveUserFromClubUseCase {
                 override suspend fun invoke(code: String, userId: String) = removeUserFromClubResult
+            },
+            deleteUserDocument = object : DeleteUserDocumentUseCase {
+                override suspend fun invoke(userId: String) = Result.Success(Unit)
             }
         )
         return ClubOperationsImpl(useCases)
