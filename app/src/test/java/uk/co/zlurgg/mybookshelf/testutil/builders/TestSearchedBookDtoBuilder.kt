@@ -22,6 +22,7 @@ class TestSearchedBookDtoBuilder {
     private var publishers: List<String>? = null
     private var publishDates: List<String>? = null
     private var internetArchiveIds: List<String>? = null
+    private var subjects: List<String>? = null
 
     fun withId(id: String) = apply { this.id = id }
     fun withTitle(title: String) = apply { this.title = title }
@@ -38,6 +39,7 @@ class TestSearchedBookDtoBuilder {
     fun withPublishers(publishers: List<String>?) = apply { this.publishers = publishers }
     fun withPublishDates(dates: List<String>?) = apply { this.publishDates = dates }
     fun withInternetArchiveIds(ids: List<String>?) = apply { this.internetArchiveIds = ids }
+    fun withSubjects(subjects: List<String>?) = apply { this.subjects = subjects }
 
     fun build() = SearchedBookDto(
         id = id,
@@ -54,7 +56,8 @@ class TestSearchedBookDtoBuilder {
         isbns = isbns,
         publishers = publishers,
         publishDates = publishDates,
-        internetArchiveIds = internetArchiveIds
+        internetArchiveIds = internetArchiveIds,
+        subjects = subjects
     )
 
     companion object {
@@ -77,6 +80,7 @@ class TestSearchedBookDtoBuilder {
             .withPublishers(listOf("Test Publisher", "Another Publisher"))
             .withPublishDates(listOf("1999-01-01", "2000-06-15"))
             .withInternetArchiveIds(listOf("test-book-1999"))
+            .withSubjects(listOf("Fiction", "Science"))
             .build()
 
         /**

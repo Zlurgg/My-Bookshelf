@@ -22,5 +22,6 @@ data class SearchedBookDto(
     @SerialName("isbn") val isbns: List<String>? = null,
     @SerialName("publisher") val publishers: List<String>? = null,
     @SerialName("publish_date") val publishDates: List<String>? = null,
-    @SerialName("ia") val internetArchiveIds: List<String>? = null
+    @SerialName("ia") val internetArchiveIds: List<String>? = null,
+    @SerialName("subject") val subjects: List<String>? = null
 )

@@ -1,5 +1,7 @@
 package uk.co.zlurgg.mybookshelf.testutil.mocks
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -8,6 +10,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class MockBookRepository : BookRepository {
 
     private val books = mutableMapOf<String, Book>()
+    private val personalBooksFlow = MutableStateFlow<List<Book>>(emptyList())
 
     var errorToReturn: DataError.Local? = null
     var remoteErrorToReturn: DataError.Remote? = null
@@ -67,4 +70,10 @@ class MockBookRepository : BookRepository {
         books[book.id] = book
         return Result.Success(Unit)
     }
+
+    fun setPersonalBooks(books: List<Book>) {
+        personalBooksFlow.value = books
+    }
+
+    override fun getAllPersonalBooks(): Flow<List<Book>> = personalBooksFlow
 }

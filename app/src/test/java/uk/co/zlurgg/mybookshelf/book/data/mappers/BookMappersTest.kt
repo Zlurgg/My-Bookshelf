@@ -23,6 +23,7 @@ class BookMappersTest {
             .withRatingsCount(10)
             .withNumPagesMedian(321)
             .withNumEditions(2)
+            .withSubjects(listOf("Fiction", "Adventure"))
             .build()
 
         val book = dto.toBook()
@@ -39,6 +40,7 @@ class BookMappersTest {
         assertEquals(2, book.numEditions)
         // spineColor is placeholder (0) for search results - actual color generated when added to shelf
         assertEquals(0, book.spineColor)
+        assertEquals(listOf("Fiction", "Adventure"), book.subjects)
     }
 
     @Test
@@ -63,6 +65,7 @@ class BookMappersTest {
         assertEquals(emptyList<String>(), book.authors)
         assertEquals(emptyList<String>(), book.languages)
         assertEquals(0, book.numEditions)
+        assertEquals(emptyList<String>(), book.subjects)
     }
 
     @Test
@@ -81,6 +84,7 @@ class BookMappersTest {
             .withNumEditions(3)
             .withPurchased(true)
             .withSpineColor(0xFF112233.toInt())
+            .withSubjects(listOf("History", "Biography"))
             .build()
 
         val entity: BookEntity = original.toBookEntity()
@@ -99,5 +103,6 @@ class BookMappersTest {
         assertEquals(original.numEditions, mappedBack.numEditions)
         assertEquals(original.purchased, mappedBack.purchased)
         assertEquals(original.spineColor, mappedBack.spineColor)
+        assertEquals(original.subjects, mappedBack.subjects)
     }
 }

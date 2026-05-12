@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.book.domain.repository
 
+import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -17,4 +18,7 @@ interface BookRepository {
      * System books are visible to all users and not synced to cloud.
      */
     suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local>
+
+    // Library
+    fun getAllPersonalBooks(): Flow<List<Book>>
 }

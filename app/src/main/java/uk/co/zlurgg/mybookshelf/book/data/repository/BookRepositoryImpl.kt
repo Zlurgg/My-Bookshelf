@@ -1,5 +1,7 @@
 package uk.co.zlurgg.mybookshelf.book.data.repository
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBookEntity
@@ -9,7 +11,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.result.map
+import uk.co.zlurgg.mybookshelf.core.domain.result.map as resultMap
 
 class BookRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
@@ -30,12 +32,18 @@ class BookRepositoryImpl(
 
     override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
         return remoteBookDataSource.getBookDetails(bookId)
-            .map { bookDetails -> bookDetails.description }
+            .resultMap { bookDetails -> bookDetails.description }
     }
 
     override suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             dao.upsert(book.toBookEntity())
+        }
+    }
+
+    override fun getAllPersonalBooks(): Flow<List<Book>> {
+        return dao.getAllPersonalBooks().map { entities ->
+            entities.map { it.toBook() }
         }
     }
 

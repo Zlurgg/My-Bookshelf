@@ -38,7 +38,8 @@ fun SearchedBookDto.toBook(): Book {
         isbn = isbns?.firstOrNull(),
         publisher = publishers?.firstOrNull(),
         publishDate = publishDates?.firstOrNull(),
-        internetArchiveId = internetArchiveIds?.firstOrNull()
+        internetArchiveId = internetArchiveIds?.firstOrNull(),
+        subjects = subjects ?: emptyList()
     )
 }
 
@@ -70,7 +71,8 @@ fun Book.toBookEntity(): BookEntity {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId
+        internetArchiveId = internetArchiveId,
+        subjects = subjects
     )
 }
 
@@ -99,6 +101,7 @@ fun BookEntity.toBook(): Book {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId
+        internetArchiveId = internetArchiveId,
+        subjects = subjects
     )
 }

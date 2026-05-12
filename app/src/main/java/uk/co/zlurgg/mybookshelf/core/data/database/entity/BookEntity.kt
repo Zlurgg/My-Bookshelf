@@ -31,4 +31,7 @@ data class BookEntity(
     val publisher: String? = null,
     val publishDate: String? = null,
     val internetArchiveId: String? = null,
+
+    // Subjects/categories from API
+    val subjects: List<String> = emptyList(),
 )

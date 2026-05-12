@@ -34,6 +34,7 @@ class TestBookBuilder {
     private var publisher: String? = null
     private var publishDate: String? = null
     private var internetArchiveId: String? = null
+    private var subjects: List<String> = emptyList()
 
     fun withId(id: String) = apply { this.id = id }
     fun withTitle(title: String) = apply { this.title = title }
@@ -61,6 +62,7 @@ class TestBookBuilder {
     fun withPublisher(publisher: String?) = apply { this.publisher = publisher }
     fun withPublishDate(date: String?) = apply { this.publishDate = date }
     fun withInternetArchiveId(id: String?) = apply { this.internetArchiveId = id }
+    fun withSubjects(subjects: List<String>) = apply { this.subjects = subjects }
 
     fun build() = Book(
         id = id,
@@ -86,7 +88,8 @@ class TestBookBuilder {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId
+        internetArchiveId = internetArchiveId,
+        subjects = subjects
     )
 
     companion object {

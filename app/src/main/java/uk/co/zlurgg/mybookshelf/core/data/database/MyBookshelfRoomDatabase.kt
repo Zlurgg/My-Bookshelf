@@ -17,7 +17,7 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfEntity
         BookshelfBookCrossRef::class,
         BookClubMembershipEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(
