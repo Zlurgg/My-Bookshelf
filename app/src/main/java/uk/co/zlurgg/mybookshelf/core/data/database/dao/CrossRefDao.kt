@@ -52,6 +52,7 @@ interface CrossRefDao {
         INNER JOIN BookshelfBookCrossRef cr ON b.id = cr.bookId
         INNER JOIN BookshelfEntity s ON cr.shelfId = s.id
         WHERE s.isBookClub = 0
+        AND s.id != 'shelf-tutorial'
         """
     )
     fun getAllPersonalBooks(): Flow<List<BookEntity>>

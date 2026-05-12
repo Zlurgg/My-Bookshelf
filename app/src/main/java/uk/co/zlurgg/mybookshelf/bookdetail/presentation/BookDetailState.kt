@@ -8,6 +8,7 @@ data class BookDetailState(
     val isLoading: Boolean = true,
     val book: Book? = null,
     val onShelf: Boolean = false,
+    val hasShelfContext: Boolean = true,
     val errorMessage: String? = null,
     // Book Club fields
     val isBookClub: Boolean = false,

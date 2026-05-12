@@ -92,7 +92,7 @@ fun BookDetailsScreen(
             },
             bottomBar = {
                 // Hide actions for tutorial book - it shouldn't be removed from shelf
-                if (!isTutorialBook) {
+                if (!isTutorialBook && state.hasShelfContext) {
                     ShelfActionsCard(
                         book = state.book,
                         onShelf = state.onShelf,

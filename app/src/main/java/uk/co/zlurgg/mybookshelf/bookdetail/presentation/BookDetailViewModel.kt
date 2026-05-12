@@ -28,7 +28,7 @@ class BookDetailViewModel(
     private val shelfId: String?
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(BookDetailState())
+    private val _state = MutableStateFlow(BookDetailState(hasShelfContext = shelfId != null))
     val state: StateFlow<BookDetailState> = _state.asStateFlow()
 
     // Job for debounced auto-save of personal notes
