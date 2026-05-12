@@ -46,12 +46,25 @@ sealed interface NavigationRoute {
     }
 
     @Serializable
-    data class BookDetail(val id: String, val shelfId: String) : NavigationRoute {
+    data object BookClubs : NavigationRoute {
+        const val ROUTE = "bookclubs"
+        fun createRoute() = ROUTE
+    }
+
+    @Serializable
+    data object Library : NavigationRoute {
+        const val ROUTE = "library"
+        fun createRoute() = ROUTE
+    }
+
+    @Serializable
+    data class BookDetail(val id: String, val shelfId: String? = null) : NavigationRoute {
         companion object {
-            const val ROUTE = "bookdetail/{id}/{shelfId}"
+            const val ROUTE = "bookdetail/{id}?shelfId={shelfId}"
             const val KEY_ID = "id"
             const val KEY_SHELF_ID = "shelfId"
-            fun createRoute(id: String, shelfId: String) = "bookdetail/$id/$shelfId"
+            fun createRoute(id: String, shelfId: String? = null) =
+                if (shelfId != null) "bookdetail/$id?shelfId=$shelfId" else "bookdetail/$id"
         }
     }
 }

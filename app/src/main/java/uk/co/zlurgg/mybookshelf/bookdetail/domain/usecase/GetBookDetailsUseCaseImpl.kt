@@ -20,17 +20,26 @@ class GetBookDetailsUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository
 ) : GetBookDetailsUseCase {
 
-    override suspend operator fun invoke(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> {
+    override suspend operator fun invoke(bookId: String, shelfId: String?): Flow<BookDetailsWithShelfStatus> {
         // Get shelf info to check if it's a book club
-        val shelf = when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
-            is Result.Success -> getResult.data
-            is Result.Error -> null
+        val shelf = if (shelfId != null) {
+            when (val getResult = bookcaseRepository.getShelfById(shelfId)) {
+                is Result.Success -> getResult.data
+                is Result.Error -> null
+            }
+        } else {
+            null
         }
         val isBookClub = shelf?.isBookClub ?: false
         val clubCode = shelf?.clubCode
 
         // Get the shelf status Flow and combine with book data
-        return bookshelfRepository.isBookOnShelf(bookId, shelfId)
+        val shelfStatusFlow = if (shelfId != null) {
+            bookshelfRepository.isBookOnShelf(bookId, shelfId)
+        } else {
+            flow { emit(false) }
+        }
+        return shelfStatusFlow
             .combine(
                 // Convert single book fetch to Flow behavior by getting book once
                 flow {

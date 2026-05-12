@@ -431,7 +431,7 @@ class BookDetailViewModelTest {
     private class SimpleGetBookDetailsUseCase : GetBookDetailsUseCase {
         var bookDetailsToReturn: BookDetailsWithShelfStatus = BookDetailsWithShelfStatus(null, false)
 
-        override suspend operator fun invoke(bookId: String, shelfId: String): Flow<BookDetailsWithShelfStatus> =
+        override suspend operator fun invoke(bookId: String, shelfId: String?): Flow<BookDetailsWithShelfStatus> =
             flowOf(bookDetailsToReturn)
 
         override suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local> =

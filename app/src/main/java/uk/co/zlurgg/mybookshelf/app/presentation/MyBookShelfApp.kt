@@ -34,6 +34,7 @@ import uk.co.zlurgg.mybookshelf.bookcase.presentation.BookcaseViewModel
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfAction
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfScreenRoot
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfViewModel
+import uk.co.zlurgg.mybookshelf.library.presentation.LibraryScreenRoot
 import uk.co.zlurgg.mybookshelf.welcome.presentation.WelcomeScreenRoot
 import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 
@@ -78,184 +79,215 @@ fun MyBookShelfApp() {
         }
 
         // Always start at SignIn - it will auto-navigate if already signed in
-        NavHost(
-            navController = navController,
-            startDestination = NavigationRoute.MyBookshelfGraph.ROUTE
-        ) {
-            navigation(
-                route = NavigationRoute.MyBookshelfGraph.ROUTE,
-                startDestination = NavigationRoute.SignIn.ROUTE
+        MainScaffold(navController = navController) {
+            NavHost(
+                navController = navController,
+                startDestination = NavigationRoute.MyBookshelfGraph.ROUTE
             ) {
-                composable(
-                    route = NavigationRoute.SignIn.ROUTE
+                navigation(
+                    route = NavigationRoute.MyBookshelfGraph.ROUTE,
+                    startDestination = NavigationRoute.SignIn.ROUTE
                 ) {
-                    SignInScreenRoot(
-                        onNavigate = { destination ->
-                            val route = when (destination) {
-                                PostSignInDestination.Welcome -> NavigationRoute.Welcome.createRoute()
-                                PostSignInDestination.Bookcase -> NavigationRoute.Bookcase.createRoute()
+                    composable(
+                        route = NavigationRoute.SignIn.ROUTE
+                    ) {
+                        SignInScreenRoot(
+                            onNavigate = { destination ->
+                                val route = when (destination) {
+                                    PostSignInDestination.Welcome -> NavigationRoute.Welcome.createRoute()
+                                    PostSignInDestination.Bookcase -> NavigationRoute.Bookcase.createRoute()
+                                }
+                                navController.navigate(route) {
+                                    popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
+                                }
                             }
-                            navController.navigate(route) {
-                                popUpTo(NavigationRoute.SignIn.ROUTE) { inclusive = true }
-                            }
-                        }
-                    )
-                }
-
-                composable(
-                    route = NavigationRoute.Welcome.ROUTE
-                ) {
-                    WelcomeScreenRoot(
-                        onNavigateToBookcase = {
-                            navController.navigate(NavigationRoute.Bookcase.createRoute()) {
-                                popUpTo(NavigationRoute.Welcome.ROUTE) { inclusive = true }
-                            }
-                        }
-                    )
-                }
-                composable(
-                    route = NavigationRoute.Bookcase.ROUTE,
-                    arguments = listOf(
-                        navArgument(NavigationRoute.Bookcase.ARG_NEW_SHELF) {
-                            type = NavType.BoolType
-                            defaultValue = false
-                        },
-                        navArgument(NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS) {
-                            type = NavType.BoolType
-                            defaultValue = false
-                        }
-                    )
-                ) { backStackEntry ->
-                    val viewModel = koinViewModel<BookcaseViewModel>()
-                    val isNewShelf = backStackEntry.arguments?.getBoolean(
-                        NavigationRoute.Bookcase.ARG_NEW_SHELF
-                    ) ?: false
-                    val switchToBookClubs = backStackEntry.arguments?.getBoolean(
-                        NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS
-                    ) ?: false
-
-                    // Observe result from BookshelfScreen's "Create Book Club" FAB
-                    val createClubForShelfId by backStackEntry.savedStateHandle
-                        .getStateFlow<String?>(
-                            NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF,
-                            null
                         )
-                        .collectAsStateWithLifecycle()
-
-                    BookcaseScreenRoot(
-                        viewModel = viewModel,
-                        switchToBookClubs = switchToBookClubs,
-                        createClubForShelfId = createClubForShelfId,
-                        onCreateClubConsumed = {
-                            backStackEntry.savedStateHandle[NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF] = null
-                        },
-                        onBookshelfClick = { shelf ->
-                            navController.navigate(NavigationRoute.Bookshelf.createRoute(shelf.id))
-                        },
-                        onBookDetailClick = { bookId, shelfId ->
-                            navController.navigate(NavigationRoute.BookDetail.createRoute(bookId, shelfId)) {
-                                launchSingleTop = true
-                            }
-                        },
-                        onAddBookshelfClick = { name, style ->
-                            viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
-                        },
-                        onSignIn = { navigateToSignIn(navController) },
-                        onAccountClick = { isSignedIn ->
-                            if (isSignedIn) {
-                                navController.navigate(NavigationRoute.Account.createRoute())
-                            } else {
-                                navigateToSignIn(navController)
-                            }
-                        },
-                    )
-
-                    // Show add dialog if we're coming back from creating a new shelf
-                    if (isNewShelf) {
-                        LaunchedEffect(Unit) {
-                            viewModel.onAction(BookcaseAction.ShowAddDialog(true))
-                        }
                     }
-                }
 
-                composable(
-                    route = NavigationRoute.Account.ROUTE,
-                ) {
-                    AccountScreenRoot(
-                        onNavigateToSignIn = { navigateToSignIn(navController) },
-                        onBack = { navController.popBackStack() },
-                    )
-                }
-
-                composable(
-                    route = NavigationRoute.Bookshelf.ROUTE,
-                    arguments = listOf(
-                        navArgument(NavigationRoute.Bookshelf.KEY_ID) {
-                            type = NavType.StringType
-                        }
-                    )
-                ) { backStackEntry ->
-                    val shelfId = backStackEntry.arguments?.getString(
-                        NavigationRoute.Bookshelf.KEY_ID
-                    ) ?: ""
-
-                    val viewModel = koinViewModel<BookshelfViewModel>(
-                        parameters = { parametersOf(shelfId) }
-                    )
-                    val state = viewModel.state.collectAsStateWithLifecycle().value
-
-                    BookshelfScreenRoot(
-                        viewModel = viewModel,
-                        onAddBookClick = { book ->
-                            viewModel.onAction(BookshelfAction.OnAddBookClick(book = book))
-                        },
-                        onBookClick = { book ->
-                            viewModel.onAction(BookshelfAction.OnBookClick(book))
-                            viewModel.onAction(BookshelfAction.OnDismissSearchDialog)
-                            navController.navigate(NavigationRoute.BookDetail.createRoute(book.id, shelfId)) {
-                                launchSingleTop = true
+                    composable(
+                        route = NavigationRoute.Welcome.ROUTE
+                    ) {
+                        WelcomeScreenRoot(
+                            onNavigateToBookcase = {
+                                navController.navigate(NavigationRoute.Bookcase.createRoute()) {
+                                    popUpTo(NavigationRoute.Welcome.ROUTE) { inclusive = true }
+                                }
                             }
-                        },
-                        onBackClick = { navController.popBackStack() },
-                        onCreateBookClub = {
-                            navController.previousBackStackEntry?.savedStateHandle?.set(
+                        )
+                    }
+
+                    composable(
+                        route = NavigationRoute.Bookcase.ROUTE,
+                    ) { backStackEntry ->
+                        val viewModel = koinViewModel<BookcaseViewModel>()
+
+                        val createClubForShelfId by backStackEntry.savedStateHandle
+                            .getStateFlow<String?>(
                                 NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF,
-                                shelfId
+                                null
                             )
-                            navController.popBackStack()
-                        },
-                        onSignIn = { navigateToSignIn(navController) },
-                        shelfName = state.shelfName,
-                        shelfMaterial = state.shelfMaterial,
-                    )
-                }
+                            .collectAsStateWithLifecycle()
 
-                composable(
-                    route = NavigationRoute.BookDetail.ROUTE,
-                    arguments = listOf(
-                        navArgument(NavigationRoute.BookDetail.KEY_ID) {
-                            type = NavType.StringType
-                        },
-                        navArgument(NavigationRoute.BookDetail.KEY_SHELF_ID) {
-                            type = NavType.StringType
-                        }
-                    )
-                ) { backStackEntry ->
-                    val bookId = backStackEntry.arguments?.getString(
-                        NavigationRoute.BookDetail.KEY_ID
-                    ) ?: ""
-                    val shelfIdArg = backStackEntry.arguments?.getString(
-                        NavigationRoute.BookDetail.KEY_SHELF_ID
-                    ).takeIf { !it.isNullOrBlank() }
+                        BookcaseScreenRoot(
+                            viewModel = viewModel,
+                            createClubForShelfId = createClubForShelfId,
+                            onCreateClubConsumed = {
+                                backStackEntry.savedStateHandle[NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF] =
+                                    null
+                            },
+                            onBookshelfClick = { shelf ->
+                                navController.navigate(NavigationRoute.Bookshelf.createRoute(shelf.id))
+                            },
+                            onBookDetailClick = { bookId, shelfId ->
+                                navController.navigate(
+                                    NavigationRoute.BookDetail.createRoute(bookId, shelfId)
+                                ) {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onAddBookshelfClick = { name, style ->
+                                viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
+                            },
+                            onSignIn = { navigateToSignIn(navController) },
+                            onAccountClick = { isSignedIn ->
+                                if (isSignedIn) {
+                                    navController.navigate(NavigationRoute.Account.createRoute())
+                                } else {
+                                    navigateToSignIn(navController)
+                                }
+                            },
+                        )
+                    }
 
-                    val viewModel = koinViewModel<BookDetailViewModel>(
-                        parameters = { parametersOf(bookId, shelfIdArg) }
-                    )
+                    composable(
+                        route = NavigationRoute.BookClubs.ROUTE,
+                    ) {
+                        val viewModel = koinViewModel<BookcaseViewModel>()
 
-                    BookDetailsScreenRoot(
-                        viewModel = viewModel,
-                        onBackClick = { navController.popBackStack() }
-                    )
+                        BookcaseScreenRoot(
+                            viewModel = viewModel,
+                            isBookClub = true,
+                            onBookshelfClick = { shelf ->
+                                navController.navigate(NavigationRoute.Bookshelf.createRoute(shelf.id))
+                            },
+                            onBookDetailClick = { bookId, shelfId ->
+                                navController.navigate(
+                                    NavigationRoute.BookDetail.createRoute(bookId, shelfId)
+                                ) {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onAddBookshelfClick = { name, style ->
+                                viewModel.onAction(BookcaseAction.OnAddBookshelfClick(name, style))
+                            },
+                            onSignIn = { navigateToSignIn(navController) },
+                            onAccountClick = { isSignedIn ->
+                                if (isSignedIn) {
+                                    navController.navigate(NavigationRoute.Account.createRoute())
+                                } else {
+                                    navigateToSignIn(navController)
+                                }
+                            },
+                        )
+                    }
+
+                    composable(
+                        route = NavigationRoute.Account.ROUTE,
+                    ) {
+                        AccountScreenRoot(
+                            onNavigateToSignIn = { navigateToSignIn(navController) },
+                            onBack = { navController.popBackStack() },
+                        )
+                    }
+
+                    composable(
+                        route = NavigationRoute.Bookshelf.ROUTE,
+                        arguments = listOf(
+                            navArgument(NavigationRoute.Bookshelf.KEY_ID) {
+                                type = NavType.StringType
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val shelfId = backStackEntry.arguments?.getString(
+                            NavigationRoute.Bookshelf.KEY_ID
+                        ) ?: ""
+
+                        val viewModel = koinViewModel<BookshelfViewModel>(
+                            parameters = { parametersOf(shelfId) }
+                        )
+                        val state = viewModel.state.collectAsStateWithLifecycle().value
+
+                        BookshelfScreenRoot(
+                            viewModel = viewModel,
+                            onAddBookClick = { book ->
+                                viewModel.onAction(BookshelfAction.OnAddBookClick(book = book))
+                            },
+                            onBookClick = { book ->
+                                viewModel.onAction(BookshelfAction.OnBookClick(book))
+                                viewModel.onAction(BookshelfAction.OnDismissSearchDialog)
+                                navController.navigate(
+                                    NavigationRoute.BookDetail.createRoute(book.id, shelfId)
+                                ) {
+                                    launchSingleTop = true
+                                }
+                            },
+                            onBackClick = { navController.popBackStack() },
+                            onCreateBookClub = {
+                                navController.previousBackStackEntry?.savedStateHandle?.set(
+                                    NavigationRoute.Bookcase.ARG_CREATE_CLUB_FOR_SHELF,
+                                    shelfId
+                                )
+                                navController.popBackStack()
+                            },
+                            onSignIn = { navigateToSignIn(navController) },
+                            shelfName = state.shelfName,
+                            shelfMaterial = state.shelfMaterial,
+                        )
+                    }
+
+                    composable(
+                        route = NavigationRoute.Library.ROUTE,
+                    ) {
+                        LibraryScreenRoot(
+                            onBookClick = { book ->
+                                navController.navigate(
+                                    NavigationRoute.BookDetail.createRoute(book.id)
+                                ) {
+                                    launchSingleTop = true
+                                }
+                            }
+                        )
+                    }
+
+                    composable(
+                        route = NavigationRoute.BookDetail.ROUTE,
+                        arguments = listOf(
+                            navArgument(NavigationRoute.BookDetail.KEY_ID) {
+                                type = NavType.StringType
+                            },
+                            navArgument(NavigationRoute.BookDetail.KEY_SHELF_ID) {
+                                type = NavType.StringType
+                                nullable = true
+                                defaultValue = null
+                            }
+                        )
+                    ) { backStackEntry ->
+                        val bookId = backStackEntry.arguments?.getString(
+                            NavigationRoute.BookDetail.KEY_ID
+                        ) ?: ""
+                        val shelfIdArg = backStackEntry.arguments?.getString(
+                            NavigationRoute.BookDetail.KEY_SHELF_ID
+                        ).takeIf { !it.isNullOrBlank() }
+
+                        val viewModel = koinViewModel<BookDetailViewModel>(
+                            parameters = { parametersOf(bookId, shelfIdArg) }
+                        )
+
+                        BookDetailsScreenRoot(
+                            viewModel = viewModel,
+                            onBackClick = { navController.popBackStack() }
+                        )
+                    }
                 }
             }
         }

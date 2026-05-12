@@ -30,7 +30,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -51,7 +50,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.AddBookshelfDialog
-import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.BookcaseBottomBar
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.BookcaseShelf
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.ChangeStyleDialog
 import uk.co.zlurgg.mybookshelf.bookcase.presentation.components.RenameShelfDialog
@@ -73,18 +71,18 @@ import uk.co.zlurgg.mybookshelf.core.presentation.ui.theme.MyBookshelfTheme
 @Composable
 fun BookcaseScreenRoot(
     viewModel: BookcaseViewModel = koinViewModel(),
+    isBookClub: Boolean = false,
     onBookshelfClick: (Bookshelf) -> Unit,
     onBookDetailClick: (String, String) -> Unit,
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
     onSignIn: () -> Unit = {},
     onAccountClick: (Boolean) -> Unit = {},
-    switchToBookClubs: Boolean = false,
     createClubForShelfId: String? = null,
     onCreateClubConsumed: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var showDialog by remember { mutableStateOf(false) }
-    var selectedTab by rememberSaveable { mutableStateOf(BookcaseTab.MY_SHELVES) }
+    val selectedTab = if (isBookClub) BookcaseTab.BOOK_CLUBS else BookcaseTab.MY_SHELVES
     var showSignInRequiredDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
 
@@ -93,13 +91,6 @@ fun BookcaseScreenRoot(
         viewModelStoreOwner = activity
     )
     val themeState by themeViewModel.state.collectAsStateWithLifecycle()
-
-    // Switch to book clubs tab when navigating back from creating a book club
-    LaunchedEffect(switchToBookClubs) {
-        if (switchToBookClubs) {
-            selectedTab = BookcaseTab.BOOK_CLUBS
-        }
-    }
 
     // Create book club for shelf navigated from BookshelfScreen FAB
     LaunchedEffect(createClubForShelfId, state.bookshelves) {
@@ -119,10 +110,8 @@ fun BookcaseScreenRoot(
     // Handle navigation to tutorial shelf when ID is set
     LaunchedEffect(state.tutorialShelfIdForNavigation) {
         state.tutorialShelfIdForNavigation?.let { shelfId ->
-            // Find the shelf by ID and navigate
             val shelf = state.bookshelves.find { it.id == shelfId }
             shelf?.let { onBookshelfClick(it) }
-            // Clear the navigation flag
             viewModel.onAction(BookcaseAction.ResetOperationState)
         }
     }
@@ -131,7 +120,6 @@ fun BookcaseScreenRoot(
     LaunchedEffect(state.tutorialBookForNavigation) {
         state.tutorialBookForNavigation?.let { (shelfId, bookId) ->
             onBookDetailClick(bookId, shelfId)
-            // Clear the navigation flag
             viewModel.onAction(BookcaseAction.ResetOperationState)
         }
     }
@@ -141,22 +129,6 @@ fun BookcaseScreenRoot(
         if (state.navigateToSignIn) {
             onSignIn()
             viewModel.onAction(BookcaseAction.ResetNavigateToSignIn)
-        }
-    }
-
-    // Switch to My Shelves tab after creating a personal copy
-    LaunchedEffect(state.switchToPersonalTab) {
-        if (state.switchToPersonalTab) {
-            selectedTab = BookcaseTab.MY_SHELVES
-            viewModel.onAction(BookcaseAction.ResetSwitchToPersonalTab)
-        }
-    }
-
-    // Switch to Book Clubs tab after creating a book club
-    LaunchedEffect(state.switchToBookClubsTab) {
-        if (state.switchToBookClubsTab) {
-            selectedTab = BookcaseTab.BOOK_CLUBS
-            viewModel.onAction(BookcaseAction.ResetSwitchToBookClubsTab)
         }
     }
 
@@ -176,13 +148,6 @@ fun BookcaseScreenRoot(
     BookcaseScreen(
         state = state,
         selectedTab = selectedTab,
-        onTabSelected = { tab ->
-            if (tab == BookcaseTab.BOOK_CLUBS && !state.isSignedIn) {
-                showSignInRequiredDialog = true
-            } else {
-                selectedTab = tab
-            }
-        },
         showAddBookshelfDialog = showDialog,
         onShowAddBookshelfDialogChange = { showDialog = it },
         onAction = { action ->
@@ -236,7 +201,6 @@ fun BookcaseScreenRoot(
 fun BookcaseScreen(
     state: BookcaseState,
     selectedTab: BookcaseTab,
-    onTabSelected: (BookcaseTab) -> Unit,
     showAddBookshelfDialog: Boolean,
     onShowAddBookshelfDialogChange: (Boolean) -> Unit,
     onAction: (BookcaseAction) -> Unit,
@@ -325,12 +289,6 @@ fun BookcaseScreen(
                 }
             )
         },
-        bottomBar = {
-            BookcaseBottomBar(
-                selectedTab = selectedTab,
-                onTabSelected = onTabSelected
-            )
-        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             if (selectedTab == BookcaseTab.BOOK_CLUBS) {
@@ -372,7 +330,11 @@ fun BookcaseScreen(
         } else {
             ShelfOperationsHandler.MAX_PERSONAL_SHELVES
         }
-        val currentCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) state.bookClubCount else state.personalShelfCount
+        val currentCount = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+            state.bookClubCount
+        } else {
+            state.personalShelfCount
+        }
 
         if (!state.isLoading && displayedShelves.isEmpty()) {
             LazyColumn(contentPadding = padding) {
@@ -592,7 +554,6 @@ fun BookcaseScreenPreview() {
                 bookshelves = bookshelves,
             ),
             selectedTab = BookcaseTab.MY_SHELVES,
-            onTabSelected = {},
             onAction = {},
             showAddBookshelfDialog = false,
             onShowAddBookshelfDialogChange = {}

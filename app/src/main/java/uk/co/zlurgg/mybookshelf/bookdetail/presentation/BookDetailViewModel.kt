@@ -25,7 +25,7 @@ class BookDetailViewModel(
     private val bookReviewProvider: BookReviewProvider,
     private val authUseCases: AuthUseCases,
     private val bookId: String,
-    private val shelfId: String
+    private val shelfId: String?
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BookDetailState())
@@ -151,12 +151,13 @@ class BookDetailViewModel(
     fun onAction(action: BookDetailAction) {
         when (action) {
             is BookDetailAction.OnAddBookClick -> {
+                val currentShelfId = shelfId ?: return
                 viewModelScope.launch {
                     val onShelf = state.value.onShelf
                     val book: Book = action.book
 
                     if (onShelf) {
-                        when (val removeResult = bookDetailUseCases.removeBookFromShelf(book.id, shelfId)) {
+                        when (val removeResult = bookDetailUseCases.removeBookFromShelf(book.id, currentShelfId)) {
                             is Result.Success -> {
                                 _state.update { it.toggleShelfStatus(false) }
                                 onNavigateBack?.invoke()
@@ -166,7 +167,7 @@ class BookDetailViewModel(
                             }
                         }
                     } else {
-                        when (val addResult = bookDetailUseCases.addBookToShelf(book, shelfId)) {
+                        when (val addResult = bookDetailUseCases.addBookToShelf(book, currentShelfId)) {
                             is Result.Success -> {
                                 _state.update { it.toggleShelfStatus(true) }
                                 onNavigateBack?.invoke()
@@ -217,8 +218,9 @@ class BookDetailViewModel(
                 }
             }
             is BookDetailAction.OnRemoveBookClick -> {
+                val currentShelfId = shelfId ?: return
                 viewModelScope.launch {
-                    when (val removeResult = bookDetailUseCases.removeBookFromShelf(bookId, shelfId)) {
+                    when (val removeResult = bookDetailUseCases.removeBookFromShelf(bookId, currentShelfId)) {
                         is Result.Success -> {
                             _state.update { it.toggleShelfStatus(false) }
                             onNavigateBack?.invoke()
