@@ -175,6 +175,13 @@ fun BookcaseScreenRoot(
                         viewModel.onAction(action)
                     }
                 }
+                is BookcaseAction.ShowJoinBookClubDialog -> {
+                    if (!state.isSignedIn) {
+                        showSignInRequiredDialog = true
+                    } else {
+                        viewModel.onAction(action)
+                    }
+                }
                 else -> viewModel.onAction(action)
             }
         },
