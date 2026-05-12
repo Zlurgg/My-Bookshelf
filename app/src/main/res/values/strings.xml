@@ -150,6 +150,24 @@
     <string name="tab_my_shelves">My Shelves</string>
     <string name="tab_book_clubs">Book Clubs</string>
 
+    <!-- Main navigation tabs -->
+    <string name="tab_shelves">Shelves</string>
+    <string name="tab_library">Library</string>
+
+    <!-- Library screen -->
+    <string name="library_title">Library</string>
+    <string name="library_empty_title">Your library is empty</string>
+    <string name="library_empty_subtitle">Books you add to shelves will appear here</string>
+    <string name="library_book_count">%d books</string>
+    <string name="library_search_hint">Search by title or author</string>
+    <string name="sort_recently_added">Recently Added</string>
+    <string name="sort_title_az">Title A–Z</string>
+    <string name="sort_author_az">Author A–Z</string>
+    <string name="filter_all_status">All</string>
+    <string name="filter_want_to_read">Want to Read</string>
+    <string name="filter_currently_reading">Reading</string>
+    <string name="filter_read">Read</string>
+
     <!-- Bookcase screen -->
     <string name="bookcase_empty_state_hint">Your bookcase is empty. Tap + to create a new shelf</string>
     <string name="bookcase_empty_personal">Your bookcase is empty. Tap + to create a shelf</string>

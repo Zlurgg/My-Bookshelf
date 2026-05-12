@@ -11,6 +11,7 @@ import uk.co.zlurgg.mybookshelf.bookdetail.di.bookDetailModule
 import uk.co.zlurgg.mybookshelf.bookcase.di.bookcaseModule
 import uk.co.zlurgg.mybookshelf.bookshelf.di.bookshelfModule
 import uk.co.zlurgg.mybookshelf.core.di.coreModule
+import uk.co.zlurgg.mybookshelf.library.di.libraryModule
 import uk.co.zlurgg.mybookshelf.welcome.di.welcomeModule
 
 /**
@@ -37,6 +38,7 @@ val appModule = module {
         bookDetailModule,
         bookcaseModule,
         bookshelfModule,
+        libraryModule,
         welcomeModule
     )
     DebugModuleProvider.getModules().forEach { includes(it) }

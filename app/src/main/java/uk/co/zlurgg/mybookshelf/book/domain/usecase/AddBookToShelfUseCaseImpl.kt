@@ -9,6 +9,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
@@ -22,6 +23,7 @@ class AddBookToShelfUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
     private val clubOperations: ClubOperations,
+    private val timeProvider: TimeProvider,
 ) : AddBookToShelfUseCase {
 
     override suspend operator fun invoke(book: Book, shelfId: String): Result<Unit, DataError.Local> {
@@ -59,7 +61,10 @@ class AddBookToShelfUseCaseImpl(
             )
         } else {
             // New book - generate spine color now (not during search)
-            book.copy(spineColor = BookColorGenerator.generateSpineColor())
+            book.copy(
+                spineColor = BookColorGenerator.generateSpineColor(),
+                dateAdded = book.dateAdded ?: timeProvider.currentTimeMillis()
+            )
         }
 
         // Persist the book (with preserved metadata if it existed)

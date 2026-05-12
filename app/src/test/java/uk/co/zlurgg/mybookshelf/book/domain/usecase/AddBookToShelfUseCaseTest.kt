@@ -24,11 +24,13 @@ class AddBookToShelfUseCaseTest {
     private val mockClubOperations = StubClubOperations(
         syncBookToClubResult = Result.Success(Unit),
     )
+    private val testTimeProvider = uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider(1000L)
     private val useCase = AddBookToShelfUseCaseImpl(
         mockBookRepository,
         mockBookshelfRepository,
         mockBookcaseRepository,
         mockClubOperations,
+        testTimeProvider,
     )
 
     /**
