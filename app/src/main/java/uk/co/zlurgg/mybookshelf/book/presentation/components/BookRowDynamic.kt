@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelfcomponents
+package uk.co.zlurgg.mybookshelf.book.presentation.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,12 +21,12 @@ import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookDisplayStyle
 
 @Composable
-fun BookshelfRowDynamic(
+fun BookRowDynamic(
     books: List<Book>,
     onBookClick: (Book) -> Unit,
     bookshelfMaterial: ShelfMaterial,
     modifier: Modifier = Modifier,
-    config: BookshelfRowConfig = BookshelfRowConfig()
+    config: BookRowConfig = BookRowConfig()
 ) {
     Box(
         modifier = modifier

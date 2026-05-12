@@ -43,8 +43,8 @@ import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelfcomponents.BookshelfRowConfig
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelfcomponents.BookshelfRowDynamic
+import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowConfig
+import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchCallbacks
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchDialog
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchState
@@ -224,11 +224,11 @@ fun BookshelfScreen(
                     )
                 }
                 item {
-                    BookshelfRowDynamic(
+                    BookRowDynamic(
                         books = emptyList(),
                         onBookClick = { /* no-op */ },
                         bookshelfMaterial = state.shelfMaterial,
-                        config = BookshelfRowConfig(
+                        config = BookRowConfig(
                             showAddSlot = false,
                             isTidyMode = state.isTidyMode
                         )
@@ -327,11 +327,11 @@ fun BookshelfScreen(
                     }
 
                     item(key = rowBooks.first().id) {
-                        BookshelfRowDynamic(
+                        BookRowDynamic(
                             books = rowBooks,
                             onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
                             bookshelfMaterial = state.shelfMaterial,
-                            config = BookshelfRowConfig(
+                            config = BookRowConfig(
                                 showAddSlot = false,
                                 isTidyMode = state.isTidyMode,
                                 bookStyles = rowBookStyles

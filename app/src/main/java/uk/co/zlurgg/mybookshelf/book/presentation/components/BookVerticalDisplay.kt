@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presentation.bookshelfcomponents
+package uk.co.zlurgg.mybookshelf.book.presentation.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,11 +28,10 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
 
 @Composable
-fun BookLeaning(
+fun BookVertical(
     book: Book,
     onClick: () -> Unit,
-    leanAngle: Float = -5f,
-    height: Int = 140
+    height: Int = 150
 ) {
     val thickness = getBookThickness(book.numPages)
     val baseColor = Color(book.spineColor) // Already matte from BookColorGenerator
@@ -51,18 +49,17 @@ fun BookLeaning(
     Box(
         modifier = Modifier
             .clickable { onClick() }
-            .rotate(leanAngle)
             .height(height.dp)
             .width(thickness.dp)
-            .padding(start = 2.dp, end = 2.dp, bottom = 3.dp) // Bottom padding for lean offset
+            .padding(horizontal = 1.dp) // Contain shadow within bounds
             .shadow(
-                elevation = 3.dp, // Enhanced shadow for leaning effect
+                elevation = 2.dp,
                 shape = RoundedCornerShape(4.dp),
-                ambientColor = Color.Black.copy(alpha = 0.25f),
-                spotColor = Color.Black.copy(alpha = 0.4f)
+                ambientColor = Color.Black.copy(alpha = 0.2f),
+                spotColor = Color.Black.copy(alpha = 0.3f)
             )
     ) {
-        // 3D spine with enhanced gradient for leaning effect
+        // 3D spine with gradient
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -81,12 +78,12 @@ fun BookLeaning(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Book image integrated into spine (no separate effects)
+                // Book image integrated into spine (no separate shadow/background)
                 LoadImage(
                     imageUrl = book.imageUrl,
                     title = book.title,
                     modifier = Modifier
-                        .size((thickness * 0.75f).dp)
+                        .size((thickness * 0.8f).dp)
                         .clip(RoundedCornerShape(2.dp))
                 )
 
@@ -98,7 +95,7 @@ fun BookLeaning(
                     Text(
                         text = book.title,
                         color = Color.White,
-                        maxLines = 3,
+                        maxLines = 4,
                         fontSize = 8.sp,
                         textAlign = TextAlign.Center,
                         overflow = TextOverflow.Ellipsis,
@@ -108,17 +105,17 @@ fun BookLeaning(
             }
         }
 
-        // More prominent highlight for leaning books
+        // Subtle highlight strip for 3D depth
         Box(
             modifier = Modifier
                 .width(1.dp)
                 .height(height.dp)
-                .offset(x = 2.dp)
+                .offset(x = 3.dp)
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.4f),
-                            Color.White.copy(alpha = 0.2f),
+                            Color.White.copy(alpha = 0.3f),
+                            Color.White.copy(alpha = 0.1f),
                             Color.Transparent
                         )
                     ),
