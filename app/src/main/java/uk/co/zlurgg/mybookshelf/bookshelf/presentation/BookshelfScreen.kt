@@ -162,15 +162,10 @@ fun BookshelfScreen(
             // Hide FABs for tutorial shelf - users shouldn't modify tutorial content
             if (!state.isTutorialShelf) {
                 Row {
-                    if (!state.isBookClub) {
+                    // Hide Create Book Club FAB for guests and on club shelves
+                    if (!state.isBookClub && state.isSignedIn) {
                         FloatingActionButton(
-                            onClick = {
-                                if (state.isSignedIn) {
-                                    showCreateBookClubDialog = true
-                                } else {
-                                    showSignInRequiredDialog = true
-                                }
-                            }
+                            onClick = { showCreateBookClubDialog = true }
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Groups,
@@ -179,13 +174,16 @@ fun BookshelfScreen(
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                     }
-                    FloatingActionButton(
-                        onClick = { onAction(BookshelfAction.OnSearchClick) }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = stringResource(R.string.cd_add_book_to_shelf)
-                        )
+                    // Hide Add Book FAB for guests on club shelves
+                    if (!state.isBookClub || state.isSignedIn) {
+                        FloatingActionButton(
+                            onClick = { onAction(BookshelfAction.OnSearchClick) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Add,
+                                contentDescription = stringResource(R.string.cd_add_book_to_shelf)
+                            )
+                        }
                     }
                 }
             }

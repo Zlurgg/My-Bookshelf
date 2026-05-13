@@ -59,6 +59,7 @@ fun JoinBookClubDialog(
                     value = codeOrUrl,
                     onValueChange = { codeOrUrl = it },
                     label = { Text(stringResource(R.string.join_book_club_hint)) },
+                    placeholder = { Text(stringResource(R.string.join_book_club_placeholder)) },
                     enabled = !isLoading,
                     modifier = Modifier
                         .fillMaxWidth()

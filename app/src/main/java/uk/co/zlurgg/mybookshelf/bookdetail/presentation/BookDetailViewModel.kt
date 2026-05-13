@@ -39,6 +39,14 @@ class BookDetailViewModel(
 
     init {
         loadBookDetails()
+        loadCurrentUserId()
+    }
+
+    private fun loadCurrentUserId() {
+        viewModelScope.launch {
+            val userId = authUseCases.getCurrentUserId()
+            _state.update { it.copy(currentUserId = userId) }
+        }
     }
 
     private fun loadBookDetails() {

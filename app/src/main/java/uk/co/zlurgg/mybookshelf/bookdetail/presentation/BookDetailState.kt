@@ -10,6 +10,8 @@ data class BookDetailState(
     val onShelf: Boolean = false,
     val hasShelfContext: Boolean = true,
     val errorMessage: String? = null,
+    // Auth
+    val currentUserId: String? = null,
     // Book Club fields
     val isBookClub: Boolean = false,
     val clubCode: String? = null,
@@ -24,4 +26,6 @@ data class BookDetailState(
     val commentText: String = "",
     val editingCommentId: String? = null,
     val editingCommentText: String = ""
-)
+) {
+    val isSignedIn: Boolean get() = currentUserId != null
+}

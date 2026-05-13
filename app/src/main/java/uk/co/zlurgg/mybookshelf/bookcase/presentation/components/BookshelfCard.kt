@@ -69,7 +69,8 @@ fun BookshelfCard(
     onInviteToClub: (Bookshelf) -> Unit,
     onDuplicateShelf: (Bookshelf) -> Unit,
     onLeaveBookClub: (Bookshelf) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    memberCount: Int? = null
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -143,12 +144,26 @@ fun BookshelfCard(
                             }
                         }
                     }
+                    val bookCountText = pluralStringResource(
+                        id = R.plurals.bookcount_books,
+                        count = bookCount,
+                        bookCount
+                    )
+                    val memberCountText = if (memberCount != null) {
+                        pluralStringResource(
+                            id = R.plurals.membercount_members,
+                            count = memberCount,
+                            memberCount
+                        )
+                    } else {
+                        null
+                    }
                     Text(
-                        text = pluralStringResource(
-                            id = R.plurals.bookcount_books,
-                            count = bookCount,
-                            bookCount
-                        ),
+                        text = if (memberCountText != null) {
+                            "$bookCountText \u00B7 $memberCountText"
+                        } else {
+                            bookCountText
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -173,7 +188,8 @@ fun BookshelfCard(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false }
                         ) {
-                            // Show rename for non-tutorial shelves, but for book clubs only show to creator
+                            val isSignedIn = currentUserId != null
+                            // Show rename for non-tutorial shelves, but for book clubs only show to signed-in creator
                             val canRename = !isTutorialShelf &&
                                 (!shelf.isBookClub || shelf.clubCreatorId == currentUserId)
                             if (canRename) {
@@ -188,7 +204,7 @@ fun BookshelfCard(
                                     }
                                 )
                             }
-                            // For book clubs, only show change style to creator
+                            // For book clubs, only show change style to signed-in creator
                             val canChangeStyle = !shelf.isBookClub || shelf.clubCreatorId == currentUserId
                             if (canChangeStyle) {
                                 DropdownMenuItem(
@@ -202,9 +218,9 @@ fun BookshelfCard(
                                     }
                                 )
                             }
-                            // For book clubs: show delete for creator, leave for non-creator
+                            // For book clubs: show delete/leave only for signed-in users
                             if (!isTutorialShelf) {
-                                if (shelf.isBookClub && shelf.clubCreatorId != currentUserId) {
+                                if (shelf.isBookClub && isSignedIn && shelf.clubCreatorId != currentUserId) {
                                     // Non-creator member: show "Leave Club"
                                     DropdownMenuItem(
                                         text = { Text(stringResource(id = R.string.menu_leave_book_club)) },
@@ -216,7 +232,7 @@ fun BookshelfCard(
                                             Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
                                         }
                                     )
-                                } else {
+                                } else if (!shelf.isBookClub || isSignedIn) {
                                     // Creator or personal shelf: show "Delete"
                                     DropdownMenuItem(
                                         text = { Text(stringResource(id = R.string.menu_delete_shelf)) },
@@ -232,8 +248,8 @@ fun BookshelfCard(
                             }
                             // Contextual share option - different for personal vs book club shelves
                             if (!isTutorialShelf) {
-                                if (shelf.isBookClub) {
-                                    // Book club: Show "Invite" to share with others
+                                if (shelf.isBookClub && isSignedIn) {
+                                    // Book club: Show "Invite" to signed-in members
                                     DropdownMenuItem(
                                         text = { Text(stringResource(id = R.string.menu_invite_to_club)) },
                                         onClick = {
@@ -244,7 +260,7 @@ fun BookshelfCard(
                                             Icon(Icons.Default.Share, contentDescription = null)
                                         }
                                     )
-                                } else {
+                                } else if (!shelf.isBookClub) {
                                     // Personal shelf: Show "Create Book Club"
                                     DropdownMenuItem(
                                         text = { Text(stringResource(id = R.string.menu_create_book_club)) },

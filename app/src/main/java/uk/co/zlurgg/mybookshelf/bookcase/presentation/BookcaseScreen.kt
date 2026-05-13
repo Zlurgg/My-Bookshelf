@@ -298,7 +298,7 @@ fun BookcaseScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            if (selectedTab == BookcaseTab.BOOK_CLUBS) {
+            if (selectedTab == BookcaseTab.BOOK_CLUBS && state.isSignedIn) {
                 Row {
                     FloatingActionButton(
                         onClick = { onAction(BookcaseAction.ShowJoinBookClubDialog) }
@@ -318,7 +318,7 @@ fun BookcaseScreen(
                         )
                     }
                 }
-            } else {
+            } else if (selectedTab == BookcaseTab.MY_SHELVES) {
                 FloatingActionButton(
                     onClick = { onShowAddBookshelfDialogChange(true) }
                 ) {
@@ -362,10 +362,13 @@ fun BookcaseScreen(
                 item {
                     Text(
                         text = stringResource(
-                            id = if (selectedTab == BookcaseTab.BOOK_CLUBS) {
-                                R.string.bookcase_empty_book_clubs
-                            } else {
-                                R.string.bookcase_empty_personal
+                            id = when {
+                                selectedTab == BookcaseTab.BOOK_CLUBS && !state.isSignedIn ->
+                                    R.string.bookcase_empty_book_clubs_guest
+                                selectedTab == BookcaseTab.BOOK_CLUBS ->
+                                    R.string.bookcase_empty_book_clubs
+                                else ->
+                                    R.string.bookcase_empty_personal
                             }
                         ),
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
@@ -405,7 +408,8 @@ fun BookcaseScreen(
                             isReorderMode = state.isReorderMode,
                             isTutorialShelf = isTutorialShelf,
                             bookCountOverride = state.bookCounts[shelf.id] ?: 0,
-                            currentUserId = state.currentUserId
+                            currentUserId = state.currentUserId,
+                            memberCount = shelf.clubCode?.let { state.clubMemberCounts[it] }
                         ),
                         modifier = Modifier.animateItem()
                     )

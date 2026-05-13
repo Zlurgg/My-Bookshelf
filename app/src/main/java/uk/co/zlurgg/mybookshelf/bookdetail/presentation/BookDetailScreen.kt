@@ -27,9 +27,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
-import org.koin.compose.koinInject
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookDetailConstants
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.BookDetailImage
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.BookOverviewCard
@@ -70,11 +68,9 @@ fun BookDetailsScreen(
     state: BookDetailState,
     onAction: (BookDetailAction) -> Unit,
     modifier: Modifier = Modifier,
-    authService: AuthService = koinInject()
 ) {
     if (state.book != null) {
         val isTutorialBook = state.book.id == BookDetailConstants.TUTORIAL_BOOK_ID
-        val currentUserId = authService.getSignedInUser()?.userId
 
         Scaffold(
             topBar = {
@@ -182,48 +178,59 @@ fun BookDetailsScreen(
                         }
                     }
 
-                    // 2. Club Rating Card
-                    item {
-                        ClubRatingCard(
-                            reviews = state.clubReviews,
-                            userClubRating = state.userClubRating,
-                            onClubRatingChange = { rating ->
-                                onAction(BookDetailAction.OnClubRatingChange(rating))
-                            }
-                        )
-                    }
+                    if (state.isSignedIn) {
+                        // 2. Club Rating Card
+                        item {
+                            ClubRatingCard(
+                                reviews = state.clubReviews,
+                                userClubRating = state.userClubRating,
+                                onClubRatingChange = { rating ->
+                                    onAction(BookDetailAction.OnClubRatingChange(rating))
+                                }
+                            )
+                        }
 
-                    // 3. Club Comments Card (Discussion)
-                    item {
-                        ClubCommentsCard(
-                            comments = state.clubComments,
-                            currentUserId = currentUserId,
-                            commentText = state.commentText,
-                            onCommentTextChange = { text ->
-                                onAction(BookDetailAction.OnCommentTextChange(text))
-                            },
-                            onCommentSubmit = {
-                                onAction(BookDetailAction.OnCommentSubmit)
-                            },
-                            editingCommentId = state.editingCommentId,
-                            editingCommentText = state.editingCommentText,
-                            onCommentEditStart = { commentId, currentText ->
-                                onAction(BookDetailAction.OnCommentEditStart(commentId, currentText))
-                            },
-                            onCommentEditTextChange = { text ->
-                                onAction(BookDetailAction.OnCommentEditTextChange(text))
-                            },
-                            onCommentEditSave = {
-                                onAction(BookDetailAction.OnCommentEditSave)
-                            },
-                            onCommentEditCancel = {
-                                onAction(BookDetailAction.OnCommentEditCancel)
-                            },
-                            onCommentDelete = { commentId ->
-                                onAction(BookDetailAction.OnCommentDelete(commentId))
-                            },
-                            isLoading = state.isLoadingComments
-                        )
+                        // 3. Club Comments Card (Discussion)
+                        item {
+                            ClubCommentsCard(
+                                comments = state.clubComments,
+                                currentUserId = state.currentUserId,
+                                commentText = state.commentText,
+                                onCommentTextChange = { text ->
+                                    onAction(BookDetailAction.OnCommentTextChange(text))
+                                },
+                                onCommentSubmit = {
+                                    onAction(BookDetailAction.OnCommentSubmit)
+                                },
+                                editingCommentId = state.editingCommentId,
+                                editingCommentText = state.editingCommentText,
+                                onCommentEditStart = { commentId, currentText ->
+                                    onAction(BookDetailAction.OnCommentEditStart(commentId, currentText))
+                                },
+                                onCommentEditTextChange = { text ->
+                                    onAction(BookDetailAction.OnCommentEditTextChange(text))
+                                },
+                                onCommentEditSave = {
+                                    onAction(BookDetailAction.OnCommentEditSave)
+                                },
+                                onCommentEditCancel = {
+                                    onAction(BookDetailAction.OnCommentEditCancel)
+                                },
+                                onCommentDelete = { commentId ->
+                                    onAction(BookDetailAction.OnCommentDelete(commentId))
+                                },
+                                isLoading = state.isLoadingComments
+                            )
+                        }
+                    } else {
+                        // Guest placeholder for hidden reviews/comments
+                        item {
+                            Text(
+                                text = stringResource(R.string.club_detail_sign_in_hint),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 } else {
                     // Full view for regular books

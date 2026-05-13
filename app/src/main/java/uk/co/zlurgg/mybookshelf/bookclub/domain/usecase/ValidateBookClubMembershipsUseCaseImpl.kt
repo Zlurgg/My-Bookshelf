@@ -20,24 +20,25 @@ class ValidateBookClubMembershipsUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
 ) : ValidateBookClubMembershipsUseCase {
 
-    override suspend fun invoke(): Result<List<String>, DataError.Sync> {
+    override suspend fun invoke(): Result<ValidationResult, DataError.Sync> {
         // Only validate if user is signed in
         val user = authService.getSignedInUser()
         if (user == null) {
             Timber.tag(TAG).d("User not signed in, skipping validation")
-            return Result.Success(emptyList())
+            return Result.Success(ValidationResult(emptyList(), emptyMap()))
         }
 
         // Get all local book club memberships
         val memberships = bookClubRepository.observeMyBookClubs().first()
         if (memberships.isEmpty()) {
             Timber.tag(TAG).d("No local book club memberships to validate")
-            return Result.Success(emptyList())
+            return Result.Success(ValidationResult(emptyList(), emptyMap()))
         }
 
         Timber.tag(TAG).d("Validating %d book club memberships", memberships.size)
 
         val convertedShelfNames = mutableListOf<String>()
+        val memberCounts = mutableMapOf<String, Int>()
 
         for (membership in memberships) {
             val clubCode = membership.clubCode
@@ -60,8 +61,10 @@ class ValidateBookClubMembershipsUseCaseImpl(
                         ).d("Club '%s' (%s) was deleted, converting to personal shelf", shelfName, clubCode)
                         bookClubRepository.convertClubToPersonalShelf(clubCode)
                         convertedShelfNames.add(shelfName)
+                    } else {
+                        // Club exists — capture member count (already in hand)
+                        memberCounts[clubCode] = clubResult.data.memberCount
                     }
-                    // Club exists, nothing to do
                 }
                 is Result.Error -> {
                     // Network error or other issue - don't convert, just log
@@ -78,7 +81,7 @@ class ValidateBookClubMembershipsUseCaseImpl(
             )
         }
 
-        return Result.Success(convertedShelfNames)
+        return Result.Success(ValidationResult(convertedShelfNames, memberCounts))
     }
 
     companion object {

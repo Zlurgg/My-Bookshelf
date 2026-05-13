@@ -78,7 +78,9 @@
     <string name="club_comment_save">Save</string>
     <string name="club_comment_empty">No comments yet. Start the discussion!</string>
     <string name="club_comment_edited">(edited)</string>
+    <string name="club_review_edited">(edited)</string>
     <string name="anonymous">Anonymous</string>
+    <string name="club_detail_sign_in_hint">Sign in to see reviews and discussion</string>
 
     <!-- Purchase toggle card -->
     <string name="book_purchased_label">I own this book</string>
@@ -129,6 +131,10 @@
         <item quantity="one">%d book</item>
         <item quantity="other">%d books</item>
     </plurals>
+    <plurals name="membercount_members">
+        <item quantity="one">%d member</item>
+        <item quantity="other">%d members</item>
+    </plurals>
     <string name="cd_delete_shelf">Delete shelf</string>
     <string name="fab_add_shelf">Add Shelf</string>
 
@@ -174,7 +180,8 @@
     <!-- Bookcase screen -->
     <string name="bookcase_empty_state_hint">Your bookcase is empty. Tap + to create a new shelf</string>
     <string name="bookcase_empty_personal">Your bookcase is empty. Tap + to create a shelf</string>
-    <string name="bookcase_empty_book_clubs">No book clubs yet. Tap + to join one</string>
+    <string name="bookcase_empty_book_clubs">No book clubs yet. Create one or join an existing club.</string>
+    <string name="bookcase_empty_book_clubs_guest">Sign in to join or create book clubs</string>
     <string name="fab_join_book_club">Join Book Club</string>
     <string name="fab_create_book_club">Create book club</string>
     <string name="dialog_create_book_club_title">Create Book Club</string>
@@ -293,6 +300,7 @@
     <!-- Join Book Club dialog -->
     <string name="join_book_club_title">Join Book Club</string>
     <string name="join_book_club_hint">Enter invite code</string>
+    <string name="join_book_club_placeholder">Enter club code</string>
     <string name="join_book_club_lookup">Look Up</string>
     <string name="join_book_club_success">Successfully joined \"%s\"!</string>
 
@@ -336,7 +344,7 @@
 
     <!-- Delete Book Club dialog -->
     <string name="delete_book_club_title">Delete Book Club?</string>
-    <string name="delete_book_club_message">Delete \"%1$s\"? This will remove the club for all members.</string>
+    <string name="delete_book_club_message">Delete \"%1$s\"? All members will lose access to this club and its shared books.</string>
 
     <!-- Leave Book Club dialog -->
     <string name="leave_book_club_title">Leave Book Club?</string>

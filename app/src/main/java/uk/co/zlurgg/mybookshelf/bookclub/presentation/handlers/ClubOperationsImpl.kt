@@ -102,10 +102,16 @@ class ClubOperationsImpl(
         return bookClubUseCases.leaveBookClub(shelfId)
     }
 
-    override suspend fun validateMemberships(): List<String> {
+    override suspend fun validateMemberships(): ClubOperations.MembershipValidationResult {
         return when (val result = bookClubUseCases.validateMemberships()) {
-            is Result.Success -> result.data
-            is Result.Error -> emptyList()
+            is Result.Success -> ClubOperations.MembershipValidationResult(
+                deletedClubNames = result.data.deletedClubNames,
+                memberCounts = result.data.memberCounts
+            )
+            is Result.Error -> ClubOperations.MembershipValidationResult(
+                deletedClubNames = emptyList(),
+                memberCounts = emptyMap()
+            )
         }
     }
 

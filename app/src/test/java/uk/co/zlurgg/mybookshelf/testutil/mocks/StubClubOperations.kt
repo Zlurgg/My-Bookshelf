@@ -48,7 +48,8 @@ class StubClubOperations(
     override suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync> =
         leaveBookClubResult
 
-    override suspend fun validateMemberships(): List<String> = emptyList()
+    override suspend fun validateMemberships(): ClubOperations.MembershipValidationResult =
+        ClubOperations.MembershipValidationResult(emptyList(), emptyMap())
 
     override suspend fun deleteBookClub(clubCode: String): Result<Unit, DataError.Sync> =
         deleteBookClubResult

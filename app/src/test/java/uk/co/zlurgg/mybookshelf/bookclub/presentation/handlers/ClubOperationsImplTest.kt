@@ -31,6 +31,7 @@ import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.SyncBookToClubUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.UpdateClubStyleUseCase
 import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidateBookClubMembershipsUseCase
+import uk.co.zlurgg.mybookshelf.bookclub.domain.usecase.ValidationResult
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -48,7 +49,8 @@ class ClubOperationsImplTest {
     private var syncBookClubResult: Result<DomainSyncResult, DataError.Sync> =
         Result.Success(DomainSyncResult(0, 0))
     private var leaveBookClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
-    private var validateMembershipsResult: Result<List<String>, DataError.Sync> = Result.Success(emptyList())
+    private var validateMembershipsResult: Result<ValidationResult, DataError.Sync> =
+        Result.Success(ValidationResult(emptyList(), emptyMap()))
     private var deleteBookClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
     private var syncBookToClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
     private var removeBookFromClubResult: Result<Unit, DataError.Sync> = Result.Success(Unit)
@@ -151,7 +153,7 @@ class ClubOperationsImplTest {
         )
         syncBookClubResult = Result.Success(DomainSyncResult(0, 0))
         leaveBookClubResult = Result.Success(Unit)
-        validateMembershipsResult = Result.Success(emptyList())
+        validateMembershipsResult = Result.Success(ValidationResult(emptyList(), emptyMap()))
         deleteBookClubResult = Result.Success(Unit)
         syncBookToClubResult = Result.Success(Unit)
         removeBookFromClubResult = Result.Success(Unit)
@@ -494,20 +496,26 @@ class ClubOperationsImplTest {
     }
 
     @Test
-    fun `validateMemberships - success - returns club names`() = runTest {
+    fun `validateMemberships - success - returns club names and member counts`() = runTest {
         // Given
-        validateMembershipsResult = Result.Success(listOf("Deleted Club A", "Deleted Club B"))
+        validateMembershipsResult = Result.Success(
+            ValidationResult(
+                deletedClubNames = listOf("Deleted Club A", "Deleted Club B"),
+                memberCounts = mapOf("code1" to 5, "code2" to 3)
+            )
+        )
         val ops = createClubOperations()
 
         // When
         val result = ops.validateMemberships()
 
         // Then
-        assertEquals(listOf("Deleted Club A", "Deleted Club B"), result)
+        assertEquals(listOf("Deleted Club A", "Deleted Club B"), result.deletedClubNames)
+        assertEquals(mapOf("code1" to 5, "code2" to 3), result.memberCounts)
     }
 
     @Test
-    fun `validateMemberships - error - returns empty list`() = runTest {
+    fun `validateMemberships - error - returns empty result`() = runTest {
         // Given
         validateMembershipsResult = Result.Error(DataError.Sync.NETWORK_ERROR)
         val ops = createClubOperations()
@@ -516,7 +524,8 @@ class ClubOperationsImplTest {
         val result = ops.validateMemberships()
 
         // Then
-        assertEquals(emptyList<String>(), result)
+        assertEquals(emptyList<String>(), result.deletedClubNames)
+        assertEquals(emptyMap<String, Int>(), result.memberCounts)
     }
 
     // ========== UseCase Pass-Through Tests ==========

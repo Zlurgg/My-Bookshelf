@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookdetail.presentation.components
 
-import android.text.format.DateUtils
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -50,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookComment
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.formatRelativeTime
 
 /**
  * Card showing all club comments in a messaging-style conversation thread.
@@ -364,18 +364,4 @@ private fun CommentBubble(
             }
         }
     }
-}
-
-/**
- * Formats a timestamp to a relative time string (e.g., "2 hours ago", "Yesterday").
- */
-private fun formatRelativeTime(timestampMillis: Long): String {
-    if (timestampMillis <= 0) return ""
-
-    return DateUtils.getRelativeTimeSpanString(
-        timestampMillis,
-        System.currentTimeMillis(),
-        DateUtils.MINUTE_IN_MILLIS,
-        DateUtils.FORMAT_ABBREV_RELATIVE
-    ).toString()
 }

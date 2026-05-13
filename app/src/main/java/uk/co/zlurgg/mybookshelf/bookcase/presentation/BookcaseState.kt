@@ -65,6 +65,9 @@ data class BookcaseState(
     val deletedBookClubNames: List<String> = emptyList(),
     val deletedBookClubsMessage: String? = null,
 
+    // Member counts for book club shelf cards (clubCode -> memberCount)
+    val clubMemberCounts: Map<String, Int> = emptyMap(),
+
     // Shelf limits
     val personalShelfCount: Int = 0,
     val bookClubCount: Int = 0,

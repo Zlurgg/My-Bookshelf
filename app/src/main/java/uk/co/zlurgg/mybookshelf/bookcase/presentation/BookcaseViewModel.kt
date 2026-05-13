@@ -61,12 +61,19 @@ class BookcaseViewModel(
 
     private fun validateBookClubMemberships() {
         viewModelScope.launch {
-            val deletedClubNames = bookClubOperations.validateMemberships()
-            if (deletedClubNames.isNotEmpty()) {
-                val message = formatDeletedClubsMessage(deletedClubNames)
-                _state.update {
-                    it.copy(deletedBookClubNames = deletedClubNames, deletedBookClubsMessage = message)
+            val validationResult = bookClubOperations.validateMemberships()
+            _state.update { currentState ->
+                val updatedState = if (validationResult.deletedClubNames.isNotEmpty()) {
+                    val message = formatDeletedClubsMessage(validationResult.deletedClubNames)
+                    currentState.copy(
+                        deletedBookClubNames = validationResult.deletedClubNames,
+                        deletedBookClubsMessage = message,
+                        clubMemberCounts = validationResult.memberCounts
+                    )
+                } else {
+                    currentState.copy(clubMemberCounts = validationResult.memberCounts)
                 }
+                updatedState
             }
         }
     }

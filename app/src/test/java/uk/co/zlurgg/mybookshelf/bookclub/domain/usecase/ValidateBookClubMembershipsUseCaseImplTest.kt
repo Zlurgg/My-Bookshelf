@@ -36,7 +36,7 @@ class ValidateBookClubMembershipsUseCaseImplTest {
     // ========== User Not Signed In Tests ==========
 
     @Test
-    fun `returns empty list when user is not signed in`() = runTest {
+    fun `returns empty result when user is not signed in`() = runTest {
         // Given
         mockAuthService.configureSignedOut()
 
@@ -45,13 +45,15 @@ class ValidateBookClubMembershipsUseCaseImplTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals(emptyList<String>(), (result as Result.Success).data)
+        val data = (result as Result.Success).data
+        assertEquals(emptyList<String>(), data.deletedClubNames)
+        assertEquals(emptyMap<String, Int>(), data.memberCounts)
     }
 
     // ========== No Memberships Tests ==========
 
     @Test
-    fun `returns empty list when user has no book club memberships`() = runTest {
+    fun `returns empty result when user has no book club memberships`() = runTest {
         // Given
         mockAuthService.configureSignedIn()
         mockBookClubRepository.myBookClubs = emptyList()
@@ -61,13 +63,15 @@ class ValidateBookClubMembershipsUseCaseImplTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals(emptyList<String>(), (result as Result.Success).data)
+        val data = (result as Result.Success).data
+        assertEquals(emptyList<String>(), data.deletedClubNames)
+        assertEquals(emptyMap<String, Int>(), data.memberCounts)
     }
 
     // ========== Club Still Exists Tests ==========
 
     @Test
-    fun `returns empty list when all clubs still exist`() = runTest {
+    fun `returns empty deletions and member counts when all clubs still exist`() = runTest {
         // Given
         mockAuthService.configureSignedIn()
         val currentTime = System.currentTimeMillis()
@@ -96,7 +100,9 @@ class ValidateBookClubMembershipsUseCaseImplTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals(emptyList<String>(), (result as Result.Success).data)
+        val data = (result as Result.Success).data
+        assertEquals(emptyList<String>(), data.deletedClubNames)
+        assertEquals(mapOf("CLUB1234" to 2), data.memberCounts)
     }
 
     // ========== Club Deleted Tests ==========
@@ -127,7 +133,7 @@ class ValidateBookClubMembershipsUseCaseImplTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals(listOf("Science Fiction Club"), (result as Result.Success).data)
+        assertEquals(listOf("Science Fiction Club"), (result as Result.Success).data.deletedClubNames)
         assertTrue("Should call convertClubToPersonalShelf", mockBookClubRepository.convertClubToPersonalShelfCalled)
         assertEquals("CLUB1234", mockBookClubRepository.lastConvertCode)
     }
@@ -176,7 +182,7 @@ class ValidateBookClubMembershipsUseCaseImplTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val convertedNames = (result as Result.Success).data
+        val convertedNames = (result as Result.Success).data.deletedClubNames
         assertEquals(2, convertedNames.size)
         assertTrue("Should include Club One", convertedNames.contains("Club One"))
         assertTrue("Should include Club Two", convertedNames.contains("Club Two"))
@@ -202,7 +208,7 @@ class ValidateBookClubMembershipsUseCaseImplTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals(listOf("Unknown Club"), (result as Result.Success).data)
+        assertEquals(listOf("Unknown Club"), (result as Result.Success).data.deletedClubNames)
     }
 
     // ========== Network Error Tests ==========
@@ -226,7 +232,7 @@ class ValidateBookClubMembershipsUseCaseImplTest {
 
         // Then
         assertTrue("Should return success even on network error", result is Result.Success)
-        assertEquals(emptyList<String>(), (result as Result.Success).data)
+        assertEquals(emptyList<String>(), (result as Result.Success).data.deletedClubNames)
         assertTrue(
             "Should not call convertClubToPersonalShelf on network error",
             !mockBookClubRepository.convertClubToPersonalShelfCalled

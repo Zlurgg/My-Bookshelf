@@ -31,6 +31,11 @@ interface ClubOperations {
         val booksRemoved: Int
     )
 
+    data class MembershipValidationResult(
+        val deletedClubNames: List<String>,
+        val memberCounts: Map<String, Int>
+    )
+
     sealed class JoinResult {
         data class Success(val shelfName: String) : JoinResult()
         data object AlreadyMember : JoinResult()
@@ -54,7 +59,7 @@ interface ClubOperations {
 
     suspend fun leaveBookClub(shelfId: String): Result<Unit, DataError.Sync>
 
-    suspend fun validateMemberships(): List<String>
+    suspend fun validateMemberships(): MembershipValidationResult
 
     suspend fun deleteBookClub(clubCode: String): Result<Unit, DataError.Sync>
 
