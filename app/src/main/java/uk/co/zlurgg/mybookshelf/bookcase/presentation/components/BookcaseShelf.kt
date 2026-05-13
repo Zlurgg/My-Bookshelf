@@ -91,7 +91,8 @@ fun BookcaseShelf(
                 onCreateBookClub = callbacks::onCreateBookClub,
                 onInviteToClub = callbacks::onInviteToClub,
                 onDuplicateShelf = callbacks::onDuplicateShelf,
-                onLeaveBookClub = callbacks::onLeaveBookClub
+                onLeaveBookClub = callbacks::onLeaveBookClub,
+                memberCount = displayState.memberCount
             )
         }
     } else {
@@ -105,7 +106,11 @@ fun BookcaseShelf(
                 if (shouldRemoveOnRelease) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     callbacks.onRemoveBookshelf(shelf)
-                    true
+                    // Book club shelves show a confirmation dialog instead of
+                    // removing immediately — return false so the card snaps back.
+                    // Personal shelves are removed from state, so returning true
+                    // lets the dismiss animation complete before the item disappears.
+                    !shelf.isBookClub
                 } else {
                     false
                 }
@@ -170,7 +175,8 @@ fun BookcaseShelf(
                 onCreateBookClub = callbacks::onCreateBookClub,
                 onInviteToClub = callbacks::onInviteToClub,
                 onDuplicateShelf = callbacks::onDuplicateShelf,
-                onLeaveBookClub = callbacks::onLeaveBookClub
+                onLeaveBookClub = callbacks::onLeaveBookClub,
+                memberCount = displayState.memberCount
             )
         }
     }
