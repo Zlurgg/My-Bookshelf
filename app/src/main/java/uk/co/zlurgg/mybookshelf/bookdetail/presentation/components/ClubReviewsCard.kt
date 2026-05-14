@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.formatRelativeTime
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.isEdited
 
 /**
  * Card showing all club reviews and input for user's review.
@@ -183,7 +184,7 @@ private fun ReviewItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
             )
 
-            if (review.updatedAt > review.createdAt) {
+            if (review.isEdited) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     text = stringResource(R.string.club_review_edited),

@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookComment
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.formatRelativeTime
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.isEdited
 
 /**
  * Card showing all club comments in a messaging-style conversation thread.
@@ -263,7 +264,7 @@ private fun CommentBubble(
                             )
 
                             // Show (edited) indicator
-                            if (comment.updatedAt > comment.createdAt) {
+                            if (comment.isEdited) {
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
                                     text = stringResource(R.string.club_comment_edited),
