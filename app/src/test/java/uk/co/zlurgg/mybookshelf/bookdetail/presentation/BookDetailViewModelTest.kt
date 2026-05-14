@@ -258,13 +258,13 @@ class BookDetailViewModelTest {
 
         // When
         val stateAfterUpdate = stateHelper.executeAndGetState {
-            viewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.READ))
+            viewModel.onAction(BookDetailAction.OnReadingStatusChange(ReadingStatus.FINISHED))
         }
 
         // Then - Error case: state should not change since save failed
         assertEquals(
             "Should keep original reading status",
-            ReadingStatus.WANT_TO_READ,
+            ReadingStatus.NOT_READ,
             stateAfterUpdate?.book?.readingStatus
         )
         assertTrue("Should set error message", stateAfterUpdate?.errorMessage != null)

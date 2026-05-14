@@ -110,7 +110,7 @@ class SerializationIntegrationTest {
             purchased = false,
             spineColor = 0xFF8B4513.toInt(),
             // Personal metadata (should NOT be exported)
-            readingStatus = ReadingStatus.CURRENTLY_READING,
+            readingStatus = ReadingStatus.READING,
             personalRating = 4.5f,
             personalNotes = "Private notes that should never be shared",
             dateAdded = 1234567890L,
@@ -137,7 +137,7 @@ class SerializationIntegrationTest {
 
         // Then - JSON should NOT contain personal metadata field names
         assertFalse("JSON should not contain readingStatus", jsonString.contains("readingStatus"))
-        assertFalse("JSON should not contain CURRENTLY_READING", jsonString.contains("CURRENTLY_READING"))
+        assertFalse("JSON should not contain READING", jsonString.contains("READING"))
         assertFalse("JSON should not contain personalRating", jsonString.contains("personalRating"))
         assertFalse("JSON should not contain personalNotes", jsonString.contains("personalNotes"))
         assertFalse("JSON should not contain private notes text", jsonString.contains("Private notes that should never be shared"))

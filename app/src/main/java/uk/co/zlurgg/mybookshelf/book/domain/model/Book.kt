@@ -16,7 +16,7 @@ data class Book(
     val spineColor: Int, // ARGB color as Int - generated once and persisted for consistency
 
     // Personal metadata (NOT exported for privacy)
-    val readingStatus: ReadingStatus = ReadingStatus.WANT_TO_READ,
+    val readingStatus: ReadingStatus = ReadingStatus.NOT_READ,
     val personalRating: Float = 0f, // 0 = unrated, 1-5 = rated
     val personalNotes: String = "", // "" = no notes
     val dateAdded: Long? = null,

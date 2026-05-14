@@ -108,7 +108,7 @@ class BookRepositoryIntegrationTest {
         // Given - Book with personal metadata
         val book = createTestBookEntity("book-1", "Personal Metadata Book")
             .copy(
-                readingStatus = "CURRENTLY_READING",
+                readingStatus = "READING",
                 personalRating = 4.5f,
                 personalNotes = "Really enjoying this book!",
                 dateAdded = 1234567890L,
@@ -121,7 +121,7 @@ class BookRepositoryIntegrationTest {
         // Then - Retrieve and verify personal metadata persisted
         val retrieved = database.bookshelfDao.getBookById("book-1")
         assertNotNull("Book should be persisted", retrieved)
-        assertEquals("CURRENTLY_READING", retrieved?.readingStatus)
+        assertEquals("READING", retrieved?.readingStatus)
         assertEquals(4.5f, retrieved?.personalRating)
         assertEquals("Really enjoying this book!", retrieved?.personalNotes)
         assertEquals(1234567890L, retrieved?.dateAdded)
@@ -144,7 +144,7 @@ class BookRepositoryIntegrationTest {
             purchased = false,
             spineColor = 0xFF8B4513.toInt(),
             // New fields with default values
-            readingStatus = "WANT_TO_READ",
+            readingStatus = "NOT_READ",
             personalRating = 0f,
             personalNotes = "",
             dateAdded = null,

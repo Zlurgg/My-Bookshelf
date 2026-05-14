@@ -42,20 +42,20 @@ class UpdateBookMetadataUseCaseTest {
         // Given
         val existingBook = TestBookBuilder()
             .withId("book-1")
-            .withReadingStatus(ReadingStatus.WANT_TO_READ)
+            .withReadingStatus(ReadingStatus.NOT_READ)
             .build()
         mockRepository.addBook(existingBook)
 
         // When
         val result = useCase(
             bookId = "book-1",
-            readingStatus = ReadingStatus.CURRENTLY_READING
+            readingStatus = ReadingStatus.READING
         )
 
         // Then
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = mockRepository.getStoredBook("book-1")
-        assertEquals("Should update reading status", ReadingStatus.CURRENTLY_READING, updatedBook?.readingStatus)
+        assertEquals("Should update reading status", ReadingStatus.READING, updatedBook?.readingStatus)
     }
 
     @Test
@@ -202,7 +202,7 @@ class UpdateBookMetadataUseCaseTest {
         // When
         val result = useCase(
             bookId = "non-existent-book",
-            readingStatus = ReadingStatus.READ
+            readingStatus = ReadingStatus.FINISHED
         )
 
         // Then
@@ -225,7 +225,7 @@ class UpdateBookMetadataUseCaseTest {
         // When
         val result = useCase(
             bookId = "book-8",
-            readingStatus = ReadingStatus.READ
+            readingStatus = ReadingStatus.FINISHED
         )
 
         // Then
@@ -270,7 +270,7 @@ class UpdateBookMetadataUseCaseTest {
         // When
         val result = useCase(
             bookId = "book-10",
-            readingStatus = ReadingStatus.READ
+            readingStatus = ReadingStatus.FINISHED
         )
 
         // Then
@@ -283,7 +283,7 @@ class UpdateBookMetadataUseCaseTest {
         // Given
         val existingBook = TestBookBuilder()
             .withId("book-11")
-            .withReadingStatus(ReadingStatus.WANT_TO_READ)
+            .withReadingStatus(ReadingStatus.NOT_READ)
             .withPersonalRating(0f)
             .withPersonalNotes("")
             .withDateAdded(null)
@@ -298,7 +298,7 @@ class UpdateBookMetadataUseCaseTest {
         // When
         val result = useCase(
             bookId = "book-11",
-            readingStatus = ReadingStatus.READ,
+            readingStatus = ReadingStatus.FINISHED,
             personalRating = 4.8f,
             personalNotes = notes,
             purchaseDate = purchaseDate
@@ -307,7 +307,7 @@ class UpdateBookMetadataUseCaseTest {
         // Then
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = mockRepository.getStoredBook("book-11")!!
-        assertEquals("Should update reading status", ReadingStatus.READ, updatedBook.readingStatus)
+        assertEquals("Should update reading status", ReadingStatus.FINISHED, updatedBook.readingStatus)
         assertEquals("Should update personal rating", 4.8f, updatedBook.personalRating, 0.01f)
         assertEquals("Should update personal notes", notes, updatedBook.personalNotes)
         assertEquals("Should update purchase date", purchaseDate, updatedBook.purchaseDate)
@@ -402,7 +402,7 @@ class UpdateBookMetadataUseCaseTest {
         // Given
         val existingBook = TestBookBuilder()
             .withId("book-15")
-            .withReadingStatus(ReadingStatus.CURRENTLY_READING)
+            .withReadingStatus(ReadingStatus.READING)
             .withPersonalRating(3.5f)
             .withPersonalNotes("Original notes")
             .withPurchaseDate(1500000000000L)
@@ -412,13 +412,13 @@ class UpdateBookMetadataUseCaseTest {
         // When - only update reading status
         val result = useCase(
             bookId = "book-15",
-            readingStatus = ReadingStatus.READ
+            readingStatus = ReadingStatus.FINISHED
         )
 
         // Then
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = mockRepository.getStoredBook("book-15")!!
-        assertEquals("Should update reading status", ReadingStatus.READ, updatedBook.readingStatus)
+        assertEquals("Should update reading status", ReadingStatus.FINISHED, updatedBook.readingStatus)
         assertEquals("Should preserve personal rating", 3.5f, updatedBook.personalRating, 0.01f)
         assertEquals("Should preserve personal notes", "Original notes", updatedBook.personalNotes)
         assertEquals("Should preserve purchase date", 1500000000000L, updatedBook.purchaseDate)

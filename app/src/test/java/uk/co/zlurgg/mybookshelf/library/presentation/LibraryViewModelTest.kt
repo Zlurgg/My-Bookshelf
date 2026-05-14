@@ -183,11 +183,11 @@ class LibraryViewModelTest {
         mockBookRepository.setPersonalBooks(
             listOf(
                 TestBookBuilder().withId("1").withTitle("Want")
-                    .withReadingStatus(ReadingStatus.WANT_TO_READ).build(),
+                    .withReadingStatus(ReadingStatus.NOT_READ).build(),
                 TestBookBuilder().withId("2").withTitle("Reading")
-                    .withReadingStatus(ReadingStatus.CURRENTLY_READING).build(),
+                    .withReadingStatus(ReadingStatus.READING).build(),
                 TestBookBuilder().withId("3").withTitle("Done")
-                    .withReadingStatus(ReadingStatus.READ).build(),
+                    .withReadingStatus(ReadingStatus.FINISHED).build(),
             )
         )
 
@@ -195,7 +195,7 @@ class LibraryViewModelTest {
         val stateHelper = viewModel.state.testHelper(this)
         stateHelper.getCurrentState()
 
-        viewModel.onAction(LibraryAction.OnReadingStatusSelected(ReadingStatus.READ))
+        viewModel.onAction(LibraryAction.OnReadingStatusSelected(ReadingStatus.FINISHED))
         val state = stateHelper.getCurrentState()
 
         assertEquals(1, state!!.filteredBooks.size)
@@ -207,8 +207,8 @@ class LibraryViewModelTest {
     fun `null reading status shows all books`() = runTest(testDispatcher) {
         mockBookRepository.setPersonalBooks(
             listOf(
-                TestBookBuilder().withId("1").withReadingStatus(ReadingStatus.WANT_TO_READ).build(),
-                TestBookBuilder().withId("2").withReadingStatus(ReadingStatus.READ).build(),
+                TestBookBuilder().withId("1").withReadingStatus(ReadingStatus.NOT_READ).build(),
+                TestBookBuilder().withId("2").withReadingStatus(ReadingStatus.FINISHED).build(),
             )
         )
 
@@ -216,7 +216,7 @@ class LibraryViewModelTest {
         val stateHelper = viewModel.state.testHelper(this)
         stateHelper.getCurrentState()
 
-        viewModel.onAction(LibraryAction.OnReadingStatusSelected(ReadingStatus.READ))
+        viewModel.onAction(LibraryAction.OnReadingStatusSelected(ReadingStatus.FINISHED))
         stateHelper.getCurrentState()
 
         viewModel.onAction(LibraryAction.OnReadingStatusSelected(null))
@@ -231,11 +231,11 @@ class LibraryViewModelTest {
         mockBookRepository.setPersonalBooks(
             listOf(
                 TestBookBuilder().withId("1").withTitle("Kotlin")
-                    .withReadingStatus(ReadingStatus.READ).build(),
+                    .withReadingStatus(ReadingStatus.FINISHED).build(),
                 TestBookBuilder().withId("2").withTitle("Kotlin Guide")
-                    .withReadingStatus(ReadingStatus.WANT_TO_READ).build(),
+                    .withReadingStatus(ReadingStatus.NOT_READ).build(),
                 TestBookBuilder().withId("3").withTitle("Java")
-                    .withReadingStatus(ReadingStatus.READ).build(),
+                    .withReadingStatus(ReadingStatus.FINISHED).build(),
             )
         )
 
@@ -244,7 +244,7 @@ class LibraryViewModelTest {
         stateHelper.getCurrentState()
 
         viewModel.onAction(LibraryAction.OnSearchQueryChange("Kotlin"))
-        viewModel.onAction(LibraryAction.OnReadingStatusSelected(ReadingStatus.READ))
+        viewModel.onAction(LibraryAction.OnReadingStatusSelected(ReadingStatus.FINISHED))
         val state = stateHelper.getCurrentState()
 
         assertEquals(1, state!!.filteredBooks.size)

@@ -61,7 +61,7 @@ class GetOrCreateTutorialBookUseCaseImpl(
             numEditions = BookDetailConstants.TUTORIAL_BOOK_EDITION_COUNT,
             purchased = false,
             spineColor = BookColorGenerator.generateSpineColor(),
-            readingStatus = ReadingStatus.READ,
+            readingStatus = ReadingStatus.FINISHED,
             personalRating = BookDetailConstants.TUTORIAL_BOOK_PERSONAL_RATING,
             personalNotes = "",
             dateAdded = timeProvider.currentTimeMillis(),

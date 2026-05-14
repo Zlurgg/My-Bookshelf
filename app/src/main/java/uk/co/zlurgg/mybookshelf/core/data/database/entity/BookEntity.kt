@@ -20,7 +20,7 @@ data class BookEntity(
     val spineColor: Int,
 
     // Personal metadata (NOT exported for privacy)
-    val readingStatus: String = "WANT_TO_READ",
+    val readingStatus: String = "NOT_READ",
     val personalRating: Float = 0f, // 0 = unrated, 1-5 = rated
     val personalNotes: String = "", // "" = no notes
     val dateAdded: Long? = null,

@@ -193,7 +193,7 @@ class UpsertBookUseCaseTest {
             .withTitle("Old Title")
             .withPersonalRating(4.5f)
             .withPersonalNotes("Great book!")
-            .withReadingStatus(ReadingStatus.READ)
+            .withReadingStatus(ReadingStatus.FINISHED)
             .withDateAdded(1609459200000L) // 2021-01-01
             .withPurchaseDate(1609545600000L) // 2021-01-02
             .withPurchased(true)
@@ -206,7 +206,7 @@ class UpsertBookUseCaseTest {
             .withTitle("Updated Title from API")
             .withPersonalRating(0f) // API doesn't have this
             .withPersonalNotes("") // API doesn't have this
-            .withReadingStatus(ReadingStatus.WANT_TO_READ) // Default
+            .withReadingStatus(ReadingStatus.NOT_READ) // Default
             .withDateAdded(null) // API doesn't track this
             .withPurchaseDate(null) // API doesn't track this
             .withPurchased(false) // Default
@@ -227,7 +227,7 @@ class UpsertBookUseCaseTest {
         assertEquals("Should preserve personal notes", "Great book!", upsertedBook.personalNotes)
         assertEquals(
             "Should preserve reading status",
-            ReadingStatus.READ,
+            ReadingStatus.FINISHED,
             upsertedBook.readingStatus
         )
         assertEquals("Should preserve dateAdded", 1609459200000L, upsertedBook.dateAdded)
@@ -243,7 +243,7 @@ class UpsertBookUseCaseTest {
             .withTitle("Brand New Book")
             .withPersonalRating(0f)
             .withPersonalNotes("")
-            .withReadingStatus(ReadingStatus.WANT_TO_READ)
+            .withReadingStatus(ReadingStatus.NOT_READ)
             .withDateAdded(null)
             .withPurchaseDate(null)
             .withPurchased(false)
@@ -262,7 +262,7 @@ class UpsertBookUseCaseTest {
         assertEquals("Should use default notes", "", upsertedBook.personalNotes)
         assertEquals(
             "Should use default reading status",
-            ReadingStatus.WANT_TO_READ,
+            ReadingStatus.NOT_READ,
             upsertedBook.readingStatus
         )
     }

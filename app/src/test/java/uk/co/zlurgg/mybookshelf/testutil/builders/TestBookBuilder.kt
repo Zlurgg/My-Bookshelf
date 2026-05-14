@@ -23,7 +23,7 @@ class TestBookBuilder {
     private var spineColor = 0xFF112233.toInt()
 
     // Personal metadata (NOT exported for privacy)
-    private var readingStatus = ReadingStatus.WANT_TO_READ
+    private var readingStatus = ReadingStatus.NOT_READ
     private var personalRating: Float = 0f
     private var personalNotes: String = ""
     private var dateAdded: Long? = null

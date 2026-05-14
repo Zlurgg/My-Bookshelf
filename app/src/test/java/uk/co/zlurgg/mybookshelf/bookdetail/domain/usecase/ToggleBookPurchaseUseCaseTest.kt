@@ -277,7 +277,7 @@ class ToggleBookPurchaseUseCaseTest {
             .withTitle("Old Title")
             .withPersonalRating(4.5f)
             .withPersonalNotes("Amazing read!")
-            .withReadingStatus(ReadingStatus.READ)
+            .withReadingStatus(ReadingStatus.FINISHED)
             .withDateAdded(1609459200000L)
             .withPurchaseDate(1609545600000L)
             .withPurchased(false)
@@ -290,7 +290,7 @@ class ToggleBookPurchaseUseCaseTest {
             .withTitle("Updated Title from API")
             .withPersonalRating(0f) // API doesn't have this
             .withPersonalNotes("") // API doesn't have this
-            .withReadingStatus(ReadingStatus.WANT_TO_READ) // Default
+            .withReadingStatus(ReadingStatus.NOT_READ) // Default
             .withDateAdded(null) // API doesn't track this
             .withPurchaseDate(null) // API doesn't track this
             .withPurchased(false)
@@ -312,7 +312,7 @@ class ToggleBookPurchaseUseCaseTest {
         assertEquals("Should preserve personal notes", "Amazing read!", updatedBook.personalNotes)
         assertEquals(
             "Should preserve reading status",
-            ReadingStatus.READ,
+            ReadingStatus.FINISHED,
             updatedBook.readingStatus
         )
         assertEquals("Should preserve dateAdded", 1609459200000L, updatedBook.dateAdded)
@@ -327,7 +327,7 @@ class ToggleBookPurchaseUseCaseTest {
             .withTitle("Brand New Book")
             .withPersonalRating(0f)
             .withPersonalNotes("")
-            .withReadingStatus(ReadingStatus.WANT_TO_READ)
+            .withReadingStatus(ReadingStatus.NOT_READ)
             .withDateAdded(null)
             .withPurchaseDate(null)
             .withPurchased(false)
@@ -347,7 +347,7 @@ class ToggleBookPurchaseUseCaseTest {
         assertEquals("Should use default notes", "", updatedBook.personalNotes)
         assertEquals(
             "Should use default reading status",
-            ReadingStatus.WANT_TO_READ,
+            ReadingStatus.NOT_READ,
             updatedBook.readingStatus
         )
     }

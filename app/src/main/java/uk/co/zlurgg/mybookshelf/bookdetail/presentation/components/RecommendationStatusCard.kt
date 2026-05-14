@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.book.presentation.util.toDisplayString
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
@@ -151,12 +152,3 @@ fun RecommendationStatusCard(
     }
 }
 
-/**
- * Converts ReadingStatus enum to user-friendly display string.
- */
-@Composable
-private fun ReadingStatus.toDisplayString(): String = when (this) {
-    ReadingStatus.WANT_TO_READ -> stringResource(R.string.reading_status_want_to_read)
-    ReadingStatus.CURRENTLY_READING -> stringResource(R.string.reading_status_currently_reading)
-    ReadingStatus.READ -> stringResource(R.string.reading_status_read)
-}

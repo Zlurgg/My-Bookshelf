@@ -37,17 +37,17 @@
     <string name="bookdetail_loading">Loading book details…</string>
 
     <!-- Personal notes card -->
-    <string name="personal_notes_title">My Notes</string>
-    <string name="personal_notes_label">Personal notes (private)</string>
+    <string name="personal_notes_title">Rating and Review</string>
+    <string name="personal_notes_label">Personal notes</string>
     <string name="personal_notes_placeholder">Add your thoughts about this book…</string>
     <string name="personal_notes_character_count">%1$d / 5000 characters</string>
 
     <!-- Reading status and rating card -->
-    <string name="reading_status_title">My Reading Status</string>
+    <string name="reading_status_title">Reading Status</string>
     <string name="reading_status_label">Reading Status</string>
-    <string name="reading_status_want_to_read">Want to Read</string>
-    <string name="reading_status_currently_reading">Currently Reading</string>
-    <string name="reading_status_read">Read</string>
+    <string name="reading_status_not_read">Not Read</string>
+    <string name="reading_status_reading">Reading</string>
+    <string name="reading_status_finished">Finished</string>
     <string name="personal_rating_label">My Rating</string>
     <string name="cd_rate_stars">Rate %1$d stars</string>
     <string name="rating_display">%1$d/5</string>
@@ -84,6 +84,8 @@
 
     <!-- Purchase toggle card -->
     <string name="book_purchased_label">I own this book</string>
+    <string name="book_owned">Owned</string>
+    <string name="book_unowned">Unowned</string>
 
     <!-- Book overview card -->
     <string name="book_overview_by_author">by %1$s</string>
@@ -173,9 +175,6 @@
     <string name="sort_title_az">Title A–Z</string>
     <string name="sort_author_az">Author A–Z</string>
     <string name="filter_all_status">All</string>
-    <string name="filter_want_to_read">Want to Read</string>
-    <string name="filter_currently_reading">Reading</string>
-    <string name="filter_read">Read</string>
 
     <!-- Bookcase screen -->
     <string name="bookcase_empty_state_hint">Your bookcase is empty. Tap + to create a new shelf</string>

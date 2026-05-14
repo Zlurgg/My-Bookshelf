@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowConfig
+import uk.co.zlurgg.mybookshelf.book.presentation.util.toDisplayString
 import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowDynamic
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateBookRows
@@ -179,7 +180,7 @@ fun LibraryScreen(
                             FilterChip(
                                 selected = state.selectedReadingStatus == status,
                                 onClick = { onAction(LibraryAction.OnReadingStatusSelected(status)) },
-                                label = { Text(readingStatusLabel(status)) }
+                                label = { Text(status.toDisplayString()) }
                             )
                         }
                     }
@@ -229,14 +230,5 @@ fun LibraryScreen(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun readingStatusLabel(status: ReadingStatus): String {
-    return when (status) {
-        ReadingStatus.WANT_TO_READ -> stringResource(R.string.filter_want_to_read)
-        ReadingStatus.CURRENTLY_READING -> stringResource(R.string.filter_currently_reading)
-        ReadingStatus.READ -> stringResource(R.string.filter_read)
     }
 }
