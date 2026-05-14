@@ -338,14 +338,16 @@ fun BookDetailsScreen(
                         )
                     }
 
-                    // 8. Purchased Toggle Card
-                    item {
-                        PurchasedToggleCard(
-                            purchased = state.book.purchased,
-                            onPurchaseToggle = {
-                                onAction(BookDetailAction.OnPurchaseClick)
-                            }
-                        )
+                    // 8. Purchased Toggle Card (only if on shelf)
+                    if (state.onShelf) {
+                        item {
+                            PurchasedToggleCard(
+                                purchased = state.book.purchased,
+                                onPurchaseToggle = {
+                                    onAction(BookDetailAction.OnPurchaseClick)
+                                }
+                            )
+                        }
                     }
 
                     // Note: ShelfActionsCard moved to Scaffold bottomBar (sticky at bottom, always visible)
