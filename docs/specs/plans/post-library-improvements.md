@@ -4,34 +4,23 @@ Follow-up improvements identified during Library screen implementation and testi
 
 ## Book Clubs
 
-### Preserve club shelves on sign-out (prerequisite for guest access)
-Sign-out currently deletes all club shelves and memberships from local DB (`SignOutUseCaseImpl` calls `clearAllMemberships()` then `deleteClubShelves()`). This means guests can never see club shelves — all the view-only UI guards added in bc-polish are unreachable.
+All book club items completed on `bc-polish` branch.
 
-**Fix:** Remove the `clubOperations.clearAllMemberships()` and `bookcaseRepository.deleteClubShelves()` calls from `SignOutUseCaseImpl`. Keep the methods themselves — they're still needed for account deletion. May also need to check `getShelvesForUser()` query — currently filters by ownerId, so shelves may not appear if the userId is cleared on sign-out.
+- ~~Preserve club shelves on sign-out~~ (fdabcf9)
+- ~~Creation loading indicator~~ (fdabcf9)
+- ~~User display / nicknames in reviews~~ (verified, no changes needed)
+- ~~Cross-tab navigation~~ (fdabcf9)
+- ~~Guest book removal from club shelves~~ (fdabcf9)
 
-### Creation delay — loading indicator
-When creating a book club there is a delay between creation and appearance. Add a loading state to indicate the club is being created.
+### Book detail consistency across variants
 
-### User display / nicknames in reviews
-Check how users are displayed in reviews. Verify nickname handling and display formatting.
+The book detail screen has 4 viewing contexts with inconsistent card layouts:
+1. **Personal shelf** — full view (overview, image, recommendation, notes, community ratings, description, publication, languages, purchased)
+2. **Book club (signed in)** — overview, image, club rating, club comments
+3. **Book club (guest)** — overview, image, sign-in hint, community ratings, description, publication, languages
+4. **Library** — no shelf context (`hasShelfContext = false`)
 
-### Cross-tab navigation broken after bottom nav rework
-
-The old design used internal tab switching within a single BookcaseScreen/ViewModel. The bottom nav split My Shelves and Book Clubs into separate routes with separate ViewModel instances. State-driven tab switching was never rewired.
-
-**Broken flows:**
-1. **Club creation → switch to Book Clubs tab**: `switchToBookClubsTab` is set in `BookcaseClubActionHandler.handleCreateResult()` but never observed. User stays on My Shelves after creating a club.
-2. **Duplicate club shelf → switch to My Shelves tab**: `switchToPersonalTab` is set in `BookcaseViewModel.duplicateShelf()` but never observed. User stays on Book Clubs and can't see the personal copy.
-
-**Fix:**
-- Add `onSwitchToBookClubs: () -> Unit` and `onSwitchToPersonalTab: () -> Unit` callbacks to `BookcaseScreenRoot`
-- Observe `state.switchToBookClubsTab` and `state.switchToPersonalTab` with `LaunchedEffect` in `BookcaseScreenRoot`, call the callbacks and reset
-- Wire the callbacks in `MyBookShelfApp.kt` with bottom-nav-style `navController.navigate` (popUpTo start destination, saveState, restoreState, launchSingleTop)
-
-**Other findings:**
-- `NavigationRoute.Bookcase.ARG_SWITCH_TO_BOOK_CLUBS` is dead code — defined but never read. Clean up.
-- BookClubs route is missing `createClubForShelfId` / `onCreateClubConsumed` (low risk — club creation only triggers from personal shelves on the Bookcase route)
-- Separate ViewModel instances per route is fine for this fix since the flag is observed and consumed on the same route where it's set
+**Needed:** Audit all 4 variants, map what each shows, decide the correct set of cards per variant, and unify. The club views were recently patched (fdabcf9) but may still be inconsistent with personal/library views.
 
 ## Library / BookDetail
 
