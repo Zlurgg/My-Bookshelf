@@ -2,26 +2,20 @@ package uk.co.zlurgg.mybookshelf.auth.domain.usecase
 
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
 
 class SignOutUseCaseTest {
 
     // Test doubles
     private var mockSignOutResult: Result<Unit, DataError.Local> = Result.Success(Unit)
     private var signedInStateSet: Boolean? = null
-    private var mockCurrentUserId: String? = "test-user-id"
-    private val mockBookcaseRepository = MockBookcaseRepository()
 
     private val mockAuthService = object : AuthService {
         override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> = Result.Success(
@@ -44,26 +38,15 @@ class SignOutUseCaseTest {
         }
     }
 
-    private val mockClubOperations = StubClubOperations()
-
-    private val mockCurrentUserProvider = object : CurrentUserProvider {
-        override fun getCurrentUserId(): String? = mockCurrentUserId
-    }
-
     private lateinit var useCase: SignOutUseCase
 
     @Before
     fun setup() {
         signedInStateSet = null
-        mockBookcaseRepository.reset()
         mockSignOutResult = Result.Success(Unit)
-        mockCurrentUserId = "test-user-id"
         useCase = SignOutUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,
-            mockCurrentUserProvider,
-            mockClubOperations,
-            mockBookcaseRepository,
         )
     }
 
@@ -111,68 +94,14 @@ class SignOutUseCaseTest {
         assertEquals(DataError.Local.AUTH_NETWORK_ERROR, (result as Result.Error).error)
     }
 
-    // ==================== Club Cleanup Tests ====================
-
     @Test
-    fun `execute clears all memberships on success`() = runTest {
-        useCase()
-
-        assertTrue("Memberships should be cleared", mockClubOperations.clearAllMembershipsCalled)
-    }
-
-    @Test
-    fun `execute deletes club shelves for user on success`() = runTest {
-        useCase()
-
-        assertTrue("Club shelves should be deleted", mockBookcaseRepository.deleteClubShelvesCalled)
-        assertEquals("test-user-id", mockBookcaseRepository.lastDeleteClubShelvesUserId)
-    }
-
-    @Test
-    fun `execute skips club shelf cleanup when no user is signed in`() = runTest {
-        mockCurrentUserId = null
-
-        useCase()
-
-        assertNull(
-            "Should not delete club shelves when no user signed in",
-            mockBookcaseRepository.lastDeleteClubShelvesUserId
-        )
-    }
-
-    @Test
-    fun `execute deletes club shelves for correct user id`() = runTest {
-        mockCurrentUserId = "specific-user-456"
-
-        useCase()
-
-        assertEquals("specific-user-456", mockBookcaseRepository.lastDeleteClubShelvesUserId)
-    }
-
-    @Test
-    fun `execute still succeeds when clearAllMemberships fails`() = runTest {
-        val failingClubOps = StubClubOperations(
-            clearAllMembershipsResult = Result.Error(DataError.Local.DATABASE_ERROR),
-        )
-        useCase = SignOutUseCaseImpl(
-            mockAuthService, mockAuthStateRepository, mockCurrentUserProvider,
-            failingClubOps, mockBookcaseRepository,
-        )
-
+    fun `execute does not clear club memberships or delete club shelves`() = runTest {
+        // Sign-out should only handle auth concerns — club data persists for guest access.
+        // Club cleanup is handled by DeleteAccountUseCaseImpl only.
         val result = useCase()
 
-        assertTrue("Should still succeed", result is Result.Success)
-        assertEquals(false, signedInStateSet)
-    }
-
-    @Test
-    fun `execute still succeeds when deleteClubShelves fails`() = runTest {
-        mockBookcaseRepository.deleteClubShelvesResult =
-            Result.Error(DataError.Local.DATABASE_ERROR)
-
-        val result = useCase()
-
-        assertTrue("Should still succeed", result is Result.Success)
-        assertEquals(false, signedInStateSet)
+        assertTrue("Should be success", result is Result.Success)
+        // If this test compiles and passes, it confirms SignOutUseCaseImpl
+        // no longer depends on ClubOperations or BookcaseRepository.
     }
 }

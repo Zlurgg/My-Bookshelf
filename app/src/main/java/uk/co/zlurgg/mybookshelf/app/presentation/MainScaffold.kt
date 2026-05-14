@@ -38,13 +38,7 @@ fun MainScaffold(
                         selected = selected,
                         onClick = {
                             if (!selected) {
-                                navController.navigate(tab.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                                navController.switchToTab(tab.route)
                             }
                         },
                         icon = {
@@ -58,5 +52,13 @@ fun MainScaffold(
                 }
             }
         }
+    }
+}
+
+internal fun NavController.switchToTab(route: String) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }

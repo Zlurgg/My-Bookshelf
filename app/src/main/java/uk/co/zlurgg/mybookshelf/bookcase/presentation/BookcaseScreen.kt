@@ -77,6 +77,8 @@ fun BookcaseScreenRoot(
     onAddBookshelfClick: (String, ShelfStyle) -> Unit,
     onSignIn: () -> Unit = {},
     onAccountClick: (Boolean) -> Unit = {},
+    onSwitchToBookClubs: () -> Unit = {},
+    onSwitchToPersonalTab: () -> Unit = {},
     createClubForShelfId: String? = null,
     onCreateClubConsumed: () -> Unit = {}
 ) {
@@ -129,6 +131,22 @@ fun BookcaseScreenRoot(
         if (state.navigateToSignIn) {
             onSignIn()
             viewModel.onAction(BookcaseAction.ResetNavigateToSignIn)
+        }
+    }
+
+    // Handle cross-tab navigation after club creation (from-shelf path)
+    LaunchedEffect(state.switchToBookClubsTab) {
+        if (state.switchToBookClubsTab) {
+            onSwitchToBookClubs()
+            viewModel.onAction(BookcaseAction.ResetSwitchToBookClubsTab)
+        }
+    }
+
+    // Handle cross-tab navigation after duplicating a club shelf
+    LaunchedEffect(state.switchToPersonalTab) {
+        if (state.switchToPersonalTab) {
+            onSwitchToPersonalTab()
+            viewModel.onAction(BookcaseAction.ResetSwitchToPersonalTab)
         }
     }
 

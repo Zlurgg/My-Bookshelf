@@ -26,9 +26,6 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.SignOutUseCaseImpl
 import uk.co.zlurgg.mybookshelf.welcome.domain.usecase.ShouldShowWelcomeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
-
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class SignInViewModelTest {
@@ -70,8 +67,6 @@ class SignInViewModelTest {
         }
     }
 
-    private val stubClubOperations = StubClubOperations()
-
     private var resumeSessionCallCount = 0
     private val mockResumeSession = object : ResumeSessionUseCase {
         override suspend fun invoke() {
@@ -90,14 +85,10 @@ class SignInViewModelTest {
 
     private fun createViewModel(): SignInViewModel {
         val signInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
-        val signOutUseCase =
-            SignOutUseCaseImpl(
-                mockAuthService,
-                mockAuthStateRepository,
-                mockCurrentUserProvider,
-                stubClubOperations,
-                MockBookcaseRepository(),
-            )
+        val signOutUseCase = SignOutUseCaseImpl(
+            mockAuthService,
+            mockAuthStateRepository,
+        )
         val checkSignInStatusUseCase = CheckSignInStatusUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,

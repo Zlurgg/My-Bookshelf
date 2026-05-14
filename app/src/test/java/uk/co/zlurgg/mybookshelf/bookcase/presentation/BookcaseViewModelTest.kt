@@ -12,7 +12,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetCurrentUserIdUseCase
@@ -30,7 +29,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
+
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockCreateShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDeleteShelfUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockDuplicateShelfUseCase
@@ -113,9 +112,6 @@ class BookcaseViewModelTest {
             override suspend fun setSignedInState(isSignedIn: Boolean): Result<Unit, DataError.Local> =
                 Result.Success(Unit)
         }
-        val mockCurrentUserProvider = object : CurrentUserProvider {
-            override fun getCurrentUserId(): String = "test-user-id"
-        }
         val mockSignIn = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
         val mockCheckSignInStatus = CheckSignInStatusUseCaseImpl(
             mockAuthService,
@@ -124,9 +120,6 @@ class BookcaseViewModelTest {
         val mockSignOut = SignOutUseCaseImpl(
             mockAuthService,
             mockAuthStateRepository,
-            mockCurrentUserProvider,
-            stubClubOperations,
-            MockBookcaseRepository(),
         )
         val mockGetCurrentUserIdUseCase = object : GetCurrentUserIdUseCase {
             override operator fun invoke(): String = "test-user-id"

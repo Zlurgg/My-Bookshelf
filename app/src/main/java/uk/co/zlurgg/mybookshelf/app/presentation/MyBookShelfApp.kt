@@ -156,6 +156,9 @@ fun MyBookShelfApp() {
                                     navigateToSignIn(navController)
                                 }
                             },
+                            onSwitchToBookClubs = {
+                                navController.switchToTab(NavigationRoute.BookClubs.ROUTE)
+                            },
                         )
                     }
 
@@ -187,6 +190,9 @@ fun MyBookShelfApp() {
                                 } else {
                                     navigateToSignIn(navController)
                                 }
+                            },
+                            onSwitchToPersonalTab = {
+                                navController.switchToTab(NavigationRoute.Bookcase.ROUTE)
                             },
                         )
                     }

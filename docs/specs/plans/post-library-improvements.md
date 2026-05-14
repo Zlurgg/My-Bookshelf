@@ -4,8 +4,10 @@ Follow-up improvements identified during Library screen implementation and testi
 
 ## Book Clubs
 
-### View-only for guests
-Remove sign-in gate on Book Clubs tab navigation. Guests can browse clubs they were previously in but cannot join, create, or add to clubs. Action-level guards already exist — just need to disable UI buttons when not signed in rather than blocking navigation.
+### Preserve club shelves on sign-out (prerequisite for guest access)
+Sign-out currently deletes all club shelves and memberships from local DB (`SignOutUseCaseImpl` calls `clearAllMemberships()` then `deleteClubShelves()`). This means guests can never see club shelves — all the view-only UI guards added in bc-polish are unreachable.
+
+**Fix:** Remove the `clubOperations.clearAllMemberships()` and `bookcaseRepository.deleteClubShelves()` calls from `SignOutUseCaseImpl`. Keep the methods themselves — they're still needed for account deletion. May also need to check `getShelvesForUser()` query — currently filters by ownerId, so shelves may not appear if the userId is cleared on sign-out.
 
 ### Creation delay — loading indicator
 When creating a book club there is a delay between creation and appearance. Add a loading state to indicate the club is being created.

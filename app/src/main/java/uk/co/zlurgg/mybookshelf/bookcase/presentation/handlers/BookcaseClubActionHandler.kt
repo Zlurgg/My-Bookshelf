@@ -83,44 +83,50 @@ internal class BookcaseClubActionHandler(
                 shelfStyle = shelf.shelfStyle.name,
                 sourceShelfId = shelf.id
             )
-            handleCreateResult(createResult, shelf.name)
+            handleCreateResult(createResult, shelf.name, switchToBookClubsTab = true)
         }
     }
 
     private fun createBookClubDirect(name: String, style: ShelfStyle) {
         scope.launch {
             state.update {
-                it.copy(isCreatingBookClub = true, showCreateBookClubDialog = false, errorMessage = null)
+                it.copy(isCreatingBookClub = true, errorMessage = null)
             }
 
             val createResult = bookClubOperations.createBookClub(
                 name = name,
                 shelfStyle = style.name
             )
-            handleCreateResult(createResult, name)
+            handleCreateResult(createResult, name, switchToBookClubsTab = false)
         }
     }
 
     private fun handleCreateResult(
         createResult: Result<ClubOperations.BookClubCreationResult, DataError.Sync>,
         clubName: String,
+        switchToBookClubsTab: Boolean,
     ) {
         when (createResult) {
             is Result.Success -> {
                 state.update {
                     it.copy(
                         isCreatingBookClub = false,
+                        showCreateBookClubDialog = false,
                         bookClubCode = createResult.data.clubCode,
                         bookClubName = clubName,
                         isNewlyCreatedBookClub = true,
-                        switchToBookClubsTab = true
+                        switchToBookClubsTab = switchToBookClubsTab
                     )
                 }
             }
             is Result.Error -> {
                 if (createResult.error == DataError.Sync.MAX_BOOK_CLUBS_REACHED) {
                     state.update {
-                        it.copy(isCreatingBookClub = false, showBookClubLimitDialog = true)
+                        it.copy(
+                            isCreatingBookClub = false,
+                            showCreateBookClubDialog = false,
+                            showBookClubLimitDialog = true
+                        )
                     }
                 } else {
                     state.update {

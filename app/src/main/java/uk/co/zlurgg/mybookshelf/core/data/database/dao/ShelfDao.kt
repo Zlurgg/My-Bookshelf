@@ -15,7 +15,7 @@ interface ShelfDao {
     @Query(
         """
         SELECT * FROM BookshelfEntity
-        WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__')
+        WHERE (ownerId IS NULL OR ownerId = :userId OR ownerId = '__system_tutorial__' OR isBookClub = 1)
         ORDER BY position ASC
         """
     )

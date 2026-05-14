@@ -87,8 +87,8 @@ fun BookDetailsScreen(
                 )
             },
             bottomBar = {
-                // Hide actions for tutorial book - it shouldn't be removed from shelf
-                if (!isTutorialBook && state.hasShelfContext) {
+                // Hide actions for tutorial book and guests on club shelves
+                if (!isTutorialBook && state.hasShelfContext && !(state.isBookClub && !state.isSignedIn)) {
                     ShelfActionsCard(
                         book = state.book,
                         onShelf = state.onShelf,
@@ -232,6 +232,24 @@ fun BookDetailsScreen(
                             )
                         }
                     }
+
+                    // Read-only book info for all club viewers
+                    item {
+                        CommunityRatingsCard(
+                            averageRating = state.book.averageRating,
+                            ratingCount = state.book.ratingCount
+                        )
+                    }
+                    item { DescriptionCard(description = state.book.description) }
+                    item {
+                        PublicationDetailsCard(
+                            isbn = state.book.isbn,
+                            publisher = state.book.publisher,
+                            publishDate = state.book.publishDate,
+                            internetArchiveId = state.book.internetArchiveId
+                        )
+                    }
+                    item { LanguagesCard(languages = state.book.languages) }
                 } else {
                     // Full view for regular books
                     // 1. Book Overview Card

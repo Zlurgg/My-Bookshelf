@@ -17,7 +17,6 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.model.UserData
 import uk.co.zlurgg.mybookshelf.auth.domain.repository.AuthStateRepository
 import uk.co.zlurgg.mybookshelf.auth.domain.service.AuthService
-import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.GetSignedInUserUseCase
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCaseImpl
@@ -39,8 +38,6 @@ import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.UpdateBookMetadataUseC
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
-import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 
@@ -88,19 +85,10 @@ class BookDetailViewModelTest {
         override suspend fun isSignedIn() = Result.Success(false)
         override suspend fun setSignedInState(isSignedIn: Boolean) = Result.Success(Unit)
     }
-    private val mockCurrentUserProvider = object : CurrentUserProvider {
-        override fun getCurrentUserId() = "test-user"
-    }
-
-    private val stubClubOperations = StubClubOperations()
-
     private val mockSignInUseCase = SignInUseCaseImpl(mockAuthService, mockAuthStateRepository)
     private val mockSignOutUseCase = SignOutUseCaseImpl(
         mockAuthService,
         mockAuthStateRepository,
-        mockCurrentUserProvider,
-        stubClubOperations,
-        MockBookcaseRepository(),
     )
     private val mockCheckSignInStatusUseCase = CheckSignInStatusUseCaseImpl(
         mockAuthService,
