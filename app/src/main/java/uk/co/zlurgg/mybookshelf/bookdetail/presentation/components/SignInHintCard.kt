@@ -16,8 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 @Composable
 fun SignInHintCard(modifier: Modifier = Modifier) {
@@ -28,7 +28,7 @@ fun SignInHintCard(modifier: Modifier = Modifier) {
         )
     ) {
         Row(
-            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
@@ -36,7 +36,7 @@ fun SignInHintCard(modifier: Modifier = Modifier) {
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            Spacer(modifier = Modifier.width(BookDetailUiConstants.SmallSpacing))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = stringResource(R.string.club_detail_sign_in_hint),
                 style = MaterialTheme.typography.bodyMedium,
