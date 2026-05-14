@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +19,7 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
  * Card for toggling purchased status.
- * Shows: Checkbox to mark book as purchased.
+ * Shows: Switch to mark book as owned/unowned.
  */
 @Composable
 fun PurchasedToggleCard(
@@ -37,17 +37,22 @@ fun PurchasedToggleCard(
                 .padding(BookDetailUiConstants.CardContentPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Checkbox(
-                checked = purchased,
-                onCheckedChange = { onPurchaseToggle() }
+            Text(
+                text = if (purchased) {
+                    stringResource(R.string.book_owned)
+                } else {
+                    stringResource(R.string.book_unowned)
+                },
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
             )
 
             Spacer(modifier = Modifier.width(BookDetailUiConstants.SmallSpacing))
 
-            Text(
-                text = stringResource(R.string.book_purchased_label),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface
+            Switch(
+                checked = purchased,
+                onCheckedChange = { onPurchaseToggle() }
             )
         }
     }
