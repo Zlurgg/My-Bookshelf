@@ -54,7 +54,7 @@ fun BookHeroSection(
                         model = imageUrl,
                         contentDescription = title,
                         modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
                         loading = {
                             BookPlaceholder()
                             onImageLoadResult(false)
