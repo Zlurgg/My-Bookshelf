@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
  * Card for managing personal recommendation status.
@@ -50,10 +51,10 @@ fun RecommendationStatusCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
         ) {
             Text(
                 text = stringResource(R.string.reading_status_title),
@@ -61,7 +62,7 @@ fun RecommendationStatusCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(BookDetailUiConstants.SectionSpacing))
 
             // Reading Status Dropdown
             var expanded by remember { mutableStateOf(false) }
@@ -114,7 +115,7 @@ fun RecommendationStatusCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                for (i in 1..5) {
+                for (i in 1..BookDetailUiConstants.MaxStars) {
                     IconButton(
                         onClick = {
                             val newRating = if (personalRating == i.toFloat()) 0f else i.toFloat()

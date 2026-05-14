@@ -49,19 +49,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookComment
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.formatRelativeTime
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.isEdited
 
-/**
- * Card showing all club comments in a messaging-style conversation thread.
- * Features:
- * - Scrollable list with max height (shows ~3-4 comments)
- * - Oldest comments first, auto-scrolls to show latest
- * - Own comments aligned right with primary background
- * - Other comments aligned left with surface variant background
- * - Long-press on own comment shows dropdown menu with Edit/Delete
- * - Inline editing mode
- */
+private val CommentBubbleCornerRadius = 12.dp
+private val CommentBubbleMaxWidth = 280.dp
+private const val COMMENT_INPUT_MAX_LINES = 3
+
 @Composable
 fun ClubCommentsCard(
     comments: List<BookComment>,
@@ -90,10 +85,10 @@ fun ClubCommentsCard(
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
         ) {
             // Title
             Text(
@@ -157,7 +152,7 @@ fun ClubCommentsCard(
                     onValueChange = onCommentTextChange,
                     modifier = Modifier.weight(1f),
                     placeholder = { Text(stringResource(R.string.club_comment_placeholder)) },
-                    maxLines = 3,
+                    maxLines = COMMENT_INPUT_MAX_LINES,
                     enabled = !isLoading && editingCommentId == null
                 )
 
@@ -201,10 +196,10 @@ private fun CommentBubble(
     // Alignment and colors based on ownership
     val horizontalArrangement = if (isOwnComment) Arrangement.End else Arrangement.Start
     val bubbleShape = RoundedCornerShape(
-        topStart = 12.dp,
-        topEnd = 12.dp,
-        bottomStart = if (isOwnComment) 12.dp else 4.dp,
-        bottomEnd = if (isOwnComment) 4.dp else 12.dp
+        topStart = CommentBubbleCornerRadius,
+        topEnd = CommentBubbleCornerRadius,
+        bottomStart = if (isOwnComment) CommentBubbleCornerRadius else BookDetailUiConstants.TinySpacing,
+        bottomEnd = if (isOwnComment) BookDetailUiConstants.TinySpacing else CommentBubbleCornerRadius
     )
     val backgroundColor = if (isOwnComment) {
         MaterialTheme.colorScheme.primaryContainer
@@ -226,7 +221,7 @@ private fun CommentBubble(
                 shape = bubbleShape,
                 color = backgroundColor,
                 modifier = Modifier
-                    .widthIn(max = 280.dp)
+                    .widthIn(max = CommentBubbleMaxWidth)
                     .combinedClickable(
                         onClick = { },
                         onLongClick = {

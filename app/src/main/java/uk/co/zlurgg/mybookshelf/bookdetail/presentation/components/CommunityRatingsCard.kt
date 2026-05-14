@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
  * Card displaying community ratings from OpenLibrary.
@@ -36,7 +37,7 @@ fun CommunityRatingsCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
         ) {
             Text(
                 text = stringResource(R.string.community_ratings_title),
@@ -44,7 +45,7 @@ fun CommunityRatingsCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(BookDetailUiConstants.SectionSpacing))
 
             if (averageRating != null && averageRating > 0) {
                 Row(
@@ -56,7 +57,7 @@ fun CommunityRatingsCard(
                         tint = MaterialTheme.colorScheme.primary
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(BookDetailUiConstants.SmallSpacing))
 
                     Text(
                         text = String.format(java.util.Locale.ROOT, "%.1f", averageRating),
@@ -64,7 +65,7 @@ fun CommunityRatingsCard(
                         color = MaterialTheme.colorScheme.onSurface
                     )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(BookDetailUiConstants.SmallSpacing))
 
                     Text(
                         text = "(" + stringResource(R.string.community_ratings_count, ratingCount ?: 0) + ")",

@@ -22,13 +22,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
-/**
- * Card displaying book description with expand/collapse functionality.
- * Collapses long descriptions to 3 lines with "Show more" option.
- *
- * @param initiallyExpanded If true, description starts expanded (useful for tutorial book)
- */
+private const val COLLAPSE_THRESHOLD = 150
+private const val MAX_LINES_COLLAPSED = 3
+
 @Composable
 fun DescriptionCard(
     description: String?,
@@ -43,7 +41,7 @@ fun DescriptionCard(
     val cardContent: @Composable () -> Unit = {
         Column(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(BookDetailUiConstants.CardContentPadding)
                 .animateContentSize()
         ) {
             Text(
@@ -52,18 +50,18 @@ fun DescriptionCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(BookDetailUiConstants.SectionSpacing))
 
             Text(
                 text = description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                maxLines = if (isExpanded) Int.MAX_VALUE else MAX_LINES_COLLAPSED,
                 overflow = TextOverflow.Ellipsis
             )
 
-            if (description.length > 150) {
-                Spacer(modifier = Modifier.height(8.dp))
+            if (description.length > COLLAPSE_THRESHOLD) {
+                Spacer(modifier = Modifier.height(BookDetailUiConstants.SmallSpacing))
 
                 Text(
                     text = if (isExpanded) {
@@ -89,7 +87,7 @@ fun DescriptionCard(
     } else {
         Card(
             modifier = modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
         ) {
             cardContent()
         }

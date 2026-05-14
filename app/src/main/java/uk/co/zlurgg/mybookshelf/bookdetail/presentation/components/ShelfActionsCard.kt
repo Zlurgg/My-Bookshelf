@@ -19,8 +19,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 
 /**
@@ -37,10 +37,10 @@ fun ShelfActionsCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
         ) {
             if (onShelf) {
                 OutlinedButton(
@@ -54,7 +54,7 @@ fun ShelfActionsCard(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = stringResource(R.string.cd_remove_from_shelf)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(BookDetailUiConstants.SmallSpacing))
                     Text(stringResource(R.string.shelf_actions_remove_from_shelf))
                 }
             } else {
@@ -66,7 +66,7 @@ fun ShelfActionsCard(
                         imageVector = Icons.Filled.Add,
                         contentDescription = stringResource(R.string.cd_add_to_shelf)
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(BookDetailUiConstants.SmallSpacing))
                     Text(stringResource(R.string.shelf_actions_add_to_shelf))
                 }
             }

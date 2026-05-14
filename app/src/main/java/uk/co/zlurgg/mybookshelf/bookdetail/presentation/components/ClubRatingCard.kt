@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
  * Card showing club average rating and user's club rating.
@@ -36,10 +37,10 @@ fun ClubRatingCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
         ) {
             Text(
                 text = stringResource(R.string.club_rating_title),
@@ -55,7 +56,7 @@ fun ClubRatingCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // Display filled stars for average
-                    for (i in 1..5) {
+                    for (i in 1..BookDetailUiConstants.MaxStars) {
                         Icon(
                             imageVector = if (i <= averageRating.toInt()) {
                                 Icons.Filled.Star
@@ -99,7 +100,7 @@ fun ClubRatingCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                for (i in 1..5) {
+                for (i in 1..BookDetailUiConstants.MaxStars) {
                     IconButton(
                         onClick = {
                             val newRating = if (userClubRating == i.toFloat()) 0f else i.toFloat()

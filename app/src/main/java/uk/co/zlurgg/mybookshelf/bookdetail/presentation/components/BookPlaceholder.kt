@@ -15,16 +15,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 
-/**
- * Book cover placeholder component.
- *
- * Shows a book icon on a surface-variant background when:
- * - Image is loading
- * - Image failed to load
- * - No image URL is available
- *
- * Uses 64dp icon size for detail view prominence.
- */
+private val PlaceholderIconSize = 64.dp
+
 @Composable
 fun BookPlaceholder(
     modifier: Modifier = Modifier
@@ -38,7 +30,7 @@ fun BookPlaceholder(
         Icon(
             imageVector = Icons.Default.Book,
             contentDescription = stringResource(R.string.book_cover_placeholder),
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(PlaceholderIconSize),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }

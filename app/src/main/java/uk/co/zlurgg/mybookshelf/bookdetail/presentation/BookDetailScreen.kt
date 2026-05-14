@@ -111,8 +111,8 @@ fun BookDetailsScreen(
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                contentPadding = PaddingValues(BookDetailUiConstants.CardContentPadding),
+                verticalArrangement = Arrangement.spacedBy(BookDetailUiConstants.SectionSpacing)
             ) {
                 // 1. Common hero (all paths)
                 item {
@@ -221,7 +221,7 @@ fun BookDetailsScreen(
                         CommunityRatingsCard(
                             averageRating = state.book.averageRating,
                             ratingCount = state.book.ratingCount,
-                            modifier = Modifier.padding(top = 4.dp)
+                            modifier = Modifier.padding(top = BookDetailUiConstants.InfoSectionExtraTopPadding)
                         )
                     }
                 }

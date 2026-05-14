@@ -19,12 +19,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
-/**
- * Card for personal notes about the book.
- * Allows up to 5000 characters of personal notes.
- * This data is NOT exported for privacy.
- */
+private val NotesMaxHeight = 240.dp
+private const val NOTES_MAX_CHARS = 5000
+private const val NOTES_MIN_LINES = 4
+private const val NOTES_MAX_LINES = 10
+
 @Composable
 fun PersonalNotesCard(
     notes: String, // "" = no notes
@@ -33,10 +34,10 @@ fun PersonalNotesCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
         ) {
             Text(
                 text = stringResource(R.string.personal_notes_title),
@@ -44,12 +45,12 @@ fun PersonalNotesCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(BookDetailUiConstants.SectionSpacing))
 
             OutlinedTextField(
                 value = notes,
                 onValueChange = { newNotes ->
-                    if (newNotes.length <= 5000) {
+                    if (newNotes.length <= NOTES_MAX_CHARS) {
                         // Call action immediately - ViewModel handles debouncing
                         onNotesChange(newNotes)
                     }
@@ -64,11 +65,11 @@ fun PersonalNotesCard(
                 keyboardActions = KeyboardActions(
                     onDone = { /* Keyboard dismisses automatically */ }
                 ),
-                minLines = 4,
-                maxLines = 10,
+                minLines = NOTES_MIN_LINES,
+                maxLines = NOTES_MAX_LINES,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 240.dp) // Constrain max height to prevent layout issues
+                    .heightIn(max = NotesMaxHeight)
             )
         }
     }

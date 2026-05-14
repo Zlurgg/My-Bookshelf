@@ -17,9 +17,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 @Composable
 fun BookHeroSection(
@@ -42,11 +42,11 @@ fun BookHeroSection(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
+                        .height(BookDetailUiConstants.BookImageHeight)
                         .clip(
                             RoundedCornerShape(
-                                topStart = 8.dp,
-                                topEnd = 8.dp
+                                topStart = BookDetailUiConstants.ImageCornerRadius,
+                                topEnd = BookDetailUiConstants.ImageCornerRadius
                             )
                         )
                 ) {
@@ -72,7 +72,7 @@ fun BookHeroSection(
 
             // Overview text
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
             ) {
                 Text(
                     text = title,
@@ -81,7 +81,7 @@ fun BookHeroSection(
                 )
 
                 if (authors.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(BookDetailUiConstants.SmallSpacing))
                     Text(
                         text = stringResource(R.string.book_overview_by_author, authors.joinToString(", ")),
                         style = MaterialTheme.typography.bodyMedium,
@@ -89,7 +89,7 @@ fun BookHeroSection(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(BookDetailUiConstants.SmallSpacing))
 
                 if (firstPublishYear != null) {
                     Text(

@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
  * Card for toggling purchased status.
@@ -29,12 +29,12 @@ fun PurchasedToggleCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(BookDetailUiConstants.CardContentPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
@@ -42,7 +42,7 @@ fun PurchasedToggleCard(
                 onCheckedChange = { onPurchaseToggle() }
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(BookDetailUiConstants.SmallSpacing))
 
             Text(
                 text = stringResource(R.string.book_purchased_label),

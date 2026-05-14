@@ -19,6 +19,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants.DebounceDelayMs
 
 class BookDetailViewModel(
     private val bookDetailUseCases: BookDetailUseCases,
@@ -299,7 +300,7 @@ class BookDetailViewModel(
 
                 // Start debounced auto-save (2 seconds after user stops typing)
                 saveNotesJob = viewModelScope.launch {
-                    delay(2000) // Wait 2 seconds
+                    delay(DebounceDelayMs)
 
                     // Execute actual save to database
                     when (
@@ -333,7 +334,7 @@ class BookDetailViewModel(
 
                 // Start debounced auto-save (2 seconds after user stops typing)
                 saveReviewJob = viewModelScope.launch {
-                    delay(2000) // Wait 2 seconds
+                    delay(DebounceDelayMs)
                     val clubCode = state.value.clubCode ?: return@launch
                     submitClubReview(clubCode, state.value.userClubRating, action.text)
                 }

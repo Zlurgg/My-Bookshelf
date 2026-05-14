@@ -27,12 +27,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.formatRelativeTime
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.isEdited
 
-/**
- * Card showing all club reviews and input for user's review.
- */
+private const val REVIEW_MIN_LINES = 2
+private const val REVIEW_MAX_LINES = 5
+
 @Composable
 fun ClubReviewsCard(
     reviewsWithText: List<BookReview>,
@@ -45,13 +46,12 @@ fun ClubReviewsCard(
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
-
     Card(
         modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(BookDetailUiConstants.CardContentPadding)
         ) {
             Text(
                 text = if (reviewsWithText.isNotEmpty()) {
@@ -105,8 +105,8 @@ fun ClubReviewsCard(
                 onValueChange = onReviewTextChange,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text(stringResource(R.string.club_review_placeholder)) },
-                minLines = 2,
-                maxLines = 5,
+                minLines = REVIEW_MIN_LINES,
+                maxLines = REVIEW_MAX_LINES,
                 enabled = !isLoading
             )
 
