@@ -35,7 +35,7 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.LanguagesCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PersonalNotesCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PublicationDetailsCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PurchasedToggleCard
-import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.RecommendationStatusCard
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ReadingStatusCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ShelfActionsCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.SignInHintCard
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBook
@@ -183,19 +183,19 @@ fun BookDetailsScreen(
                     else -> {
                         // Regular book — personal cards for all owned books
                         item {
-                            RecommendationStatusCard(
+                            ReadingStatusCard(
                                 readingStatus = state.book.readingStatus,
-                                personalRating = state.book.personalRating,
                                 onReadingStatusChange = { status ->
                                     onAction(BookDetailAction.OnReadingStatusChange(status))
-                                },
-                                onPersonalRatingChange = { rating ->
-                                    onAction(BookDetailAction.OnPersonalRatingChange(rating))
                                 }
                             )
                         }
                         item {
                             PersonalNotesCard(
+                                personalRating = state.book.personalRating,
+                                onPersonalRatingChange = { rating ->
+                                    onAction(BookDetailAction.OnPersonalRatingChange(rating))
+                                },
                                 notes = state.book.personalNotes,
                                 onNotesChange = { notes ->
                                     onAction(BookDetailAction.OnPersonalNotesChange(notes))

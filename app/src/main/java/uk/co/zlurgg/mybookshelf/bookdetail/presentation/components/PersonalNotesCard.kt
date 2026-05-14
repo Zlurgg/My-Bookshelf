@@ -29,6 +29,8 @@ private const val NOTES_MAX_LINES = 10
 
 @Composable
 fun PersonalNotesCard(
+    personalRating: Float, // 0 = unrated, 1-5 = rated
+    onPersonalRatingChange: (Float) -> Unit, // Pass 0f to clear rating
     notes: String, // "" = no notes
     onNotesChange: (String) -> Unit, // Pass "" to clear notes
     modifier: Modifier = Modifier
@@ -46,6 +48,13 @@ fun PersonalNotesCard(
                 text = stringResource(R.string.personal_notes_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(BookDetailUiConstants.SectionSpacing))
+
+            StarRatingRow(
+                rating = personalRating,
+                onRatingChange = onPersonalRatingChange
             )
 
             Spacer(modifier = Modifier.height(BookDetailUiConstants.SectionSpacing))
