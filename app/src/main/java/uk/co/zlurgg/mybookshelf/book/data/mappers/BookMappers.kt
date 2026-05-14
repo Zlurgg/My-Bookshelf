@@ -76,14 +76,6 @@ fun Book.toBookEntity(): BookEntity {
     )
 }
 
-// TODO: remove old-name mappings after next destructive DB migration
-private fun parseReadingStatus(value: String): ReadingStatus = when (value) {
-    "NOT_READ", "WANT_TO_READ" -> ReadingStatus.NOT_READ
-    "READING", "CURRENTLY_READING" -> ReadingStatus.READING
-    "FINISHED", "READ" -> ReadingStatus.FINISHED
-    else -> ReadingStatus.NOT_READ
-}
-
 fun BookEntity.toBook(): Book {
     return Book(
         id = id,
@@ -100,7 +92,7 @@ fun BookEntity.toBook(): Book {
         purchased = purchased,
         spineColor = spineColor,
         // Personal metadata
-        readingStatus = parseReadingStatus(readingStatus),
+        readingStatus = ReadingStatus.valueOf(readingStatus),
         personalRating = personalRating,
         personalNotes = personalNotes,
         dateAdded = dateAdded,
