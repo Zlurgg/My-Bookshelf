@@ -22,26 +22,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
 
 /**
  * Card showing club average rating and user's club rating.
  */
 @Composable
 fun ClubRatingCard(
-    reviews: List<BookReview>,
+    averageRating: Float,
+    ratedReviewCount: Int,
     userClubRating: Float,
     onClubRatingChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Calculate average rating from reviews (only ratings > 0)
-    val ratedReviews = reviews.filter { it.rating > 0 }
-    val averageRating = if (ratedReviews.isNotEmpty()) {
-        ratedReviews.map { it.rating }.average().toFloat()
-    } else {
-        0f
-    }
-
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -58,7 +50,7 @@ fun ClubRatingCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Average rating display
-            if (ratedReviews.isNotEmpty()) {
+            if (ratedReviewCount > 0) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -79,7 +71,7 @@ fun ClubRatingCard(
                         text = stringResource(
                             R.string.club_rating_average,
                             String.format(java.util.Locale.ROOT, "%.1f", averageRating),
-                            ratedReviews.size
+                            ratedReviewCount
                         ),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

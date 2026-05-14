@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.book.domain.util.BookDetailConstants
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.BookDetailImage
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.BookOverviewCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ClubCommentsCard
@@ -71,7 +70,7 @@ fun BookDetailsScreen(
     modifier: Modifier = Modifier,
 ) {
     if (state.book != null) {
-        val isTutorialBook = state.book.id == BookDetailConstants.TUTORIAL_BOOK_ID
+        val isTutorialBook = state.isTutorialBook
 
         Scaffold(
             topBar = {
@@ -183,7 +182,8 @@ fun BookDetailsScreen(
                         // 2. Club Rating Card
                         item {
                             ClubRatingCard(
-                                reviews = state.clubReviews,
+                                averageRating = state.clubAverageRating,
+                                ratedReviewCount = state.clubReviews.count { it.rating > 0 },
                                 userClubRating = state.userClubRating,
                                 onClubRatingChange = { rating ->
                                     onAction(BookDetailAction.OnClubRatingChange(rating))

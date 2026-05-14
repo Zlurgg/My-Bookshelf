@@ -34,8 +34,9 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.util.formatRelativeTime
  */
 @Composable
 fun ClubReviewsCard(
-    reviews: List<BookReview>,
+    reviewsWithText: List<BookReview>,
     currentUserId: String?,
+    userHasExistingReview: Boolean,
     userReviewText: String,
     onReviewTextChange: (String) -> Unit,
     onReviewSubmit: () -> Unit,
@@ -43,9 +44,6 @@ fun ClubReviewsCard(
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
-    // Filter to only reviews with text
-    val reviewsWithText = reviews.filter { it.reviewText.isNotBlank() }
-    val userHasExistingReview = reviews.any { it.userId == currentUserId && it.reviewText.isNotBlank() }
 
     Card(
         modifier = modifier.fillMaxWidth(),

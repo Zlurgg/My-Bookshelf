@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookdetail.presentation
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookComment
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
+import uk.co.zlurgg.mybookshelf.book.domain.util.BookDetailConstants
 
 data class BookDetailState(
     val isLoading: Boolean = true,
@@ -20,6 +21,10 @@ data class BookDetailState(
     val isLoadingReviews: Boolean = false,
     val userClubRating: Float = 0f,
     val userClubReviewText: String = "",
+    // Club computed fields
+    val clubAverageRating: Float = 0f,
+    val clubReviewsWithText: List<BookReview> = emptyList(),
+    val userHasExistingReview: Boolean = false,
     // Comments (for discussion)
     val clubComments: List<BookComment> = emptyList(),
     val isLoadingComments: Boolean = false,
@@ -28,4 +33,5 @@ data class BookDetailState(
     val editingCommentText: String = ""
 ) {
     val isSignedIn: Boolean get() = currentUserId != null
+    val isTutorialBook: Boolean get() = book?.id == BookDetailConstants.TUTORIAL_BOOK_ID
 }

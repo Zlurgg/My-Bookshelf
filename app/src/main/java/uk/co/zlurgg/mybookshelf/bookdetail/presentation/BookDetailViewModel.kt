@@ -97,11 +97,26 @@ class BookDetailViewModel(
                     // Find current user's review to pre-populate their rating/text
                     val userReview = reviews.find { it.userId == currentUserId }
 
+                    // Pre-compute club review aggregations
+                    val ratedReviews = reviews.filter { it.rating > 0 }
+                    val averageRating = if (ratedReviews.isNotEmpty()) {
+                        ratedReviews.map { it.rating }.average().toFloat()
+                    } else {
+                        0f
+                    }
+                    val reviewsWithText = reviews.filter { it.reviewText.isNotBlank() }
+                    val hasExistingReview = reviews.any {
+                        it.userId == currentUserId && it.reviewText.isNotBlank()
+                    }
+
                     _state.update {
                         it.copy(
                             clubReviews = reviews,
                             userClubRating = userReview?.rating ?: 0f,
                             userClubReviewText = userReview?.reviewText ?: "",
+                            clubAverageRating = averageRating,
+                            clubReviewsWithText = reviewsWithText,
+                            userHasExistingReview = hasExistingReview,
                             isLoadingReviews = false
                         )
                     }
