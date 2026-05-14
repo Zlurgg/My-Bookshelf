@@ -228,7 +228,8 @@ fun BookDetailsScreen(
                 item {
                     DescriptionCard(
                         description = state.book.description,
-                        initiallyExpanded = isTutorialBook
+                        initiallyExpanded = isTutorialBook,
+                        outlined = !isTutorialBook
                     )
                 }
                 if (!isTutorialBook) {

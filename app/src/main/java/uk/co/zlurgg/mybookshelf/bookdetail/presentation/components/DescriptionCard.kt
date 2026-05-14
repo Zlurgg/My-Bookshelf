@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,16 +33,14 @@ import uk.co.zlurgg.mybookshelf.R
 fun DescriptionCard(
     description: String?,
     modifier: Modifier = Modifier,
-    initiallyExpanded: Boolean = false
+    initiallyExpanded: Boolean = false,
+    outlined: Boolean = false
 ) {
     if (description.isNullOrBlank()) return
 
     var isExpanded by remember { mutableStateOf(initiallyExpanded) }
 
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
+    val cardContent: @Composable () -> Unit = {
         Column(
             modifier = Modifier
                 .padding(16.dp)
@@ -77,6 +76,22 @@ fun DescriptionCard(
                     modifier = Modifier.clickable { isExpanded = !isExpanded }
                 )
             }
+        }
+    }
+
+    if (outlined) {
+        OutlinedCard(
+            modifier = modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        ) {
+            cardContent()
+        }
+    } else {
+        Card(
+            modifier = modifier.fillMaxWidth(),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            cardContent()
         }
     }
 }
