@@ -41,6 +41,7 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PublicationDe
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PurchasedToggleCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.RecommendationStatusCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ShelfActionsCard
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.SignInHintCard
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBook
 import uk.co.zlurgg.mybookshelf.book.presentation.util.withMediumImage
 
@@ -225,11 +226,7 @@ fun BookDetailsScreen(
                     } else {
                         // Guest placeholder for hidden reviews/comments
                         item {
-                            Text(
-                                text = stringResource(R.string.club_detail_sign_in_hint),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            SignInHintCard()
                         }
                     }
 
