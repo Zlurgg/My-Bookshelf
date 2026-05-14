@@ -181,36 +181,34 @@ fun BookDetailsScreen(
                         }
                     }
                     else -> {
-                        // Regular book — personal cards gated by onShelf
-                        if (state.onShelf) {
-                            item {
-                                RecommendationStatusCard(
-                                    readingStatus = state.book.readingStatus,
-                                    personalRating = state.book.personalRating,
-                                    onReadingStatusChange = { status ->
-                                        onAction(BookDetailAction.OnReadingStatusChange(status))
-                                    },
-                                    onPersonalRatingChange = { rating ->
-                                        onAction(BookDetailAction.OnPersonalRatingChange(rating))
-                                    }
-                                )
-                            }
-                            item {
-                                PersonalNotesCard(
-                                    notes = state.book.personalNotes,
-                                    onNotesChange = { notes ->
-                                        onAction(BookDetailAction.OnPersonalNotesChange(notes))
-                                    }
-                                )
-                            }
-                            item {
-                                PurchasedToggleCard(
-                                    purchased = state.book.purchased,
-                                    onPurchaseToggle = {
-                                        onAction(BookDetailAction.OnPurchaseClick)
-                                    }
-                                )
-                            }
+                        // Regular book — personal cards for all owned books
+                        item {
+                            RecommendationStatusCard(
+                                readingStatus = state.book.readingStatus,
+                                personalRating = state.book.personalRating,
+                                onReadingStatusChange = { status ->
+                                    onAction(BookDetailAction.OnReadingStatusChange(status))
+                                },
+                                onPersonalRatingChange = { rating ->
+                                    onAction(BookDetailAction.OnPersonalRatingChange(rating))
+                                }
+                            )
+                        }
+                        item {
+                            PersonalNotesCard(
+                                notes = state.book.personalNotes,
+                                onNotesChange = { notes ->
+                                    onAction(BookDetailAction.OnPersonalNotesChange(notes))
+                                }
+                            )
+                        }
+                        item {
+                            PurchasedToggleCard(
+                                purchased = state.book.purchased,
+                                onPurchaseToggle = {
+                                    onAction(BookDetailAction.OnPurchaseClick)
+                                }
+                            )
                         }
                     }
                 }
