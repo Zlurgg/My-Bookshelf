@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -32,6 +33,8 @@ fun PersonalNotesCard(
     onNotesChange: (String) -> Unit, // Pass "" to clear notes
     modifier: Modifier = Modifier
 ) {
+    val focusManager = LocalFocusManager.current
+
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
@@ -63,7 +66,7 @@ fun PersonalNotesCard(
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(
-                    onDone = { /* Keyboard dismisses automatically */ }
+                    onDone = { focusManager.clearFocus() }
                 ),
                 minLines = NOTES_MIN_LINES,
                 maxLines = NOTES_MAX_LINES,
