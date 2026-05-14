@@ -13,7 +13,6 @@ import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -97,48 +96,10 @@ fun ClubRatingCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                for (i in 1..BookDetailUiConstants.MaxStars) {
-                    IconButton(
-                        onClick = {
-                            val newRating = if (userClubRating == i.toFloat()) 0f else i.toFloat()
-                            onClubRatingChange(newRating)
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (userClubRating > 0f && i <= userClubRating) {
-                                Icons.Filled.Star
-                            } else {
-                                Icons.Filled.StarBorder
-                            },
-                            contentDescription = stringResource(R.string.cd_rate_stars, i),
-                            tint = if (userClubRating > 0f && i <= userClubRating) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                    }
-                }
-
-                if (userClubRating > 0f) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.rating_display, userClubRating.toInt()),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                } else {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = stringResource(R.string.club_rating_tap_to_rate),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            StarRatingRow(
+                rating = userClubRating,
+                onRatingChange = onClubRatingChange
+            )
         }
     }
 }
