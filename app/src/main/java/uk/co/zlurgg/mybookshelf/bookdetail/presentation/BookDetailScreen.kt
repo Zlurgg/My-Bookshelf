@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -75,7 +76,14 @@ fun BookDetailsScreen(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(text = state.book.title, style = MaterialTheme.typography.titleLarge) },
+                    title = {
+                        Text(
+                            text = state.book.title,
+                            style = MaterialTheme.typography.titleMedium,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { onAction(BookDetailAction.OnBackClick) }) {
                             Icon(
