@@ -2,26 +2,6 @@
 
 Follow-up improvements identified during Library screen implementation and testing.
 
-## Book Clubs
-
-All book club items completed on `bc-polish` branch.
-
-- ~~Preserve club shelves on sign-out~~ (fdabcf9)
-- ~~Creation loading indicator~~ (fdabcf9)
-- ~~User display / nicknames in reviews~~ (verified, no changes needed)
-- ~~Cross-tab navigation~~ (fdabcf9)
-- ~~Guest book removal from club shelves~~ (fdabcf9)
-
-### Book detail consistency across variants
-
-The book detail screen has 4 viewing contexts with inconsistent card layouts:
-1. **Personal shelf** — full view (overview, image, recommendation, notes, community ratings, description, publication, languages, purchased)
-2. **Book club (signed in)** — overview, image, club rating, club comments
-3. **Book club (guest)** — overview, image, sign-in hint, community ratings, description, publication, languages
-4. **Library** — no shelf context (`hasShelfContext = false`)
-
-**Needed:** Audit all 4 variants, map what each shows, decide the correct set of cards per variant, and unify. The club views were recently patched (fdabcf9) but may still be inconsistent with personal/library views.
-
 ## Library / BookDetail
 
 ### Delete book from library
