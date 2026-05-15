@@ -8,25 +8,30 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubCurrentUserProvider
 
 class RemoveBookFromShelfUseCaseTest {
 
     private val mockBookshelfRepository = MockBookshelfRepository()
     private val mockBookcaseRepository = MockBookcaseRepository()
     private val mockClubOperations = StubClubOperations()
+    private val stubCurrentUserProvider = StubCurrentUserProvider()
     private val useCase = RemoveBookFromShelfUseCaseImpl(
         mockBookshelfRepository,
         mockBookcaseRepository,
         mockClubOperations,
+        stubCurrentUserProvider,
     )
 
     @After
     fun tearDown() {
         mockBookshelfRepository.reset()
         mockBookcaseRepository.reset()
+        stubCurrentUserProvider.userId = null
     }
 
     @Test
@@ -219,5 +224,97 @@ class RemoveBookFromShelfUseCaseTest {
             assertTrue("Remaining book $bookId should still be present", shelfBooks.contains(bookId))
         }
         assertEquals("Should have correct number of remaining books", remainingBooks.size, shelfBooks.size)
+    }
+
+    // Club permission tests
+
+    @Test
+    fun `owner can remove any book from club shelf`() = runTest {
+        // Given
+        val ownerId = "owner-123"
+        val shelfId = "club-shelf"
+        val bookId = "book-1"
+        stubCurrentUserProvider.userId = ownerId
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withIsBookClub(true)
+            .withClubCode("CLUB1")
+            .withClubCreatorId(ownerId)
+            .build()
+        mockBookshelfRepository.configureAddedByUserId(shelfId, bookId, "other-member")
+
+        // When
+        val result = useCase(bookId, shelfId)
+
+        // Then
+        assertTrue("Owner should be able to remove any book", result is Result.Success)
+    }
+
+    @Test
+    fun `member can remove book they added from club shelf`() = runTest {
+        // Given
+        val memberId = "member-456"
+        val shelfId = "club-shelf"
+        val bookId = "book-1"
+        stubCurrentUserProvider.userId = memberId
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withIsBookClub(true)
+            .withClubCode("CLUB1")
+            .withClubCreatorId("owner-123")
+            .build()
+        mockBookshelfRepository.configureAddedByUserId(shelfId, bookId, memberId)
+
+        // When
+        val result = useCase(bookId, shelfId)
+
+        // Then
+        assertTrue("Member should be able to remove their own book", result is Result.Success)
+    }
+
+    @Test
+    fun `member cannot remove book another member added`() = runTest {
+        // Given
+        val memberId = "member-456"
+        val shelfId = "club-shelf"
+        val bookId = "book-1"
+        stubCurrentUserProvider.userId = memberId
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withIsBookClub(true)
+            .withClubCode("CLUB1")
+            .withClubCreatorId("owner-123")
+            .build()
+        mockBookshelfRepository.configureAddedByUserId(shelfId, bookId, "other-member")
+
+        // When
+        val result = useCase(bookId, shelfId)
+
+        // Then
+        assertTrue("Should return error", result is Result.Error)
+        assertEquals(DataError.Local.PERMISSION_DENIED, (result as Result.Error).error)
+        assertEquals("Should not call removeBookFromShelf", 0, mockBookshelfRepository.removeBookFromShelfCallCount)
+    }
+
+    @Test
+    fun `guest cannot remove book from club shelf`() = runTest {
+        // Given
+        stubCurrentUserProvider.userId = null
+        val shelfId = "club-shelf"
+        val bookId = "book-1"
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withIsBookClub(true)
+            .withClubCode("CLUB1")
+            .withClubCreatorId("owner-123")
+            .build()
+
+        // When
+        val result = useCase(bookId, shelfId)
+
+        // Then
+        assertTrue("Should return error", result is Result.Error)
+        assertEquals(DataError.Local.PERMISSION_DENIED, (result as Result.Error).error)
+        assertEquals("Should not call removeBookFromShelf", 0, mockBookshelfRepository.removeBookFromShelfCallCount)
     }
 }

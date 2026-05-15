@@ -14,6 +14,7 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubCurrentUserProvider
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 
 class AddBookToShelfUseCaseTest {
@@ -25,12 +26,14 @@ class AddBookToShelfUseCaseTest {
         syncBookToClubResult = Result.Success(Unit),
     )
     private val testTimeProvider = uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider(1000L)
+    private val stubCurrentUserProvider = StubCurrentUserProvider()
     private val useCase = AddBookToShelfUseCaseImpl(
         mockBookRepository,
         mockBookshelfRepository,
         mockBookcaseRepository,
         mockClubOperations,
         testTimeProvider,
+        stubCurrentUserProvider,
     )
 
     /**
@@ -453,5 +456,47 @@ class AddBookToShelfUseCaseTest {
         assertEquals("Should be NOT_FOUND error", DataError.Local.NOT_FOUND, error)
         assertEquals("Should not call upsertBook", 0, mockBookRepository.upsertBookCallCount)
         assertEquals("Should not call addBookToShelf", 0, mockBookshelfRepository.addBookToShelfCallCount)
+    }
+
+    // Club attribution tests
+
+    @Test
+    fun `execute passes addedByUserId for club shelf`() = runTest {
+        // Given
+        val userId = "user-123"
+        stubCurrentUserProvider.userId = userId
+        val book = TestBookBuilder().withId("test-book").build()
+        val shelfId = "club-shelf"
+        mockBookcaseRepository.shelfByIdToReturn = TestShelfBuilder()
+            .withId(shelfId)
+            .withName("Club Shelf")
+            .withIsBookClub(true)
+            .withClubCode("CLUB1")
+            .withClubCreatorId("owner-1")
+            .withBooks(emptyList())
+            .build()
+
+        // When
+        val result = useCase(book, shelfId)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals("Should pass userId for club shelf", userId, mockBookshelfRepository.lastAddedByUserId)
+    }
+
+    @Test
+    fun `execute passes null addedByUserId for personal shelf`() = runTest {
+        // Given
+        stubCurrentUserProvider.userId = "user-123"
+        val book = TestBookBuilder().withId("test-book").build()
+        val shelfId = "personal-shelf"
+        setUpDefaultShelf(shelfId)
+
+        // When
+        val result = useCase(book, shelfId)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals("Should pass null for personal shelf", null, mockBookshelfRepository.lastAddedByUserId)
     }
 }

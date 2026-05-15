@@ -11,25 +11,33 @@ class MockBookshelfRepository : BookshelfRepository {
 
     private val shelfBookRelations = mutableMapOf<String, MutableSet<String>>() // shelfId -> bookIds
     private val configuredBooks = mutableMapOf<String, Book>() // bookId -> Book
+    private val addedByUserIds = mutableMapOf<String, String>() // "shelfId:bookId" -> userId
 
     var errorToReturn: DataError.Local? = null
     var addBookToShelfCallCount = 0
     var removeBookFromShelfCallCount = 0
     var lastAddedBookId: String? = null
     var lastAddedShelfId: String? = null
+    var lastAddedByUserId: String? = null
     var lastRemovedBookId: String? = null
     var lastRemovedShelfId: String? = null
 
     fun reset() {
         shelfBookRelations.clear()
         configuredBooks.clear()
+        addedByUserIds.clear()
         errorToReturn = null
         addBookToShelfCallCount = 0
         removeBookFromShelfCallCount = 0
         lastAddedBookId = null
         lastAddedShelfId = null
+        lastAddedByUserId = null
         lastRemovedBookId = null
         lastRemovedShelfId = null
+    }
+
+    fun configureAddedByUserId(shelfId: String, bookId: String, userId: String) {
+        addedByUserIds["$shelfId:$bookId"] = userId
     }
 
     fun configureBook(book: Book) {
@@ -49,14 +57,22 @@ class MockBookshelfRepository : BookshelfRepository {
         return shelfBookRelations.mapValues { it.value.toSet() }
     }
 
-    override suspend fun addBookToShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
+    override suspend fun addBookToShelf(
+        shelfId: String,
+        bookId: String,
+        addedByUserId: String?,
+    ): Result<Unit, DataError.Local> {
         addBookToShelfCallCount++
         lastAddedShelfId = shelfId
         lastAddedBookId = bookId
+        lastAddedByUserId = addedByUserId
 
         errorToReturn?.let { return Result.Error(it) }
 
         shelfBookRelations.getOrPut(shelfId) { mutableSetOf() }.add(bookId)
+        if (addedByUserId != null) {
+            addedByUserIds["$shelfId:$bookId"] = addedByUserId
+        }
         return Result.Success(Unit)
     }
 
@@ -93,5 +109,10 @@ class MockBookshelfRepository : BookshelfRepository {
             .keys
             .toList()
         return flowOf(shelfIds)
+    }
+
+    override suspend fun getAddedByUserId(shelfId: String, bookId: String): Result<String?, DataError.Local> {
+        errorToReturn?.let { return Result.Error(it) }
+        return Result.Success(addedByUserIds["$shelfId:$bookId"])
     }
 }
