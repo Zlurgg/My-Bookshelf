@@ -7,5 +7,7 @@ data class BookDetailsWithShelfStatus(
     val book: Book?,
     val isOnShelf: Boolean,
     val isBookClub: Boolean = false,
-    val clubCode: String? = null
+    val clubCode: String? = null,
+    val clubCreatorId: String? = null,
+    val addedByUserId: String? = null,
 )

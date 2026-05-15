@@ -1,6 +1,8 @@
 package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.Bookshelf
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
@@ -16,6 +18,7 @@ class RemoveBookFromShelfUseCaseImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val bookcaseRepository: BookcaseRepository,
     private val clubOperations: ClubOperations,
+    private val currentUserProvider: CurrentUserProvider,
 ) : RemoveBookFromShelfUseCase {
 
     override suspend operator fun invoke(bookId: String, shelfId: String): Result<Unit, DataError.Local> {
@@ -24,6 +27,13 @@ class RemoveBookFromShelfUseCaseImpl(
             is Result.Success -> getResult.data
             is Result.Error -> return getResult
         }
+
+        // Permission check for club shelves
+        if (shelf != null && shelf.isBookClub) {
+            val permissionError = checkClubPermission(shelf, bookId, shelfId)
+            if (permissionError != null) return permissionError
+        }
+
         // Remove the book-shelf association
         when (val removeResult = bookshelfRepository.removeBookFromShelf(shelfId, bookId)) {
             is Result.Success -> { /* continue */ }
@@ -41,6 +51,36 @@ class RemoveBookFromShelfUseCaseImpl(
         }
 
         return Result.Success(Unit)
+    }
+
+    private suspend fun checkClubPermission(
+        shelf: Bookshelf,
+        bookId: String,
+        shelfId: String,
+    ): Result.Error<DataError.Local>? {
+        val currentUserId = currentUserProvider.getCurrentUserId()
+        if (currentUserId == null) {
+            Timber.tag(TAG).w(
+                "Unauthenticated user attempted to remove book %s from club shelf %s",
+                bookId,
+                shelfId
+            )
+            return Result.Error(DataError.Local.PERMISSION_DENIED)
+        }
+        if (shelf.clubCreatorId == currentUserId) return null
+
+        val addedBy = when (val result = bookshelfRepository.getAddedByUserId(shelfId, bookId)) {
+            is Result.Success -> result.data
+            is Result.Error -> null
+        }
+        if (addedBy == currentUserId) return null
+
+        Timber.tag(TAG).w(
+            "Non-owner/non-adder attempted to remove book %s from club shelf %s",
+            bookId,
+            shelfId
+        )
+        return Result.Error(DataError.Local.PERMISSION_DENIED)
     }
 
     companion object {

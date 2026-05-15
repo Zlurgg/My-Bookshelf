@@ -32,6 +32,17 @@ class GetBookDetailsUseCaseImpl(
         }
         val isBookClub = shelf?.isBookClub ?: false
         val clubCode = shelf?.clubCode
+        val clubCreatorId = shelf?.clubCreatorId
+
+        // Get who added this book to the shelf (for club remove permissions)
+        val addedByUserId = if (shelfId != null && isBookClub) {
+            when (val result = bookshelfRepository.getAddedByUserId(shelfId, bookId)) {
+                is Result.Success -> result.data
+                is Result.Error -> null
+            }
+        } else {
+            null
+        }
 
         // Get the shelf status Flow and combine with book data
         val shelfStatusFlow = if (shelfId != null) {
@@ -55,7 +66,9 @@ class GetBookDetailsUseCaseImpl(
                     book = book,
                     isOnShelf = isOnShelf,
                     isBookClub = isBookClub,
-                    clubCode = clubCode
+                    clubCode = clubCode,
+                    clubCreatorId = clubCreatorId,
+                    addedByUserId = addedByUserId,
                 )
             }
     }

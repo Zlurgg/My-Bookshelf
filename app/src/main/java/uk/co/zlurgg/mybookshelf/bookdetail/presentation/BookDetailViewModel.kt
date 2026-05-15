@@ -61,6 +61,8 @@ class BookDetailViewModel(
                     onShelf = bookDetails.isOnShelf,
                     isBookClub = bookDetails.isBookClub,
                     clubCode = bookDetails.clubCode,
+                    clubCreatorId = bookDetails.clubCreatorId,
+                    addedByUserId = bookDetails.addedByUserId,
                     isLoading = false
                 )
             }

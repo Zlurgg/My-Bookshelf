@@ -96,6 +96,7 @@ fun BookDetailsScreen(
                     ShelfActionsCard(
                         book = state.book,
                         onShelf = state.onShelf,
+                        canRemove = state.canRemoveFromShelf,
                         onAddToShelf = { book ->
                             onAction(BookDetailAction.OnAddBookClick(book))
                         },

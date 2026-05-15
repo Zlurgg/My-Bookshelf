@@ -31,10 +31,14 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 fun ShelfActionsCard(
     book: Book,
     onShelf: Boolean,
+    canRemove: Boolean = true,
     onAddToShelf: (Book) -> Unit,
     onRemoveFromShelf: (Book) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Don't render the card at all if on shelf but can't remove (nothing to show)
+    if (onShelf && !canRemove) return
+
     Card(
         modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = BookDetailUiConstants.CardElevation)
