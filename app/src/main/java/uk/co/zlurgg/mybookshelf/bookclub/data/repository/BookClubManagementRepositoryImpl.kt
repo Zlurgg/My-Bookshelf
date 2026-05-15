@@ -93,7 +93,8 @@ internal class BookClubManagementRepositoryImpl(
                 val crossRef = BookshelfBookCrossRef(
                     shelfId = clubShelfId,
                     bookId = bookId,
-                    addedAt = now
+                    addedAt = now,
+                    addedByUserId = user.userId
                 )
                 bookshelfDao.upsertCrossRef(crossRef)
             }

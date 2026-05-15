@@ -142,7 +142,8 @@ internal class BookClubSyncRepositoryImpl(
                 val crossRef = BookshelfBookCrossRef(
                     shelfId = localShelfId,
                     bookId = book.id,
-                    addedAt = timeProvider.currentTimeMillis()
+                    addedAt = timeProvider.currentTimeMillis(),
+                    addedByUserId = bookDto.addedBy.ifEmpty { null }
                 )
                 bookshelfDao.upsertCrossRef(crossRef)
                 booksAdded++

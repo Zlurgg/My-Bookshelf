@@ -5,6 +5,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
+import uk.co.zlurgg.mybookshelf.auth.domain.service.CurrentUserProvider
 import uk.co.zlurgg.mybookshelf.book.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
@@ -24,6 +25,7 @@ class AddBookToShelfUseCaseImpl(
     private val bookcaseRepository: BookcaseRepository,
     private val clubOperations: ClubOperations,
     private val timeProvider: TimeProvider,
+    private val currentUserProvider: CurrentUserProvider,
 ) : AddBookToShelfUseCase {
 
     override suspend operator fun invoke(book: Book, shelfId: String): Result<Unit, DataError.Local> {
@@ -74,7 +76,8 @@ class AddBookToShelfUseCaseImpl(
         }
 
         // Then create the shelf association
-        when (val addResult = bookshelfRepository.addBookToShelf(shelfId, book.id)) {
+        val addedByUserId = if (shelf.isBookClub) currentUserProvider.getCurrentUserId() else null
+        when (val addResult = bookshelfRepository.addBookToShelf(shelfId, book.id, addedByUserId)) {
             is Result.Success -> { /* continue */ }
             is Result.Error -> return addResult
         }
