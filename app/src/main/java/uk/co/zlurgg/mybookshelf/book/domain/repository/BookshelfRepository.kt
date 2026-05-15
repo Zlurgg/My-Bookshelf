@@ -7,8 +7,13 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 interface BookshelfRepository {
     // Book-shelf relationship operations
-    suspend fun addBookToShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local>
+    suspend fun addBookToShelf(
+        shelfId: String,
+        bookId: String,
+        addedByUserId: String? = null,
+    ): Result<Unit, DataError.Local>
     suspend fun removeBookFromShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local>
+    suspend fun getAddedByUserId(shelfId: String, bookId: String): Result<String?, DataError.Local>
     fun getBooksForShelf(shelfId: String): Flow<List<Book>>
 
     // Book library membership queries

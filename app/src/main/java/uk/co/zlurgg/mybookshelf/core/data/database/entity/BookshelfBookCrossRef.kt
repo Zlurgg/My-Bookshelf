@@ -7,4 +7,5 @@ data class BookshelfBookCrossRef(
     val shelfId: String,
     val bookId: String,
     val addedAt: Long,
+    val addedByUserId: String? = null,
 )

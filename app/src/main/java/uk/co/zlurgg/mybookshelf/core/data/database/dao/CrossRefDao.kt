@@ -38,6 +38,9 @@ interface CrossRefDao {
     @Query("SELECT shelfId FROM BookshelfBookCrossRef WHERE bookId = :bookId")
     fun getShelvesForBook(bookId: String): Flow<List<String>>
 
+    @Query("SELECT addedByUserId FROM BookshelfBookCrossRef WHERE shelfId = :shelfId AND bookId = :bookId")
+    suspend fun getAddedByUserId(shelfId: String, bookId: String): String?
+
     @Query(
         """
         DELETE FROM BookshelfBookCrossRef

@@ -17,14 +17,19 @@ class BookshelfRepositoryImpl(
     private val timeProvider: TimeProvider
 ) : BookshelfRepository {
 
-    override suspend fun addBookToShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
+    override suspend fun addBookToShelf(
+        shelfId: String,
+        bookId: String,
+        addedByUserId: String?,
+    ): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             val now = timeProvider.currentTimeMillis()
             dao.upsertCrossRef(
                 BookshelfBookCrossRef(
                     shelfId = shelfId,
                     bookId = bookId,
-                    addedAt = now
+                    addedAt = now,
+                    addedByUserId = addedByUserId
                 )
             )
         }
@@ -33,6 +38,12 @@ class BookshelfRepositoryImpl(
     override suspend fun removeBookFromShelf(shelfId: String, bookId: String): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             dao.deleteCrossRef(shelfId, bookId)
+        }
+    }
+
+    override suspend fun getAddedByUserId(shelfId: String, bookId: String): Result<String?, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.getAddedByUserId(shelfId, bookId)
         }
     }
 
