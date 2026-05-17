@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.bookdetail.presentation.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -23,8 +22,7 @@ fun BookPlaceholder(
 ) {
     Box(
         modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         Icon(

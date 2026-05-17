@@ -25,11 +25,6 @@ When the owner deletes a book club, it doesn't appear to sync the deletion to ot
 ### Empty book club styling
 An empty book club currently just shows a line of text. Should be a raised card with rounded corners and different colors — same styling treatment as BookDetail empty states. Same message, just nicer formatting.
 
-## Book Detail
-
-### Placeholder image background mismatch
-The temporary/placeholder image is full size but gets resized when the real image loads. The placeholder background color (not the icon) is a different color from the surroundings — very obvious in dark mode. Make the placeholder background transparent so only the icon shows, avoiding the jarring color block.
-
 ## Bookshelf UI
 
 ### Replace FAB with inline add-book slot
@@ -39,9 +34,5 @@ Replace the floating action button with an inline add-book slot at the end of th
 Books on a shelf have a nice 3D effect, but it only shows on the tilted books — the horizontal/flat book covers don't have it. Apply the same 3D effect to horizontal book covers.
 
 ### Spine color bug — first book on shelf
-Investigate possible issue where the first book on a shelf has its spine color matching the shelf color. May be a color generation or rendering issue.
+Investigate possible issue where the first book on a shelf has its spine color matching the shelf color. The issue is that we allow for colors that can match the shelf color - we should exculde them.
 
-## Account
-
-### Anchor delete account at bottom
-Move the delete account button to the bottom of the account page and anchor it there, away from other actions.

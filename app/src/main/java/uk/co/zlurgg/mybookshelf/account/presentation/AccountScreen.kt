@@ -125,7 +125,8 @@ fun AccountScreen(
                 Text(stringResource(R.string.profile_sign_out))
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.weight(1f))
+
             HorizontalDivider()
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -146,6 +147,8 @@ fun AccountScreen(
                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
                 Text(stringResource(R.string.profile_delete_account))
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
