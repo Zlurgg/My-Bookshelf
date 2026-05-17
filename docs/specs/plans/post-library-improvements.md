@@ -18,13 +18,8 @@ When navigating to BookDetail from Library, there is no shelf context. Currently
 
 ### Share dialog auto-closing on navigation to book club tab
 When creating a book club, the sharing code dialog auto-closes when navigating to the book club tab. The order of operations is wrong — it should navigate, create the club, then display the sharing dialog and persist it so the user can actually use/copy the code.
-
-### Club deletion not syncing to other members
-When the owner deletes a book club, it doesn't appear to sync the deletion to other users. Investigate how the delete propagates via Firestore and ensure member devices remove the club.
-
-### Empty book club styling
-An empty book club currently just shows a line of text. Should be a raised card with rounded corners and different colors — same styling treatment as BookDetail empty states. Same message, just nicer formatting.
-
+- when we create the bc from in the bc tab the dialog stays on screen as it should so I think its the navigation causing this
+- 
 ## Bookshelf UI
 
 ### Replace FAB with inline add-book slot

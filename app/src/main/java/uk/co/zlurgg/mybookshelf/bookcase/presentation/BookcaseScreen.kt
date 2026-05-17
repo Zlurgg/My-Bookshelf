@@ -1,10 +1,12 @@
 package uk.co.zlurgg.mybookshelf.bookcase.presentation
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,6 +17,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.GroupAdd
+import androidx.compose.material.icons.outlined.Groups
+import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -31,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -362,34 +367,59 @@ fun BookcaseScreen(
         }
 
         if (!state.isLoading && displayedShelves.isEmpty()) {
-            LazyColumn(contentPadding = padding) {
-                item {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        Text(
-                            text = stringResource(R.string.shelf_limit_counter, currentCount, maxCount),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                item {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.End
+                ) {
                     Text(
-                        text = stringResource(
-                            id = when {
-                                selectedTab == BookcaseTab.BOOK_CLUBS && !state.isSignedIn ->
-                                    R.string.bookcase_empty_book_clubs_guest
-                                selectedTab == BookcaseTab.BOOK_CLUBS ->
-                                    R.string.bookcase_empty_book_clubs
-                                else ->
-                                    R.string.bookcase_empty_personal
-                            }
-                        ),
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                        text = stringResource(R.string.shelf_limit_counter, currentCount, maxCount),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                val isClubTab = selectedTab == BookcaseTab.BOOK_CLUBS
+                val emptyIcon = if (isClubTab) Icons.Outlined.Groups else Icons.Outlined.CollectionsBookmark
+                val titleRes = when {
+                    isClubTab && !state.isSignedIn -> R.string.bookcase_empty_book_clubs_guest_title
+                    isClubTab -> R.string.bookcase_empty_book_clubs_title
+                    else -> R.string.bookcase_empty_personal_title
+                }
+                val subtitleRes = when {
+                    isClubTab && !state.isSignedIn -> R.string.bookcase_empty_book_clubs_guest_subtitle
+                    isClubTab -> R.string.bookcase_empty_book_clubs_subtitle
+                    else -> R.string.bookcase_empty_personal_subtitle
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = emptyIcon,
+                        contentDescription = null,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(titleRes),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(subtitleRes),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

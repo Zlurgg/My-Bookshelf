@@ -4,6 +4,8 @@
 
     <!-- Bookshelf screen -->
     <string name="bookshelf_empty_state_hint">This shelf is empty. Tap + to add a book</string>
+    <string name="bookshelf_empty_title">This shelf is empty</string>
+    <string name="bookshelf_empty_subtitle">Tap + to add a book</string>
     <string name="cd_add_book_to_shelf">Add a book to this shelf</string>
     <string name="bookshelf_book_club_badge">BC</string>
     <string name="cd_switch_to_natural_arrangement">Switch to natural arrangement</string>
@@ -179,8 +181,14 @@
     <!-- Bookcase screen -->
     <string name="bookcase_empty_state_hint">Your bookcase is empty. Tap + to create a new shelf</string>
     <string name="bookcase_empty_personal">Your bookcase is empty. Tap + to create a shelf</string>
+    <string name="bookcase_empty_personal_title">No shelves yet</string>
+    <string name="bookcase_empty_personal_subtitle">Tap + to create a shelf</string>
     <string name="bookcase_empty_book_clubs">No book clubs yet. Create one or join an existing club.</string>
+    <string name="bookcase_empty_book_clubs_title">No book clubs yet</string>
+    <string name="bookcase_empty_book_clubs_subtitle">Create one or join an existing club</string>
     <string name="bookcase_empty_book_clubs_guest">Sign in to join or create book clubs</string>
+    <string name="bookcase_empty_book_clubs_guest_title">Book clubs</string>
+    <string name="bookcase_empty_book_clubs_guest_subtitle">Sign in to join or create book clubs</string>
     <string name="fab_join_book_club">Join Book Club</string>
     <string name="fab_create_book_club">Create book club</string>
     <string name="dialog_create_book_club_title">Create Book Club</string>

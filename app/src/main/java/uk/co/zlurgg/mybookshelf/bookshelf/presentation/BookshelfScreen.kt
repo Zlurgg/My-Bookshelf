@@ -2,9 +2,12 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -13,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -190,44 +194,63 @@ fun BookshelfScreen(
         }
     ) { paddingValues ->
         if (!state.isLoading && books.isEmpty()) {
-            LazyColumn(contentPadding = paddingValues) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
                 // Book count counter (hidden for tutorial shelf)
                 if (!state.isTutorialShelf) {
-                    item {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                            horizontalArrangement = Arrangement.End
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    R.string.shelf_book_count,
-                                    books.size,
-                                    BookshelfConstants.MAX_BOOKS_PER_SHELF
-                                ),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.shelf_book_count,
+                                books.size,
+                                BookshelfConstants.MAX_BOOKS_PER_SHELF
+                            ),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-                item {
-                    Text(
-                        text = stringResource(id = R.string.bookshelf_empty_state_hint),
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
+
+                BookRowDynamic(
+                    books = emptyList(),
+                    onBookClick = { /* no-op */ },
+                    bookshelfMaterial = state.shelfMaterial,
+                    config = BookRowConfig(
+                        showAddSlot = false,
+                        isTidyMode = state.isTidyMode
                     )
-                }
-                item {
-                    BookRowDynamic(
-                        books = emptyList(),
-                        onBookClick = { /* no-op */ },
-                        bookshelfMaterial = state.shelfMaterial,
-                        config = BookRowConfig(
-                            showAddSlot = false,
-                            isTidyMode = state.isTidyMode
-                        )
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.MenuBook,
+                        contentDescription = null,
+                        modifier = Modifier.padding(bottom = 16.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.bookshelf_empty_title),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.bookshelf_empty_subtitle),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
