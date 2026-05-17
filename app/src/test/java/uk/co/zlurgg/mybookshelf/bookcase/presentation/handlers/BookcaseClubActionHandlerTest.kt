@@ -112,7 +112,7 @@ class BookcaseClubActionHandlerTest {
     // ==================== Item 4: Cross-Tab Navigation Tests ====================
 
     @Test
-    fun `createBookClub from shelf sets switchToBookClubsTab`() = runTest {
+    fun `createBookClub from shelf sets pendingSwitchToBookClubsTab`() = runTest {
         val shelf = Bookshelf(
             id = "shelf-1",
             name = "My Shelf",
@@ -122,16 +122,41 @@ class BookcaseClubActionHandlerTest {
 
         handler.handleAction(BookcaseAction.OnCreateBookClub(shelf))
 
-        assertTrue("Should switch to book clubs tab", state.value.switchToBookClubsTab)
+        assertTrue("Should set pending switch", state.value.pendingSwitchToBookClubsTab)
+        assertFalse("Should NOT switch yet - dialog still open", state.value.switchToBookClubsTab)
     }
 
     @Test
-    fun `createBookClubDirect does not set switchToBookClubsTab`() = runTest {
+    fun `createBookClubDirect does not set pendingSwitchToBookClubsTab`() = runTest {
         handler.handleAction(BookcaseAction.OnCreateBookClubDirect("Test Club", ShelfStyle.DarkWood))
 
         assertFalse(
             "Should NOT switch tabs - user is already on Book Clubs",
-            state.value.switchToBookClubsTab
+            state.value.pendingSwitchToBookClubsTab
         )
+    }
+
+    @Test
+    fun `dismissInviteLink triggers tab switch when pending`() = runTest {
+        val shelf = Bookshelf(
+            id = "shelf-1",
+            name = "My Shelf",
+            books = emptyList(),
+            shelfStyle = ShelfStyle.DarkWood,
+        )
+
+        handler.handleAction(BookcaseAction.OnCreateBookClub(shelf))
+        handler.handleAction(BookcaseAction.DismissInviteLink)
+
+        assertTrue("Should switch to book clubs tab after dismiss", state.value.switchToBookClubsTab)
+        assertFalse("Pending flag should be cleared", state.value.pendingSwitchToBookClubsTab)
+    }
+
+    @Test
+    fun `dismissInviteLink does not trigger tab switch when not pending`() = runTest {
+        handler.handleAction(BookcaseAction.OnCreateBookClubDirect("Test Club", ShelfStyle.DarkWood))
+        handler.handleAction(BookcaseAction.DismissInviteLink)
+
+        assertFalse("Should NOT switch tabs", state.value.switchToBookClubsTab)
     }
 }

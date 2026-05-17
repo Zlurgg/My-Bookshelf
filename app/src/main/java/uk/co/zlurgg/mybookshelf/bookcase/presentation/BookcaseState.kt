@@ -60,6 +60,7 @@ data class BookcaseState(
     // Tab navigation after operations
     val switchToPersonalTab: Boolean = false,
     val switchToBookClubsTab: Boolean = false,
+    val pendingSwitchToBookClubsTab: Boolean = false,
 
     // Converted book clubs notification (clubs deleted by creator, converted to personal shelves)
     val deletedBookClubNames: List<String> = emptyList(),

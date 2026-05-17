@@ -30,7 +30,15 @@ internal class BookcaseClubActionHandler(
             }
             is BookcaseAction.OnInviteToClub -> showInviteForExistingClub(action.shelf)
             is BookcaseAction.DismissInviteLink -> {
-                state.update { it.copy(bookClubCode = null, bookClubName = null) }
+                val shouldSwitch = state.value.pendingSwitchToBookClubsTab
+                state.update {
+                    it.copy(
+                        bookClubCode = null,
+                        bookClubName = null,
+                        pendingSwitchToBookClubsTab = false,
+                        switchToBookClubsTab = shouldSwitch
+                    )
+                }
             }
             is BookcaseAction.ShowDeleteBookClubDialog -> {
                 state.update { it.copy(showDeleteBookClubDialog = true, shelfToDelete = action.bookshelf) }
@@ -115,7 +123,7 @@ internal class BookcaseClubActionHandler(
                         bookClubCode = createResult.data.clubCode,
                         bookClubName = clubName,
                         isNewlyCreatedBookClub = true,
-                        switchToBookClubsTab = switchToBookClubsTab
+                        pendingSwitchToBookClubsTab = switchToBookClubsTab
                     )
                 }
             }
