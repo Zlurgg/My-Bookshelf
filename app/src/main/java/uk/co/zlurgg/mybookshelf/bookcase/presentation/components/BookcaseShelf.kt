@@ -106,11 +106,9 @@ fun BookcaseShelf(
                 if (shouldRemoveOnRelease) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     callbacks.onRemoveBookshelf(shelf)
-                    // Book club shelves show a confirmation dialog instead of
-                    // removing immediately — return false so the card snaps back.
-                    // Personal shelves are removed from state, so returning true
-                    // lets the dismiss animation complete before the item disappears.
-                    !shelf.isBookClub
+                    // All shelves show a confirmation dialog — return false
+                    // so the card snaps back until the user confirms.
+                    false
                 } else {
                     false
                 }

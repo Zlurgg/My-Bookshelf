@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.GroupAdd
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.CollectionsBookmark
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -553,6 +555,27 @@ fun BookcaseScreen(
             onDismiss = { onAction(BookcaseAction.DismissBookClubPreview) },
             onJoin = { onAction(BookcaseAction.OnConfirmJoinBookClub) },
             isJoining = state.joinInProgress
+        )
+    }
+
+    // Delete shelf confirmation dialog
+    if (state.showDeleteShelfDialog && state.shelfToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { onAction(BookcaseAction.DismissDeleteShelfDialog) },
+            title = { Text(stringResource(R.string.delete_shelf_title)) },
+            text = {
+                Text(stringResource(R.string.delete_shelf_message, state.shelfToDelete.name))
+            },
+            confirmButton = {
+                TextButton(onClick = { onAction(BookcaseAction.ConfirmDeleteShelf) }) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onAction(BookcaseAction.DismissDeleteShelfDialog) }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
         )
     }
 

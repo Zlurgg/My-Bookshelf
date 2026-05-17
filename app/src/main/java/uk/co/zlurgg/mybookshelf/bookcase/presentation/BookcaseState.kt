@@ -34,6 +34,9 @@ data class BookcaseState(
     val bookClubName: String? = null,
     val isNewlyCreatedBookClub: Boolean = true,
 
+    // Delete shelf confirmation
+    val showDeleteShelfDialog: Boolean = false,
+
     // Delete Book Club confirmation
     val showDeleteBookClubDialog: Boolean = false,
     val shelfToDelete: Bookshelf? = null,

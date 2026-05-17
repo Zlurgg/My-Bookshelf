@@ -105,6 +105,17 @@ class BookcaseViewModel(
             is BookcaseAction.OnReorderShelf -> reorderShelf(action.bookshelf, action.newPosition)
             is BookcaseAction.OnRemoveBookShelf -> removeShelf(action.bookshelf)
             is BookcaseAction.OnUndoRemove -> undoRemove()
+            is BookcaseAction.ShowDeleteShelfDialog -> {
+                _state.update { it.copy(showDeleteShelfDialog = true, shelfToDelete = action.bookshelf) }
+            }
+            is BookcaseAction.DismissDeleteShelfDialog -> {
+                _state.update { it.copy(showDeleteShelfDialog = false, shelfToDelete = null) }
+            }
+            is BookcaseAction.ConfirmDeleteShelf -> {
+                val shelf = state.value.shelfToDelete ?: return
+                _state.update { it.copy(showDeleteShelfDialog = false, shelfToDelete = null) }
+                removeShelf(shelf)
+            }
             is BookcaseAction.OnBookshelfClick -> { /* Navigation handled by screen root */ }
             is BookcaseAction.OnTutorialShelfClick -> openTutorialShelf()
             is BookcaseAction.ShowRenameDialog -> {

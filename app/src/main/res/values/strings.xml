@@ -349,6 +349,10 @@
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
 
+    <!-- Delete shelf dialog -->
+    <string name="delete_shelf_title">Delete Shelf?</string>
+    <string name="delete_shelf_message">Delete \"%1$s\"? All books on this shelf will be removed from it.</string>
+
     <!-- Delete Book Club dialog -->
     <string name="delete_book_club_title">Delete Book Club?</string>
     <string name="delete_book_club_message">Delete \"%1$s\"? All members will lose access to this club and its shared books.</string>
