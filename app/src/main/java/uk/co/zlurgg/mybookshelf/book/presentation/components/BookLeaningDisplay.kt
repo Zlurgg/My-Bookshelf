@@ -102,7 +102,7 @@ fun BookLeaning(
         }
 
         SpineHighlightStrip(
-            height = height,
+            height = height - LEAN_BOTTOM_PADDING,
             topAlpha = LEANING_HIGHLIGHT_TOP_ALPHA,
             midAlpha = LEANING_HIGHLIGHT_MID_ALPHA,
             offsetX = LEANING_HIGHLIGHT_OFFSET,
@@ -113,3 +113,4 @@ fun BookLeaning(
 private const val LEANING_HIGHLIGHT_TOP_ALPHA = 0.4f
 private const val LEANING_HIGHLIGHT_MID_ALPHA = 0.2f
 private val LEANING_HIGHLIGHT_OFFSET = 2.dp
+private const val LEAN_BOTTOM_PADDING = 3

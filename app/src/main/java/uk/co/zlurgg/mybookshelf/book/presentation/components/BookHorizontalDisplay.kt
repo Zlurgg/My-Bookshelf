@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.presentation.util.DefaultSpineShadow
-import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStrip
+import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStripHorizontal
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
 
@@ -90,6 +90,8 @@ fun BookHorizontal(
             }
         }
 
-        SpineHighlightStrip(height = thickness.toInt())
+        SpineHighlightStripHorizontal(width = BOOK_WIDTH)
     }
 }
+
+private const val BOOK_WIDTH = 150

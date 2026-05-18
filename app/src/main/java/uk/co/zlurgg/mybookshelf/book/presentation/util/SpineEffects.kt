@@ -59,6 +59,10 @@ val LeaningSpineShadow = SpineShadowConfig(
     spotAlpha = 0.4f
 )
 
+/**
+ * Vertical highlight strip for upright books (BookVertical, BookLeaning).
+ * Simulates light catching the left edge of the spine.
+ */
 @Composable
 fun SpineHighlightStrip(
     height: Int,
@@ -73,6 +77,35 @@ fun SpineHighlightStrip(
             .offset(x = offsetX)
             .background(
                 brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = topAlpha),
+                        Color.White.copy(alpha = midAlpha),
+                        Color.Transparent
+                    )
+                ),
+                shape = RoundedCornerShape(0.5.dp)
+            )
+    )
+}
+
+/**
+ * Horizontal highlight strip for lying-down books (BookHorizontal).
+ * Simulates light catching the top edge of the spine.
+ */
+@Composable
+fun SpineHighlightStripHorizontal(
+    width: Int,
+    topAlpha: Float = DEFAULT_HIGHLIGHT_TOP_ALPHA,
+    midAlpha: Float = DEFAULT_HIGHLIGHT_MID_ALPHA,
+    offsetY: Dp = DEFAULT_HIGHLIGHT_OFFSET,
+) {
+    Box(
+        modifier = Modifier
+            .width(width.dp)
+            .height(1.dp)
+            .offset(y = offsetY)
+            .background(
+                brush = Brush.horizontalGradient(
                     colors = listOf(
                         Color.White.copy(alpha = topAlpha),
                         Color.White.copy(alpha = midAlpha),
