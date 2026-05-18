@@ -87,7 +87,7 @@ fun BookVertical(
                 ) {
                     Text(
                         text = book.title,
-                        color = Color.White,
+                        color = spineColors.text,
                         maxLines = 4,
                         fontSize = 8.sp,
                         textAlign = TextAlign.Center,

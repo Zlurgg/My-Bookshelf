@@ -38,4 +38,24 @@ class SpineEffectsTest {
         assertEquals("Lighter alpha should be 1.0", 1f, colors.lighter.alpha)
         assertEquals("Darker alpha should be 1.0", 1f, colors.darker.alpha)
     }
+
+    @Test
+    fun `dark spine gets light text`() {
+        // Dark brown spine
+        val colors = calculateSpineColors(0xFF2B1F16.toInt())
+        assertTrue(
+            "Text on dark spine should be light (high luminance)",
+            colors.text.red > 0.8f
+        )
+    }
+
+    @Test
+    fun `light spine gets dark text`() {
+        // Light beige spine
+        val colors = calculateSpineColors(0xFFC8B89A.toInt())
+        assertTrue(
+            "Text on light spine should be dark (low luminance)",
+            colors.text.red < 0.2f
+        )
+    }
 }

@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 
 @Composable
 fun BookHorizontalStack(
@@ -39,6 +40,7 @@ fun BookHorizontalStack(
         verticalArrangement = Arrangement.Bottom
     ) {
         stackedBooks.forEachIndexed { index, book ->
+            val spineColors = calculateSpineColors(book.spineColor)
             Box(
                 modifier = Modifier
                     .clickable { onClick(book) }
@@ -54,7 +56,7 @@ fun BookHorizontalStack(
                 ) {
                     Text(
                         text = book.title,
-                        color = Color.White,
+                        color = spineColors.text,
                         maxLines = 1,
                         fontSize = 10.sp,
                         overflow = TextOverflow.Ellipsis,

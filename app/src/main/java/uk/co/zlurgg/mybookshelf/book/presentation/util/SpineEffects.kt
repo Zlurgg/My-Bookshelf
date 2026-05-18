@@ -11,6 +11,7 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -22,7 +23,8 @@ import androidx.compose.ui.unit.dp
 data class SpineColors(
     val base: Color,
     val lighter: Color,
-    val darker: Color
+    val darker: Color,
+    val text: Color
 )
 
 fun calculateSpineColors(spineColor: Int): SpineColors {
@@ -37,7 +39,13 @@ fun calculateSpineColors(spineColor: Int): SpineColors {
         green = base.green * DARKER_MULTIPLIER,
         blue = base.blue * DARKER_MULTIPLIER
     )
-    return SpineColors(base = base, lighter = lighter, darker = darker)
+    // Warm off-white on dark spines (aged foil), dark brown on light spines (ink)
+    val text = if (base.luminance() < TEXT_LUMINANCE_THRESHOLD) {
+        LIGHT_TEXT_COLOR
+    } else {
+        DARK_TEXT_COLOR
+    }
+    return SpineColors(base = base, lighter = lighter, darker = darker, text = text)
 }
 
 @Immutable
@@ -122,3 +130,8 @@ private const val DARKER_MULTIPLIER = 0.6f
 private const val DEFAULT_HIGHLIGHT_TOP_ALPHA = 0.3f
 private const val DEFAULT_HIGHLIGHT_MID_ALPHA = 0.1f
 private val DEFAULT_HIGHLIGHT_OFFSET = 3.dp
+
+// WCAG contrast midpoint: white and black have equal contrast at this luminance
+private const val TEXT_LUMINANCE_THRESHOLD = 0.179f
+private val LIGHT_TEXT_COLOR = Color(0xFFF5EDE0) // Warm off-white (aged foil print)
+private val DARK_TEXT_COLOR = Color(0xFF1A1410) // Dark warm brown (ink)

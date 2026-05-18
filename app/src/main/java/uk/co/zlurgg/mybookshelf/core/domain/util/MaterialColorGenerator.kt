@@ -113,12 +113,12 @@ object MaterialColorGenerator {
             (finalGreen shl GREEN_SHIFT) or finalBlue
     }
 
-    // HSL generation ranges
+    // HSL generation ranges (wider range for varied spines: vivid reds to pale creams)
     private const val HUE_RANGE = 360f
-    private const val MIN_SATURATION = 0.25f
-    private const val SATURATION_RANGE = 0.35f
+    private const val MIN_SATURATION = 0.20f
+    private const val SATURATION_RANGE = 0.55f // 0.20–0.75: allows muted and vivid
     private const val MIN_LIGHTNESS = 0.15f
-    private const val LIGHTNESS_RANGE = 0.25f
+    private const val LIGHTNESS_RANGE = 0.40f // 0.15–0.55: allows dark and light spines
 
     // ARGB bit shifts and masks
     private const val ALPHA_SHIFT = 24

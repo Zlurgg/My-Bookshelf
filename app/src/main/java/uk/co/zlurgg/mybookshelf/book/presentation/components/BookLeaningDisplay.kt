@@ -90,7 +90,7 @@ fun BookLeaning(
                 ) {
                     Text(
                         text = book.title,
-                        color = Color.White,
+                        color = spineColors.text,
                         maxLines = 3,
                         fontSize = 8.sp,
                         textAlign = TextAlign.Center,

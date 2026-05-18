@@ -72,7 +72,7 @@ fun BookHorizontal(
             ) {
                 Text(
                     text = book.title,
-                    color = Color.White,
+                    color = spineColors.text,
                     maxLines = 1,
                     fontSize = 10.sp,
                     overflow = TextOverflow.Ellipsis,
