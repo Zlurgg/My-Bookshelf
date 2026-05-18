@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookclub.data.mappers
 
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
@@ -67,7 +68,7 @@ fun BookClubBookDto.toBookDomain(): Book = Book(
     languages = emptyList(),
     numEditions = 0,
     purchased = false,
-    spineColor = spineColor
+    spineColor = if (spineColor != 0) spineColor else BookColorGenerator.generateSpineColor()
 )
 
 /**
