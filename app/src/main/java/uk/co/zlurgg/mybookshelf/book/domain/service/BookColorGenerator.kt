@@ -1,6 +1,6 @@
 package uk.co.zlurgg.mybookshelf.book.domain.service
 
-import uk.co.zlurgg.mybookshelf.core.presentation.util.MaterialColorGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.util.MaterialColorGenerator
 
 /**
  * Generates appropriate colors for book spines.
