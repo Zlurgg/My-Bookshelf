@@ -7,6 +7,7 @@ import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
+import uk.co.zlurgg.mybookshelf.book.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
@@ -25,8 +26,13 @@ class BookRepositoryImpl(
     }
 
     override suspend fun upsertBook(book: Book): Result<Unit, DataError.Local> {
+        val safeBook = if (book.spineColor == 0) {
+            book.copy(spineColor = BookColorGenerator.generateSpineColor())
+        } else {
+            book
+        }
         return ErrorMapper.safeSuspendCall(TAG) {
-            dao.upsert(book.toBookEntity())
+            dao.upsert(safeBook.toBookEntity())
         }
     }
 
