@@ -219,32 +219,30 @@ fun BookshelfCard(
                                 )
                             }
                             // For book clubs: show delete/leave only for signed-in users
-                            if (!isTutorialShelf) {
-                                if (shelf.isBookClub && isSignedIn && shelf.clubCreatorId != currentUserId) {
-                                    // Non-creator member: show "Leave Club"
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.menu_leave_book_club)) },
-                                        onClick = {
-                                            menuExpanded = false
-                                            onLeaveBookClub(shelf)
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
-                                        }
-                                    )
-                                } else if (!shelf.isBookClub || isSignedIn) {
-                                    // Creator or personal shelf: show "Delete"
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.menu_delete_shelf)) },
-                                        onClick = {
-                                            menuExpanded = false
-                                            onDelete(shelf)
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Delete, contentDescription = null)
-                                        }
-                                    )
-                                }
+                            if (shelf.isBookClub && isSignedIn && shelf.clubCreatorId != currentUserId) {
+                                // Non-creator member: show "Leave Club"
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = R.string.menu_leave_book_club)) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onLeaveBookClub(shelf)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
+                                    }
+                                )
+                            } else if (!shelf.isBookClub || isSignedIn) {
+                                // Creator, personal shelf, or tutorial shelf: show "Delete"
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(id = R.string.menu_delete_shelf)) },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onDelete(shelf)
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.Delete, contentDescription = null)
+                                    }
+                                )
                             }
                             // Contextual share option - different for personal vs book club shelves
                             if (!isTutorialShelf) {
