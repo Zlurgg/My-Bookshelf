@@ -29,13 +29,13 @@ Welcome to My Bookshelf - your personal book collection organizer!
 Your books live on shelves, and shelves live in your bookcase. Think of it like a digital version of your home library!
 
 🔍 SEARCH FOR BOOKS
-Tap the + button in any shelf to find books from the Open Library. You can search by title, author, or keywords. Try searching for your favorite book!
+Look for the add slot (+) on the first row of any shelf to search the Open Library for books. You can search by title, author, or keywords. Try searching for your favorite book!
 
 ➕ ADDING BOOKS
 Once you find a book in search results, tap the + icon to add it to your shelf. You can add the same book to multiple shelves if you like!
 
 📖 ORGANIZE YOUR COLLECTION
-Create multiple shelves to organize your books however you want - by genre, reading status, favorites, or any system that works for you. Long-press a shelf card in the bookcase to rename or delete it.
+Create multiple shelves to organize your books however you want - by genre, reading status, favorites, or any system that works for you. Tap the three-dot menu on any shelf card to rename, delete, or change its style.
 
 👥 BOOK CLUBS
 Share your reading journey with friends! Swipe to the "Book Clubs" tab to:
@@ -46,8 +46,16 @@ Share your reading journey with friends! Swipe to the "Book Clubs" tab to:
 - Leave comments and discuss what you're reading
 Book Clubs sync automatically across all members - perfect for reading groups, book discussions, or just sharing recommendations with friends!
 
+📖 YOUR LIBRARY
+The Library tab shows every book you own across all your shelves in one place. Use it to:
+- Search your entire collection by title or author
+- Sort by recently added, title (A-Z), or author (A-Z)
+- Filter by reading status: Not Read, Reading, Finished, or Abandoned
+- Tap any book to view its details, add notes, or update your reading status
+Your Library updates automatically as you add books to shelves - no extra steps needed!
+
 🎨 CUSTOMIZE SHELF STYLES
-Each shelf can have its own visual style! Tap the three-dot menu on any shelf card and choose "Change Style" to pick from different wood and metal finishes.
+Each shelf can have its own visual style! In the three-dot menu on any shelf card, choose "Change Style" to pick from different wood and metal finishes.
 
 🔀 REORDER SHELVES
 Want to rearrange your bookcase? Tap the unlock icon at the top to enter reorder mode. Then drag shelves up and down to organize them. Tap the lock icon when you're done.
@@ -60,17 +68,16 @@ Each shelf has two viewing modes! Tap the toggle icon in the shelf to switch bet
 🗑️ REMOVING BOOKS
 Open a book's details and tap "Remove from Shelf" at the bottom. Don't worry - you can always add it back later!
 
-🔗 SHARE YOUR SHELVES
-Want to share your reading list with friends? In the bookshelf view, tap the share icon to create a link. Friends can import your shelf with one tap!
+🔗 INVITE FRIENDS
+Want to read together? Tap the three-dot menu on a shelf card and choose "Create Book Club" to turn it into a shared club. Already in a club? Use "Invite to Club" from the same menu to share the invite code with friends.
 
 ☁️ CLOUD SYNC
-Sign in with Google to sync your collection across devices! Tap the menu icon and choose "Sign In" to enable cloud sync. Your personal shelves and Book Club memberships will stay in sync.
+Sign in with Google to sync your collection across devices! Tap the profile icon in the top-right to access your account and sign in. Your personal shelves and Book Club memberships will stay in sync.
 
 💡 HELPFUL TIPS
 - The Tutorial Bookshelf (this shelf) can be accessed anytime via the Help menu
 - Books remember your personal notes and reading status
 - Book Clubs require sign-in to sync with other members
-- You can delete this tutorial shelf once you're comfortable with the app
 
 Enjoy building your personal library! 📚
     """.trimIndent()
