@@ -17,11 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.presentation.util.DefaultSpineShadow
+import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStrip
+import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
 
 @Composable
@@ -30,36 +35,61 @@ fun BookHorizontal(
     onClick: () -> Unit
 ) {
     val thickness = getBookThickness(book.numPages)
+    val spineColors = calculateSpineColors(book.spineColor)
+    val shadow = DefaultSpineShadow
+
     Box(
         modifier = Modifier
             .clickable { onClick() }
             .width(150.dp)
-            .height(thickness.dp) // Use page-based thickness
-            .background(Color(book.spineColor), shape = RoundedCornerShape(2.dp))
-            .padding(horizontal = 4.dp)
+            .height(thickness.dp)
+            .padding(vertical = 1.dp)
+            .shadow(
+                elevation = shadow.elevation,
+                shape = RoundedCornerShape(2.dp),
+                ambientColor = Color.Black.copy(alpha = shadow.ambientAlpha),
+                spotColor = Color.Black.copy(alpha = shadow.spotAlpha)
+            )
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        // 3D spine with vertical gradient (top-to-bottom for horizontal orientation)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(spineColors.lighter, spineColors.base, spineColors.darker),
+                        startY = 0f,
+                        endY = thickness * 2
+                    ),
+                    shape = RoundedCornerShape(2.dp)
+                )
+                .padding(horizontal = 4.dp)
         ) {
-            Text(
-                text = book.title,
-                color = Color.White,
-                maxLines = 1,
-                fontSize = 10.sp,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f)
-            )
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = book.title,
+                    color = Color.White,
+                    maxLines = 1,
+                    fontSize = 10.sp,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
 
-            LoadImage(
-                imageUrl = book.imageUrl,
-                title = book.title,
-                modifier = Modifier
-                    .size((thickness * 0.9f).dp) // Scale with thickness
-                    .rotate(90f)
-                    .clip(RoundedCornerShape(2.dp))
-            )
+                LoadImage(
+                    imageUrl = book.imageUrl,
+                    title = book.title,
+                    modifier = Modifier
+                        .size((thickness * 0.9f).dp)
+                        .rotate(90f)
+                        .clip(RoundedCornerShape(2.dp))
+                )
+            }
         }
+
+        SpineHighlightStrip(height = thickness.toInt())
     }
 }

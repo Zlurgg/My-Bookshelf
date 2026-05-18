@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,6 +25,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.presentation.util.LeaningSpineShadow
+import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStrip
+import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
 
 @Composable
@@ -36,17 +38,8 @@ fun BookLeaning(
     height: Int = 140
 ) {
     val thickness = getBookThickness(book.numPages)
-    val baseColor = Color(book.spineColor) // Already matte from BookColorGenerator
-    val lighterColor = baseColor.copy(
-        red = (baseColor.red * 1.15f).coerceAtMost(1f),
-        green = (baseColor.green * 1.15f).coerceAtMost(1f),
-        blue = (baseColor.blue * 1.15f).coerceAtMost(1f)
-    )
-    val darkerColor = baseColor.copy(
-        red = baseColor.red * 0.6f,
-        green = baseColor.green * 0.6f,
-        blue = baseColor.blue * 0.6f
-    )
+    val spineColors = calculateSpineColors(book.spineColor)
+    val shadow = LeaningSpineShadow
 
     Box(
         modifier = Modifier
@@ -56,10 +49,10 @@ fun BookLeaning(
             .width(thickness.dp)
             .padding(start = 2.dp, end = 2.dp, bottom = 3.dp) // Bottom padding for lean offset
             .shadow(
-                elevation = 3.dp, // Enhanced shadow for leaning effect
+                elevation = shadow.elevation,
                 shape = RoundedCornerShape(4.dp),
-                ambientColor = Color.Black.copy(alpha = 0.25f),
-                spotColor = Color.Black.copy(alpha = 0.4f)
+                ambientColor = Color.Black.copy(alpha = shadow.ambientAlpha),
+                spotColor = Color.Black.copy(alpha = shadow.spotAlpha)
             )
     ) {
         // 3D spine with enhanced gradient for leaning effect
@@ -68,7 +61,7 @@ fun BookLeaning(
                 .fillMaxSize()
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(lighterColor, baseColor, darkerColor),
+                        colors = listOf(spineColors.lighter, spineColors.base, spineColors.darker),
                         startX = 0f,
                         endX = thickness * 2
                     ),
@@ -108,22 +101,15 @@ fun BookLeaning(
             }
         }
 
-        // More prominent highlight for leaning books
-        Box(
-            modifier = Modifier
-                .width(1.dp)
-                .height(height.dp)
-                .offset(x = 2.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.4f),
-                            Color.White.copy(alpha = 0.2f),
-                            Color.Transparent
-                        )
-                    ),
-                    shape = RoundedCornerShape(0.5.dp)
-                )
+        SpineHighlightStrip(
+            height = height,
+            topAlpha = LEANING_HIGHLIGHT_TOP_ALPHA,
+            midAlpha = LEANING_HIGHLIGHT_MID_ALPHA,
+            offsetX = LEANING_HIGHLIGHT_OFFSET,
         )
     }
 }
+
+private const val LEANING_HIGHLIGHT_TOP_ALPHA = 0.4f
+private const val LEANING_HIGHLIGHT_MID_ALPHA = 0.2f
+private val LEANING_HIGHLIGHT_OFFSET = 2.dp

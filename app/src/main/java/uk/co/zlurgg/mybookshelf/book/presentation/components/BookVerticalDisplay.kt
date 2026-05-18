@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,6 +24,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.presentation.util.DefaultSpineShadow
+import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStrip
+import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
 
 @Composable
@@ -34,17 +36,8 @@ fun BookVertical(
     height: Int = 150
 ) {
     val thickness = getBookThickness(book.numPages)
-    val baseColor = Color(book.spineColor) // Already matte from BookColorGenerator
-    val lighterColor = baseColor.copy(
-        red = (baseColor.red * 1.15f).coerceAtMost(1f),
-        green = (baseColor.green * 1.15f).coerceAtMost(1f),
-        blue = (baseColor.blue * 1.15f).coerceAtMost(1f)
-    )
-    val darkerColor = baseColor.copy(
-        red = baseColor.red * 0.6f,
-        green = baseColor.green * 0.6f,
-        blue = baseColor.blue * 0.6f
-    )
+    val spineColors = calculateSpineColors(book.spineColor)
+    val shadow = DefaultSpineShadow
 
     Box(
         modifier = Modifier
@@ -53,10 +46,10 @@ fun BookVertical(
             .width(thickness.dp)
             .padding(horizontal = 1.dp) // Contain shadow within bounds
             .shadow(
-                elevation = 2.dp,
+                elevation = shadow.elevation,
                 shape = RoundedCornerShape(4.dp),
-                ambientColor = Color.Black.copy(alpha = 0.2f),
-                spotColor = Color.Black.copy(alpha = 0.3f)
+                ambientColor = Color.Black.copy(alpha = shadow.ambientAlpha),
+                spotColor = Color.Black.copy(alpha = shadow.spotAlpha)
             )
     ) {
         // 3D spine with gradient
@@ -65,7 +58,7 @@ fun BookVertical(
                 .fillMaxSize()
                 .background(
                     brush = Brush.horizontalGradient(
-                        colors = listOf(lighterColor, baseColor, darkerColor),
+                        colors = listOf(spineColors.lighter, spineColors.base, spineColors.darker),
                         startX = 0f,
                         endX = thickness * 2
                     ),
@@ -105,22 +98,6 @@ fun BookVertical(
             }
         }
 
-        // Subtle highlight strip for 3D depth
-        Box(
-            modifier = Modifier
-                .width(1.dp)
-                .height(height.dp)
-                .offset(x = 3.dp)
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.3f),
-                            Color.White.copy(alpha = 0.1f),
-                            Color.Transparent
-                        )
-                    ),
-                    shape = RoundedCornerShape(0.5.dp)
-                )
-        )
+        SpineHighlightStrip(height = height)
     }
 }
