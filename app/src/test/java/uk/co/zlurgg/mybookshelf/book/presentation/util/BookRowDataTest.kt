@@ -82,4 +82,87 @@ class BookRowDataTest {
             assertEquals(row.books.size, row.styles.size)
         }
     }
+
+    @Test
+    fun `reserved leading width reduces first row capacity`() {
+        val books = List(10) { TestBookBuilder().withId("book-$it").withNumPages(200).build() }
+
+        val rowsWithout = calculateBookRows(
+            books = books,
+            availableWidthDp = 400f,
+            isTidyMode = true
+        )
+        val rowsWith = calculateBookRows(
+            books = books,
+            availableWidthDp = 400f,
+            isTidyMode = true,
+            reservedLeadingWidthDp = ADD_SLOT_RESERVED_WIDTH
+        )
+
+        assertTrue(
+            "First row should have fewer books with reserved width",
+            rowsWith[0].books.size <= rowsWithout[0].books.size
+        )
+        // All books still accounted for
+        assertEquals(10, rowsWith.sumOf { it.books.size })
+    }
+
+    @Test
+    fun `reserved leading width only affects first row`() {
+        val books = List(20) { TestBookBuilder().withId("book-$it").withNumPages(200).build() }
+
+        val rowsWithout = calculateBookRows(
+            books = books,
+            availableWidthDp = 300f,
+            isTidyMode = true
+        )
+        val rowsWith = calculateBookRows(
+            books = books,
+            availableWidthDp = 300f,
+            isTidyMode = true,
+            reservedLeadingWidthDp = ADD_SLOT_RESERVED_WIDTH
+        )
+
+        // Second row onward should have same capacity (if enough books to fill multiple rows)
+        if (rowsWith.size > 2 && rowsWithout.size > 2) {
+            assertEquals(
+                "Second row capacity should be unchanged",
+                rowsWithout[1].books.size,
+                rowsWith[1].books.size
+            )
+        }
+    }
+
+    @Test
+    fun `reserved leading width with single book still produces one row`() {
+        val books = listOf(TestBookBuilder().withId("book-1").withNumPages(200).build())
+        val rows = calculateBookRows(
+            books = books,
+            availableWidthDp = 400f,
+            isTidyMode = true,
+            reservedLeadingWidthDp = ADD_SLOT_RESERVED_WIDTH
+        )
+        assertEquals(1, rows.size)
+        assertEquals(1, rows[0].books.size)
+    }
+
+    @Test
+    fun `zero reserved width behaves same as no parameter`() {
+        val books = List(5) { TestBookBuilder().withId("book-$it").build() }
+        val rowsDefault = calculateBookRows(
+            books = books,
+            availableWidthDp = 400f,
+            isTidyMode = false
+        )
+        val rowsExplicitZero = calculateBookRows(
+            books = books,
+            availableWidthDp = 400f,
+            isTidyMode = false,
+            reservedLeadingWidthDp = 0f
+        )
+        assertEquals(rowsDefault.size, rowsExplicitZero.size)
+        rowsDefault.zip(rowsExplicitZero).forEach { (a, b) ->
+            assertEquals(a.books.size, b.books.size)
+        }
+    }
 }

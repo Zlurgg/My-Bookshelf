@@ -11,12 +11,19 @@ fun calculateBookRows(
     books: List<Book>,
     availableWidthDp: Float,
     isTidyMode: Boolean,
+    reservedLeadingWidthDp: Float = 0f,
 ): List<BookRowData> {
     val rows = mutableListOf<BookRowData>()
     var bookIndex = 0
 
     while (bookIndex < books.size) {
         // First pass: determine how many books fit
+        // Reserve leading width on the first row only (for add slot)
+        val rowAvailableWidth = if (rows.isEmpty()) {
+            availableWidthDp - reservedLeadingWidthDp
+        } else {
+            availableWidthDp
+        }
         var currentRowWidth = 0f
         var booksInRow = 0
 
@@ -30,7 +37,7 @@ fun calculateBookRows(
             val bookWidth = getBookWidth(book, bookStyle) + 6f
             val potentialRowWidth = currentRowWidth + bookWidth
 
-            if (potentialRowWidth <= availableWidthDp) {
+            if (potentialRowWidth <= rowAvailableWidth) {
                 currentRowWidth = potentialRowWidth
                 booksInRow++
             } else {
@@ -58,7 +65,7 @@ fun calculateBookRows(
                         val widthSoFar = rowStyles.mapIndexed { styleIndex, style ->
                             getBookWidth(rowBooks[styleIndex], style) + 6f
                         }.sum()
-                        val remainingSpace = availableWidthDp - widthSoFar
+                        val remainingSpace = rowAvailableWidth - widthSoFar
                         if (remainingSpace > 30f) BookDisplayStyle.VERTICAL else baseStyle
                     }
 
@@ -74,3 +81,6 @@ fun calculateBookRows(
 
     return rows
 }
+
+/** Width reserved for the add-book slot: bookend (60dp) + row spacing (6dp). */
+const val ADD_SLOT_RESERVED_WIDTH = 66f

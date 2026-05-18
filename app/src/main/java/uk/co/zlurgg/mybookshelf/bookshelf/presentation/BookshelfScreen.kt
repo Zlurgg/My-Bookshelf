@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material3.AlertDialog
@@ -54,6 +53,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSear
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchState
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBooks
+import uk.co.zlurgg.mybookshelf.book.presentation.util.ADD_SLOT_RESERVED_WIDTH
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateBookRows
 
@@ -105,6 +105,11 @@ fun BookshelfScreen(
     val books = state.books
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
     val availableWidth = screenWidth - 24.dp - 16.dp // margins and padding
+
+    // Add slot visibility: hidden for tutorial, hidden at capacity, auth-gated on club shelves
+    val showAddSlot = !state.isTutorialShelf &&
+        books.size < BookshelfConstants.MAX_BOOKS_PER_SHELF &&
+        (!state.isBookClub || state.isSignedIn)
 
     Scaffold(
         topBar = {
@@ -163,32 +168,15 @@ fun BookshelfScreen(
             )
         },
         floatingActionButton = {
-            // Hide FABs for tutorial shelf - users shouldn't modify tutorial content
-            if (!state.isTutorialShelf) {
-                Row {
-                    // Hide Create Book Club FAB for guests and on club shelves
-                    if (!state.isBookClub && state.isSignedIn) {
-                        FloatingActionButton(
-                            onClick = { showCreateBookClubDialog = true }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Groups,
-                                contentDescription = stringResource(R.string.cd_create_book_club)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                    }
-                    // Hide Add Book FAB for guests on club shelves
-                    if (!state.isBookClub || state.isSignedIn) {
-                        FloatingActionButton(
-                            onClick = { onAction(BookshelfAction.OnSearchClick) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = stringResource(R.string.cd_add_book_to_shelf)
-                            )
-                        }
-                    }
+            // Create Book Club FAB: hidden for tutorial shelves, guests, and on club shelves
+            if (!state.isTutorialShelf && !state.isBookClub && state.isSignedIn) {
+                FloatingActionButton(
+                    onClick = { showCreateBookClubDialog = true }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Groups,
+                        contentDescription = stringResource(R.string.cd_create_book_club)
+                    )
                 }
             }
         }
@@ -224,8 +212,9 @@ fun BookshelfScreen(
                     onBookClick = { /* no-op */ },
                     bookshelfMaterial = state.shelfMaterial,
                     config = BookRowConfig(
-                        showAddSlot = false,
-                        isTidyMode = state.isTidyMode
+                        showAddSlot = showAddSlot,
+                        isTidyMode = state.isTidyMode,
+                        onAddClick = { onAction(BookshelfAction.OnSearchClick) }
                     )
                 )
 
@@ -281,19 +270,26 @@ fun BookshelfScreen(
                 val rows = calculateBookRows(
                     books = books,
                     availableWidthDp = availableWidth.value,
-                    isTidyMode = state.isTidyMode
+                    isTidyMode = state.isTidyMode,
+                    reservedLeadingWidthDp = if (showAddSlot) ADD_SLOT_RESERVED_WIDTH else 0f
                 )
 
-                rows.forEach { rowData ->
+                rows.forEachIndexed { index, rowData ->
                     item(key = rowData.books.first().id) {
+                        val isFirstRow = index == 0
                         BookRowDynamic(
                             books = rowData.books,
                             onBookClick = { book -> onAction(BookshelfAction.OnBookClick(book)) },
                             bookshelfMaterial = state.shelfMaterial,
                             config = BookRowConfig(
-                                showAddSlot = false,
+                                showAddSlot = showAddSlot && isFirstRow,
                                 isTidyMode = state.isTidyMode,
-                                bookStyles = rowData.styles
+                                bookStyles = rowData.styles,
+                                onAddClick = if (isFirstRow) {
+                                    { onAction(BookshelfAction.OnSearchClick) }
+                                } else {
+                                    null
+                                }
                             )
                         )
                     }

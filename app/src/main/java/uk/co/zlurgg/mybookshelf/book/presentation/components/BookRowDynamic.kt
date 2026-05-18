@@ -57,6 +57,10 @@ fun BookRowDynamic(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.Bottom
             ) {
+                if (config.showAddSlot && config.onAddClick != null) {
+                    AddBookSpine(onClick = config.onAddClick)
+                }
+
                 // Render each book with appropriate style based on mode
                 books.forEachIndexed { index, book ->
                     val bookStyle = config.bookStyles?.getOrNull(index)
@@ -92,10 +96,6 @@ fun BookRowDynamic(
                             )
                         }
                     }
-                }
-
-                if (config.showAddSlot && config.onAddClick != null) {
-                    AddBookSpine(onClick = config.onAddClick)
                 }
             }
         }
