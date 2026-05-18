@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import coil3.compose.SubcomposeAsyncImage
 import uk.co.zlurgg.mybookshelf.R
+import uk.co.zlurgg.mybookshelf.book.presentation.components.resolveImageModel
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 @Composable
@@ -51,7 +52,7 @@ fun BookHeroSection(
                         )
                 ) {
                     SubcomposeAsyncImage(
-                        model = imageUrl,
+                        model = resolveImageModel(imageUrl),
                         contentDescription = title,
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Fit,

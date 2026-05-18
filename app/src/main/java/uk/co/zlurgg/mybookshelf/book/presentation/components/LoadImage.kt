@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
+import uk.co.zlurgg.mybookshelf.R
 
 /**
  * Composable for loading book cover images with instant placeholder pattern.
@@ -53,9 +54,10 @@ fun LoadImage(
     }
 
     if (imageUrl.isNotBlank()) {
+        val model = resolveImageModel(imageUrl)
         SubcomposeAsyncImage(
             modifier = modifier,
-            model = imageUrl,
+            model = model,
             loading = {
                 // Show placeholder immediately (no spinner - instant feedback)
                 BookIconPlaceholder()
@@ -81,3 +83,15 @@ fun LoadImage(
         }
     }
 }
+
+// Maps marker strings stored in Book.imageUrl to local drawable resource IDs
+private val LOCAL_DRAWABLES = mapOf(
+    "local:tutorial_book_cover" to R.drawable.ic_tutorial_book_cover
+)
+
+/**
+ * Resolves an image URL to a Coil-compatible model.
+ * Local drawable markers (e.g. "local:tutorial_book_cover") are mapped to R.drawable resource IDs.
+ * Remote URLs pass through as-is.
+ */
+fun resolveImageModel(imageUrl: String): Any = LOCAL_DRAWABLES[imageUrl] ?: imageUrl

@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil3.compose.SubcomposeAsyncImage
+import uk.co.zlurgg.mybookshelf.book.presentation.components.resolveImageModel
 
 /**
  * Book detail image with instant placeholder pattern.
@@ -33,7 +34,7 @@ fun BookDetailImage(
     ) {
         if (imageUrl?.isNotBlank() == true) {
             SubcomposeAsyncImage(
-                model = imageUrl,
+                model = resolveImageModel(imageUrl),
                 contentDescription = title,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop,

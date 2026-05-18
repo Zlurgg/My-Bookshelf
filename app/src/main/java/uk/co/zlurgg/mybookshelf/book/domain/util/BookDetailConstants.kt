@@ -81,9 +81,9 @@ Enjoy building your personal library! 📚
     const val TUTORIAL_BOOK_PUBLISHER = "My Bookshelf"
 
     /**
-     * Tutorial book cover image - uses app icon via Android resource URI
+     * Tutorial book cover image - marker resolved to R.drawable in LoadImage
      */
-    const val TUTORIAL_BOOK_IMAGE_URL = "android.resource://uk.co.zlurgg.mybookshelf/mipmap/ic_launcher"
+    const val TUTORIAL_BOOK_IMAGE_URL = "local:tutorial_book_cover"
 
     /**
      * Tutorial book default rating values
