@@ -21,4 +21,8 @@ interface BookRepository {
 
     // Library
     fun getAllPersonalBooks(): Flow<List<Book>>
+
+    // Deletion
+    suspend fun deleteBooks(bookIds: List<String>): Result<Unit, DataError.Local>
+    fun getNonRemovableBookIds(): Flow<Set<String>>
 }

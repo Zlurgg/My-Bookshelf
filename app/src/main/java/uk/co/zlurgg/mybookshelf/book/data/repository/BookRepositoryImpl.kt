@@ -53,7 +53,20 @@ class BookRepositoryImpl(
         }
     }
 
+    override suspend fun deleteBooks(bookIds: List<String>): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            bookIds.chunked(SQLITE_BATCH_SIZE).forEach { batch ->
+                dao.deleteBooks(batch)
+            }
+        }
+    }
+
+    override fun getNonRemovableBookIds(): Flow<Set<String>> {
+        return dao.getBookIdsOnClubShelves().map { it.toSet() }
+    }
+
     companion object {
         private const val TAG = "BookRepository"
+        private const val SQLITE_BATCH_SIZE = 500
     }
 }

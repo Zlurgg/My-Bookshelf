@@ -17,9 +17,13 @@ class MockBookRepository : BookRepository {
     var upsertBookCallCount = 0
     var upsertSystemBookCallCount = 0
     var getBookByIdCallCount = 0
+    var deleteBooksCallCount = 0
     var lastUpsertedBook: Book? = null
     var lastUpsertedSystemBook: Book? = null
     var lastQueriedBookId: String? = null
+    var lastDeletedBookIds: List<String> = emptyList()
+
+    private val nonRemovableBookIdsFlow = MutableStateFlow<Set<String>>(emptySet())
 
     fun reset() {
         books.clear()
@@ -28,9 +32,12 @@ class MockBookRepository : BookRepository {
         upsertBookCallCount = 0
         upsertSystemBookCallCount = 0
         getBookByIdCallCount = 0
+        deleteBooksCallCount = 0
         lastUpsertedBook = null
         lastUpsertedSystemBook = null
         lastQueriedBookId = null
+        lastDeletedBookIds = emptyList()
+        nonRemovableBookIdsFlow.value = emptySet()
     }
 
     fun addBook(book: Book) {
@@ -75,5 +82,20 @@ class MockBookRepository : BookRepository {
         personalBooksFlow.value = books
     }
 
+    fun setNonRemovableBookIds(ids: Set<String>) {
+        nonRemovableBookIdsFlow.value = ids
+    }
+
     override fun getAllPersonalBooks(): Flow<List<Book>> = personalBooksFlow
+
+    override suspend fun deleteBooks(bookIds: List<String>): Result<Unit, DataError.Local> {
+        deleteBooksCallCount++
+        lastDeletedBookIds = bookIds
+        errorToReturn?.let { return Result.Error(it) }
+        bookIds.forEach { books.remove(it) }
+        personalBooksFlow.value = personalBooksFlow.value.filter { it.id !in bookIds }
+        return Result.Success(Unit)
+    }
+
+    override fun getNonRemovableBookIds(): Flow<Set<String>> = nonRemovableBookIdsFlow
 }

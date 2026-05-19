@@ -32,6 +32,18 @@ interface CrossRefDao {
     @Query("SELECT COUNT(*) FROM BookshelfBookCrossRef WHERE shelfId = :shelfId")
     fun getBookCountForShelf(shelfId: String): Flow<Int>
 
+    @Query("DELETE FROM BookshelfBookCrossRef WHERE bookId IN (:bookIds)")
+    suspend fun deleteAllCrossRefsForBooks(bookIds: List<String>)
+
+    @Query(
+        """
+        SELECT DISTINCT cr.bookId FROM BookshelfBookCrossRef cr
+        INNER JOIN BookshelfEntity s ON cr.shelfId = s.id
+        WHERE s.isBookClub = 1
+        """
+    )
+    fun getBookIdsOnClubShelves(): Flow<List<String>>
+
     @Query("SELECT EXISTS(SELECT 1 FROM BookshelfBookCrossRef WHERE bookId = :bookId)")
     fun isBookInAnyShelf(bookId: String): Flow<Boolean>
 

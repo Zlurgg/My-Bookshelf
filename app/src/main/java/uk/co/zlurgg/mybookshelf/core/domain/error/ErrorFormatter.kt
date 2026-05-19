@@ -56,6 +56,8 @@ object ErrorFormatter {
         DataError.Local.MAX_SHELVES_REACHED -> "You've reached the maximum of 20 shelves."
         DataError.Local.MAX_BOOKS_REACHED ->
             "This shelf has reached its maximum of 20 books."
+        DataError.Local.PROTECTED_RESOURCE ->
+            "Cannot delete: some books are in book clubs."
         DataError.Local.UNKNOWN -> "Unknown local error occurred."
         DataError.Local.AUTH_CANCELLED,
         DataError.Local.AUTH_NO_CREDENTIAL,
