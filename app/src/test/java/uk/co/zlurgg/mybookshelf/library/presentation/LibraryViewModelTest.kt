@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -437,7 +438,7 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `search result book click upserts book for caching`() = runTest(testDispatcher) {
+    fun `search result book click upserts then sets navigateToBook`() = runTest(testDispatcher) {
         val book = TestBookBuilder().withId("clicked-book").withTitle("Clicked Book").build()
 
         val viewModel = createViewModel()
@@ -446,10 +447,320 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchResultBookClick(book))
         advanceUntilIdle()
+        val state = stateHelper.getCurrentState()
 
         assertTrue(
             "Should have cached clicked book",
             stubUpsertBook.lastUpsertedBook?.id == "clicked-book"
+        )
+        assertEquals("Should set navigateToBook", "clicked-book", state!!.navigateToBook?.id)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `search result book click error surfaces in bookSearchState`() = runTest(testDispatcher) {
+        stubUpsertBook.shouldSucceed = false
+        val book = TestBookBuilder().withId("fail-book").build()
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchResultBookClick(book))
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()
+
+        assertTrue(
+            "Should have error message",
+            state!!.bookSearchState.errorMessage != null
+        )
+        assertNull("Should not navigate", state.navigateToBook)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnNavigationHandled clears navigateToBook`() = runTest(testDispatcher) {
+        val book = TestBookBuilder().withId("nav-book").build()
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchResultBookClick(book))
+        advanceUntilIdle()
+
+        viewModel.onAction(LibraryAction.OnNavigationHandled)
+        val state = stateHelper.getCurrentState()
+
+        assertNull("navigateToBook should be cleared", state!!.navigateToBook)
+        stateHelper.cleanup()
+    }
+
+    // ========================================================================
+    // Selection Mode Tests
+    // ========================================================================
+
+    @Test
+    fun `toggle selection mode sets isSelectionMode and clears selectedBookIds`() =
+        runTest(testDispatcher) {
+            val viewModel = createViewModel()
+            val stateHelper = viewModel.state.testHelper(this)
+            stateHelper.getCurrentState()
+
+            viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+            val state = stateHelper.getCurrentState()
+
+            assertTrue("Should be in selection mode", state!!.isSelectionMode)
+            assertTrue("Selected IDs should be empty", state.selectedBookIds.isEmpty())
+            stateHelper.cleanup()
+        }
+
+    @Test
+    fun `exiting selection mode clears selected IDs preserves filter state`() =
+        runTest(testDispatcher) {
+            mockBookRepository.setPersonalBooks(
+                listOf(TestBookBuilder().withId("1").build())
+            )
+
+            val viewModel = createViewModel()
+            val stateHelper = viewModel.state.testHelper(this)
+            stateHelper.getCurrentState()
+
+            viewModel.onAction(
+                LibraryAction.OnSortOptionSelected(LibrarySortOption.TITLE_AZ)
+            )
+            viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+            viewModel.onAction(LibraryAction.OnToggleBookSelection("1"))
+            stateHelper.getCurrentState()
+
+            viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+            val state = stateHelper.getCurrentState()
+
+            assertFalse("Should exit selection mode", state!!.isSelectionMode)
+            assertTrue("Selected IDs should be cleared", state.selectedBookIds.isEmpty())
+            assertEquals(
+                "Sort option should be preserved",
+                LibrarySortOption.TITLE_AZ,
+                state.sortOption
+            )
+            stateHelper.cleanup()
+        }
+
+    @Test
+    fun `deletableBooks excludes non-removable books`() = runTest(testDispatcher) {
+        mockBookRepository.setPersonalBooks(
+            listOf(
+                TestBookBuilder().withId("ok-1").build(),
+                TestBookBuilder().withId("club-1").build(),
+                TestBookBuilder().withId("ok-2").build(),
+            )
+        )
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        stubGetNonRemovableBookIds.nonRemovableIds.value = setOf("club-1")
+        val state = stateHelper.getCurrentState()
+
+        val deletableIds = state!!.deletableBooks.map { it.id }
+        assertEquals(2, deletableIds.size)
+        assertTrue("Should contain ok-1", deletableIds.contains("ok-1"))
+        assertTrue("Should contain ok-2", deletableIds.contains("ok-2"))
+        assertFalse("Should not contain club-1", deletableIds.contains("club-1"))
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `selectedBookIds pruned when nonRemovableBookIds updates`() =
+        runTest(testDispatcher) {
+            mockBookRepository.setPersonalBooks(
+                listOf(
+                    TestBookBuilder().withId("book-1").build(),
+                    TestBookBuilder().withId("book-2").build(),
+                )
+            )
+
+            val viewModel = createViewModel()
+            val stateHelper = viewModel.state.testHelper(this)
+            stateHelper.getCurrentState()
+
+            viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+            viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+            viewModel.onAction(LibraryAction.OnToggleBookSelection("book-2"))
+            stateHelper.getCurrentState()
+
+            stubGetNonRemovableBookIds.nonRemovableIds.value = setOf("book-2")
+            val state = stateHelper.getCurrentState()
+
+            assertEquals(
+                "Only book-1 should remain selected",
+                setOf("book-1"),
+                state!!.selectedBookIds
+            )
+            stateHelper.cleanup()
+        }
+
+    @Test
+    fun `select all uses deletableBooks IDs not allBooks`() = runTest(testDispatcher) {
+        mockBookRepository.setPersonalBooks(
+            listOf(
+                TestBookBuilder().withId("ok-1").build(),
+                TestBookBuilder().withId("club-1").build(),
+            )
+        )
+        stubGetNonRemovableBookIds.nonRemovableIds.value = setOf("club-1")
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+        viewModel.onAction(LibraryAction.OnSelectAll)
+        val state = stateHelper.getCurrentState()
+
+        assertEquals("Should only select deletable book", setOf("ok-1"), state!!.selectedBookIds)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `toggle book selection adds and removes`() = runTest(testDispatcher) {
+        mockBookRepository.setPersonalBooks(
+            listOf(TestBookBuilder().withId("book-1").build())
+        )
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+        viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+        var state = stateHelper.getCurrentState()
+        assertTrue("Should be selected", state!!.selectedBookIds.contains("book-1"))
+
+        viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+        state = stateHelper.getCurrentState()
+        assertFalse("Should be deselected", state!!.selectedBookIds.contains("book-1"))
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `deselect all clears selectedBookIds`() = runTest(testDispatcher) {
+        mockBookRepository.setPersonalBooks(
+            listOf(TestBookBuilder().withId("book-1").build())
+        )
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+        viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+        viewModel.onAction(LibraryAction.OnDeselectAll)
+        val state = stateHelper.getCurrentState()
+
+        assertTrue("Should be empty", state!!.selectedBookIds.isEmpty())
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `confirm delete calls use case and exits selection mode`() =
+        runTest(testDispatcher) {
+            mockBookRepository.setPersonalBooks(
+                listOf(
+                    TestBookBuilder().withId("book-1").build(),
+                    TestBookBuilder().withId("book-2").build(),
+                )
+            )
+
+            val viewModel = createViewModel()
+            val stateHelper = viewModel.state.testHelper(this)
+            stateHelper.getCurrentState()
+
+            viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+            viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+            viewModel.onAction(LibraryAction.OnToggleBookSelection("book-2"))
+            viewModel.onAction(LibraryAction.OnDeleteSelectedClick)
+            viewModel.onAction(LibraryAction.OnConfirmDelete)
+            val state = stateHelper.getCurrentState()
+
+            assertEquals(
+                "Should have deleted both books",
+                listOf("book-1", "book-2"),
+                stubDeleteBooks.lastDeletedBookIds.sorted()
+            )
+            assertFalse("Should exit selection mode", state!!.isSelectionMode)
+            assertTrue("Selected IDs should be cleared", state.selectedBookIds.isEmpty())
+            assertFalse("Dialog should be dismissed", state.showDeleteConfirmation)
+            stateHelper.cleanup()
+        }
+
+    @Test
+    fun `delete error sets errorMessage via ErrorFormatter`() = runTest(testDispatcher) {
+        stubDeleteBooks.shouldSucceed = false
+        mockBookRepository.setPersonalBooks(
+            listOf(TestBookBuilder().withId("book-1").build())
+        )
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+        viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+        viewModel.onAction(LibraryAction.OnConfirmDelete)
+        val state = stateHelper.getCurrentState()
+
+        assertTrue("Should have error message", state!!.errorMessage != null)
+        assertTrue(
+            "Should contain operation context",
+            state.errorMessage!!.contains("delete books")
+        )
+        assertFalse("Dialog should be dismissed", state.showDeleteConfirmation)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnDismissError clears errorMessage`() = runTest(testDispatcher) {
+        stubDeleteBooks.shouldSucceed = false
+        mockBookRepository.setPersonalBooks(
+            listOf(TestBookBuilder().withId("book-1").build())
+        )
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnToggleSelectionMode)
+        viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+        viewModel.onAction(LibraryAction.OnConfirmDelete)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnDismissError)
+        val state = stateHelper.getCurrentState()
+
+        assertNull("errorMessage should be cleared", state!!.errorMessage)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `existingBookIds updates when allBooks changes`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        mockBookRepository.setPersonalBooks(
+            listOf(
+                TestBookBuilder().withId("book-1").build(),
+                TestBookBuilder().withId("book-2").build(),
+            )
+        )
+        val state = stateHelper.getCurrentState()
+
+        assertEquals(
+            "existingBookIds should match allBooks",
+            setOf("book-1", "book-2"),
+            state!!.bookSearchState.existingBookIds
         )
         stateHelper.cleanup()
     }

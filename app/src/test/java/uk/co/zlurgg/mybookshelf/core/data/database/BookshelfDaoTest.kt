@@ -299,6 +299,95 @@ class BookshelfDaoTest {
         assertTrue("Should contain shelf-2", shelfIds.contains("shelf-2"))
     }
 
+    // Book Deletion Tests
+
+    @Test
+    fun `deleteBooksById removes book entities`() = runTest {
+        dao.upsert(createTestBook("book-1", "Book 1"))
+        dao.upsert(createTestBook("book-2", "Book 2"))
+        dao.upsert(createTestBook("book-3", "Book 3"))
+
+        dao.deleteBooksById(listOf("book-1", "book-3"))
+
+        assertNull(dao.getBookById("book-1"))
+        assertNotNull(dao.getBookById("book-2"))
+        assertNull(dao.getBookById("book-3"))
+    }
+
+    @Test
+    fun `deleteBooks transaction removes cross-refs and entities atomically`() = runTest {
+        val shelf = createTestShelf("shelf-1", "My Shelf", 0)
+        dao.upsertShelf(shelf)
+        dao.upsert(createTestBook("book-1", "Book 1"))
+        dao.upsert(createTestBook("book-2", "Book 2"))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-1", "book-1", addedAt = 1L))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-1", "book-2", addedAt = 2L))
+
+        dao.deleteBooks(listOf("book-1"))
+
+        assertNull("Book entity should be deleted", dao.getBookById("book-1"))
+        assertNotNull("Unrelated book should remain", dao.getBookById("book-2"))
+        val booksOnShelf = dao.getBooksForShelf("shelf-1").first()
+        assertEquals("Only book-2 should remain on shelf", 1, booksOnShelf.size)
+        assertEquals("book-2", booksOnShelf[0].id)
+    }
+
+    @Test
+    fun `getBookIdsOnClubShelves returns only books on club shelves`() = runTest {
+        val personalShelf = createTestShelf("shelf-personal", "Personal", 0)
+        val clubShelf = BookshelfEntity(
+            id = "shelf-club",
+            name = "Book Club",
+            shelfMaterial = "DARK_WOOD",
+            position = 1,
+            isBookClub = true
+        )
+        dao.upsertShelf(personalShelf)
+        dao.upsertShelf(clubShelf)
+        dao.upsert(createTestBook("personal-book", "Personal Book"))
+        dao.upsert(createTestBook("club-book", "Club Book"))
+        dao.upsert(createTestBook("both-book", "Both Book"))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-personal", "personal-book", addedAt = 1L))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-club", "club-book", addedAt = 2L))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-personal", "both-book", addedAt = 3L))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-club", "both-book", addedAt = 4L))
+
+        val clubBookIds = dao.getBookIdsOnClubShelves().first().toSet()
+
+        assertEquals(setOf("club-book", "both-book"), clubBookIds)
+        assertFalse(
+            "Personal-only book should not be in club list",
+            clubBookIds.contains("personal-book")
+        )
+    }
+
+    @Test
+    fun `getBookIdsOnClubShelves returns empty when no club shelves exist`() = runTest {
+        val shelf = createTestShelf("shelf-1", "Personal", 0)
+        dao.upsertShelf(shelf)
+        dao.upsert(createTestBook("book-1", "Book"))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-1", "book-1", addedAt = 1L))
+
+        val clubBookIds = dao.getBookIdsOnClubShelves().first()
+
+        assertTrue("Should be empty with no club shelves", clubBookIds.isEmpty())
+    }
+
+    @Test
+    fun `deleteAllCrossRefsForBooks removes only targeted cross-refs`() = runTest {
+        val shelf = createTestShelf("shelf-1", "Shelf", 0)
+        dao.upsertShelf(shelf)
+        dao.upsert(createTestBook("book-1", "Book 1"))
+        dao.upsert(createTestBook("book-2", "Book 2"))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-1", "book-1", addedAt = 1L))
+        dao.upsertCrossRef(BookshelfBookCrossRef("shelf-1", "book-2", addedAt = 2L))
+
+        dao.deleteAllCrossRefsForBooks(listOf("book-1"))
+
+        val count = dao.getBookCountForShelf("shelf-1").first()
+        assertEquals("Only book-2 cross-ref should remain", 1, count)
+    }
+
     // Helper methods
 
     private fun createTestBook(
