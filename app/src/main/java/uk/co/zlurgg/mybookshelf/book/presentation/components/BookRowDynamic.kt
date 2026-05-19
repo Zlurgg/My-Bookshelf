@@ -8,8 +8,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.outlined.Circle
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,38 +93,75 @@ fun BookRowDynamic(
                 }
 
                 // Render each book with appropriate style based on mode
+                val isSelectionMode = config.isSelectionMode
                 books.forEachIndexed { index, book ->
                     val bookStyle = config.bookStyles?.getOrNull(index)
                         ?: if (config.isTidyMode) BookDisplayStyle.VERTICAL else getBookDisplayStyle(book)
-                    when (bookStyle) {
-                        BookDisplayStyle.VERTICAL -> {
-                            BookVertical(
-                                book = book,
-                                onClick = { onBookClick(book) },
-                                height = 150
-                            )
+
+                    Box {
+                        when (bookStyle) {
+                            BookDisplayStyle.VERTICAL -> {
+                                BookVertical(
+                                    book = book,
+                                    onClick = { onBookClick(book) },
+                                    height = 150
+                                )
+                            }
+                            BookDisplayStyle.LEANING_LEFT -> {
+                                BookLeaning(
+                                    book = book,
+                                    onClick = { onBookClick(book) },
+                                    leanAngle = -5f,
+                                    height = 145
+                                )
+                            }
+                            BookDisplayStyle.LEANING_RIGHT -> {
+                                BookLeaning(
+                                    book = book,
+                                    onClick = { onBookClick(book) },
+                                    leanAngle = 5f,
+                                    height = 145
+                                )
+                            }
+                            BookDisplayStyle.HORIZONTAL_STACK -> {
+                                BookHorizontal(
+                                    book = book,
+                                    onClick = { onBookClick(book) }
+                                )
+                            }
                         }
-                        BookDisplayStyle.LEANING_LEFT -> {
-                            BookLeaning(
-                                book = book,
-                                onClick = { onBookClick(book) },
-                                leanAngle = -5f,
-                                height = 145
-                            )
-                        }
-                        BookDisplayStyle.LEANING_RIGHT -> {
-                            BookLeaning(
-                                book = book,
-                                onClick = { onBookClick(book) },
-                                leanAngle = 5f,
-                                height = 145
-                            )
-                        }
-                        BookDisplayStyle.HORIZONTAL_STACK -> {
-                            BookHorizontal(
-                                book = book,
-                                onClick = { onBookClick(book) }
-                            )
+
+                        if (isSelectionMode) {
+                            val isSelected = book.id in config.selectedBookIds
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 4.dp, y = (-4).dp)
+                                    .size(24.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isSelected) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                                        }
+                                    )
+                            ) {
+                                Icon(
+                                    imageVector = if (isSelected) {
+                                        Icons.Filled.CheckCircle
+                                    } else {
+                                        Icons.Outlined.Circle
+                                    },
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = if (isSelected) {
+                                        MaterialTheme.colorScheme.onPrimary
+                                    } else {
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    }
+                                )
+                            }
                         }
                     }
                 }

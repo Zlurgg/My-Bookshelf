@@ -176,6 +176,22 @@
     <string name="library_already_added">Already in library</string>
     <string name="library_add_book">Add to library</string>
     <string name="library_search_books">Search for books</string>
+    <string name="library_select_books">Select books</string>
+    <plurals name="library_selected_count">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <string name="library_select_all">Select all</string>
+    <string name="library_deselect_all">Deselect all</string>
+    <string name="library_delete_selected">Delete selected</string>
+    <plurals name="library_delete_title">
+        <item quantity="one">Delete %d book?</item>
+        <item quantity="other">Delete %d books?</item>
+    </plurals>
+    <string name="library_delete_body">This will permanently remove these books and all their data (notes, ratings, reading status). This cannot be undone.</string>
+    <string name="library_delete_confirm">Delete</string>
+    <string name="library_no_deletable_books">No books can be deleted. Remove books from book clubs first.</string>
+    <string name="library_exit_selection">Exit selection</string>
     <string name="sort_recently_added">Recently Added</string>
     <string name="sort_title_az">Title A–Z</string>
     <string name="sort_author_az">Author A–Z</string>

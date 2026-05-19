@@ -13,5 +13,12 @@ data class LibraryState(
     val selectedReadingStatus: ReadingStatus? = null,
     val isTidyMode: Boolean = false,
     val isSearchDialogVisible: Boolean = false,
-    val bookSearchState: BookSearchState = BookSearchState()
-)
+    val bookSearchState: BookSearchState = BookSearchState(),
+    val isSelectionMode: Boolean = false,
+    val selectedBookIds: Set<String> = emptySet(),
+    val nonRemovableBookIds: Set<String> = emptySet(),
+    val showDeleteConfirmation: Boolean = false,
+    val errorMessage: String? = null,
+) {
+    val deletableBooks: List<Book> get() = allBooks.filter { it.id !in nonRemovableBookIds }
+}

@@ -23,9 +23,13 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.library.domain.usecase.DeleteBooksFromLibraryUseCase
 import uk.co.zlurgg.mybookshelf.library.domain.usecase.GetAllLibraryBooksUseCase
+import uk.co.zlurgg.mybookshelf.library.domain.usecase.GetNonRemovableBookIdsUseCase
 import uk.co.zlurgg.mybookshelf.library.domain.usecase.LibraryUseCases
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
@@ -57,13 +61,17 @@ class LibraryViewModelTest {
 
     private val stubSearchBooks = StubSearchBooksUseCase()
     private val stubUpsertBook = StubUpsertBookUseCase()
+    private val stubDeleteBooks = StubDeleteBooksUseCase()
+    private val stubGetNonRemovableBookIds = StubGetNonRemovableBookIdsUseCase()
 
     private fun createViewModel(): LibraryViewModel {
         return LibraryViewModel(
             libraryUseCases = LibraryUseCases(
                 getAllLibraryBooks = getAllLibraryBooks,
                 searchBooks = stubSearchBooks,
-                upsertBook = stubUpsertBook
+                upsertBook = stubUpsertBook,
+                deleteBooks = stubDeleteBooks,
+                getNonRemovableBookIds = stubGetNonRemovableBookIds
             ),
             dataStore = dataStore,
         )
@@ -483,5 +491,25 @@ class LibraryViewModelTest {
                 Result.Error(DataError.Local.UNKNOWN)
             }
         }
+    }
+
+    private class StubDeleteBooksUseCase : DeleteBooksFromLibraryUseCase {
+        var shouldSucceed = true
+        var lastDeletedBookIds: List<String> = emptyList()
+
+        override suspend fun invoke(bookIds: List<String>): Result<Unit, DataError.Local> {
+            lastDeletedBookIds = bookIds
+            return if (shouldSucceed) {
+                Result.Success(Unit)
+            } else {
+                Result.Error(DataError.Local.UNKNOWN)
+            }
+        }
+    }
+
+    private class StubGetNonRemovableBookIdsUseCase : GetNonRemovableBookIdsUseCase {
+        val nonRemovableIds = MutableStateFlow<Set<String>>(emptySet())
+
+        override fun invoke(): Flow<Set<String>> = nonRemovableIds
     }
 }

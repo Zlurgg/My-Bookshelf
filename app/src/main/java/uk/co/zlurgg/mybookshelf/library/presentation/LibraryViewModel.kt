@@ -47,6 +47,7 @@ class LibraryViewModel(
     init {
         loadTidyMode()
         observeBooks()
+        observeNonRemovableBookIds()
         observeDebouncedLocalQuery()
         observeDebouncedRemoteQuery()
     }
@@ -132,6 +133,46 @@ class LibraryViewModel(
                     }
                 }
             }
+
+            // Selection mode
+            is LibraryAction.OnToggleSelectionMode -> {
+                _state.update {
+                    it.copy(
+                        isSelectionMode = !it.isSelectionMode,
+                        selectedBookIds = emptySet(),
+                        errorMessage = null
+                    )
+                }
+            }
+            is LibraryAction.OnToggleBookSelection -> {
+                _state.update { state ->
+                    val newSelection = if (action.bookId in state.selectedBookIds) {
+                        state.selectedBookIds - action.bookId
+                    } else {
+                        state.selectedBookIds + action.bookId
+                    }
+                    state.copy(selectedBookIds = newSelection)
+                }
+            }
+            is LibraryAction.OnSelectAll -> {
+                _state.update { state ->
+                    state.copy(
+                        selectedBookIds = state.deletableBooks.map { it.id }.toSet()
+                    )
+                }
+            }
+            is LibraryAction.OnDeselectAll -> {
+                _state.update { it.copy(selectedBookIds = emptySet()) }
+            }
+            is LibraryAction.OnDeleteSelectedClick -> {
+                _state.update { it.copy(showDeleteConfirmation = true) }
+            }
+            is LibraryAction.OnConfirmDelete -> {
+                deleteSelectedBooks()
+            }
+            is LibraryAction.OnDismissDeleteDialog -> {
+                _state.update { it.copy(showDeleteConfirmation = false) }
+            }
         }
     }
 
@@ -139,6 +180,53 @@ class LibraryViewModel(
         val currentQuery = _state.value.bookSearchState.query
         if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
             remoteQueryFlow.value = currentQuery
+        }
+    }
+
+    private fun observeNonRemovableBookIds() {
+        viewModelScope.launch {
+            libraryUseCases.getNonRemovableBookIds().collectLatest { ids ->
+                _state.update { state ->
+                    val deletableIds = state.allBooks.map { it.id }.toSet() - ids
+                    state.copy(
+                        nonRemovableBookIds = ids,
+                        selectedBookIds = state.selectedBookIds.intersect(deletableIds)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun deleteSelectedBooks() {
+        val selectedIds = _state.value.selectedBookIds.toList()
+        if (selectedIds.isEmpty()) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            when (val result = libraryUseCases.deleteBooks(selectedIds)) {
+                is Result.Success -> {
+                    _state.update {
+                        it.copy(
+                            isSelectionMode = false,
+                            selectedBookIds = emptySet(),
+                            showDeleteConfirmation = false,
+                            isLoading = false
+                        )
+                    }
+                }
+                is Result.Error -> {
+                    _state.update {
+                        it.copy(
+                            showDeleteConfirmation = false,
+                            isLoading = false,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                result.error,
+                                "delete books"
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 

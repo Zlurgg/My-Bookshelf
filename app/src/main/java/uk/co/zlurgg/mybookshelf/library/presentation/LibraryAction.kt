@@ -18,4 +18,13 @@ sealed interface LibraryAction {
     data object OnToggleSearchByAuthor : LibraryAction
     data class OnAddBookToLibrary(val book: Book) : LibraryAction
     data class OnSearchResultBookClick(val book: Book) : LibraryAction
+
+    // Selection mode actions
+    data object OnToggleSelectionMode : LibraryAction
+    data class OnToggleBookSelection(val bookId: String) : LibraryAction
+    data object OnSelectAll : LibraryAction
+    data object OnDeselectAll : LibraryAction
+    data object OnDeleteSelectedClick : LibraryAction
+    data object OnConfirmDelete : LibraryAction
+    data object OnDismissDeleteDialog : LibraryAction
 }

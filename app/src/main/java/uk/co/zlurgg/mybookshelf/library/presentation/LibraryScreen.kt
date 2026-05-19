@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.library.presentation
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -17,14 +18,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -47,6 +52,7 @@ import uk.co.zlurgg.mybookshelf.book.presentation.util.toDisplayString
 import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowDynamic
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateBookRows
+import uk.co.zlurgg.mybookshelf.library.presentation.components.DeleteBooksConfirmationDialog
 import uk.co.zlurgg.mybookshelf.library.presentation.searchcomponents.LibraryBookSearchDialog
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -58,26 +64,101 @@ fun LibraryScreen(
     val configuration = LocalConfiguration.current
     val availableWidth = configuration.screenWidthDp.toFloat() - 40f // padding
 
+    BackHandler(enabled = state.isSelectionMode) {
+        onAction(LibraryAction.OnToggleSelectionMode)
+    }
+
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.library_title)) },
-                actions = {
-                    IconButton(onClick = { onAction(LibraryAction.OnToggleTidyMode) }) {
-                        Icon(
-                            imageVector = if (state.isTidyMode) {
-                                ImageVector.vectorResource(R.drawable.ic_untidy_books)
-                            } else {
-                                ImageVector.vectorResource(R.drawable.ic_tidy_books)
-                            },
-                            contentDescription = null
+            if (state.isSelectionMode) {
+                TopAppBar(
+                    navigationIcon = {
+                        IconButton(onClick = { onAction(LibraryAction.OnToggleSelectionMode) }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = stringResource(R.string.cancel)
+                            )
+                        }
+                    },
+                    title = {
+                        val count = state.selectedBookIds.size
+                        Text(
+                            pluralStringResource(
+                                R.plurals.library_selected_count,
+                                count,
+                                count
+                            )
                         )
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {
+                                if (state.selectedBookIds.size == state.deletableBooks.size) {
+                                    onAction(LibraryAction.OnDeselectAll)
+                                } else {
+                                    onAction(LibraryAction.OnSelectAll)
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = if (state.selectedBookIds.size == state.deletableBooks.size) {
+                                    Icons.Filled.CheckCircle
+                                } else {
+                                    Icons.Outlined.CheckCircle
+                                },
+                                contentDescription = if (state.selectedBookIds.size == state.deletableBooks.size) {
+                                    stringResource(R.string.library_deselect_all)
+                                } else {
+                                    stringResource(R.string.library_select_all)
+                                }
+                            )
+                        }
+                        IconButton(
+                            onClick = { onAction(LibraryAction.OnDeleteSelectedClick) },
+                            enabled = state.selectedBookIds.isNotEmpty() && !state.isLoading
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.library_delete_selected),
+                                tint = if (state.selectedBookIds.isNotEmpty()) {
+                                    MaterialTheme.colorScheme.error
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+                                }
+                            )
+                        }
                     }
-                }
-            )
+                )
+            } else {
+                TopAppBar(
+                    title = { Text(stringResource(R.string.library_title)) },
+                    actions = {
+                        if (state.allBooks.isNotEmpty() && !state.isSearchDialogVisible) {
+                            IconButton(
+                                onClick = { onAction(LibraryAction.OnToggleSelectionMode) }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.CheckCircle,
+                                    contentDescription = stringResource(R.string.library_select_books)
+                                )
+                            }
+                        }
+                        IconButton(onClick = { onAction(LibraryAction.OnToggleTidyMode) }) {
+                            Icon(
+                                imageVector = if (state.isTidyMode) {
+                                    ImageVector.vectorResource(R.drawable.ic_untidy_books)
+                                } else {
+                                    ImageVector.vectorResource(R.drawable.ic_tidy_books)
+                                },
+                                contentDescription = null
+                            )
+                        }
+                    }
+                )
+            }
         },
         floatingActionButton = {
-            if (!state.isSearchDialogVisible) {
+            if (!state.isSearchDialogVisible && !state.isSelectionMode) {
                 FloatingActionButton(
                     onClick = { onAction(LibraryAction.OnSearchClick) }
                 ) {
@@ -89,7 +170,29 @@ fun LibraryScreen(
             }
         }
     ) { paddingValues ->
-        if (!state.isLoading && state.allBooks.isEmpty()) {
+        if (state.isSelectionMode && state.deletableBooks.isEmpty()) {
+            // Empty deletable state
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(R.string.library_no_deletable_books),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 32.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedButton(
+                    onClick = { onAction(LibraryAction.OnToggleSelectionMode) }
+                ) {
+                    Text(stringResource(R.string.library_exit_selection))
+                }
+            }
+        } else if (!state.isLoading && state.allBooks.isEmpty()) {
             // Empty state
             Column(
                 modifier = Modifier
@@ -116,87 +219,105 @@ fun LibraryScreen(
                 )
             }
         } else {
+            val displayBooks = if (state.isSelectionMode) {
+                state.deletableBooks
+            } else {
+                state.filteredBooks
+            }
+
             LazyColumn(
                 contentPadding = paddingValues,
                 modifier = Modifier.fillMaxSize()
             ) {
-                // Search field
-                item {
-                    OutlinedTextField(
-                        value = state.searchQuery,
-                        onValueChange = { onAction(LibraryAction.OnSearchQueryChange(it)) },
-                        shape = RoundedCornerShape(100),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            cursorColor = MaterialTheme.colorScheme.primary,
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                        ),
-                        placeholder = { Text(stringResource(R.string.library_search_hint)) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.66f)
-                            )
-                        },
-                        trailingIcon = {
-                            AnimatedVisibility(visible = state.searchQuery.isNotBlank()) {
-                                IconButton(
-                                    onClick = { onAction(LibraryAction.OnSearchQueryChange("")) }
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = stringResource(R.string.cd_clear_search),
-                                        tint = MaterialTheme.colorScheme.onSurface
-                                    )
+                if (!state.isSelectionMode) {
+                    // Search field
+                    item {
+                        OutlinedTextField(
+                            value = state.searchQuery,
+                            onValueChange = { onAction(LibraryAction.OnSearchQueryChange(it)) },
+                            shape = RoundedCornerShape(100),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                cursorColor = MaterialTheme.colorScheme.primary,
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            ),
+                            placeholder = { Text(stringResource(R.string.library_search_hint)) },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.66f)
+                                )
+                            },
+                            trailingIcon = {
+                                AnimatedVisibility(visible = state.searchQuery.isNotBlank()) {
+                                    IconButton(
+                                        onClick = {
+                                            onAction(LibraryAction.OnSearchQueryChange(""))
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = stringResource(
+                                                R.string.cd_clear_search
+                                            ),
+                                            tint = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
                                 }
-                            }
-                        },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .background(
-                                shape = RoundedCornerShape(100),
-                                color = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                            .minimumInteractiveComponentSize()
-                    )
-                }
+                            },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .background(
+                                    shape = RoundedCornerShape(100),
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                )
+                                .minimumInteractiveComponentSize()
+                        )
+                    }
 
-                // Sort chips
-                item {
-                    FlowRow(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        LibrarySortOption.entries.forEach { option ->
-                            FilterChip(
-                                selected = state.sortOption == option,
-                                onClick = { onAction(LibraryAction.OnSortOptionSelected(option)) },
-                                label = { Text(stringResource(option.labelResId)) }
-                            )
+                    // Sort chips
+                    item {
+                        FlowRow(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            LibrarySortOption.entries.forEach { option ->
+                                FilterChip(
+                                    selected = state.sortOption == option,
+                                    onClick = {
+                                        onAction(LibraryAction.OnSortOptionSelected(option))
+                                    },
+                                    label = { Text(stringResource(option.labelResId)) }
+                                )
+                            }
                         }
                     }
-                }
 
-                // Reading status filter chips
-                item {
-                    FlowRow(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = state.selectedReadingStatus == null,
-                            onClick = { onAction(LibraryAction.OnReadingStatusSelected(null)) },
-                            label = { Text(stringResource(R.string.filter_all_status)) }
-                        )
-                        ReadingStatus.entries.forEach { status ->
+                    // Reading status filter chips
+                    item {
+                        FlowRow(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             FilterChip(
-                                selected = state.selectedReadingStatus == status,
-                                onClick = { onAction(LibraryAction.OnReadingStatusSelected(status)) },
-                                label = { Text(status.toDisplayString()) }
+                                selected = state.selectedReadingStatus == null,
+                                onClick = {
+                                    onAction(LibraryAction.OnReadingStatusSelected(null))
+                                },
+                                label = { Text(stringResource(R.string.filter_all_status)) }
                             )
+                            ReadingStatus.entries.forEach { status ->
+                                FilterChip(
+                                    selected = state.selectedReadingStatus == status,
+                                    onClick = {
+                                        onAction(LibraryAction.OnReadingStatusSelected(status))
+                                    },
+                                    label = { Text(status.toDisplayString()) }
+                                )
+                            }
                         }
                     }
                 }
@@ -209,7 +330,7 @@ fun LibraryScreen(
                             .padding(horizontal = 16.dp, vertical = 4.dp),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        val count = state.filteredBooks.size
+                        val count = displayBooks.size
                         Text(
                             text = pluralStringResource(
                                 R.plurals.library_book_count,
@@ -224,7 +345,7 @@ fun LibraryScreen(
 
                 // Book rows
                 val rows = calculateBookRows(
-                    books = state.filteredBooks,
+                    books = displayBooks,
                     availableWidthDp = availableWidth,
                     isTidyMode = state.isTidyMode
                 )
@@ -233,12 +354,20 @@ fun LibraryScreen(
                     item(key = rowData.books.first().id) {
                         BookRowDynamic(
                             books = rowData.books,
-                            onBookClick = { book -> onAction(LibraryAction.OnBookClick(book)) },
+                            onBookClick = { book ->
+                                if (state.isSelectionMode) {
+                                    onAction(LibraryAction.OnToggleBookSelection(book.id))
+                                } else {
+                                    onAction(LibraryAction.OnBookClick(book))
+                                }
+                            },
                             bookshelfMaterial = ShelfMaterial.DarkWood,
                             config = BookRowConfig(
                                 showAddSlot = false,
                                 isTidyMode = state.isTidyMode,
-                                bookStyles = rowData.styles
+                                bookStyles = rowData.styles,
+                                isSelectionMode = state.isSelectionMode,
+                                selectedBookIds = state.selectedBookIds
                             )
                         )
                     }
@@ -259,6 +388,15 @@ fun LibraryScreen(
             onBookClick = { book -> onAction(LibraryAction.OnSearchResultBookClick(book)) },
             onAddBook = { book -> onAction(LibraryAction.OnAddBookToLibrary(book)) },
             onDismiss = { onAction(LibraryAction.OnDismissSearchDialog) }
+        )
+    }
+
+    // Delete confirmation dialog
+    if (state.showDeleteConfirmation) {
+        DeleteBooksConfirmationDialog(
+            bookCount = state.selectedBookIds.size,
+            onConfirm = { onAction(LibraryAction.OnConfirmDelete) },
+            onDismiss = { onAction(LibraryAction.OnDismissDeleteDialog) }
         )
     }
 }
