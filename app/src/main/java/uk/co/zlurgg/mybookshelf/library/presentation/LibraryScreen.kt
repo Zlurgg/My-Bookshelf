@@ -33,10 +33,14 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -63,12 +67,21 @@ fun LibraryScreen(
 ) {
     val configuration = LocalConfiguration.current
     val availableWidth = configuration.screenWidthDp.toFloat() - 40f // padding
+    val snackbarHostState = remember { SnackbarHostState() }
 
     BackHandler(enabled = state.isSelectionMode) {
         onAction(LibraryAction.OnToggleSelectionMode)
     }
 
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            onAction(LibraryAction.OnDismissError)
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             if (state.isSelectionMode) {
                 TopAppBar(
@@ -379,9 +392,7 @@ fun LibraryScreen(
     // Remote search dialog
     if (state.isSearchDialogVisible) {
         LibraryBookSearchDialog(
-            state = state.bookSearchState.copy(
-                existingBookIds = state.allBooks.map { it.id }.toSet()
-            ),
+            state = state.bookSearchState,
             onQueryChange = { onAction(LibraryAction.OnRemoteSearchQueryChange(it)) },
             onToggleSearchByTitle = { onAction(LibraryAction.OnToggleSearchByTitle) },
             onToggleSearchByAuthor = { onAction(LibraryAction.OnToggleSearchByAuthor) },
