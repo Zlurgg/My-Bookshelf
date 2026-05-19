@@ -41,12 +41,16 @@ Deletion removes cross-refs first (no FK constraints, but keeps data consistent)
 // BookshelfDao (composite DAO) — cross-cutting transaction boundary.
 // Lives here because it coordinates operations from both BookDao and CrossRefDao.
 // Individual DAOs remain focused; BookshelfDao is where multi-table transactions go.
+// Note: Must be a default interface method with a body — Room requires @Transaction
+// methods to have concrete implementations (abstract @Transaction is not supported).
 @Transaction
 suspend fun deleteBooks(bookIds: List<String>) {
     deleteAllCrossRefsForBooks(bookIds)
     deleteBooksById(bookIds)
 }
 ```
+
+The new DAO methods (`deleteBooksById` on `BookDao`, `deleteAllCrossRefsForBooks` on `CrossRefDao`) must be declared on their respective focused DAOs first. `BookshelfDao` inherits both and can call them in its default `deleteBooks()` method.
 
 ### SQLite IN clause chunking in repository
 
@@ -111,7 +115,7 @@ class DeleteBooksFromLibraryUseCaseImpl(
 }
 ```
 
-Note: This requires adding `PROTECTED_RESOURCE` to `DataError.Local` if it doesn't exist (or use the most appropriate existing variant). Check at implementation time.
+This requires adding `PROTECTED_RESOURCE` to `DataError.Local` (confirmed it doesn't exist — see `core/domain/error/DataError.kt:18-37`). Also add a case to `ErrorFormatter.formatLocalError()` (at `core/domain/error/ErrorFormatter.kt:44`) — e.g. `"Cannot delete: some books are in book clubs."`
 
 ### deletableBooks is a computed property, not stored state
 
@@ -153,13 +157,14 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
        INNER JOIN BookshelfEntity s ON cr.shelfId = s.id
        WHERE s.isBookClub = 1
    """)
-   fun getBookIdsOnClubShelves(): Flow<Set<String>>
+   fun getBookIdsOnClubShelves(): Flow<List<String>>
    ```
 
-3. Add `@Transaction` method to `BookshelfDao` (composite DAO):
+3. Add `@Transaction` default method to `BookshelfDao` (composite DAO — currently an empty interface extending `BookDao`, `ShelfDao`, `CrossRefDao`):
    ```kotlin
    // Cross-cutting transaction: coordinates BookDao.deleteBooksById + CrossRefDao.deleteAllCrossRefsForBooks.
    // Lives on the composite DAO because it spans both focused DAOs.
+   // Must be a default method with body — Room doesn't support abstract @Transaction.
    @Transaction
    suspend fun deleteBooks(bookIds: List<String>) {
        deleteAllCrossRefsForBooks(bookIds)
@@ -184,7 +189,7 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
    }
 
    override fun getNonRemovableBookIds(): Flow<Set<String>> {
-       return dao.getBookIdsOnClubShelves()
+       return dao.getBookIdsOnClubShelves().map { it.toSet() }
    }
    ```
 
@@ -192,7 +197,7 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
 
 ### Phase 2: Domain layer — UseCase
 
-7. Add `PROTECTED_RESOURCE` to `DataError.Local` if not already present (check at implementation time).
+7. Add `PROTECTED_RESOURCE` to `DataError.Local` enum (`core/domain/error/DataError.kt:18`). Add corresponding case to `ErrorFormatter.formatLocalError()` (`core/domain/error/ErrorFormatter.kt:44`): `DataError.Local.PROTECTED_RESOURCE -> "Cannot delete: some books are in book clubs."`
 
 8. Create `DeleteBooksFromLibraryUseCase` interface in `library/domain/usecase/`:
    ```kotlin
@@ -253,7 +258,7 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
 
 ### Phase 3: Presentation layer — State + Actions
 
-13. Add selection state to `LibraryState`:
+13. Add selection state and `errorMessage` to `LibraryState`:
     ```kotlin
     data class LibraryState(
         // ... existing fields ...
@@ -261,10 +266,12 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
         val selectedBookIds: Set<String> = emptySet(),
         val nonRemovableBookIds: Set<String> = emptySet(),
         val showDeleteConfirmation: Boolean = false,
+        val errorMessage: String? = null,
     ) {
         val deletableBooks: List<Book> get() = allBooks.filter { it.id !in nonRemovableBookIds }
     }
     ```
+    Note: `LibraryState` does not currently have `errorMessage`. Clear it on: selection mode toggle, successful delete, dismiss delete dialog.
 
 14. Add selection actions to `LibraryAction`:
     ```kotlin
