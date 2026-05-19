@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents
+package uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background

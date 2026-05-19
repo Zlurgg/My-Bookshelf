@@ -1,4 +1,4 @@
-package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase
+package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook

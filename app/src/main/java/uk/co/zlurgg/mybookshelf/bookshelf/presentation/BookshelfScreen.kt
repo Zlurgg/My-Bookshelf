@@ -49,8 +49,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.util.BookshelfConstants
 import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowConfig
 import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowDynamic
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchCallbacks
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchDialog
-import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.BookSearchState
+import uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents.ShelfBookSearchDialog
 import uk.co.zlurgg.mybookshelf.auth.presentation.components.SignInRequiredDialog
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBooks
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ADD_SLOT_RESERVED_WIDTH
@@ -337,16 +336,9 @@ fun BookshelfScreen(
 
     // Search dialog
     if (state.isSearchDialogVisible) {
-        BookSearchDialog(
-            state = BookSearchState(
-                query = state.searchQuery,
-                results = state.searchResults,
-                isLoading = state.isSearchLoading,
-                isTyping = state.isTyping,
-                hasSearched = state.hasSearched,
-                inShelfIds = state.books.map { it.id }.toSet(),
-                searchByTitle = state.searchByTitle,
-                searchByAuthor = state.searchByAuthor
+        ShelfBookSearchDialog(
+            state = state.bookSearchState.copy(
+                existingBookIds = state.books.map { it.id }.toSet()
             ),
             callbacks = object : BookSearchCallbacks {
                 override val onQueryChange: (String) -> Unit = { query ->

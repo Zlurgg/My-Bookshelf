@@ -17,6 +17,8 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCaseImpl
 
@@ -30,8 +32,9 @@ val bookModule = module {
     single<BookcaseRepository> { BookcaseRepositoryImpl(get(), get()) }
     single<BookRepository> { BookRepositoryImpl(get(), get()) }
 
-    // Shared UseCases (used by both bookdetail and bookshelf)
+    // Shared UseCases (used by bookdetail, bookshelf, library)
     singleOf(::AddBookToShelfUseCaseImpl).bind<AddBookToShelfUseCase>()
     singleOf(::RemoveBookFromShelfUseCaseImpl).bind<RemoveBookFromShelfUseCase>()
+    singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
 }

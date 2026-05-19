@@ -21,7 +21,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result

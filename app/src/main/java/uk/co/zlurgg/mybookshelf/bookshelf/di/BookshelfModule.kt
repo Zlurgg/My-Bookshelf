@@ -7,15 +7,12 @@ import org.koin.dsl.module
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCaseImpl
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCase
-import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.SearchBooksUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCaseImpl
 import uk.co.zlurgg.mybookshelf.bookshelf.presentation.BookshelfViewModel
 
 val bookshelfModule = module {
     // Bookshelf UseCases
-    singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::GetShelfBooksUseCaseImpl).bind<GetShelfBooksUseCase>()
     singleOf(::UpdateShelfTidyModeUseCaseImpl).bind<UpdateShelfTidyModeUseCase>()
 

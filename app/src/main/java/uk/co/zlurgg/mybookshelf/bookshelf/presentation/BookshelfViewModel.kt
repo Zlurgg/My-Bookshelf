@@ -15,6 +15,7 @@ import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.GetShelfByIdUseCase
+import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchState
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
@@ -113,8 +114,10 @@ class BookshelfViewModel(
                 // Update UI immediately with typing indicator; defer actual search via debounce
                 _state.update {
                     it.copy(
-                        searchQuery = action.query,
-                        isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
+                        bookSearchState = it.bookSearchState.copy(
+                            query = action.query,
+                            isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
+                        )
                     )
                 }
                 queryFlow.value = action.query
@@ -125,21 +128,33 @@ class BookshelfViewModel(
                 persistTidyMode(newTidyMode)
             }
             BookshelfAction.OnToggleSearchByTitle -> {
-                _state.update { it.copy(searchByTitle = !it.searchByTitle) }
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchByTitle = !it.bookSearchState.searchByTitle
+                        )
+                    )
+                }
 
                 // Re-trigger search via debounced flow for consistency
-                val currentQuery = _state.value.searchQuery
+                val currentQuery = _state.value.bookSearchState.query
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery // Triggers debounced search
+                    queryFlow.value = currentQuery
                 }
             }
             BookshelfAction.OnToggleSearchByAuthor -> {
-                _state.update { it.copy(searchByAuthor = !it.searchByAuthor) }
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchByAuthor = !it.bookSearchState.searchByAuthor
+                        )
+                    )
+                }
 
                 // Re-trigger search via debounced flow for consistency
-                val currentQuery = _state.value.searchQuery
+                val currentQuery = _state.value.bookSearchState.query
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery // Triggers debounced search
+                    queryFlow.value = currentQuery
                 }
             }
             // Navigation actions handled by the UI layer
@@ -228,10 +243,12 @@ class BookshelfViewModel(
                     if (query.length < MIN_SEARCH_QUERY_LENGTH) {
                         _state.update {
                             it.copy(
-                                isSearchLoading = false,
-                                isTyping = false,
-                                errorMessage = null,
-                                searchResults = if (query.isEmpty()) emptyList() else it.searchResults
+                                bookSearchState = it.bookSearchState.copy(
+                                    isLoading = false,
+                                    isTyping = false,
+                                    errorMessage = null,
+                                    results = if (query.isEmpty()) emptyList() else it.bookSearchState.results
+                                )
                             )
                         }
                         return@collectLatest
@@ -261,23 +278,24 @@ class BookshelfViewModel(
         // This allows collectLatest to cancel in-flight searches
         _state.update {
             it.copy(
-                isSearchLoading = true,
-                isTyping = false, // Debounce period complete, now actively searching
-                errorMessage = null
+                bookSearchState = it.bookSearchState.copy(
+                    isLoading = true,
+                    isTyping = false,
+                    errorMessage = null
+                )
             )
         }
 
-        val currentState = _state.value
+        val searchState = _state.value.bookSearchState
 
         // Map checkbox states to OpenLibrary API parameters:
         // - Both checked OR both unchecked → use general q= parameter (smart search)
         // - Only title checked → use title= parameter
         // - Only author checked → use author= parameter
         val (generalQuery, titleQuery, authorQuery) = when {
-            currentState.searchByTitle && currentState.searchByAuthor -> Triple(query, null, null)
-            !currentState.searchByTitle && !currentState.searchByAuthor -> Triple(query, null, null)
-            currentState.searchByTitle && !currentState.searchByAuthor -> Triple(null, query, null)
-            // Fallback (should never happen)
+            searchState.searchByTitle && searchState.searchByAuthor -> Triple(query, null, null)
+            !searchState.searchByTitle && !searchState.searchByAuthor -> Triple(query, null, null)
+            searchState.searchByTitle && !searchState.searchByAuthor -> Triple(null, query, null)
             else -> Triple(null, null, query)
         }
 
@@ -303,26 +321,30 @@ class BookshelfViewModel(
     private fun BookshelfState.withError(error: DataError, operation: String): BookshelfState {
         return copy(
             isLoading = false,
-            isSearchLoading = false,
+            bookSearchState = bookSearchState.copy(isLoading = false),
             errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation)
         )
     }
 
     private fun BookshelfState.withSearchResults(results: List<Book>): BookshelfState {
         return copy(
-            isSearchLoading = false,
-            hasSearched = true,
-            errorMessage = null,
-            searchResults = results
+            bookSearchState = bookSearchState.copy(
+                isLoading = false,
+                hasSearched = true,
+                errorMessage = null,
+                results = results
+            )
         )
     }
 
     private fun BookshelfState.withSearchError(error: DataError): BookshelfState {
         return copy(
-            searchResults = emptyList(),
-            isSearchLoading = false,
-            hasSearched = true,
-            errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
+            bookSearchState = bookSearchState.copy(
+                results = emptyList(),
+                isLoading = false,
+                hasSearched = true,
+                errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
+            )
         )
     }
 
@@ -342,13 +364,7 @@ class BookshelfViewModel(
     private fun BookshelfState.closeSearchDialog(): BookshelfState {
         return copy(
             isSearchDialogVisible = false,
-            searchQuery = "",
-            searchResults = emptyList(),
-            isSearchLoading = false,
-            isTyping = false,
-            hasSearched = false,
-            searchByTitle = true,
-            searchByAuthor = true
+            bookSearchState = BookSearchState()
         )
     }
 }
