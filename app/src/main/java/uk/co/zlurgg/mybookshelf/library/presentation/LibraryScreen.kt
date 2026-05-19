@@ -16,10 +16,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +47,7 @@ import uk.co.zlurgg.mybookshelf.book.presentation.util.toDisplayString
 import uk.co.zlurgg.mybookshelf.book.presentation.components.BookRowDynamic
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateBookRows
+import uk.co.zlurgg.mybookshelf.library.presentation.searchcomponents.LibraryBookSearchDialog
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -72,6 +75,18 @@ fun LibraryScreen(
                     }
                 }
             )
+        },
+        floatingActionButton = {
+            if (!state.isSearchDialogVisible) {
+                FloatingActionButton(
+                    onClick = { onAction(LibraryAction.OnSearchClick) }
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = stringResource(R.string.library_search_books)
+                    )
+                }
+            }
         }
     ) { paddingValues ->
         if (!state.isLoading && state.allBooks.isEmpty()) {
@@ -230,5 +245,20 @@ fun LibraryScreen(
                 }
             }
         }
+    }
+
+    // Remote search dialog
+    if (state.isSearchDialogVisible) {
+        LibraryBookSearchDialog(
+            state = state.bookSearchState.copy(
+                existingBookIds = state.allBooks.map { it.id }.toSet()
+            ),
+            onQueryChange = { onAction(LibraryAction.OnRemoteSearchQueryChange(it)) },
+            onToggleSearchByTitle = { onAction(LibraryAction.OnToggleSearchByTitle) },
+            onToggleSearchByAuthor = { onAction(LibraryAction.OnToggleSearchByAuthor) },
+            onBookClick = { book -> onAction(LibraryAction.OnSearchResultBookClick(book)) },
+            onAddBook = { book -> onAction(LibraryAction.OnAddBookToLibrary(book)) },
+            onDismiss = { onAction(LibraryAction.OnDismissSearchDialog) }
+        )
     }
 }

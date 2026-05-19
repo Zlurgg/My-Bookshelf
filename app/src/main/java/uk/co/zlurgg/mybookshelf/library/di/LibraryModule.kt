@@ -11,6 +11,12 @@ import uk.co.zlurgg.mybookshelf.library.presentation.LibraryViewModel
 
 val libraryModule = module {
     singleOf(::GetAllLibraryBooksUseCaseImpl).bind<GetAllLibraryBooksUseCase>()
-    single { LibraryUseCases(getAllLibraryBooks = get()) }
+    single {
+        LibraryUseCases(
+            getAllLibraryBooks = get(),
+            searchBooks = get(),
+            upsertBook = get()
+        )
+    }
     viewModelOf(::LibraryViewModel)
 }

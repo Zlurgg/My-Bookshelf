@@ -9,4 +9,13 @@ sealed interface LibraryAction {
     data class OnReadingStatusSelected(val status: ReadingStatus?) : LibraryAction
     data class OnBookClick(val book: Book) : LibraryAction
     data object OnToggleTidyMode : LibraryAction
+
+    // Remote search dialog actions
+    data object OnSearchClick : LibraryAction
+    data object OnDismissSearchDialog : LibraryAction
+    data class OnRemoteSearchQueryChange(val query: String) : LibraryAction
+    data object OnToggleSearchByTitle : LibraryAction
+    data object OnToggleSearchByAuthor : LibraryAction
+    data class OnAddBookToLibrary(val book: Book) : LibraryAction
+    data class OnSearchResultBookClick(val book: Book) : LibraryAction
 }

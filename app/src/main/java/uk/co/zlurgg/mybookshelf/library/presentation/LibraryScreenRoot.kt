@@ -18,6 +18,10 @@ fun LibraryScreenRoot(
         onAction = { action ->
             when (action) {
                 is LibraryAction.OnBookClick -> onBookClick(action.book)
+                is LibraryAction.OnSearchResultBookClick -> {
+                    viewModel.onAction(action)
+                    onBookClick(action.book)
+                }
                 else -> viewModel.onAction(action)
             }
         }

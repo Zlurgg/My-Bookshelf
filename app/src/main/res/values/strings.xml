@@ -167,12 +167,15 @@
     <!-- Library screen -->
     <string name="library_title">Library</string>
     <string name="library_empty_title">Your library is empty</string>
-    <string name="library_empty_subtitle">Books you add to shelves will appear here</string>
+    <string name="library_empty_subtitle">Tap + to search and add books</string>
     <plurals name="library_book_count">
         <item quantity="one">%d book</item>
         <item quantity="other">%d books</item>
     </plurals>
     <string name="library_search_hint">Search by title or author</string>
+    <string name="library_already_added">Already in library</string>
+    <string name="library_add_book">Add to library</string>
+    <string name="library_search_books">Search for books</string>
     <string name="sort_recently_added">Recently Added</string>
     <string name="sort_title_az">Title A–Z</string>
     <string name="sort_author_az">Author A–Z</string>

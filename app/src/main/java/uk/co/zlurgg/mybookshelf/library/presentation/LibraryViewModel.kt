@@ -16,6 +16,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
+import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchState
+import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.result.onError
+import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 import uk.co.zlurgg.mybookshelf.library.domain.usecase.LibraryUseCases
 
 class LibraryViewModel(
@@ -24,26 +32,30 @@ class LibraryViewModel(
 ) : ViewModel() {
 
     companion object {
+        private const val TAG = "LibraryVM"
         private const val SEARCH_DEBOUNCE_MS = 300L
+        private const val MIN_SEARCH_QUERY_LENGTH = 2
         private val TIDY_MODE_KEY = booleanPreferencesKey("library_tidy_mode")
     }
 
     private val _state = MutableStateFlow(LibraryState())
     val state: StateFlow<LibraryState> = _state.asStateFlow()
 
-    private val queryFlow = MutableStateFlow("")
+    private val localQueryFlow = MutableStateFlow("")
+    private val remoteQueryFlow = MutableStateFlow("")
 
     init {
         loadTidyMode()
         observeBooks()
-        observeDebouncedQuery()
+        observeDebouncedLocalQuery()
+        observeDebouncedRemoteQuery()
     }
 
     fun onAction(action: LibraryAction) {
         when (action) {
             is LibraryAction.OnSearchQueryChange -> {
                 _state.update { it.copy(searchQuery = action.query) }
-                queryFlow.value = action.query
+                localQueryFlow.value = action.query
             }
             is LibraryAction.OnSortOptionSelected -> {
                 _state.update { it.copy(sortOption = action.option) }
@@ -61,6 +73,72 @@ class LibraryViewModel(
                     dataStore.edit { it[TIDY_MODE_KEY] = newMode }
                 }
             }
+
+            // Remote search dialog
+            is LibraryAction.OnSearchClick -> {
+                _state.update { it.copy(isSearchDialogVisible = true) }
+            }
+            is LibraryAction.OnDismissSearchDialog -> {
+                _state.update {
+                    it.copy(
+                        isSearchDialogVisible = false,
+                        bookSearchState = BookSearchState()
+                    )
+                }
+                remoteQueryFlow.value = ""
+            }
+            is LibraryAction.OnRemoteSearchQueryChange -> {
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            query = action.query,
+                            isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
+                        )
+                    )
+                }
+                remoteQueryFlow.value = action.query
+            }
+            is LibraryAction.OnToggleSearchByTitle -> {
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchByTitle = !it.bookSearchState.searchByTitle
+                        )
+                    )
+                }
+                retriggerRemoteSearchIfNeeded()
+            }
+            is LibraryAction.OnToggleSearchByAuthor -> {
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchByAuthor = !it.bookSearchState.searchByAuthor
+                        )
+                    )
+                }
+                retriggerRemoteSearchIfNeeded()
+            }
+            is LibraryAction.OnAddBookToLibrary -> {
+                addBookToLibrary(action.book)
+            }
+            is LibraryAction.OnSearchResultBookClick -> {
+                // Persist clicked book so details screen can load it by ID safely
+                viewModelScope.launch {
+                    when (val cacheResult = libraryUseCases.upsertBook(action.book)) {
+                        is Result.Success -> Unit
+                        is Result.Error -> {
+                            Timber.tag(TAG).e("Failed to cache book: %s", cacheResult.error)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun retriggerRemoteSearchIfNeeded() {
+        val currentQuery = _state.value.bookSearchState.query
+        if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
+            remoteQueryFlow.value = currentQuery
         }
     }
 
@@ -82,12 +160,102 @@ class LibraryViewModel(
     }
 
     @OptIn(FlowPreview::class)
-    private fun observeDebouncedQuery() {
+    private fun observeDebouncedLocalQuery() {
         viewModelScope.launch {
-            queryFlow
+            localQueryFlow
                 .debounce(SEARCH_DEBOUNCE_MS)
                 .distinctUntilChanged()
                 .collectLatest { applyFilters() }
+        }
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observeDebouncedRemoteQuery() {
+        viewModelScope.launch {
+            remoteQueryFlow
+                .debounce(SEARCH_DEBOUNCE_MS)
+                .distinctUntilChanged()
+                .collectLatest { raw ->
+                    val query = raw.trim()
+
+                    if (query.length < MIN_SEARCH_QUERY_LENGTH) {
+                        _state.update {
+                            it.copy(
+                                bookSearchState = it.bookSearchState.copy(
+                                    isLoading = false,
+                                    isTyping = false,
+                                    errorMessage = null,
+                                    results = if (query.isEmpty()) {
+                                        emptyList()
+                                    } else {
+                                        it.bookSearchState.results
+                                    }
+                                )
+                            )
+                        }
+                        return@collectLatest
+                    }
+
+                    performRemoteSearch(query)
+                }
+        }
+    }
+
+    private suspend fun performRemoteSearch(query: String) {
+        _state.update {
+            it.copy(
+                bookSearchState = it.bookSearchState.copy(
+                    isLoading = true,
+                    isTyping = false,
+                    errorMessage = null
+                )
+            )
+        }
+
+        val searchState = _state.value.bookSearchState
+
+        val (generalQuery, titleQuery, authorQuery) = when {
+            searchState.searchByTitle && searchState.searchByAuthor -> Triple(query, null, null)
+            !searchState.searchByTitle && !searchState.searchByAuthor -> Triple(query, null, null)
+            searchState.searchByTitle && !searchState.searchByAuthor -> Triple(null, query, null)
+            else -> Triple(null, null, query)
+        }
+
+        libraryUseCases.searchBooks(
+            query = generalQuery ?: "",
+            resultLimit = 15,
+            language = null,
+            authorFilter = authorQuery,
+            titleFilter = titleQuery
+        )
+            .onSuccess { searchResults ->
+                _state.update { it.withSearchResults(searchResults) }
+            }
+            .onError { error ->
+                _state.update { it.withSearchError(error) }
+            }
+    }
+
+    private fun addBookToLibrary(book: Book) {
+        viewModelScope.launch {
+            when (val result = libraryUseCases.upsertBook(book)) {
+                is Result.Success -> {
+                    Timber.tag(TAG).d("Book added to library: %s", book.title)
+                }
+                is Result.Error -> {
+                    Timber.tag(TAG).e("Failed to add book: %s", result.error)
+                    _state.update {
+                        it.copy(
+                            bookSearchState = it.bookSearchState.copy(
+                                errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                    result.error,
+                                    "add book to library"
+                                )
+                            )
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -121,5 +289,28 @@ class LibraryViewModel(
         }
 
         _state.update { it.copy(filteredBooks = result) }
+    }
+
+    // State Update Helpers
+
+    private fun LibraryState.withSearchResults(results: List<Book>): LibraryState {
+        return copy(
+            bookSearchState = bookSearchState.copy(
+                isLoading = false,
+                hasSearched = true,
+                errorMessage = null,
+                results = results
+            )
+        )
+    }
+
+    private fun LibraryState.withSearchError(error: DataError): LibraryState {
+        return copy(
+            bookSearchState = bookSearchState.copy(
+                isLoading = false,
+                hasSearched = true,
+                errorMessage = ErrorFormatter.formatDataErrorMessage(error, "search books")
+            )
+        )
     }
 }
