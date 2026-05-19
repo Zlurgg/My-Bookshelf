@@ -7,4 +7,6 @@ data class LibraryUseCases(
     val getAllLibraryBooks: GetAllLibraryBooksUseCase,
     val searchBooks: SearchBooksUseCase,
     val upsertBook: UpsertBookUseCase,
+    val deleteBooks: DeleteBooksFromLibraryUseCase,
+    val getNonRemovableBookIds: GetNonRemovableBookIdsUseCase,
 )
