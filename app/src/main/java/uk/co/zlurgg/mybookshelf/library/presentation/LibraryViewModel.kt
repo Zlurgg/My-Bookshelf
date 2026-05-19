@@ -83,7 +83,9 @@ class LibraryViewModel(
                 _state.update {
                     it.copy(
                         isSearchDialogVisible = false,
-                        bookSearchState = BookSearchState()
+                        bookSearchState = BookSearchState(
+                            existingBookIds = it.bookSearchState.existingBookIds
+                        )
                     )
                 }
                 remoteQueryFlow.value = ""
@@ -123,15 +125,32 @@ class LibraryViewModel(
                 addBookToLibrary(action.book)
             }
             is LibraryAction.OnSearchResultBookClick -> {
-                // Persist clicked book so details screen can load it by ID safely
                 viewModelScope.launch {
                     when (val cacheResult = libraryUseCases.upsertBook(action.book)) {
-                        is Result.Success -> Unit
+                        is Result.Success -> {
+                            _state.update { it.copy(navigateToBook = action.book) }
+                        }
                         is Result.Error -> {
                             Timber.tag(TAG).e("Failed to cache book: %s", cacheResult.error)
+                            _state.update {
+                                it.copy(
+                                    bookSearchState = it.bookSearchState.copy(
+                                        errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                            cacheResult.error,
+                                            "open book"
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
                 }
+            }
+            is LibraryAction.OnNavigationHandled -> {
+                _state.update { it.copy(navigateToBook = null) }
+            }
+            is LibraryAction.OnDismissError -> {
+                _state.update { it.copy(errorMessage = null) }
             }
 
             // Selection mode
@@ -241,7 +260,15 @@ class LibraryViewModel(
     private fun observeBooks() {
         viewModelScope.launch {
             libraryUseCases.getAllLibraryBooks().collectLatest { books ->
-                _state.update { it.copy(allBooks = books, isLoading = false) }
+                _state.update {
+                    it.copy(
+                        allBooks = books,
+                        isLoading = false,
+                        bookSearchState = it.bookSearchState.copy(
+                            existingBookIds = books.map { book -> book.id }.toSet()
+                        )
+                    )
+                }
                 applyFilters()
             }
         }

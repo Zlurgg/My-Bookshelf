@@ -19,6 +19,7 @@ data class LibraryState(
     val nonRemovableBookIds: Set<String> = emptySet(),
     val showDeleteConfirmation: Boolean = false,
     val errorMessage: String? = null,
+    val navigateToBook: Book? = null,
 ) {
     val deletableBooks: List<Book> get() = allBooks.filter { it.id !in nonRemovableBookIds }
 }
