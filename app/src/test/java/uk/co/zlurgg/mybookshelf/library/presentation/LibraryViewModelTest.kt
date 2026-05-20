@@ -645,21 +645,38 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `deselect all clears selectedBookIds`() = runTest(testDispatcher) {
+    fun `deselect all removes only visible selections`() = runTest(testDispatcher) {
         mockBookRepository.setPersonalBooks(
-            listOf(TestBookBuilder().withId("book-1").build())
+            listOf(
+                TestBookBuilder().withId("book-1").withTitle("Kotlin").build(),
+                TestBookBuilder().withId("book-2").withTitle("Java").build(),
+            )
         )
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
         stateHelper.getCurrentState()
 
+        // Select both books
         viewModel.onAction(LibraryAction.OnToggleSelectionMode)
         viewModel.onAction(LibraryAction.OnToggleBookSelection("book-1"))
+        viewModel.onAction(LibraryAction.OnToggleBookSelection("book-2"))
+        stateHelper.getCurrentState()
+
+        // Filter to only show "Kotlin" — book-2 is now hidden
+        viewModel.onAction(LibraryAction.OnSearchQueryChange("Kotlin"))
+        advanceTimeBy(350)
+        stateHelper.getCurrentState()
+
+        // Deselect all — should only deselect visible (book-1)
         viewModel.onAction(LibraryAction.OnDeselectAll)
         val state = stateHelper.getCurrentState()
 
-        assertTrue("Should be empty", state!!.selectedBookIds.isEmpty())
+        assertEquals(
+            "Hidden selection should be preserved",
+            setOf("book-2"),
+            state!!.selectedBookIds
+        )
         stateHelper.cleanup()
     }
 

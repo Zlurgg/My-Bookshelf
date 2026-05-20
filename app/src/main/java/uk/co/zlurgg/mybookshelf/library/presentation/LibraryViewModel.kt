@@ -182,7 +182,10 @@ class LibraryViewModel(
                 }
             }
             is LibraryAction.OnDeselectAll -> {
-                _state.update { it.copy(selectedBookIds = emptySet()) }
+                _state.update { state ->
+                    val visibleIds = state.deletableBooks.map { it.id }.toSet()
+                    state.copy(selectedBookIds = state.selectedBookIds - visibleIds)
+                }
             }
             is LibraryAction.OnDeleteSelectedClick -> {
                 _state.update { it.copy(showDeleteConfirmation = true) }
