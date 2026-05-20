@@ -21,12 +21,15 @@ import uk.co.zlurgg.mybookshelf.R
  * - Both checked (default): Use general q= parameter
  * - Only title checked: Use title= parameter
  * - Only author checked: Use author= parameter
- * - Both unchecked: Falls back to general q= parameter
+ *
+ * The last remaining checkbox is disabled to prevent both-unchecked state.
  */
 @Composable
 fun SearchFilters(
     searchByTitle: Boolean,
     searchByAuthor: Boolean,
+    titleEnabled: Boolean,
+    authorEnabled: Boolean,
     onToggleTitle: () -> Unit,
     onToggleAuthor: () -> Unit,
     modifier: Modifier = Modifier
@@ -38,6 +41,7 @@ fun SearchFilters(
         // Title checkbox
         Checkbox(
             checked = searchByTitle,
+            enabled = titleEnabled,
             onCheckedChange = { onToggleTitle() }
         )
         Text(
@@ -50,6 +54,7 @@ fun SearchFilters(
         // Author checkbox
         Checkbox(
             checked = searchByAuthor,
+            enabled = authorEnabled,
             onCheckedChange = { onToggleAuthor() }
         )
         Text(
@@ -65,6 +70,8 @@ private fun SearchFiltersPreview() {
     SearchFilters(
         searchByTitle = true,
         searchByAuthor = true,
+        titleEnabled = true,
+        authorEnabled = true,
         onToggleTitle = {},
         onToggleAuthor = {}
     )

@@ -3,12 +3,12 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -49,8 +49,8 @@ class BookshelfViewModel(
     )
     val state: StateFlow<BookshelfState> = _state.asStateFlow()
 
-    // Debounced query flow
-    private val queryFlow = MutableStateFlow("")
+    // SharedFlow so that re-emitting the same query (e.g. after filter toggle) is not conflated.
+    private val queryFlow = MutableSharedFlow<String>(replay = 1, extraBufferCapacity = 1)
 
     init {
         observeDebouncedQuery()
@@ -74,7 +74,7 @@ class BookshelfViewModel(
             is BookshelfAction.OnDismissSearchDialog -> {
                 _state.update { it.closeSearchDialog() }
                 // Reset query to cancel any pending search
-                queryFlow.value = ""
+                queryFlow.tryEmit("")
             }
             is BookshelfAction.OnBookClick -> {
                 // Persist clicked book so details screen can load it by ID safely
@@ -120,7 +120,7 @@ class BookshelfViewModel(
                         )
                     )
                 }
-                queryFlow.value = action.query
+                queryFlow.tryEmit(action.query)
             }
             BookshelfAction.OnToggleTidyMode -> {
                 val newTidyMode = !_state.value.isTidyMode
@@ -128,6 +128,9 @@ class BookshelfViewModel(
                 persistTidyMode(newTidyMode)
             }
             BookshelfAction.OnToggleSearchByTitle -> {
+                val current = _state.value.bookSearchState
+                if (!current.canToggleTitle) return@onAction
+
                 _state.update {
                     it.copy(
                         bookSearchState = it.bookSearchState.copy(
@@ -139,10 +142,13 @@ class BookshelfViewModel(
                 // Re-trigger search via debounced flow for consistency
                 val currentQuery = _state.value.bookSearchState.query
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery
+                    queryFlow.tryEmit(currentQuery)
                 }
             }
             BookshelfAction.OnToggleSearchByAuthor -> {
+                val current = _state.value.bookSearchState
+                if (!current.canToggleAuthor) return@onAction
+
                 _state.update {
                     it.copy(
                         bookSearchState = it.bookSearchState.copy(
@@ -154,7 +160,7 @@ class BookshelfViewModel(
                 // Re-trigger search via debounced flow for consistency
                 val currentQuery = _state.value.bookSearchState.query
                 if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.value = currentQuery
+                    queryFlow.tryEmit(currentQuery)
                 }
             }
             // Navigation actions handled by the UI layer
@@ -234,9 +240,10 @@ class BookshelfViewModel(
     @OptIn(FlowPreview::class)
     private fun observeDebouncedQuery() {
         viewModelScope.launch {
+            // queryFlow is a SharedFlow (not StateFlow) so filter toggles can re-emit the
+            // same query string. distinctUntilChanged is omitted for the same reason.
             queryFlow
                 .debounce(SEARCH_DEBOUNCE_MS)
-                .distinctUntilChanged()
                 .collectLatest { raw ->
                     val query = raw.trim()
 
@@ -289,14 +296,17 @@ class BookshelfViewModel(
         val searchState = _state.value.bookSearchState
 
         // Map checkbox states to OpenLibrary API parameters:
-        // - Both checked OR both unchecked → use general q= parameter (smart search)
-        // - Only title checked → use title= parameter
-        // - Only author checked → use author= parameter
+        // - Both checked (default) → general q= parameter
+        // - Only title checked → title= parameter
+        // - Only author checked → author= parameter
         val (generalQuery, titleQuery, authorQuery) = when {
             searchState.searchByTitle && searchState.searchByAuthor -> Triple(query, null, null)
-            !searchState.searchByTitle && !searchState.searchByAuthor -> Triple(query, null, null)
-            searchState.searchByTitle && !searchState.searchByAuthor -> Triple(null, query, null)
-            else -> Triple(null, null, query)
+            searchState.searchByTitle -> Triple(null, query, null)
+            searchState.searchByAuthor -> Triple(null, null, query)
+            else -> {
+                Timber.w("Unexpected: no search filter checked, falling back to general search")
+                Triple(query, null, null)
+            }
         }
 
         bookshelfUseCases.searchBooks(

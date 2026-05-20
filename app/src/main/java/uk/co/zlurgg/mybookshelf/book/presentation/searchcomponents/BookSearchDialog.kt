@@ -61,6 +61,8 @@ fun BookSearchDialog(
                 SearchFilters(
                     searchByTitle = state.searchByTitle,
                     searchByAuthor = state.searchByAuthor,
+                    titleEnabled = state.canToggleTitle,
+                    authorEnabled = state.canToggleAuthor,
                     onToggleTitle = onToggleSearchByTitle,
                     onToggleAuthor = onToggleSearchByAuthor
                 )

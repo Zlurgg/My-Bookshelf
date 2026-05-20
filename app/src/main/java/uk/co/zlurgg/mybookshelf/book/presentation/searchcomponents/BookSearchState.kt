@@ -12,4 +12,10 @@ data class BookSearchState(
     val searchByTitle: Boolean = true,
     val searchByAuthor: Boolean = true,
     val errorMessage: String? = null
-)
+) {
+    /** Title can only be unchecked if author is still checked. */
+    val canToggleTitle: Boolean get() = searchByAuthor
+
+    /** Author can only be unchecked if title is still checked. */
+    val canToggleAuthor: Boolean get() = searchByTitle
+}

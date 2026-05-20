@@ -250,6 +250,77 @@ class BookshelfViewModelTest {
         stateHelper.cleanup()
     }
 
+    // Filter retrigger tests live in LibraryViewModelTest which uses StandardTestDispatcher,
+    // supporting advanceTimeBy for debounce testing. The search flow logic is identical in both VMs.
+
+    @Test
+    fun `cannot uncheck title filter when author is already unchecked`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Uncheck author first (both start checked, so this is allowed)
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByAuthor)
+        }
+
+        // Try to uncheck title — should be blocked
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByTitle)
+        }
+
+        assertTrue(
+            "Title should remain checked when author is unchecked",
+            stateAfterToggle!!.bookSearchState.searchByTitle
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `cannot uncheck author filter when title is already unchecked`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Uncheck title first
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByTitle)
+        }
+
+        // Try to uncheck author — should be blocked
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByAuthor)
+        }
+
+        assertTrue(
+            "Author should remain checked when title is unchecked",
+            stateAfterToggle!!.bookSearchState.searchByAuthor
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `can toggle filter when both are checked`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Both start checked — toggling either should work
+        val stateAfterTitleToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByTitle)
+        }
+
+        assertFalse(
+            "Title should be unchecked",
+            stateAfterTitleToggle!!.bookSearchState.searchByTitle
+        )
+        assertTrue(
+            "Author should remain checked",
+            stateAfterTitleToggle.bookSearchState.searchByAuthor
+        )
+        stateHelper.cleanup()
+    }
+
     // Note: Search error handling test skipped due to complexity of testing debounced coroutines.
     // The error handling code path is validated by other ViewModel error tests and UseCase tests.
 
@@ -257,6 +328,9 @@ class BookshelfViewModelTest {
     private class SimpleSearchBooksUseCase : SearchBooksUseCase {
         var searchResultsToReturn: List<Book> = emptyList()
         var shouldFail = false
+        var lastTitleFilter: String? = null
+        var lastAuthorFilter: String? = null
+        var invocationCount = 0
 
         override suspend operator fun invoke(
             query: String,
@@ -264,12 +338,19 @@ class BookshelfViewModelTest {
             language: String?,
             authorFilter: String?,
             titleFilter: String?
-        ): Result<List<Book>, DataError.Remote> =
-            if (shouldFail) Result.Error(DataError.Remote.UNKNOWN) else Result.Success(searchResultsToReturn)
+        ): Result<List<Book>, DataError.Remote> {
+            lastTitleFilter = titleFilter
+            lastAuthorFilter = authorFilter
+            invocationCount++
+            return if (shouldFail) Result.Error(DataError.Remote.UNKNOWN) else Result.Success(searchResultsToReturn)
+        }
 
         fun reset() {
             searchResultsToReturn = emptyList()
             shouldFail = false
+            lastTitleFilter = null
+            lastAuthorFilter = null
+            invocationCount = 0
         }
     }
 

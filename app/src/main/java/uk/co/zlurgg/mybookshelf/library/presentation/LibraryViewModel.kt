@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -42,7 +43,9 @@ class LibraryViewModel(
     val state: StateFlow<LibraryState> = _state.asStateFlow()
 
     private val localQueryFlow = MutableStateFlow("")
-    private val remoteQueryFlow = MutableStateFlow("")
+
+    // SharedFlow so that re-emitting the same query (e.g. after filter toggle) is not conflated.
+    private val remoteQueryFlow = MutableSharedFlow<String>(replay = 1, extraBufferCapacity = 1)
 
     init {
         loadTidyMode()
@@ -88,7 +91,7 @@ class LibraryViewModel(
                         )
                     )
                 }
-                remoteQueryFlow.value = ""
+                remoteQueryFlow.tryEmit("")
             }
             is LibraryAction.OnRemoteSearchQueryChange -> {
                 _state.update {
@@ -99,9 +102,12 @@ class LibraryViewModel(
                         )
                     )
                 }
-                remoteQueryFlow.value = action.query
+                remoteQueryFlow.tryEmit(action.query)
             }
             is LibraryAction.OnToggleSearchByTitle -> {
+                val current = _state.value.bookSearchState
+                if (!current.canToggleTitle) return@onAction
+
                 _state.update {
                     it.copy(
                         bookSearchState = it.bookSearchState.copy(
@@ -112,6 +118,9 @@ class LibraryViewModel(
                 retriggerRemoteSearchIfNeeded()
             }
             is LibraryAction.OnToggleSearchByAuthor -> {
+                val current = _state.value.bookSearchState
+                if (!current.canToggleAuthor) return@onAction
+
                 _state.update {
                     it.copy(
                         bookSearchState = it.bookSearchState.copy(
@@ -202,7 +211,7 @@ class LibraryViewModel(
     private fun retriggerRemoteSearchIfNeeded() {
         val currentQuery = _state.value.bookSearchState.query
         if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-            remoteQueryFlow.value = currentQuery
+            remoteQueryFlow.tryEmit(currentQuery)
         }
     }
 
@@ -281,6 +290,8 @@ class LibraryViewModel(
     @OptIn(FlowPreview::class)
     private fun observeDebouncedLocalQuery() {
         viewModelScope.launch {
+            // distinctUntilChanged is correct here: title/author checkboxes only affect
+            // remote OpenLibrary search. Local applyFilters() always matches both fields.
             localQueryFlow
                 .debounce(SEARCH_DEBOUNCE_MS)
                 .distinctUntilChanged()
@@ -291,9 +302,10 @@ class LibraryViewModel(
     @OptIn(FlowPreview::class)
     private fun observeDebouncedRemoteQuery() {
         viewModelScope.launch {
+            // remoteQueryFlow is a SharedFlow (not StateFlow) so filter toggles can re-emit
+            // the same query string. distinctUntilChanged is omitted for the same reason.
             remoteQueryFlow
                 .debounce(SEARCH_DEBOUNCE_MS)
-                .distinctUntilChanged()
                 .collectLatest { raw ->
                     val query = raw.trim()
 
@@ -333,11 +345,18 @@ class LibraryViewModel(
 
         val searchState = _state.value.bookSearchState
 
+        // Map checkbox states to OpenLibrary API parameters:
+        // - Both checked (default) → general q= parameter
+        // - Only title checked → title= parameter
+        // - Only author checked → author= parameter
         val (generalQuery, titleQuery, authorQuery) = when {
             searchState.searchByTitle && searchState.searchByAuthor -> Triple(query, null, null)
-            !searchState.searchByTitle && !searchState.searchByAuthor -> Triple(query, null, null)
-            searchState.searchByTitle && !searchState.searchByAuthor -> Triple(null, query, null)
-            else -> Triple(null, null, query)
+            searchState.searchByTitle -> Triple(null, query, null)
+            searchState.searchByAuthor -> Triple(null, null, query)
+            else -> {
+                Timber.w("Unexpected: no search filter checked, falling back to general search")
+                Triple(query, null, null)
+            }
         }
 
         libraryUseCases.searchBooks(

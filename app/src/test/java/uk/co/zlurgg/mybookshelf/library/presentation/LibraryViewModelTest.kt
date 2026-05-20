@@ -782,6 +782,125 @@ class LibraryViewModelTest {
         stateHelper.cleanup()
     }
 
+    @Test
+    fun `toggle title filter retriggers remote search with updated results`() = runTest(testDispatcher) {
+        val initialResults = listOf(TestBookBuilder().withId("r1").withTitle("Result 1").build())
+        stubSearchBooks.searchResultsToReturn = initialResults
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        // Perform initial search
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+        val countAfterInitial = stubSearchBooks.invocationCount
+
+        // Toggle title OFF → only author remains → search uses authorFilter
+        viewModel.onAction(LibraryAction.OnToggleSearchByTitle)
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+
+        assertTrue(
+            "Search should be invoked again after title toggle",
+            stubSearchBooks.invocationCount > countAfterInitial
+        )
+        assertEquals("kotlin", stubSearchBooks.lastAuthorFilter)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `toggle author filter retriggers remote search with updated results`() = runTest(testDispatcher) {
+        val initialResults = listOf(TestBookBuilder().withId("r1").withTitle("Result 1").build())
+        stubSearchBooks.searchResultsToReturn = initialResults
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        // Perform initial search
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+        val countAfterInitial = stubSearchBooks.invocationCount
+
+        // Toggle author OFF → only title remains → search uses titleFilter
+        viewModel.onAction(LibraryAction.OnToggleSearchByAuthor)
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+
+        assertTrue(
+            "Search should be invoked again after author toggle",
+            stubSearchBooks.invocationCount > countAfterInitial
+        )
+        assertEquals("kotlin", stubSearchBooks.lastTitleFilter)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `cannot uncheck title filter when author is already unchecked`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        // Uncheck author first (both start checked)
+        viewModel.onAction(LibraryAction.OnToggleSearchByAuthor)
+        stateHelper.getCurrentState()
+
+        // Try to uncheck title — should be blocked
+        viewModel.onAction(LibraryAction.OnToggleSearchByTitle)
+        val state = stateHelper.getCurrentState()
+
+        assertTrue(
+            "Title should remain checked when author is unchecked",
+            state!!.bookSearchState.searchByTitle
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `cannot uncheck author filter when title is already unchecked`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        // Uncheck title first
+        viewModel.onAction(LibraryAction.OnToggleSearchByTitle)
+        stateHelper.getCurrentState()
+
+        // Try to uncheck author — should be blocked
+        viewModel.onAction(LibraryAction.OnToggleSearchByAuthor)
+        val state = stateHelper.getCurrentState()
+
+        assertTrue(
+            "Author should remain checked when title is unchecked",
+            state!!.bookSearchState.searchByAuthor
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `can toggle filter when both are checked`() = runTest(testDispatcher) {
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        // Both start checked — toggling either should work
+        viewModel.onAction(LibraryAction.OnToggleSearchByTitle)
+        val state = stateHelper.getCurrentState()
+
+        assertFalse("Title should be unchecked", state!!.bookSearchState.searchByTitle)
+        assertTrue("Author should remain checked", state.bookSearchState.searchByAuthor)
+        stateHelper.cleanup()
+    }
+
     private class GetAllLibraryBooksUseCaseStub(
         private val bookRepository: MockBookRepository
     ) : GetAllLibraryBooksUseCase {
@@ -791,6 +910,9 @@ class LibraryViewModelTest {
     private class StubSearchBooksUseCase : SearchBooksUseCase {
         var searchResultsToReturn: List<Book> = emptyList()
         var shouldFail = false
+        var lastTitleFilter: String? = null
+        var lastAuthorFilter: String? = null
+        var invocationCount = 0
 
         override suspend fun invoke(
             query: String,
@@ -799,6 +921,9 @@ class LibraryViewModelTest {
             authorFilter: String?,
             titleFilter: String?
         ): Result<List<Book>, DataError.Remote> {
+            lastTitleFilter = titleFilter
+            lastAuthorFilter = authorFilter
+            invocationCount++
             return if (shouldFail) {
                 Result.Error(DataError.Remote.UNKNOWN)
             } else {
