@@ -2,14 +2,6 @@
 
 Follow-up improvements identified during Library screen implementation and testing.
 
-## Library
-
-### Add Book to the library
-See [library-add-book.md](library-add-book.md)
-
-### Delete book from library
-See [library-delete-books.md](library-delete-books.md)
-
 ## Shared Search Bugs
 
 ### Filter toggle does not retrigger search
@@ -34,4 +26,10 @@ See [library-delete-books.md](library-delete-books.md)
 ### DRY: Remote search orchestration duplicated
 **Affects:** LibraryViewModel + BookshelfViewModel.
 **Issue:** ~80 lines of near-identical search logic: debounce setup, query-length guard, query mapping (`when { searchByTitle && searchByAuthor -> ... }`), `withSearchResults`/`withSearchError` helpers. Extract a shared `RemoteSearchHandler` or utility that both ViewModels delegate to.
+
+## Bookshelf Bugs
+
+### OnBookClick navigation race condition
+**Affects:** BookshelfViewModel + BookshelfScreenRoot.
+**Bug:** `BookshelfViewModel.OnBookClick` (line 79-91) launches a coroutine to upsert the clicked search result, but `BookshelfScreenRoot` navigates immediately without waiting for the upsert to complete. If the upsert hasn't finished when BookDetailScreen loads, the book won't be in the local database. Same bug that was fixed in Library via `navigateToBook` state + `LaunchedEffect`. Apply the same pattern to Bookshelf.
 
