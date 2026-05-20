@@ -29,7 +29,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -104,9 +103,12 @@ fun LibraryScreen(
                         )
                     },
                     actions = {
+                        val visibleIds = state.deletableBooks.map { it.id }.toSet()
+                        val allVisibleSelected = visibleIds.isNotEmpty() &&
+                            visibleIds.all { it in state.selectedBookIds }
                         IconButton(
                             onClick = {
-                                if (state.selectedBookIds.size == state.deletableBooks.size) {
+                                if (allVisibleSelected) {
                                     onAction(LibraryAction.OnDeselectAll)
                                 } else {
                                     onAction(LibraryAction.OnSelectAll)
@@ -114,12 +116,12 @@ fun LibraryScreen(
                             }
                         ) {
                             Icon(
-                                imageVector = if (state.selectedBookIds.size == state.deletableBooks.size) {
+                                imageVector = if (allVisibleSelected) {
                                     Icons.Filled.CheckCircle
                                 } else {
                                     Icons.Outlined.CheckCircle
                                 },
-                                contentDescription = if (state.selectedBookIds.size == state.deletableBooks.size) {
+                                contentDescription = if (allVisibleSelected) {
                                     stringResource(R.string.library_deselect_all)
                                 } else {
                                     stringResource(R.string.library_select_all)
@@ -183,29 +185,7 @@ fun LibraryScreen(
             }
         }
     ) { paddingValues ->
-        if (state.isSelectionMode && state.deletableBooks.isEmpty()) {
-            // Empty deletable state
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.library_no_deletable_books),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 32.dp)
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                OutlinedButton(
-                    onClick = { onAction(LibraryAction.OnToggleSelectionMode) }
-                ) {
-                    Text(stringResource(R.string.library_exit_selection))
-                }
-            }
-        } else if (!state.isLoading && state.allBooks.isEmpty()) {
+        if (!state.isLoading && state.allBooks.isEmpty()) {
             // Empty state
             Column(
                 modifier = Modifier
@@ -242,95 +222,93 @@ fun LibraryScreen(
                 contentPadding = paddingValues,
                 modifier = Modifier.fillMaxSize()
             ) {
-                if (!state.isSelectionMode) {
-                    // Search field
-                    item {
-                        OutlinedTextField(
-                            value = state.searchQuery,
-                            onValueChange = { onAction(LibraryAction.OnSearchQueryChange(it)) },
-                            shape = RoundedCornerShape(100),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                cursorColor = MaterialTheme.colorScheme.primary,
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                            ),
-                            placeholder = { Text(stringResource(R.string.library_search_hint)) },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.66f)
-                                )
-                            },
-                            trailingIcon = {
-                                AnimatedVisibility(visible = state.searchQuery.isNotBlank()) {
-                                    IconButton(
-                                        onClick = {
-                                            onAction(LibraryAction.OnSearchQueryChange(""))
-                                        }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Close,
-                                            contentDescription = stringResource(
-                                                R.string.cd_clear_search
-                                            ),
-                                            tint = MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
-                                }
-                            },
-                            singleLine = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .background(
-                                    shape = RoundedCornerShape(100),
-                                    color = MaterialTheme.colorScheme.surfaceVariant
-                                )
-                                .minimumInteractiveComponentSize()
-                        )
-                    }
-
-                    // Sort chips
-                    item {
-                        FlowRow(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            LibrarySortOption.entries.forEach { option ->
-                                FilterChip(
-                                    selected = state.sortOption == option,
+                // Search field
+                item {
+                    OutlinedTextField(
+                        value = state.searchQuery,
+                        onValueChange = { onAction(LibraryAction.OnSearchQueryChange(it)) },
+                        shape = RoundedCornerShape(100),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            cursorColor = MaterialTheme.colorScheme.primary,
+                            focusedBorderColor = MaterialTheme.colorScheme.primary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                        ),
+                        placeholder = { Text(stringResource(R.string.library_search_hint)) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.66f)
+                            )
+                        },
+                        trailingIcon = {
+                            AnimatedVisibility(visible = state.searchQuery.isNotBlank()) {
+                                IconButton(
                                     onClick = {
-                                        onAction(LibraryAction.OnSortOptionSelected(option))
-                                    },
-                                    label = { Text(stringResource(option.labelResId)) }
-                                )
+                                        onAction(LibraryAction.OnSearchQueryChange(""))
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = stringResource(
+                                            R.string.cd_clear_search
+                                        ),
+                                        tint = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
                             }
+                        },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .background(
+                                shape = RoundedCornerShape(100),
+                                color = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .minimumInteractiveComponentSize()
+                    )
+                }
+
+                // Sort chips
+                item {
+                    FlowRow(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        LibrarySortOption.entries.forEach { option ->
+                            FilterChip(
+                                selected = state.sortOption == option,
+                                onClick = {
+                                    onAction(LibraryAction.OnSortOptionSelected(option))
+                                },
+                                label = { Text(stringResource(option.labelResId)) }
+                            )
                         }
                     }
+                }
 
-                    // Reading status filter chips
-                    item {
-                        FlowRow(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                // Reading status filter chips
+                item {
+                    FlowRow(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterChip(
+                            selected = state.selectedReadingStatus == null,
+                            onClick = {
+                                onAction(LibraryAction.OnReadingStatusSelected(null))
+                            },
+                            label = { Text(stringResource(R.string.filter_all_status)) }
+                        )
+                        ReadingStatus.entries.forEach { status ->
                             FilterChip(
-                                selected = state.selectedReadingStatus == null,
+                                selected = state.selectedReadingStatus == status,
                                 onClick = {
-                                    onAction(LibraryAction.OnReadingStatusSelected(null))
+                                    onAction(LibraryAction.OnReadingStatusSelected(status))
                                 },
-                                label = { Text(stringResource(R.string.filter_all_status)) }
+                                label = { Text(status.toDisplayString()) }
                             )
-                            ReadingStatus.entries.forEach { status ->
-                                FilterChip(
-                                    selected = state.selectedReadingStatus == status,
-                                    onClick = {
-                                        onAction(LibraryAction.OnReadingStatusSelected(status))
-                                    },
-                                    label = { Text(status.toDisplayString()) }
-                                )
-                            }
                         }
                     }
                 }

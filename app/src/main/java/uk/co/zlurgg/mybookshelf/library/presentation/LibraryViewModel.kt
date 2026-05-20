@@ -175,8 +175,9 @@ class LibraryViewModel(
             }
             is LibraryAction.OnSelectAll -> {
                 _state.update { state ->
+                    val visibleIds = state.deletableBooks.map { it.id }.toSet()
                     state.copy(
-                        selectedBookIds = state.deletableBooks.map { it.id }.toSet()
+                        selectedBookIds = state.selectedBookIds + visibleIds
                     )
                 }
             }

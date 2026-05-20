@@ -188,10 +188,8 @@
         <item quantity="one">Delete %d book?</item>
         <item quantity="other">Delete %d books?</item>
     </plurals>
-    <string name="library_delete_body">This will permanently remove these books and all their data (notes, ratings, reading status). This cannot be undone.</string>
+    <string name="library_delete_body">This will permanently remove these books from your library and all shelves, including their notes, ratings, and reading status. This cannot be undone.</string>
     <string name="library_delete_confirm">Delete</string>
-    <string name="library_no_deletable_books">No books can be deleted. Remove books from book clubs first.</string>
-    <string name="library_exit_selection">Exit selection</string>
     <string name="sort_recently_added">Recently Added</string>
     <string name="sort_title_az">Title A–Z</string>
     <string name="sort_author_az">Author A–Z</string>

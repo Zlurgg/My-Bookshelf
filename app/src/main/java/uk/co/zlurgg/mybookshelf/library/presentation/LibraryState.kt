@@ -21,5 +21,5 @@ data class LibraryState(
     val errorMessage: String? = null,
     val navigateToBook: Book? = null,
 ) {
-    val deletableBooks: List<Book> get() = allBooks.filter { it.id !in nonRemovableBookIds }
+    val deletableBooks: List<Book> get() = filteredBooks.filter { it.id !in nonRemovableBookIds }
 }
