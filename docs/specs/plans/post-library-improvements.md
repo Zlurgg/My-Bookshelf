@@ -21,3 +21,17 @@ See [library-delete-books.md](library-delete-books.md)
 **Affects:** Both bookshelf and library search dialogs.
 **Issue:** When both "Search by Title" and "Search by Author" are unchecked, the search falls back to the general `q=` parameter — identical to both checked. This is confusing since the user explicitly unchecked both. Consider either preventing the last checkbox from being unchecked (disable it) or showing a hint explaining the fallback behavior.
 
+## Shared Search Alignment
+
+### withSearchError behavior diverges
+**Affects:** BookshelfViewModel vs LibraryViewModel.
+**Issue:** `BookshelfViewModel.withSearchError()` clears `results = emptyList()` on error. `LibraryViewModel.withSearchError()` preserves previous results. Both use the shared `BookSearchDialog`, so the user experience differs for the same visual component. Pick one behavior and apply consistently — likely preserve results (less jarring, error banner is sufficient).
+
+### BookshelfScreen existingBookIds per-recomposition
+**Affects:** BookshelfScreen only.
+**Issue:** `BookshelfScreen.kt` still does `state.bookSearchState.copy(existingBookIds = state.books.map { it.id }.toSet())` per recomposition. Library fixed this by deriving `existingBookIds` in the ViewModel's `observeBooks()`. Apply the same pattern to `BookshelfViewModel`.
+
+### DRY: Remote search orchestration duplicated
+**Affects:** LibraryViewModel + BookshelfViewModel.
+**Issue:** ~80 lines of near-identical search logic: debounce setup, query-length guard, query mapping (`when { searchByTitle && searchByAuthor -> ... }`), `withSearchResults`/`withSearchError` helpers. Extract a shared `RemoteSearchHandler` or utility that both ViewModels delegate to.
+
