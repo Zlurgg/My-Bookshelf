@@ -10,11 +10,11 @@ There is no way to permanently delete a book from the app. `BookDao` has no dele
 
 ### Selection mode with non-removable filtering
 
-When the user enters selection mode, the library filters to show only deletable books. Books on club shelves are excluded from the view entirely during selection mode. Search, sort, and filter controls are hidden — selection mode is a focused "pick and delete" flow, not a browsing flow. Exiting selection mode restores the previous filtered view automatically (search/sort/filter state is untouched in `LibraryState`).
+When the user enters selection mode, club books are filtered out of the current view but all browsing controls (search, sort, filter) remain active. The user can search for books, select some, change the search, select more — building up a multi-book selection across filter changes. The selection persists across filter changes; exiting selection mode clears `selectedBookIds` but leaves search/sort/filter state untouched.
 
 **Why filter rather than disable/grey out:** A greyed-out book with a tooltip explaining "remove from club first" adds UX complexity and raises questions. Filtering is simpler — the user sees only what they can act on. If the filtered set is smaller than expected, that's a natural prompt to investigate.
 
-**Why hide search/sort/filter during selection mode:** Selection mode is a destructive operation flow. Mixing browsing controls with deletion creates confusing UX — "am I filtering what I see or what I'll delete?" Keeping it simple: you see all deletable books, you pick, you delete. No ambiguity.
+**Why keep search/sort/filter visible during selection mode:** For large libraries, users need to find specific books to delete. Hiding controls would force users to scroll through their entire collection. Search + select + search + select + delete is the natural flow for "I want to remove these 5 books scattered across my library."
 
 ### getNonRemovableBookIds in BookRepository
 
@@ -119,7 +119,7 @@ This requires adding `PROTECTED_RESOURCE` to `DataError.Local` (confirmed it doe
 
 ### deletableBooks is a computed property, not stored state
 
-`deletableBooks` is always `allBooks.filter { it.id !in nonRemovableBookIds }`. Storing it separately would require manual `updateDeletableBooks()` calls whenever either input changes — miss one and the list goes stale.
+`deletableBooks` is always `filteredBooks.filter { it.id !in nonRemovableBookIds }`. It derives from the already-sorted/filtered list, so it respects the user's current search, sort, and reading status filter. Storing it separately would require manual `updateDeletableBooks()` calls whenever any input changes — miss one and the list goes stale.
 
 Instead, compute on read:
 
@@ -131,11 +131,11 @@ data class LibraryState(
     val nonRemovableBookIds: Set<String> = emptySet(),
     val showDeleteConfirmation: Boolean = false,
 ) {
-    val deletableBooks: List<Book> get() = allBooks.filter { it.id !in nonRemovableBookIds }
+    val deletableBooks: List<Book> get() = filteredBooks.filter { it.id !in nonRemovableBookIds }
 }
 ```
 
-This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableBookIds` are updated via separate flows; the computed property always reflects the current combination.
+This eliminates the staleness class entirely. `filteredBooks`, `nonRemovableBookIds`, and the sort/filter state are all updated via separate flows; the computed property always reflects the current combination.
 
 ## Implementation Steps
 
@@ -268,7 +268,7 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
         val showDeleteConfirmation: Boolean = false,
         val errorMessage: String? = null,
     ) {
-        val deletableBooks: List<Book> get() = allBooks.filter { it.id !in nonRemovableBookIds }
+        val deletableBooks: List<Book> get() = filteredBooks.filter { it.id !in nonRemovableBookIds }
     }
     ```
     Note: `LibraryState` does not currently have `errorMessage`. Clear it on: selection mode toggle, successful delete, dismiss delete dialog.
@@ -319,7 +319,7 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
 16. Add selection mode handling in `onAction()`:
     - `OnToggleSelectionMode`: Toggle `isSelectionMode`, clear `selectedBookIds`
     - `OnToggleBookSelection`: Add/remove from `selectedBookIds`
-    - `OnSelectAll`: Set `selectedBookIds` to all `deletableBooks` IDs
+    - `OnSelectAll`: Union currently visible `deletableBooks` IDs into `selectedBookIds` (additive — preserves selections from previous filter states)
     - `OnDeselectAll`: Clear `selectedBookIds`
     - `OnDeleteSelectedClick`: Set `showDeleteConfirmation = true`
     - `OnConfirmDelete`: Call `deleteBooks` use case, exit selection mode on success
@@ -366,13 +366,14 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
 
 19. Selection mode top bar changes:
     - Title changes to selection count: "X selected"
-    - Show "Select All" / "Deselect All" action
+    - Show "Select All" / "Deselect All" toggle — checks whether all *currently visible* deletable books are selected (containment check, not size comparison, since selections persist across filter changes)
     - Show "Delete" action (enabled only when `selectedBookIds` is not empty)
     - Show "Cancel" / close button to exit selection mode
-    - Hide tidy mode toggle, search bar, sort chips, and filter chips during selection mode
+    - Hide tidy mode toggle during selection mode
+    - Search bar, sort chips, and filter chips remain visible — users can search/filter to find books to select
 
 20. Book display changes in selection mode:
-    - Show books from `state.deletableBooks` instead of `state.filteredBooks`
+    - Show books from `state.deletableBooks` (`filteredBooks` minus non-removable — respects current search/sort/filter)
     - Overlay a checkbox on each book cover
     - Checkbox checked state driven by `selectedBookIds.contains(book.id)`
     - Book click dispatches `OnToggleBookSelection(book.id)` instead of `OnBookClick`
@@ -396,12 +397,10 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
     )
     ```
     - Title: "Delete X book(s)?"
-    - Body: "This will permanently remove these books and all their data (notes, ratings, reading status). This cannot be undone."
+    - Body: "This will permanently remove these books from your library and all shelves, including their notes, ratings, and reading status. This cannot be undone."
     - Buttons: "Cancel" / "Delete" (destructive style)
 
 23. Hide the FAB (from add-book plan) during selection mode.
-
-24. Empty deletable state: When `deletableBooks` is empty in selection mode, show a message: "No books can be deleted. Remove books from book clubs first." with a button to exit selection mode.
 
 ### Phase 6: Tests
 
@@ -419,7 +418,7 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
     - `deletableBooks` updates reactively when `allBooks` or `nonRemovableBookIds` change (no staleness)
     - `selectedBookIds` pruned when `nonRemovableBookIds` updates (no stale selection count)
     - Select/deselect updates `selectedBookIds`
-    - SelectAll uses `deletableBooks` IDs, not `allBooks` IDs
+    - SelectAll unions visible `deletableBooks` IDs into existing selection (additive)
     - Confirm delete calls use case and exits selection mode
     - Error handling uses `ErrorFormatter`, not hardcoded strings
     - BackHandler exits selection mode
@@ -429,11 +428,11 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
 
 | Case | Handling |
 |------|----------|
-| All books are on club shelves | Selection mode shows empty state: "No books can be deleted. Remove books from book clubs first." with exit button |
+| All books are on club shelves | `deletableBooks` is empty — user sees "0 books" in the filtered count. No special empty state needed. |
 | Book removed from club shelf while in selection mode | `nonRemovableBookIds` is a Flow — `deletableBooks` computed property updates reactively; book appears in the deletable list |
 | Book added to club shelf while selected | `nonRemovableBookIds` updates, `selectedBookIds` pruned via intersect — book vanishes from list and selection count stays accurate |
 | Large batch delete (100+ books) | `BookRepositoryImpl` chunks into batches of 500 to stay within SQLite's 999 bind arg limit |
-| Selection mode entered while search/sort active | Search/sort/filter controls hidden; selection mode shows flat `deletableBooks` list. Filter state preserved in `LibraryState`, restored on exit |
+| Selection mode entered while search/sort active | Search/sort/filter controls remain visible; `deletableBooks` respects current filters. Selections persist across filter changes — user can search "dune", select 2, search "tolkien", select 1, delete all 3 |
 | Rapid double-tap on Delete button | `isLoading = true` disables the delete button; dialog dismissed immediately |
 | Book on personal shelf + no club | Fully deletable — cross-refs to personal shelves are cleaned up in the transaction |
 | Orphaned book (not on any shelf) | Fully deletable — no cross-refs to clean up |
@@ -442,7 +441,7 @@ This eliminates the staleness class entirely. Both `allBooks` and `nonRemovableB
 
 ## Security Considerations
 
-- Confirmation dialog prevents accidental deletion
+- Confirmation dialog prevents accidental deletion and warns about shelf removal
 - No network calls involved (local-only operation)
 - Club books protected at two levels: UI filtering (selection mode) + domain guard (UseCase)
 - Room `@Transaction` ensures atomic operation per batch. Note: chunking means multiple transactions — if a mid-loop failure occurs (e.g. disk full), earlier batches are already committed. Accepted risk: near-zero probability on local SQLite for a personal app, and the UseCase guard + UI filtering prevent the more dangerous scenario (deleting club books)
