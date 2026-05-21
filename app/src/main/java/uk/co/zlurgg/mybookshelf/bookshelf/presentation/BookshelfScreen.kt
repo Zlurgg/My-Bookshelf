@@ -337,9 +337,7 @@ fun BookshelfScreen(
     // Search dialog
     if (state.isSearchDialogVisible) {
         ShelfBookSearchDialog(
-            state = state.bookSearchState.copy(
-                existingBookIds = state.books.map { it.id }.toSet()
-            ),
+            state = state.bookSearchState,
             callbacks = object : BookSearchCallbacks {
                 override val onQueryChange: (String) -> Unit = { query ->
                     onAction(BookshelfAction.OnSearchQueryChange(query))

@@ -321,6 +321,25 @@ class BookshelfViewModelTest {
         stateHelper.cleanup()
     }
 
+    @Test
+    fun `existingBookIds updates when books list changes`() = runTest(testDispatcher) {
+        mockGetShelfBooks.booksToReturn = listOf(
+            TestBookBuilder().withId("book-1").build(),
+            TestBookBuilder().withId("book-2").build()
+        )
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        val state = stateHelper.getCurrentState()
+
+        assertEquals(
+            "existingBookIds should match books on shelf",
+            setOf("book-1", "book-2"),
+            state!!.bookSearchState.existingBookIds
+        )
+        stateHelper.cleanup()
+    }
+
     // Note: Search error/debounce tests require StandardTestDispatcher + advanceTimeBy.
     // The identical error behavior (results preserved on error) is tested in LibraryViewModelTest.
 

@@ -172,7 +172,16 @@ class BookshelfViewModel(
     private fun loadBooks() {
         viewModelScope.launch {
             bookshelfUseCases.getShelfBooks(shelfId).collect { books ->
-                _state.update { it.copy(books = books, isLoading = false) }
+                _state.update {
+                    it.copy(
+                        books = books,
+                        isLoading = false,
+                        // existingBookIds may lag book mutations by one Flow emission
+                        bookSearchState = it.bookSearchState.copy(
+                            existingBookIds = books.map { book -> book.id }.toSet()
+                        )
+                    )
+                }
             }
         }
     }
@@ -374,7 +383,9 @@ class BookshelfViewModel(
     private fun BookshelfState.closeSearchDialog(): BookshelfState {
         return copy(
             isSearchDialogVisible = false,
-            bookSearchState = BookSearchState()
+            bookSearchState = BookSearchState(
+                existingBookIds = bookSearchState.existingBookIds
+            )
         )
     }
 }
