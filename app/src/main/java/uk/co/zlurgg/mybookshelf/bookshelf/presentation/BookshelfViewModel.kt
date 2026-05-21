@@ -138,12 +138,7 @@ class BookshelfViewModel(
                         )
                     )
                 }
-
-                // Re-trigger search via debounced flow for consistency
-                val currentQuery = _state.value.bookSearchState.query
-                if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.tryEmit(currentQuery)
-                }
+                retriggerSearchIfNeeded()
             }
             BookshelfAction.OnToggleSearchByAuthor -> {
                 val current = _state.value.bookSearchState
@@ -156,12 +151,7 @@ class BookshelfViewModel(
                         )
                     )
                 }
-
-                // Re-trigger search via debounced flow for consistency
-                val currentQuery = _state.value.bookSearchState.query
-                if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-                    queryFlow.tryEmit(currentQuery)
-                }
+                retriggerSearchIfNeeded()
             }
             // Navigation actions handled by the UI layer
             BookshelfAction.OnBackClick,
@@ -258,20 +248,13 @@ class BookshelfViewModel(
 
                     if (query.length < MIN_SEARCH_QUERY_LENGTH) {
                         _state.update {
-                            it.copy(
-                                bookSearchState = it.bookSearchState.copy(
-                                    isLoading = false,
-                                    isTyping = false,
-                                    errorMessage = null,
-                                    results = if (query.isEmpty()) emptyList() else it.bookSearchState.results
-                                )
-                            )
+                            it.copy(bookSearchState = it.bookSearchState.withBelowMinLength())
                         }
                         return@collectLatest
                     }
 
                     // Perform search directly in collectLatest so it can be cancelled
-                    performSearch(query)
+                    performSearch()
                 }
         }
     }
@@ -289,44 +272,27 @@ class BookshelfViewModel(
         }
     }
 
-    private suspend fun performSearch(query: String) {
-        // Execute search directly (not in a new coroutine)
-        // This allows collectLatest to cancel in-flight searches
-        _state.update {
-            it.copy(
-                bookSearchState = it.bookSearchState.copy(
-                    isLoading = true,
-                    isTyping = false,
-                    errorMessage = null
-                )
-            )
+    private fun retriggerSearchIfNeeded() {
+        val currentQuery = _state.value.bookSearchState.query
+        if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
+            queryFlow.tryEmit(currentQuery)
         }
+    }
 
-        val searchState = _state.value.bookSearchState
+    private suspend fun performSearch() {
+        _state.update { it.copy(bookSearchState = it.bookSearchState.withLoading()) }
 
-        // Map checkbox states to OpenLibrary API parameters:
-        // - Both checked (default) → general q= parameter
-        // - Only title checked → title= parameter
-        // - Only author checked → author= parameter
-        val (generalQuery, titleQuery, authorQuery) = when {
-            searchState.searchByTitle && searchState.searchByAuthor -> Triple(query, null, null)
-            searchState.searchByTitle -> Triple(null, query, null)
-            searchState.searchByAuthor -> Triple(null, null, query)
-            else -> {
-                Timber.w("Unexpected: no search filter checked, falling back to general search")
-                Triple(query, null, null)
-            }
-        }
+        val params = _state.value.bookSearchState.toSearchParams()
 
         bookshelfUseCases.searchBooks(
-            query = generalQuery ?: "",
-            resultLimit = 15, // First 15 results for performance
+            query = params.general ?: "",
+            resultLimit = 15,
             language = null,
-            authorFilter = authorQuery,
-            titleFilter = titleQuery
+            authorFilter = params.author,
+            titleFilter = params.title
         )
-            .onSuccess { searchResults ->
-                _state.update { it.withSearchResults(searchResults) }
+            .onSuccess { results ->
+                _state.update { it.copy(bookSearchState = it.bookSearchState.withResults(results)) }
             }
             .onError { error ->
                 _state.update { it.withSearchError(error) }
@@ -342,17 +308,6 @@ class BookshelfViewModel(
             isLoading = false,
             bookSearchState = bookSearchState.copy(isLoading = false),
             errorMessage = ErrorFormatter.formatDataErrorMessage(error, operation)
-        )
-    }
-
-    private fun BookshelfState.withSearchResults(results: List<Book>): BookshelfState {
-        return copy(
-            bookSearchState = bookSearchState.copy(
-                isLoading = false,
-                hasSearched = true,
-                errorMessage = null,
-                results = results
-            )
         )
     }
 

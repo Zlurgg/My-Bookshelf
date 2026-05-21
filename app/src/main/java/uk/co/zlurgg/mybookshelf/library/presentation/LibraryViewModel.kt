@@ -311,63 +311,30 @@ class LibraryViewModel(
 
                     if (query.length < MIN_SEARCH_QUERY_LENGTH) {
                         _state.update {
-                            it.copy(
-                                bookSearchState = it.bookSearchState.copy(
-                                    isLoading = false,
-                                    isTyping = false,
-                                    errorMessage = null,
-                                    results = if (query.isEmpty()) {
-                                        emptyList()
-                                    } else {
-                                        it.bookSearchState.results
-                                    }
-                                )
-                            )
+                            it.copy(bookSearchState = it.bookSearchState.withBelowMinLength())
                         }
                         return@collectLatest
                     }
 
-                    performRemoteSearch(query)
+                    performRemoteSearch()
                 }
         }
     }
 
-    private suspend fun performRemoteSearch(query: String) {
-        _state.update {
-            it.copy(
-                bookSearchState = it.bookSearchState.copy(
-                    isLoading = true,
-                    isTyping = false,
-                    errorMessage = null
-                )
-            )
-        }
+    private suspend fun performRemoteSearch() {
+        _state.update { it.copy(bookSearchState = it.bookSearchState.withLoading()) }
 
-        val searchState = _state.value.bookSearchState
-
-        // Map checkbox states to OpenLibrary API parameters:
-        // - Both checked (default) → general q= parameter
-        // - Only title checked → title= parameter
-        // - Only author checked → author= parameter
-        val (generalQuery, titleQuery, authorQuery) = when {
-            searchState.searchByTitle && searchState.searchByAuthor -> Triple(query, null, null)
-            searchState.searchByTitle -> Triple(null, query, null)
-            searchState.searchByAuthor -> Triple(null, null, query)
-            else -> {
-                Timber.w("Unexpected: no search filter checked, falling back to general search")
-                Triple(query, null, null)
-            }
-        }
+        val params = _state.value.bookSearchState.toSearchParams()
 
         libraryUseCases.searchBooks(
-            query = generalQuery ?: "",
+            query = params.general ?: "",
             resultLimit = 15,
             language = null,
-            authorFilter = authorQuery,
-            titleFilter = titleQuery
+            authorFilter = params.author,
+            titleFilter = params.title
         )
-            .onSuccess { searchResults ->
-                _state.update { it.withSearchResults(searchResults) }
+            .onSuccess { results ->
+                _state.update { it.copy(bookSearchState = it.bookSearchState.withResults(results)) }
             }
             .onError { error ->
                 _state.update { it.withSearchError(error) }
@@ -430,17 +397,6 @@ class LibraryViewModel(
     }
 
     // State Update Helpers
-
-    private fun LibraryState.withSearchResults(results: List<Book>): LibraryState {
-        return copy(
-            bookSearchState = bookSearchState.copy(
-                isLoading = false,
-                hasSearched = true,
-                errorMessage = null,
-                results = results
-            )
-        )
-    }
 
     private fun LibraryState.withSearchError(error: DataError): LibraryState {
         return copy(
