@@ -71,12 +71,12 @@ class SearchBooksUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val books = (result as Result.Success).data
-        assertEquals("Should return correct number of books", 2, books.size)
-        assertEquals("Should map first book correctly", "OL1W", books[0].id)
-        assertEquals("Should map first book title", "Test Book 1", books[0].title)
-        assertEquals("Should map second book correctly", "OL2W", books[1].id)
-        assertEquals("Should map second book title", "Test Book 2", books[1].title)
+        val searchResult = (result as Result.Success).data
+        assertEquals("Should return correct number of books", 2, searchResult.books.size)
+        assertEquals("Should map first book correctly", "OL1W", searchResult.books[0].id)
+        assertEquals("Should map first book title", "Test Book 1", searchResult.books[0].title)
+        assertEquals("Should map second book correctly", "OL2W", searchResult.books[1].id)
+        assertEquals("Should map second book title", "Test Book 2", searchResult.books[1].title)
     }
 
     @Test
@@ -89,8 +89,8 @@ class SearchBooksUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        val books = (result as Result.Success).data
-        assertTrue("Should return empty list", books.isEmpty())
+        val searchResult = (result as Result.Success).data
+        assertTrue("Should return empty list", searchResult.books.isEmpty())
     }
 
     @Test

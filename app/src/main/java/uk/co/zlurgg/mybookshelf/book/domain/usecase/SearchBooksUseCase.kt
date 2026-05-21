@@ -4,6 +4,11 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
+data class SearchResult(
+    val books: List<Book>,
+    val filteredCount: Int
+)
+
 /**
  * UseCase interface for searching books via OpenLibrary API.
  * Results are sorted by the API's default relevance algorithm.
@@ -14,6 +19,8 @@ interface SearchBooksUseCase {
         resultLimit: Int? = null,
         language: String? = null,
         authorFilter: String? = null,
-        titleFilter: String? = null
-    ): Result<List<Book>, DataError.Remote>
+        titleFilter: String? = null,
+        subjectFilter: String? = null,
+        safeSearchEnabled: Boolean = true
+    ): Result<SearchResult, DataError.Remote>
 }

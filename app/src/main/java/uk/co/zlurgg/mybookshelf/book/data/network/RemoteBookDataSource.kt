@@ -12,6 +12,7 @@ interface RemoteBookDataSource {
         language: String? = null,
         authorFilter: String? = null,
         titleFilter: String? = null,
+        subjectFilter: String? = null,
         sort: String? = null
     ): Result<SearchResponseDto, DataError.Remote>
 

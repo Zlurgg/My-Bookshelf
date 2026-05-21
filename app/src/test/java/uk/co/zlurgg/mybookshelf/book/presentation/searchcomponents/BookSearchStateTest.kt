@@ -134,4 +134,184 @@ class BookSearchStateTest {
 
         assertEquals("kotlin", params.title)
     }
+
+    // Subject search tests
+
+    @Test
+    fun `toSearchParams returns subject when subject checked`() {
+        val state = BookSearchState(
+            query = "dragons",
+            searchByTitle = false,
+            searchByAuthor = false,
+            searchBySubject = true
+        )
+
+        val params = state.toSearchParams()
+
+        assertNull(params.general)
+        assertNull(params.title)
+        assertNull(params.author)
+        assertEquals("dragons", params.subject)
+    }
+
+    @Test
+    fun `toSearchParams returns general plus subject when title+author+subject checked`() {
+        val state = BookSearchState(
+            query = "dragons",
+            searchByTitle = true,
+            searchByAuthor = true,
+            searchBySubject = true
+        )
+
+        val params = state.toSearchParams()
+
+        assertEquals("dragons", params.general)
+        assertNull(params.title)
+        assertNull(params.author)
+        assertEquals("dragons", params.subject)
+    }
+
+    @Test
+    fun `toSearchParams returns title plus subject when title+subject checked`() {
+        val state = BookSearchState(
+            query = "dragons",
+            searchByTitle = true,
+            searchByAuthor = false,
+            searchBySubject = true
+        )
+
+        val params = state.toSearchParams()
+
+        assertNull(params.general)
+        assertEquals("dragons", params.title)
+        assertNull(params.author)
+        assertEquals("dragons", params.subject)
+    }
+
+    @Test
+    fun `toSearchParams returns author plus subject when author+subject checked`() {
+        val state = BookSearchState(
+            query = "tolkien",
+            searchByTitle = false,
+            searchByAuthor = true,
+            searchBySubject = true
+        )
+
+        val params = state.toSearchParams()
+
+        assertNull(params.general)
+        assertNull(params.title)
+        assertEquals("tolkien", params.author)
+        assertEquals("tolkien", params.subject)
+    }
+
+    @Test
+    fun `toSearchParams returns general when title+author checked no subject - existing behavior`() {
+        val state = BookSearchState(
+            query = "kotlin",
+            searchByTitle = true,
+            searchByAuthor = true,
+            searchBySubject = false
+        )
+
+        val params = state.toSearchParams()
+
+        assertEquals("kotlin", params.general)
+        assertNull(params.title)
+        assertNull(params.author)
+        assertNull(params.subject)
+    }
+
+    // canToggle three-way interaction tests
+
+    @Test
+    fun `canToggleTitle true when subject is checked`() {
+        val state = BookSearchState(
+            searchByTitle = true,
+            searchByAuthor = false,
+            searchBySubject = true
+        )
+
+        assertTrue(state.canToggleTitle)
+    }
+
+    @Test
+    fun `canToggleSubject false when title and author both unchecked`() {
+        val state = BookSearchState(
+            searchByTitle = false,
+            searchByAuthor = false,
+            searchBySubject = true
+        )
+
+        assertFalse(state.canToggleSubject)
+    }
+
+    @Test
+    fun `canToggleSubject true when title is checked`() {
+        val state = BookSearchState(
+            searchByTitle = true,
+            searchByAuthor = false,
+            searchBySubject = true
+        )
+
+        assertTrue(state.canToggleSubject)
+    }
+
+    @Test
+    fun `canToggleAuthor true when subject is checked`() {
+        val state = BookSearchState(
+            searchByTitle = false,
+            searchByAuthor = true,
+            searchBySubject = true
+        )
+
+        assertTrue(state.canToggleAuthor)
+    }
+
+    // withFilteredResults tests
+
+    @Test
+    fun `withFilteredResults tracks filtered count correctly`() {
+        val allBooks = listOf(
+            TestBookBuilder().withId("1").build(),
+            TestBookBuilder().withId("2").build(),
+            TestBookBuilder().withId("3").build()
+        )
+        val safeBooks = listOf(allBooks[0], allBooks[2])
+        val state = BookSearchState(isLoading = true)
+
+        val result = state.withFilteredResults(allBooks, safeBooks)
+
+        assertEquals(safeBooks, result.results)
+        assertEquals(1, result.filteredCount)
+        assertFalse(result.isLoading)
+        assertTrue(result.hasSearched)
+    }
+
+    @Test
+    fun `withFilteredResults sets zero filtered count when no filtering`() {
+        val books = listOf(TestBookBuilder().withId("1").build())
+        val state = BookSearchState(isLoading = true)
+
+        val result = state.withFilteredResults(books, books)
+
+        assertEquals(0, result.filteredCount)
+    }
+
+    // Defensive fallback still works with all three unchecked
+
+    @Test
+    fun `toSearchParams defensive fallback still returns general when all unchecked`() {
+        val state = BookSearchState(
+            query = "kotlin",
+            searchByTitle = false,
+            searchByAuthor = false,
+            searchBySubject = false
+        )
+
+        val params = state.toSearchParams()
+
+        assertEquals("kotlin", params.general)
+        assertNull(params.subject)
+    }
 }

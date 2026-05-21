@@ -24,6 +24,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         val language: String?,
         val authorFilter: String?,
         val titleFilter: String?,
+        val subjectFilter: String?,
         val sort: String?
     )
 
@@ -60,11 +61,12 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         language: String?,
         authorFilter: String?,
         titleFilter: String?,
+        subjectFilter: String?,
         sort: String?
     ): Result<SearchResponseDto, DataError.Remote> {
         searchBooksCallCount++
         lastSearchQuery = query
-        lastSearchParams = SearchParams(query, resultLimit, language, authorFilter, titleFilter, sort)
+        lastSearchParams = SearchParams(query, resultLimit, language, authorFilter, titleFilter, subjectFilter, sort)
 
         return when {
             shouldThrowException -> Result.Error(networkError)

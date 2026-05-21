@@ -1,8 +1,8 @@
 package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
-import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
-import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.domain.service.SafeSearchFilter
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.map
@@ -20,6 +20,7 @@ class SearchBooksUseCaseImpl(
         private const val MAX_QUERY_LENGTH = 200
         private const val MAX_AUTHOR_FILTER_LENGTH = 100
         private const val MAX_TITLE_FILTER_LENGTH = 200
+        private const val MAX_SUBJECT_FILTER_LENGTH = 200
     }
 
     override suspend operator fun invoke(
@@ -27,9 +28,10 @@ class SearchBooksUseCaseImpl(
         resultLimit: Int?,
         language: String?,
         authorFilter: String?,
-        titleFilter: String?
-    ): Result<List<Book>, DataError.Remote> {
-        // Validate input lengths to prevent abuse and performance issues
+        titleFilter: String?,
+        subjectFilter: String?,
+        safeSearchEnabled: Boolean
+    ): Result<SearchResult, DataError.Remote> {
         if (query.length > MAX_QUERY_LENGTH) {
             return Result.Error(DataError.Remote.MALFORMED_REQUEST)
         }
@@ -42,15 +44,29 @@ class SearchBooksUseCaseImpl(
             return Result.Error(DataError.Remote.MALFORMED_REQUEST)
         }
 
+        if (subjectFilter != null && subjectFilter.length > MAX_SUBJECT_FILTER_LENGTH) {
+            return Result.Error(DataError.Remote.MALFORMED_REQUEST)
+        }
+
         return remoteBookDataSource.searchBooks(
             query = query,
             resultLimit = resultLimit,
             language = language,
             authorFilter = authorFilter,
             titleFilter = titleFilter,
-            sort = null // Always use API's default relevance sorting
+            subjectFilter = subjectFilter,
+            sort = null
         ).map { dto ->
-            dto.results.map { it.toBook() }
+            val allBooks = dto.results.map { it.toBook() }
+            val safeBooks = if (safeSearchEnabled) {
+                allBooks.filter { SafeSearchFilter.isBookSafe(it) }
+            } else {
+                allBooks
+            }
+            SearchResult(
+                books = safeBooks,
+                filteredCount = allBooks.size - safeBooks.size
+            )
         }
     }
 }

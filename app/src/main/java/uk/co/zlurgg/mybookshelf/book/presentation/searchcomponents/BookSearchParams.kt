@@ -7,5 +7,6 @@ package uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents
 data class BookSearchParams(
     val general: String? = null,
     val title: String? = null,
-    val author: String? = null
+    val author: String? = null,
+    val subject: String? = null
 )

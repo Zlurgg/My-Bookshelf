@@ -11,13 +11,19 @@ data class BookSearchState(
     val existingBookIds: Set<String> = emptySet(),
     val searchByTitle: Boolean = true,
     val searchByAuthor: Boolean = true,
+    val searchBySubject: Boolean = false,
+    val safeSearchEnabled: Boolean = true,
+    val filteredCount: Int = 0,
     val errorMessage: String? = null
 ) {
-    /** Title can only be unchecked if author is still checked. */
-    val canToggleTitle: Boolean get() = searchByAuthor
+    /** Title can be unchecked if at least one other is checked. */
+    val canToggleTitle: Boolean get() = searchByAuthor || searchBySubject
 
-    /** Author can only be unchecked if title is still checked. */
-    val canToggleAuthor: Boolean get() = searchByTitle
+    /** Author can be unchecked if at least one other is checked. */
+    val canToggleAuthor: Boolean get() = searchByTitle || searchBySubject
+
+    /** Subject can be unchecked if at least one other is checked. */
+    val canToggleSubject: Boolean get() = searchByTitle || searchByAuthor
 
     fun withLoading(): BookSearchState = copy(
         isLoading = true,
@@ -32,6 +38,14 @@ data class BookSearchState(
         results = results
     )
 
+    fun withFilteredResults(allResults: List<Book>, safeResults: List<Book>): BookSearchState = copy(
+        isLoading = false,
+        hasSearched = true,
+        errorMessage = null,
+        results = safeResults,
+        filteredCount = allResults.size - safeResults.size
+    )
+
     // query is untrimmed in state; trim here to detect whitespace-only input
     fun withBelowMinLength(): BookSearchState = copy(
         isLoading = false,
@@ -43,15 +57,20 @@ data class BookSearchState(
     /**
      * Maps filter checkbox state to OpenLibrary API search parameters.
      * Uses this.query (trimmed internally) — callers should not pass a separate query.
-     * Exactly one of the returned fields will be non-null.
+     *
+     * Title+Author both checked = use general q= (searches across all metadata).
+     * Subject is always an explicit subject: qualifier when checked.
      */
     fun toSearchParams(): BookSearchParams {
         val trimmedQuery = query.trim()
-        return when {
-            searchByTitle && searchByAuthor -> BookSearchParams(general = trimmedQuery)
-            searchByTitle -> BookSearchParams(title = trimmedQuery)
-            searchByAuthor -> BookSearchParams(author = trimmedQuery)
-            else -> BookSearchParams(general = trimmedQuery) // defensive fallback
-        }
+        val useGeneral = searchByTitle && searchByAuthor
+        // Defensive fallback: if no filter is checked, use general search
+        val needsFallback = !searchByTitle && !searchByAuthor && !searchBySubject
+        return BookSearchParams(
+            general = if (useGeneral || needsFallback) trimmedQuery else null,
+            title = if (!useGeneral && searchByTitle) trimmedQuery else null,
+            author = if (!useGeneral && searchByAuthor) trimmedQuery else null,
+            subject = if (searchBySubject) trimmedQuery else null
+        )
     }
 }
