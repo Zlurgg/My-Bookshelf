@@ -38,14 +38,6 @@ data class BookSearchState(
         results = results
     )
 
-    fun withFilteredResults(allResults: List<Book>, safeResults: List<Book>): BookSearchState = copy(
-        isLoading = false,
-        hasSearched = true,
-        errorMessage = null,
-        results = safeResults,
-        filteredCount = allResults.size - safeResults.size
-    )
-
     // query is untrimmed in state; trim here to detect whitespace-only input
     fun withBelowMinLength(): BookSearchState = copy(
         isLoading = false,

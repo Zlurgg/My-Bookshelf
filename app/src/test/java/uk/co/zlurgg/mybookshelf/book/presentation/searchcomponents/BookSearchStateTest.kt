@@ -268,36 +268,6 @@ class BookSearchStateTest {
         assertTrue(state.canToggleAuthor)
     }
 
-    // withFilteredResults tests
-
-    @Test
-    fun `withFilteredResults tracks filtered count correctly`() {
-        val allBooks = listOf(
-            TestBookBuilder().withId("1").build(),
-            TestBookBuilder().withId("2").build(),
-            TestBookBuilder().withId("3").build()
-        )
-        val safeBooks = listOf(allBooks[0], allBooks[2])
-        val state = BookSearchState(isLoading = true)
-
-        val result = state.withFilteredResults(allBooks, safeBooks)
-
-        assertEquals(safeBooks, result.results)
-        assertEquals(1, result.filteredCount)
-        assertFalse(result.isLoading)
-        assertTrue(result.hasSearched)
-    }
-
-    @Test
-    fun `withFilteredResults sets zero filtered count when no filtering`() {
-        val books = listOf(TestBookBuilder().withId("1").build())
-        val state = BookSearchState(isLoading = true)
-
-        val result = state.withFilteredResults(books, books)
-
-        assertEquals(0, result.filteredCount)
-    }
-
     // Defensive fallback still works with all three unchecked
 
     @Test

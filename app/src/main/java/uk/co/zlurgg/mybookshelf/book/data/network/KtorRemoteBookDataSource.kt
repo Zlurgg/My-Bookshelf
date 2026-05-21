@@ -99,6 +99,24 @@ class KtorRemoteBookDataSource(
 
     private fun sanitizeFilterInput(input: String): String = input.trim().replace("\"", "")
 
+    private fun formatFilterField(
+        raw: String,
+        fieldName: String,
+        prefix: String? = null
+    ): String {
+        val sanitized = sanitizeFilterInput(raw)
+        val quoted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
+        val result = if (prefix != null) "$prefix:$quoted" else quoted
+        Timber.tag(TAG).d(
+            "Query construction - %s: '%s' → '%s' (multi-word: %b)",
+            fieldName,
+            raw,
+            result,
+            sanitized.contains(" ")
+        )
+        return result
+    }
+
     private fun buildQuery(
         baseQuery: String,
         authorFilter: String?,
@@ -107,59 +125,20 @@ class KtorRemoteBookDataSource(
     ): String {
         val queryParts = mutableListOf<String>()
 
-        // Add base query with smart quoting for exact phrase matching
         if (baseQuery.isNotBlank()) {
-            val sanitized = sanitizeFilterInput(baseQuery)
-            val formatted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
-            Timber.tag(TAG).d(
-                "Query construction - base: '%s' → '%s' (multi-word: %b)",
-                baseQuery,
-                formatted,
-                sanitized.contains(" ")
-            )
-            queryParts.add(formatted)
+            queryParts.add(formatFilterField(baseQuery, "base"))
         }
 
-        // Add author filter using Open Library field syntax with smart quoting
         authorFilter?.takeIf { it.isNotBlank() }?.let {
-            val sanitized = sanitizeFilterInput(it)
-            val formatted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
-            val fieldQuery = "author:$formatted"
-            Timber.tag(TAG).d(
-                "Query construction - author: '%s' → '%s' (multi-word: %b)",
-                it,
-                fieldQuery,
-                sanitized.contains(" ")
-            )
-            queryParts.add(fieldQuery)
+            queryParts.add(formatFilterField(it, "author", prefix = "author"))
         }
 
-        // Add title filter using Open Library field syntax with smart quoting
         titleFilter?.takeIf { it.isNotBlank() }?.let {
-            val sanitized = sanitizeFilterInput(it)
-            val formatted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
-            val fieldQuery = "title:$formatted"
-            Timber.tag(TAG).d(
-                "Query construction - title: '%s' → '%s' (multi-word: %b)",
-                it,
-                fieldQuery,
-                sanitized.contains(" ")
-            )
-            queryParts.add(fieldQuery)
+            queryParts.add(formatFilterField(it, "title", prefix = "title"))
         }
 
-        // Add subject filter using Open Library field syntax with smart quoting
         subjectFilter?.takeIf { it.isNotBlank() }?.let {
-            val sanitized = sanitizeFilterInput(it)
-            val formatted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
-            val fieldQuery = "subject:$formatted"
-            Timber.tag(TAG).d(
-                "Query construction - subject: '%s' → '%s' (multi-word: %b)",
-                it,
-                fieldQuery,
-                sanitized.contains(" ")
-            )
-            queryParts.add(fieldQuery)
+            queryParts.add(formatFilterField(it, "subject", prefix = "subject"))
         }
 
         // Join with spaces (Open Library treats multiple terms as AND)

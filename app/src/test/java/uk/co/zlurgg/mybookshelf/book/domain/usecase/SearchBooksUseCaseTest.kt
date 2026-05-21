@@ -239,4 +239,100 @@ class SearchBooksUseCaseTest {
         assertEquals("Should return validation error", DataError.Remote.MALFORMED_REQUEST, error)
         assertEquals("Should not call remote data source", 0, mockRemoteDataSource.searchBooksCallCount)
     }
+
+    // Safe search integration tests
+
+    @Test
+    fun `safe search ON filters explicit books and returns correct filteredCount`() = runTest {
+        // Given - mix of safe and explicit books
+        val testBooks = listOf(
+            TestSearchedBookDtoBuilder()
+                .withId("/works/OL1W")
+                .withTitle("Science Fiction")
+                .withSubjects(listOf("Fiction", "Science"))
+                .build(),
+            TestSearchedBookDtoBuilder()
+                .withId("/works/OL2W")
+                .withTitle("Explicit Book")
+                .withSubjects(listOf("Erotica", "Fiction"))
+                .build(),
+            TestSearchedBookDtoBuilder()
+                .withId("/works/OL3W")
+                .withTitle("History Book")
+                .withSubjects(listOf("History"))
+                .build()
+        )
+        mockRemoteDataSource.configureSearchResponse(
+            SearchResponseDto(numFound = testBooks.size, results = testBooks)
+        )
+
+        // When
+        val result = useCase("test", safeSearchEnabled = true)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val searchResult = (result as Result.Success).data
+        assertEquals("Should filter to 2 safe books", 2, searchResult.books.size)
+        assertEquals("Should report 1 filtered", 1, searchResult.filteredCount)
+        assertEquals("First result should be safe book", "OL1W", searchResult.books[0].id)
+        assertEquals("Second result should be safe book", "OL3W", searchResult.books[1].id)
+    }
+
+    @Test
+    fun `safe search OFF returns all books with zero filteredCount`() = runTest {
+        // Given
+        val testBooks = listOf(
+            TestSearchedBookDtoBuilder()
+                .withId("/works/OL1W")
+                .withTitle("Safe Book")
+                .withSubjects(listOf("Fiction"))
+                .build(),
+            TestSearchedBookDtoBuilder()
+                .withId("/works/OL2W")
+                .withTitle("Explicit Book")
+                .withSubjects(listOf("Erotica"))
+                .build()
+        )
+        mockRemoteDataSource.configureSearchResponse(
+            SearchResponseDto(numFound = testBooks.size, results = testBooks)
+        )
+
+        // When
+        val result = useCase("test", safeSearchEnabled = false)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val searchResult = (result as Result.Success).data
+        assertEquals("Should return all books", 2, searchResult.books.size)
+        assertEquals("Should report zero filtered", 0, searchResult.filteredCount)
+    }
+
+    @Test
+    fun `safe search ON with all explicit results returns empty with correct count`() = runTest {
+        // Given - all books are explicit
+        val testBooks = listOf(
+            TestSearchedBookDtoBuilder()
+                .withId("/works/OL1W")
+                .withTitle("Explicit 1")
+                .withSubjects(listOf("Erotica"))
+                .build(),
+            TestSearchedBookDtoBuilder()
+                .withId("/works/OL2W")
+                .withTitle("Explicit 2")
+                .withSubjects(listOf("Pornography"))
+                .build()
+        )
+        mockRemoteDataSource.configureSearchResponse(
+            SearchResponseDto(numFound = testBooks.size, results = testBooks)
+        )
+
+        // When
+        val result = useCase("test", safeSearchEnabled = true)
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val searchResult = (result as Result.Success).data
+        assertTrue("Should return empty list", searchResult.books.isEmpty())
+        assertEquals("Should report all filtered", 2, searchResult.filteredCount)
+    }
 }

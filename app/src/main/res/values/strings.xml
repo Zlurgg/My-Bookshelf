@@ -31,6 +31,7 @@
     <string name="search_by_author">Author</string>
     <string name="search_by_subject">Subject</string>
     <string name="safe_search_label">Safe Search</string>
+    <string name="search_results_found">%1$d results found</string>
     <string name="safe_search_filtered">%1$d results (%2$d hidden by Safe Search)</string>
     <string name="filter_by_author">Filter by Author</string>
     <string name="filter_by_title">Filter by Title</string>

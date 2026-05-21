@@ -25,8 +25,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchResult
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
-import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
-import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -38,6 +36,7 @@ import uk.co.zlurgg.mybookshelf.library.domain.usecase.LibraryUseCases
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubSearchPreferences
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
@@ -938,16 +937,6 @@ class LibraryViewModelTest {
             } else {
                 Result.Success(SearchResult(books = searchResultsToReturn, filteredCount = 0))
             }
-        }
-    }
-
-    private class StubSearchPreferences : SearchPreferences {
-        private val _flow = MutableStateFlow(SearchPreferenceState())
-
-        override fun observe(): Flow<SearchPreferenceState> = _flow
-
-        override suspend fun update(state: SearchPreferenceState) {
-            _flow.value = state
         }
     }
 

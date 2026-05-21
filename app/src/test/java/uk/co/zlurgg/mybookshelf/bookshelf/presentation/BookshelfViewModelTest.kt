@@ -3,7 +3,6 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -26,14 +25,13 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
-import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
 import uk.co.zlurgg.mybookshelf.testutil.helpers.testHelper
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockGetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.testutil.mocks.StubClubOperations
+import uk.co.zlurgg.mybookshelf.testutil.mocks.StubSearchPreferences
 
 /**
  * ViewModel test demonstrating UI state testing with simplified inline mocks.
@@ -525,23 +523,6 @@ class BookshelfViewModelTest {
             lastAuthorFilter = null
             lastSubjectFilter = null
             invocationCount = 0
-        }
-    }
-
-    private class StubSearchPreferences : SearchPreferences {
-        private val _flow = MutableStateFlow(SearchPreferenceState())
-        var lastUpdatedState: SearchPreferenceState? = null
-
-        override fun observe(): Flow<SearchPreferenceState> = _flow
-
-        override suspend fun update(state: SearchPreferenceState) {
-            lastUpdatedState = state
-            _flow.value = state
-        }
-
-        fun reset() {
-            _flow.value = SearchPreferenceState()
-            lastUpdatedState = null
         }
     }
 

@@ -101,7 +101,7 @@ fun BookSearchDialog(
                             state.filteredCount
                         )
                     } else if (state.results.isNotEmpty()) {
-                        "${state.results.size} results found"
+                        stringResource(R.string.search_results_found, state.results.size)
                     } else {
                         null
                     }
