@@ -426,6 +426,8 @@ class BookshelfViewModel(
     }
 
     private fun BookshelfState.closeSearchDialog(): BookshelfState {
+        // Preserve search preferences — the DataStore observer won't re-emit because
+        // the persisted value hasn't changed, so a fresh BookSearchState would lose them.
         return copy(
             isSearchDialogVisible = false,
             bookSearchState = BookSearchState(
