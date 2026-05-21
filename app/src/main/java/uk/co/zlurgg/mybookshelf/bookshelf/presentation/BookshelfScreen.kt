@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,6 +74,13 @@ fun BookshelfScreenRoot(
         shelfName = shelfName ?: state.shelfName,
         shelfMaterial = shelfMaterial ?: state.shelfMaterial
     )
+
+    LaunchedEffect(state.navigateToBook) {
+        state.navigateToBook?.let { book ->
+            onBookClick(book)
+            viewModel.onAction(BookshelfAction.OnNavigationHandled)
+        }
+    }
 
     BookshelfScreen(
         state = uiState,
@@ -357,7 +365,7 @@ fun BookshelfScreen(
                     // Keep dialog open for bulk removing
                 }
                 override val onBookClick: (Book) -> Unit = { book ->
-                    onAction(BookshelfAction.OnBookClick(book))
+                    onAction(BookshelfAction.OnSearchResultBookClick(book))
                 }
                 override val onDismiss: () -> Unit = {
                     onAction(BookshelfAction.OnDismissSearchDialog)

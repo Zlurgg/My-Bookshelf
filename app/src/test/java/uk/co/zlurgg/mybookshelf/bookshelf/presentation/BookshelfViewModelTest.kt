@@ -158,7 +158,25 @@ class BookshelfViewModelTest {
     }
 
     @Test
-    fun `cache book handles error correctly`() = runTest(testDispatcher) {
+    fun `search result book click upserts then sets navigateToBook`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // When
+        val stateAfterClick = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnSearchResultBookClick(testBook))
+        }
+
+        // Then
+        assertEquals("Should set navigateToBook", testBook, stateAfterClick?.navigateToBook)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `search result book click error surfaces in bookSearchState`() = runTest(testDispatcher) {
         // Given
         val testBook = TestBookBuilder().withId("book-1").build()
         mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
@@ -169,15 +187,42 @@ class BookshelfViewModelTest {
 
         // When
         val stateAfterClick = stateHelper.executeAndGetState {
-            viewModel.onAction(BookshelfAction.OnBookClick(testBook))
+            viewModel.onAction(BookshelfAction.OnSearchResultBookClick(testBook))
         }
 
         // Then
-        assertTrue("Should set error message", stateAfterClick?.errorMessage != null)
+        assertTrue(
+            "Should set error in bookSearchState",
+            stateAfterClick?.bookSearchState?.errorMessage != null
+        )
         assertTrue(
             "Should contain operation context",
-            stateAfterClick?.errorMessage?.contains("Failed to cache book") == true
+            stateAfterClick?.bookSearchState?.errorMessage?.contains("open book") == true
         )
+        assertEquals("navigateToBook should remain null", null, stateAfterClick?.navigateToBook)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnNavigationHandled clears navigateToBook`() = runTest(testDispatcher) {
+        // Given
+        val testBook = TestBookBuilder().withId("book-1").build()
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Set navigateToBook via click
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnSearchResultBookClick(testBook))
+        }
+
+        // When
+        val stateAfterHandled = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnNavigationHandled)
+        }
+
+        // Then
+        assertEquals("navigateToBook should be null", null, stateAfterHandled?.navigateToBook)
         stateHelper.cleanup()
     }
 

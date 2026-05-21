@@ -76,18 +76,30 @@ class BookshelfViewModel(
                 // Reset query to cancel any pending search
                 queryFlow.tryEmit("")
             }
-            is BookshelfAction.OnBookClick -> {
-                // Persist clicked book so details screen can load it by ID safely
+            is BookshelfAction.OnSearchResultBookClick -> {
                 viewModelScope.launch {
                     when (val cacheResult = bookshelfUseCases.upsertBook(action.book)) {
                         is Result.Success -> {
-                            // Success - book cached successfully
+                            _state.update { it.copy(navigateToBook = action.book) }
                         }
                         is Result.Error -> {
-                            _state.update { it.withError(cacheResult.error, "cache book") }
+                            Timber.tag(TAG).e("Failed to cache book: %s", cacheResult.error)
+                            _state.update {
+                                it.copy(
+                                    bookSearchState = it.bookSearchState.copy(
+                                        errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                            cacheResult.error,
+                                            "open book"
+                                        )
+                                    )
+                                )
+                            }
                         }
                     }
                 }
+            }
+            is BookshelfAction.OnNavigationHandled -> {
+                _state.update { it.copy(navigateToBook = null) }
             }
             is BookshelfAction.OnAddBookClick -> {
                 addBookToShelf(action.book)
@@ -154,6 +166,7 @@ class BookshelfViewModel(
                 retriggerSearchIfNeeded()
             }
             // Navigation actions handled by the UI layer
+            is BookshelfAction.OnBookClick,
             BookshelfAction.OnBackClick,
             BookshelfAction.OnCreateBookClub -> Unit
         }

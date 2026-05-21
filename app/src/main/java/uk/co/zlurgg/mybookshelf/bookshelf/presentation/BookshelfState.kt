@@ -22,5 +22,6 @@ data class BookshelfState(
     val clubCode: String? = null,
 
     // Auth state (for gating book club creation)
-    val isSignedIn: Boolean = false
+    val isSignedIn: Boolean = false,
+    val navigateToBook: Book? = null
 )
