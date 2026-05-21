@@ -16,11 +16,13 @@ import uk.co.zlurgg.mybookshelf.core.data.database.DatabaseFactory
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.data.image.ImageLoaderFactory
 import uk.co.zlurgg.mybookshelf.core.data.network.HttpClientFactory
+import uk.co.zlurgg.mybookshelf.core.data.preferences.SearchPreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.data.preferences.ThemePreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.data.preferences.WelcomePreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.UuidIdGenerator
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.ThemePreferences
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 import uk.co.zlurgg.mybookshelf.core.domain.service.IdGenerator
@@ -52,4 +54,5 @@ val coreModule = module {
     }
     singleOf(::WelcomePreferencesImpl).bind<WelcomePreferences>()
     singleOf(::ThemePreferencesImpl).bind<ThemePreferences>()
+    singleOf(::SearchPreferencesImpl).bind<SearchPreferences>()
 }
