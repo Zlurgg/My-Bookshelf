@@ -374,6 +374,8 @@ fun LibraryScreen(
             onQueryChange = { onAction(LibraryAction.OnRemoteSearchQueryChange(it)) },
             onToggleSearchByTitle = { onAction(LibraryAction.OnToggleSearchByTitle) },
             onToggleSearchByAuthor = { onAction(LibraryAction.OnToggleSearchByAuthor) },
+            onToggleSearchBySubject = { onAction(LibraryAction.OnToggleSearchBySubject) },
+            onToggleSafeSearch = { onAction(LibraryAction.OnToggleSafeSearch) },
             onBookClick = { book -> onAction(LibraryAction.OnSearchResultBookClick(book)) },
             onAddBook = { book -> onAction(LibraryAction.OnAddBookToLibrary(book)) },
             onDismiss = { onAction(LibraryAction.OnDismissSearchDialog) }

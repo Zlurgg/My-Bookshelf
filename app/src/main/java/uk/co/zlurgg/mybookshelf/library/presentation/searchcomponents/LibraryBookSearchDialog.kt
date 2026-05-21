@@ -19,6 +19,8 @@ fun LibraryBookSearchDialog(
     onQueryChange: (String) -> Unit,
     onToggleSearchByTitle: () -> Unit,
     onToggleSearchByAuthor: () -> Unit,
+    onToggleSearchBySubject: () -> Unit,
+    onToggleSafeSearch: () -> Unit,
     onBookClick: (Book) -> Unit,
     onAddBook: (Book) -> Unit,
     onDismiss: () -> Unit
@@ -28,6 +30,8 @@ fun LibraryBookSearchDialog(
         onQueryChange = onQueryChange,
         onToggleSearchByTitle = onToggleSearchByTitle,
         onToggleSearchByAuthor = onToggleSearchByAuthor,
+        onToggleSearchBySubject = onToggleSearchBySubject,
+        onToggleSafeSearch = onToggleSafeSearch,
         onBookClick = onBookClick,
         onDismiss = onDismiss,
         trailingContent = { book, isExisting ->

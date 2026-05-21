@@ -1,66 +1,95 @@
 package uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 
 /**
- * Search filter checkboxes that allow users to narrow search scope.
- * Based on OpenLibrary API behavior:
- * - Both checked (default): Use general q= parameter
- * - Only title checked: Use title= parameter
- * - Only author checked: Use author= parameter
+ * Search filter checkboxes and safe search toggle.
  *
- * The last remaining checkbox is disabled to prevent both-unchecked state.
+ * Row 1: Title / Author / Subject checkboxes — at least one must remain checked.
+ * Row 2: Safe Search switch — visually distinct as a content filter vs. search mode.
  */
 @Composable
 fun SearchFilters(
     searchByTitle: Boolean,
     searchByAuthor: Boolean,
+    searchBySubject: Boolean,
     titleEnabled: Boolean,
     authorEnabled: Boolean,
+    subjectEnabled: Boolean,
+    safeSearchEnabled: Boolean,
     onToggleTitle: () -> Unit,
     onToggleAuthor: () -> Unit,
+    onToggleSubject: () -> Unit,
+    onToggleSafeSearch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // Title checkbox
-        Checkbox(
-            checked = searchByTitle,
-            enabled = titleEnabled,
-            onCheckedChange = { onToggleTitle() }
-        )
-        Text(
-            text = stringResource(id = R.string.search_by_title),
-            style = MaterialTheme.typography.bodySmall
-        )
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = searchByTitle,
+                enabled = titleEnabled,
+                onCheckedChange = { onToggleTitle() }
+            )
+            Text(
+                text = stringResource(id = R.string.search_by_title),
+                style = MaterialTheme.typography.bodySmall
+            )
 
-        Spacer(modifier = Modifier.width(16.dp))
+            Checkbox(
+                checked = searchByAuthor,
+                enabled = authorEnabled,
+                onCheckedChange = { onToggleAuthor() }
+            )
+            Text(
+                text = stringResource(id = R.string.search_by_author),
+                style = MaterialTheme.typography.bodySmall
+            )
 
-        // Author checkbox
-        Checkbox(
-            checked = searchByAuthor,
-            enabled = authorEnabled,
-            onCheckedChange = { onToggleAuthor() }
-        )
-        Text(
-            text = stringResource(id = R.string.search_by_author),
-            style = MaterialTheme.typography.bodySmall
-        )
+            Checkbox(
+                checked = searchBySubject,
+                enabled = subjectEnabled,
+                onCheckedChange = { onToggleSubject() }
+            )
+            Text(
+                text = stringResource(id = R.string.search_by_subject),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(32.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(id = R.string.safe_search_label),
+                style = MaterialTheme.typography.bodySmall
+            )
+            Switch(
+                checked = safeSearchEnabled,
+                onCheckedChange = { onToggleSafeSearch() },
+                modifier = Modifier.scale(0.8f)
+            )
+        }
     }
 }
 
@@ -70,9 +99,14 @@ private fun SearchFiltersPreview() {
     SearchFilters(
         searchByTitle = true,
         searchByAuthor = true,
+        searchBySubject = false,
         titleEnabled = true,
         authorEnabled = true,
+        subjectEnabled = true,
+        safeSearchEnabled = true,
         onToggleTitle = {},
-        onToggleAuthor = {}
+        onToggleAuthor = {},
+        onToggleSubject = {},
+        onToggleSafeSearch = {}
     )
 }

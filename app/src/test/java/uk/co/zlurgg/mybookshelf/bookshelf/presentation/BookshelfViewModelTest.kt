@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -18,12 +19,15 @@ import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchResult
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
@@ -53,6 +57,7 @@ class BookshelfViewModelTest {
     private val mockUpsertBook = SimpleUpsertBookUseCase()
     private val mockUpdateShelfTidyMode = SimpleUpdateShelfTidyModeUseCase()
     private val mockGetShelfById = MockGetShelfByIdUseCase()
+    private val stubSearchPreferences = StubSearchPreferences()
     private val stubCheckSignInStatus = object : CheckSignInStatusUseCase {
         override suspend fun invoke(): Boolean = false
     }
@@ -65,6 +70,7 @@ class BookshelfViewModelTest {
         mockRemoveBookFromShelf.reset()
         mockUpsertBook.reset()
         mockGetShelfById.reset()
+        stubSearchPreferences.reset()
     }
 
     private val stubClubOperations = StubClubOperations()
@@ -83,6 +89,7 @@ class BookshelfViewModelTest {
             mockGetShelfById,
             stubClubOperations,
             stubCheckSignInStatus,
+            stubSearchPreferences,
             shelfId
         )
     }
@@ -385,6 +392,100 @@ class BookshelfViewModelTest {
         stateHelper.cleanup()
     }
 
+    // Subject toggle tests
+
+    @Test
+    fun `subject toggle changes state correctly`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchBySubject)
+        }
+
+        assertTrue(
+            "Subject should be checked after toggle",
+            stateAfterToggle!!.bookSearchState.searchBySubject
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `safe search toggle persists preference`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSafeSearch)
+        }
+
+        assertFalse(
+            "Safe search should be disabled after toggle",
+            stateAfterToggle!!.bookSearchState.safeSearchEnabled
+        )
+
+        // Verify preference was persisted
+        val persistedState = stubSearchPreferences.lastUpdatedState
+        assertFalse(
+            "Persisted safe search should be disabled",
+            persistedState!!.safeSearchEnabled
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `cannot uncheck title when author and subject both unchecked`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Uncheck author (both title+author checked, subject unchecked by default)
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByAuthor)
+        }
+
+        // Try to uncheck title — should be blocked since subject is also unchecked
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByTitle)
+        }
+
+        assertTrue(
+            "Title should remain checked as the last checked filter",
+            stateAfterToggle!!.bookSearchState.searchByTitle
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `can uncheck title when subject is checked`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Enable subject first
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchBySubject)
+        }
+
+        // Uncheck author
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByAuthor)
+        }
+
+        // Now uncheck title — should work because subject is checked
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleSearchByTitle)
+        }
+
+        assertFalse(
+            "Title should be unchecked when subject is still checked",
+            stateAfterToggle!!.bookSearchState.searchByTitle
+        )
+        stateHelper.cleanup()
+    }
+
     // Note: Search error/debounce tests require StandardTestDispatcher + advanceTimeBy.
     // The identical error behavior (results preserved on error) is tested in LibraryViewModelTest.
 
@@ -394,6 +495,7 @@ class BookshelfViewModelTest {
         var shouldFail = false
         var lastTitleFilter: String? = null
         var lastAuthorFilter: String? = null
+        var lastSubjectFilter: String? = null
         var invocationCount = 0
 
         override suspend operator fun invoke(
@@ -401,12 +503,19 @@ class BookshelfViewModelTest {
             resultLimit: Int?,
             language: String?,
             authorFilter: String?,
-            titleFilter: String?
-        ): Result<List<Book>, DataError.Remote> {
+            titleFilter: String?,
+            subjectFilter: String?,
+            safeSearchEnabled: Boolean
+        ): Result<SearchResult, DataError.Remote> {
             lastTitleFilter = titleFilter
             lastAuthorFilter = authorFilter
+            lastSubjectFilter = subjectFilter
             invocationCount++
-            return if (shouldFail) Result.Error(DataError.Remote.UNKNOWN) else Result.Success(searchResultsToReturn)
+            return if (shouldFail) {
+                Result.Error(DataError.Remote.UNKNOWN)
+            } else {
+                Result.Success(SearchResult(books = searchResultsToReturn, filteredCount = 0))
+            }
         }
 
         fun reset() {
@@ -414,7 +523,25 @@ class BookshelfViewModelTest {
             shouldFail = false
             lastTitleFilter = null
             lastAuthorFilter = null
+            lastSubjectFilter = null
             invocationCount = 0
+        }
+    }
+
+    private class StubSearchPreferences : SearchPreferences {
+        private val _flow = MutableStateFlow(SearchPreferenceState())
+        var lastUpdatedState: SearchPreferenceState? = null
+
+        override fun observe(): Flow<SearchPreferenceState> = _flow
+
+        override suspend fun update(state: SearchPreferenceState) {
+            lastUpdatedState = state
+            _flow.value = state
+        }
+
+        fun reset() {
+            _flow.value = SearchPreferenceState()
+            lastUpdatedState = null
         }
     }
 

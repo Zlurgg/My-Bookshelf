@@ -27,8 +27,11 @@
     <string name="hide_sort_options">Hide Sort</string>
     <string name="show_advanced_search">Advanced</string>
     <string name="hide_advanced_search">Hide Advanced</string>
-    <string name="search_by_title">by title</string>
-    <string name="search_by_author">by author</string>
+    <string name="search_by_title">Title</string>
+    <string name="search_by_author">Author</string>
+    <string name="search_by_subject">Subject</string>
+    <string name="safe_search_label">Safe Search</string>
+    <string name="safe_search_filtered">%1$d results (%2$d hidden by Safe Search)</string>
     <string name="filter_by_author">Filter by Author</string>
     <string name="filter_by_title">Filter by Title</string>
     <string name="author_hint">e.g. Tolkien</string>

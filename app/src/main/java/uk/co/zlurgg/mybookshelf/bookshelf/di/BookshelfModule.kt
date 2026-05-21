@@ -35,6 +35,7 @@ val bookshelfModule = module {
             getShelfById = get(),
             bookClubOperations = get(),
             checkSignInStatus = get(),
+            searchPreferences = get(),
             shelfId = shelfId
         )
     }

@@ -24,6 +24,8 @@ fun ShelfBookSearchDialog(
         onQueryChange = callbacks.onQueryChange,
         onToggleSearchByTitle = callbacks.onToggleSearchByTitle,
         onToggleSearchByAuthor = callbacks.onToggleSearchByAuthor,
+        onToggleSearchBySubject = callbacks.onToggleSearchBySubject,
+        onToggleSafeSearch = callbacks.onToggleSafeSearch,
         onBookClick = callbacks.onBookClick,
         onDismiss = callbacks.onDismiss,
         trailingContent = { book, isExisting ->
@@ -59,6 +61,8 @@ private fun ShelfBookSearchDialogPreview() {
             override val onQueryChange: (String) -> Unit = {}
             override val onToggleSearchByTitle: () -> Unit = {}
             override val onToggleSearchByAuthor: () -> Unit = {}
+            override val onToggleSearchBySubject: () -> Unit = {}
+            override val onToggleSafeSearch: () -> Unit = {}
             override val onAddBook: (Book) -> Unit = {}
             override val onRemoveBook: (Book) -> Unit = {}
             override val onBookClick: (Book) -> Unit = {}

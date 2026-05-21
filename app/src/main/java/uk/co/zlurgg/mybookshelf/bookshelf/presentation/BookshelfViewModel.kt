@@ -9,19 +9,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.GetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchState
+import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
+import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.GetShelfByIdUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.book.domain.service.ClubOperations
-import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.model.SystemOwnerIds
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
@@ -31,6 +35,7 @@ class BookshelfViewModel(
     private val getShelfById: GetShelfByIdUseCase,
     private val bookClubOperations: ClubOperations,
     private val checkSignInStatus: CheckSignInStatusUseCase,
+    private val searchPreferences: SearchPreferences,
     private val shelfId: String
 ) : ViewModel() {
 
@@ -53,10 +58,28 @@ class BookshelfViewModel(
     private val queryFlow = MutableSharedFlow<String>(replay = 1, extraBufferCapacity = 1)
 
     init {
+        observeSearchPreferences()
         observeDebouncedQuery()
         loadBooks()
         loadShelfDetails()
         checkSignInStatus()
+    }
+
+    private fun observeSearchPreferences() {
+        searchPreferences.observe()
+            .onEach { prefs ->
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchByTitle = prefs.searchByTitle,
+                            searchByAuthor = prefs.searchByAuthor,
+                            searchBySubject = prefs.searchBySubject,
+                            safeSearchEnabled = prefs.safeSearchEnabled
+                        )
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun checkSignInStatus() {
@@ -150,6 +173,7 @@ class BookshelfViewModel(
                         )
                     )
                 }
+                persistSearchPreferences()
                 retriggerSearchIfNeeded()
             }
             BookshelfAction.OnToggleSearchByAuthor -> {
@@ -163,12 +187,52 @@ class BookshelfViewModel(
                         )
                     )
                 }
+                persistSearchPreferences()
+                retriggerSearchIfNeeded()
+            }
+            BookshelfAction.OnToggleSearchBySubject -> {
+                val current = _state.value.bookSearchState
+                if (!current.canToggleSubject) return@onAction
+
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchBySubject = !it.bookSearchState.searchBySubject
+                        )
+                    )
+                }
+                persistSearchPreferences()
+                retriggerSearchIfNeeded()
+            }
+            BookshelfAction.OnToggleSafeSearch -> {
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            safeSearchEnabled = !it.bookSearchState.safeSearchEnabled
+                        )
+                    )
+                }
+                persistSearchPreferences()
                 retriggerSearchIfNeeded()
             }
             // Navigation actions handled by the UI layer
             is BookshelfAction.OnBookClick,
             BookshelfAction.OnBackClick,
             BookshelfAction.OnCreateBookClub -> Unit
+        }
+    }
+
+    private fun persistSearchPreferences() {
+        val searchState = _state.value.bookSearchState
+        viewModelScope.launch {
+            searchPreferences.update(
+                SearchPreferenceState(
+                    searchByTitle = searchState.searchByTitle,
+                    searchByAuthor = searchState.searchByAuthor,
+                    searchBySubject = searchState.searchBySubject,
+                    safeSearchEnabled = searchState.safeSearchEnabled
+                )
+            )
         }
     }
 
@@ -295,17 +359,30 @@ class BookshelfViewModel(
     private suspend fun performSearch() {
         _state.update { it.copy(bookSearchState = it.bookSearchState.withLoading()) }
 
-        val params = _state.value.bookSearchState.toSearchParams()
+        val searchState = _state.value.bookSearchState
+        val params = searchState.toSearchParams()
 
         bookshelfUseCases.searchBooks(
             query = params.general ?: "",
             resultLimit = 15,
             language = null,
             authorFilter = params.author,
-            titleFilter = params.title
+            titleFilter = params.title,
+            subjectFilter = params.subject,
+            safeSearchEnabled = searchState.safeSearchEnabled
         )
-            .onSuccess { results ->
-                _state.update { it.copy(bookSearchState = it.bookSearchState.withResults(results)) }
+            .onSuccess { searchResult ->
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            isLoading = false,
+                            hasSearched = true,
+                            errorMessage = null,
+                            results = searchResult.books,
+                            filteredCount = searchResult.filteredCount
+                        )
+                    )
+                }
             }
             .onError { error ->
                 _state.update { it.withSearchError(error) }
@@ -352,7 +429,11 @@ class BookshelfViewModel(
         return copy(
             isSearchDialogVisible = false,
             bookSearchState = BookSearchState(
-                existingBookIds = bookSearchState.existingBookIds
+                existingBookIds = bookSearchState.existingBookIds,
+                searchByTitle = bookSearchState.searchByTitle,
+                searchByAuthor = bookSearchState.searchByAuthor,
+                searchBySubject = bookSearchState.searchBySubject,
+                safeSearchEnabled = bookSearchState.safeSearchEnabled
             )
         )
     }

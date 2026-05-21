@@ -36,6 +36,8 @@ fun BookSearchDialog(
     onQueryChange: (String) -> Unit,
     onToggleSearchByTitle: () -> Unit,
     onToggleSearchByAuthor: () -> Unit,
+    onToggleSearchBySubject: () -> Unit,
+    onToggleSafeSearch: () -> Unit,
     onBookClick: (Book) -> Unit,
     onDismiss: () -> Unit,
     trailingContent: @Composable (book: Book, isExisting: Boolean) -> Unit
@@ -61,10 +63,15 @@ fun BookSearchDialog(
                 SearchFilters(
                     searchByTitle = state.searchByTitle,
                     searchByAuthor = state.searchByAuthor,
+                    searchBySubject = state.searchBySubject,
                     titleEnabled = state.canToggleTitle,
                     authorEnabled = state.canToggleAuthor,
+                    subjectEnabled = state.canToggleSubject,
+                    safeSearchEnabled = state.safeSearchEnabled,
                     onToggleTitle = onToggleSearchByTitle,
-                    onToggleAuthor = onToggleSearchByAuthor
+                    onToggleAuthor = onToggleSearchByAuthor,
+                    onToggleSubject = onToggleSearchBySubject,
+                    onToggleSafeSearch = onToggleSafeSearch
                 )
             }
         },
@@ -86,13 +93,26 @@ fun BookSearchDialog(
                     )
                 }
 
-                if (state.results.isNotEmpty() && !state.isLoading && !state.isTyping) {
-                    Text(
-                        text = "${state.results.size} results found",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    )
+                if (!state.isLoading && !state.isTyping && state.hasSearched) {
+                    val resultText = if (state.filteredCount > 0) {
+                        stringResource(
+                            R.string.safe_search_filtered,
+                            state.results.size,
+                            state.filteredCount
+                        )
+                    } else if (state.results.isNotEmpty()) {
+                        "${state.results.size} results found"
+                    } else {
+                        null
+                    }
+                    resultText?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
                 }
 
                 when {

@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -22,6 +24,8 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchState
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
@@ -30,6 +34,7 @@ import uk.co.zlurgg.mybookshelf.library.domain.usecase.LibraryUseCases
 class LibraryViewModel(
     private val libraryUseCases: LibraryUseCases,
     private val dataStore: DataStore<Preferences>,
+    private val searchPreferences: SearchPreferences,
 ) : ViewModel() {
 
     companion object {
@@ -48,11 +53,29 @@ class LibraryViewModel(
     private val remoteQueryFlow = MutableSharedFlow<String>(replay = 1, extraBufferCapacity = 1)
 
     init {
+        observeSearchPreferences()
         loadTidyMode()
         observeBooks()
         observeNonRemovableBookIds()
         observeDebouncedLocalQuery()
         observeDebouncedRemoteQuery()
+    }
+
+    private fun observeSearchPreferences() {
+        searchPreferences.observe()
+            .onEach { prefs ->
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchByTitle = prefs.searchByTitle,
+                            searchByAuthor = prefs.searchByAuthor,
+                            searchBySubject = prefs.searchBySubject,
+                            safeSearchEnabled = prefs.safeSearchEnabled
+                        )
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onAction(action: LibraryAction) {
@@ -87,7 +110,11 @@ class LibraryViewModel(
                     it.copy(
                         isSearchDialogVisible = false,
                         bookSearchState = BookSearchState(
-                            existingBookIds = it.bookSearchState.existingBookIds
+                            existingBookIds = it.bookSearchState.existingBookIds,
+                            searchByTitle = it.bookSearchState.searchByTitle,
+                            searchByAuthor = it.bookSearchState.searchByAuthor,
+                            searchBySubject = it.bookSearchState.searchBySubject,
+                            safeSearchEnabled = it.bookSearchState.safeSearchEnabled
                         )
                     )
                 }
@@ -115,6 +142,7 @@ class LibraryViewModel(
                         )
                     )
                 }
+                persistSearchPreferences()
                 retriggerRemoteSearchIfNeeded()
             }
             is LibraryAction.OnToggleSearchByAuthor -> {
@@ -128,6 +156,32 @@ class LibraryViewModel(
                         )
                     )
                 }
+                persistSearchPreferences()
+                retriggerRemoteSearchIfNeeded()
+            }
+            is LibraryAction.OnToggleSearchBySubject -> {
+                val current = _state.value.bookSearchState
+                if (!current.canToggleSubject) return@onAction
+
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            searchBySubject = !it.bookSearchState.searchBySubject
+                        )
+                    )
+                }
+                persistSearchPreferences()
+                retriggerRemoteSearchIfNeeded()
+            }
+            is LibraryAction.OnToggleSafeSearch -> {
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            safeSearchEnabled = !it.bookSearchState.safeSearchEnabled
+                        )
+                    )
+                }
+                persistSearchPreferences()
                 retriggerRemoteSearchIfNeeded()
             }
             is LibraryAction.OnAddBookToLibrary -> {
@@ -205,6 +259,20 @@ class LibraryViewModel(
             is LibraryAction.OnDismissDeleteDialog -> {
                 _state.update { it.copy(showDeleteConfirmation = false) }
             }
+        }
+    }
+
+    private fun persistSearchPreferences() {
+        val searchState = _state.value.bookSearchState
+        viewModelScope.launch {
+            searchPreferences.update(
+                SearchPreferenceState(
+                    searchByTitle = searchState.searchByTitle,
+                    searchByAuthor = searchState.searchByAuthor,
+                    searchBySubject = searchState.searchBySubject,
+                    safeSearchEnabled = searchState.safeSearchEnabled
+                )
+            )
         }
     }
 
@@ -324,17 +392,30 @@ class LibraryViewModel(
     private suspend fun performRemoteSearch() {
         _state.update { it.copy(bookSearchState = it.bookSearchState.withLoading()) }
 
-        val params = _state.value.bookSearchState.toSearchParams()
+        val searchState = _state.value.bookSearchState
+        val params = searchState.toSearchParams()
 
         libraryUseCases.searchBooks(
             query = params.general ?: "",
             resultLimit = 15,
             language = null,
             authorFilter = params.author,
-            titleFilter = params.title
+            titleFilter = params.title,
+            subjectFilter = params.subject,
+            safeSearchEnabled = searchState.safeSearchEnabled
         )
-            .onSuccess { results ->
-                _state.update { it.copy(bookSearchState = it.bookSearchState.withResults(results)) }
+            .onSuccess { searchResult ->
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            isLoading = false,
+                            hasSearched = true,
+                            errorMessage = null,
+                            results = searchResult.books,
+                            filteredCount = searchResult.filteredCount
+                        )
+                    )
+                }
             }
             .onError { error ->
                 _state.update { it.withSearchError(error) }

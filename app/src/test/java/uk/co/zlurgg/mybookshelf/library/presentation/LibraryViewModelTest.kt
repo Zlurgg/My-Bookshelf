@@ -23,7 +23,10 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchResult
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -64,6 +67,7 @@ class LibraryViewModelTest {
     private val stubUpsertBook = StubUpsertBookUseCase()
     private val stubDeleteBooks = StubDeleteBooksUseCase()
     private val stubGetNonRemovableBookIds = StubGetNonRemovableBookIdsUseCase()
+    private val stubSearchPreferences = StubSearchPreferences()
 
     private fun createViewModel(): LibraryViewModel {
         return LibraryViewModel(
@@ -75,6 +79,7 @@ class LibraryViewModelTest {
                 getNonRemovableBookIds = stubGetNonRemovableBookIds
             ),
             dataStore = dataStore,
+            searchPreferences = stubSearchPreferences,
         )
     }
 
@@ -912,6 +917,7 @@ class LibraryViewModelTest {
         var shouldFail = false
         var lastTitleFilter: String? = null
         var lastAuthorFilter: String? = null
+        var lastSubjectFilter: String? = null
         var invocationCount = 0
 
         override suspend fun invoke(
@@ -919,16 +925,29 @@ class LibraryViewModelTest {
             resultLimit: Int?,
             language: String?,
             authorFilter: String?,
-            titleFilter: String?
-        ): Result<List<Book>, DataError.Remote> {
+            titleFilter: String?,
+            subjectFilter: String?,
+            safeSearchEnabled: Boolean
+        ): Result<SearchResult, DataError.Remote> {
             lastTitleFilter = titleFilter
             lastAuthorFilter = authorFilter
+            lastSubjectFilter = subjectFilter
             invocationCount++
             return if (shouldFail) {
                 Result.Error(DataError.Remote.UNKNOWN)
             } else {
-                Result.Success(searchResultsToReturn)
+                Result.Success(SearchResult(books = searchResultsToReturn, filteredCount = 0))
             }
+        }
+    }
+
+    private class StubSearchPreferences : SearchPreferences {
+        private val _flow = MutableStateFlow(SearchPreferenceState())
+
+        override fun observe(): Flow<SearchPreferenceState> = _flow
+
+        override suspend fun update(state: SearchPreferenceState) {
+            _flow.value = state
         }
     }
 
