@@ -6,19 +6,9 @@ Follow-up improvements identified during Library screen implementation and testi
 
 Fixed in `fix(search): retrigger search on filter toggle and prevent both-unchecked state` (branch `search-filter-bugs`). Switched query flows from `MutableStateFlow` to `MutableSharedFlow` to allow re-emission, removed `distinctUntilChanged` from remote pipelines, added `canToggleTitle`/`canToggleAuthor` guards and disabled UI state.
 
-## Shared Search Alignment
+## ~~Shared Search Alignment~~ ✅ Done
 
-### withSearchError behavior diverges
-**Affects:** BookshelfViewModel vs LibraryViewModel.
-**Issue:** `BookshelfViewModel.withSearchError()` clears `results = emptyList()` on error. `LibraryViewModel.withSearchError()` preserves previous results. Both use the shared `BookSearchDialog`, so the user experience differs for the same visual component. Pick one behavior and apply consistently — likely preserve results (less jarring, error banner is sufficient).
-
-### BookshelfScreen existingBookIds per-recomposition
-**Affects:** BookshelfScreen only.
-**Issue:** `BookshelfScreen.kt` still does `state.bookSearchState.copy(existingBookIds = state.books.map { it.id }.toSet())` per recomposition. Library fixed this by deriving `existingBookIds` in the ViewModel's `observeBooks()`. Apply the same pattern to `BookshelfViewModel`.
-
-### DRY: Remote search orchestration duplicated
-**Affects:** LibraryViewModel + BookshelfViewModel.
-**Issue:** ~80 lines of near-identical search logic: debounce setup, query-length guard, query mapping (`when { searchByTitle && searchByAuthor -> ... }`), `withSearchResults`/`withSearchError` helpers. Extract a shared `RemoteSearchHandler` or utility that both ViewModels delegate to.
+Fixed in three commits on `search-filter-bugs` branch: aligned `withSearchError` to preserve results on error, moved `existingBookIds` derivation into BookshelfViewModel's `loadBooks()`, and extracted shared state transformations (`withLoading`, `withResults`, `withBelowMinLength`, `toSearchParams`) into `BookSearchState`. See `docs/specs/plans/shared-search-alignment.md` for full plan.
 
 ## Bookshelf Bugs
 
