@@ -36,7 +36,7 @@ class BookshelfViewModel(
 
     companion object {
         private const val TAG = "BookshelfViewModel"
-        private const val SEARCH_DEBOUNCE_MS = 250L // Reduced from 450ms for faster perceived response
+        private const val SEARCH_DEBOUNCE_MS = 300L
         private const val MIN_SEARCH_QUERY_LENGTH = 2
     }
 
@@ -350,10 +350,10 @@ class BookshelfViewModel(
     private fun BookshelfState.withSearchError(error: DataError): BookshelfState {
         return copy(
             bookSearchState = bookSearchState.copy(
-                results = emptyList(),
+                // results intentionally preserved — error banner is sufficient feedback
                 isLoading = false,
                 hasSearched = true,
-                errorMessage = ErrorFormatter.formatDataErrorMessage(error, "perform search")
+                errorMessage = ErrorFormatter.formatDataErrorMessage(error, "search books")
             )
         )
     }

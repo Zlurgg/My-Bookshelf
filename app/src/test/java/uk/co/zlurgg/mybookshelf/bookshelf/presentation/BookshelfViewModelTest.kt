@@ -321,8 +321,8 @@ class BookshelfViewModelTest {
         stateHelper.cleanup()
     }
 
-    // Note: Search error handling test skipped due to complexity of testing debounced coroutines.
-    // The error handling code path is validated by other ViewModel error tests and UseCase tests.
+    // Note: Search error/debounce tests require StandardTestDispatcher + advanceTimeBy.
+    // The identical error behavior (results preserved on error) is tested in LibraryViewModelTest.
 
     // Simplified inline mock implementations for UI testing
     private class SimpleSearchBooksUseCase : SearchBooksUseCase {
