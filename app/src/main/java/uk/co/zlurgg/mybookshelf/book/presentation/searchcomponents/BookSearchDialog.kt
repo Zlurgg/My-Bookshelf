@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.presentation.components.LoadImage
 
 @Composable
@@ -188,6 +189,21 @@ fun BookSearchDialog(
                                     },
                                     modifier = Modifier.clickable { onBookClick(book) }
                                 )
+                            }
+
+                            // Google Books TOS attribution
+                            if (state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }) {
+                                item {
+                                    Text(
+                                        text = stringResource(R.string.powered_by_google),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(
+                                            horizontal = 16.dp,
+                                            vertical = 8.dp
+                                        )
+                                    )
+                                }
                             }
                         }
                     }

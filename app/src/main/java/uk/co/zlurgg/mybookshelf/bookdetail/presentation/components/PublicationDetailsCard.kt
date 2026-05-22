@@ -20,18 +20,21 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
  * Card displaying publication details.
- * Shows: ISBN, Publisher, Publish Date, Internet Archive link.
+ * Shows: ISBN, Publisher, Publish Date, Google Books links.
  */
 @Composable
 fun PublicationDetailsCard(
     isbn: String?,
     publisher: String?,
     publishDate: String?,
-    internetArchiveId: String?,
+    infoLink: String? = null,
+    previewLink: String? = null,
     modifier: Modifier = Modifier
 ) {
     // Only show card if there's at least one detail
-    if (isbn == null && publisher == null && publishDate == null && internetArchiveId == null) {
+    val hasAnyDetail = isbn != null || publisher != null || publishDate != null ||
+        infoLink != null || previewLink != null
+    if (!hasAnyDetail) {
         return
     }
 
@@ -79,14 +82,16 @@ fun PublicationDetailsCard(
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            internetArchiveId?.let { iaId ->
-                Spacer(modifier = Modifier.height(8.dp))
-                TextButton(
-                    onClick = {
-                        uriHandler.openUri("https://archive.org/details/$iaId")
-                    }
-                ) {
-                    Text(stringResource(R.string.publication_view_internet_archive))
+            infoLink?.let { url ->
+                Spacer(modifier = Modifier.height(4.dp))
+                TextButton(onClick = { uriHandler.openUri(url) }) {
+                    Text(stringResource(R.string.publication_view_on_google_books))
+                }
+            }
+
+            previewLink?.let { url ->
+                TextButton(onClick = { uriHandler.openUri(url) }) {
+                    Text(stringResource(R.string.publication_google_preview))
                 }
             }
         }

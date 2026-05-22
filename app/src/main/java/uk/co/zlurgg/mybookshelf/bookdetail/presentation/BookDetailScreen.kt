@@ -29,7 +29,6 @@ import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.BookHeroSection
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ClubCommentsCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ClubRatingCard
-import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.CommunityRatingsCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.DescriptionCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.LanguagesCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PersonalNotesCard
@@ -119,10 +118,10 @@ fun BookDetailsScreen(
                 item {
                     BookHeroSection(
                         title = state.book.title,
+                        subtitle = state.book.subtitle,
                         authors = state.book.authors,
                         firstPublishYear = state.book.firstPublishYear,
                         numPages = state.book.numPages,
-                        numEditions = state.book.numEditions,
                         imageUrl = state.book.withMediumImage(),
                         onImageLoadResult = { }
                     )
@@ -215,15 +214,6 @@ fun BookDetailsScreen(
                 }
 
                 // 3. Common info section
-                if (!isTutorialBook) {
-                    item {
-                        CommunityRatingsCard(
-                            averageRating = state.book.averageRating,
-                            ratingCount = state.book.ratingCount,
-                            modifier = Modifier.padding(top = BookDetailUiConstants.InfoSectionExtraTopPadding)
-                        )
-                    }
-                }
                 item {
                     DescriptionCard(
                         description = state.book.description,
@@ -237,7 +227,8 @@ fun BookDetailsScreen(
                             isbn = state.book.isbn,
                             publisher = state.book.publisher,
                             publishDate = state.book.publishDate,
-                            internetArchiveId = state.book.internetArchiveId
+                            infoLink = state.book.infoLink,
+                            previewLink = state.book.previewLink,
                         )
                     }
                     item {
