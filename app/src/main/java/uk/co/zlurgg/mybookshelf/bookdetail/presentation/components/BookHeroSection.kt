@@ -25,10 +25,10 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 @Composable
 fun BookHeroSection(
     title: String,
+    subtitle: String?,
     authors: List<String>,
     firstPublishYear: String?,
     numPages: Int?,
-    numEditions: Int,
     imageUrl: String?,
     onImageLoadResult: (Boolean) -> Unit,
     modifier: Modifier = Modifier
@@ -81,6 +81,15 @@ fun BookHeroSection(
                     color = MaterialTheme.colorScheme.onSurface
                 )
 
+                if (!subtitle.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(BookDetailUiConstants.SmallSpacing))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
                 if (authors.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(BookDetailUiConstants.SmallSpacing))
                     Text(
@@ -103,14 +112,6 @@ fun BookHeroSection(
                 if (numPages != null && numPages > 0) {
                     Text(
                         text = stringResource(R.string.publication_pages_label, numPages),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                if (numEditions > 0) {
-                    Text(
-                        text = stringResource(R.string.book_overview_editions, numEditions),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

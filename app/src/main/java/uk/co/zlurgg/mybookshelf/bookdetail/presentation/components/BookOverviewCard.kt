@@ -25,7 +25,6 @@ fun BookOverviewCard(
     authors: List<String>,
     firstPublishYear: String?,
     numPages: Int?,
-    numEditions: Int,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -65,15 +64,6 @@ fun BookOverviewCard(
             if (numPages != null && numPages > 0) {
                 Text(
                     text = stringResource(R.string.publication_pages_label, numPages),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-
-            // Edition count
-            if (numEditions > 0) {
-                Text(
-                    text = stringResource(R.string.book_overview_editions, numEditions),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

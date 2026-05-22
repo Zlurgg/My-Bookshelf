@@ -9,7 +9,6 @@ object BookDetailUiConstants {
 
     // Layout spacing — used by BookDetailScreen + most cards
     val SectionSpacing = 12.dp
-    val InfoSectionExtraTopPadding = 4.dp
     val SmallSpacing = 8.dp
     val TinySpacing = 4.dp
 
@@ -17,7 +16,7 @@ object BookDetailUiConstants {
     val BookImageHeight = 200.dp
     val ImageCornerRadius = 8.dp
 
-    // Ratings — used by ClubRatingCard, RecommendationStatusCard, CommunityRatingsCard
+    // Ratings — used by ClubRatingCard
     const val MaxStars = 5
 
     // Timing — used by ViewModel (notes debounce + review debounce)
