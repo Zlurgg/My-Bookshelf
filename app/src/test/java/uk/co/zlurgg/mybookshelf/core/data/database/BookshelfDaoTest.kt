@@ -404,10 +404,7 @@ class BookshelfDaoTest {
             languages = listOf("en"),
             authors = listOf("Test Author"),
             firstPublishYear = "2020",
-            ratingsAverage = 4.5,
-            ratingsCount = 100,
             numPagesMedian = 300,
-            numEditions = 5,
             purchased = purchased,
             spineColor = -16711936
         )

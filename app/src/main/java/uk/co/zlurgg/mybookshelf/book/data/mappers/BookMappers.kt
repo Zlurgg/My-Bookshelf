@@ -2,6 +2,9 @@ package uk.co.zlurgg.mybookshelf.book.data.mappers
 
 import uk.co.zlurgg.mybookshelf.book.data.dto.SearchedBookDto
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.MaturityRating
+import uk.co.zlurgg.mybookshelf.book.domain.model.PrintType
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
@@ -28,39 +31,35 @@ fun SearchedBookDto.toBook(): Book {
         description = null,
         languages = languages ?: emptyList(),
         firstPublishYear = firstPublishYear.toString(),
-        averageRating = ratingsAverage,
-        ratingCount = ratingsCount,
         numPages = numPagesMedian,
-        numEditions = numEditions ?: 0,
         purchased = false,
         spineColor = 0, // Placeholder - generated when added to shelf
+        provider = BookProvider.OPEN_LIBRARY,
         // Enhanced metadata - take first item from arrays
         isbn = isbns?.firstOrNull(),
         publisher = publishers?.firstOrNull(),
         publishDate = publishDates?.firstOrNull(),
-        internetArchiveId = internetArchiveIds?.firstOrNull(),
         subjects = subjects ?: emptyList()
     )
 }
 
 /**
- * Converts Book domain model to entity with default ownerId (null).
+ * Converts Book domain model to entity.
  */
 fun Book.toBookEntity(): BookEntity {
     return BookEntity(
         id = id,
         title = title,
+        subtitle = subtitle,
         description = description,
         imageUrl = imageUrl,
         languages = languages,
         authors = authors,
         firstPublishYear = firstPublishYear,
-        ratingsAverage = averageRating,
-        ratingsCount = ratingCount,
         numPagesMedian = numPages,
-        numEditions = numEditions,
         purchased = purchased,
         spineColor = spineColor,
+        provider = provider.name,
         // Personal metadata
         readingStatus = readingStatus.name,
         personalRating = personalRating,
@@ -71,8 +70,12 @@ fun Book.toBookEntity(): BookEntity {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId,
-        subjects = subjects
+        subjects = subjects,
+        // Google Books metadata
+        previewLink = previewLink,
+        infoLink = infoLink,
+        maturityRating = maturityRating.name,
+        printType = printType.name,
     )
 }
 
@@ -80,17 +83,16 @@ fun BookEntity.toBook(): Book {
     return Book(
         id = id,
         title = title,
+        subtitle = subtitle,
         description = description,
         imageUrl = imageUrl,
         languages = languages,
         authors = authors,
         firstPublishYear = firstPublishYear,
-        averageRating = ratingsAverage,
-        ratingCount = ratingsCount,
         numPages = numPagesMedian,
-        numEditions = numEditions,
         purchased = purchased,
         spineColor = spineColor,
+        provider = BookProvider.valueOf(provider),
         // Personal metadata
         readingStatus = ReadingStatus.valueOf(readingStatus),
         personalRating = personalRating,
@@ -101,7 +103,11 @@ fun BookEntity.toBook(): Book {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId,
-        subjects = subjects
+        subjects = subjects,
+        // Google Books metadata
+        previewLink = previewLink,
+        infoLink = infoLink,
+        maturityRating = MaturityRating.valueOf(maturityRating),
+        printType = PrintType.valueOf(printType),
     )
 }

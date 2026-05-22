@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
@@ -106,10 +107,8 @@ class ToggleBookPurchaseUseCaseTest {
         assertEquals("Should preserve description", originalBook.description, updatedBook.description)
         assertEquals("Should preserve languages", originalBook.languages, updatedBook.languages)
         assertEquals("Should preserve publish year", originalBook.firstPublishYear, updatedBook.firstPublishYear)
-        assertEquals("Should preserve rating", originalBook.averageRating, updatedBook.averageRating)
-        assertEquals("Should preserve rating count", originalBook.ratingCount, updatedBook.ratingCount)
         assertEquals("Should preserve page count", originalBook.numPages, updatedBook.numPages)
-        assertEquals("Should preserve edition count", originalBook.numEditions, updatedBook.numEditions)
+        assertEquals("Should preserve provider", originalBook.provider, updatedBook.provider)
         assertEquals("Should preserve spine color", originalBook.spineColor, updatedBook.spineColor)
 
         // Only purchase status should change
@@ -132,11 +131,11 @@ class ToggleBookPurchaseUseCaseTest {
     }
 
     @Test
-    fun `execute handles book with null rating`() = runTest {
+    fun `execute handles book with null description`() = runTest {
         // Given
         val bookWithNullRating = TestBookBuilder()
             .withId("no-rating-book")
-            .withAverageRating(null)
+            .withDescription(null)
             .withPurchased(false)
             .build()
 
@@ -147,7 +146,7 @@ class ToggleBookPurchaseUseCaseTest {
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = (result as Result.Success).data
         assertTrue("Should mark book as purchased", updatedBook.purchased)
-        assertEquals("Should preserve null rating", null, updatedBook.averageRating)
+        assertNull("Should preserve null description", updatedBook.description)
     }
 
     @Test
@@ -218,10 +217,7 @@ class ToggleBookPurchaseUseCaseTest {
         // Given
         val bookWithExtremeValues = TestBookBuilder()
             .withId("extreme-book")
-            .withRatingCount(Int.MAX_VALUE)
             .withNumPages(0)
-            .withNumEditions(999999)
-            .withAverageRating(5.0)
             .withPurchased(false)
             .build()
 
@@ -232,9 +228,7 @@ class ToggleBookPurchaseUseCaseTest {
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = (result as Result.Success).data
         assertTrue("Should mark book as purchased", updatedBook.purchased)
-        assertEquals("Should preserve extreme rating count", Int.MAX_VALUE, updatedBook.ratingCount)
         assertEquals("Should preserve zero pages", 0, updatedBook.numPages)
-        assertEquals("Should preserve many editions", 999999, updatedBook.numEditions)
     }
 
     @Test

@@ -1,6 +1,9 @@
 package uk.co.zlurgg.mybookshelf.testutil.builders
 
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.MaturityRating
+import uk.co.zlurgg.mybookshelf.book.domain.model.PrintType
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 
 /**
@@ -10,17 +13,18 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 class TestBookBuilder {
     private var id = "test-book-1"
     private var title = "Test Book"
+    private var subtitle: String? = null
     private var imageUrl = "http://example.com/image.jpg"
     private var authors = listOf("Test Author")
-    private var description = "Test description"
+    private var description: String? = "Test description"
     private var languages = listOf("eng")
     private var firstPublishYear = "2020"
-    private var averageRating: Double? = 4.0
-    private var ratingCount = 10
     private var numPages = 200
-    private var numEditions = 1
     private var purchased = false
     private var spineColor = 0xFF112233.toInt()
+
+    // Provider tracking
+    private var provider = BookProvider.GOOGLE_BOOKS
 
     // Personal metadata (NOT exported for privacy)
     private var readingStatus = ReadingStatus.NOT_READ
@@ -33,22 +37,26 @@ class TestBookBuilder {
     private var isbn: String? = null
     private var publisher: String? = null
     private var publishDate: String? = null
-    private var internetArchiveId: String? = null
     private var subjects: List<String> = emptyList()
+
+    // Google Books metadata
+    private var previewLink: String? = null
+    private var infoLink: String? = null
+    private var maturityRating = MaturityRating.UNKNOWN
+    private var printType = PrintType.UNKNOWN
 
     fun withId(id: String) = apply { this.id = id }
     fun withTitle(title: String) = apply { this.title = title }
+    fun withSubtitle(subtitle: String?) = apply { this.subtitle = subtitle }
     fun withImageUrl(imageUrl: String) = apply { this.imageUrl = imageUrl }
     fun withAuthors(authors: List<String>) = apply { this.authors = authors }
-    fun withDescription(description: String) = apply { this.description = description }
+    fun withDescription(description: String?) = apply { this.description = description }
     fun withLanguages(languages: List<String>) = apply { this.languages = languages }
     fun withFirstPublishYear(year: String) = apply { this.firstPublishYear = year }
-    fun withAverageRating(rating: Double?) = apply { this.averageRating = rating }
-    fun withRatingCount(count: Int) = apply { this.ratingCount = count }
     fun withNumPages(pages: Int) = apply { this.numPages = pages }
-    fun withNumEditions(editions: Int) = apply { this.numEditions = editions }
     fun withPurchased(purchased: Boolean) = apply { this.purchased = purchased }
     fun withSpineColor(color: Int) = apply { this.spineColor = color }
+    fun withProvider(provider: BookProvider) = apply { this.provider = provider }
 
     // Personal metadata
     fun withReadingStatus(status: ReadingStatus) = apply { this.readingStatus = status }
@@ -61,23 +69,27 @@ class TestBookBuilder {
     fun withIsbn(isbn: String?) = apply { this.isbn = isbn }
     fun withPublisher(publisher: String?) = apply { this.publisher = publisher }
     fun withPublishDate(date: String?) = apply { this.publishDate = date }
-    fun withInternetArchiveId(id: String?) = apply { this.internetArchiveId = id }
     fun withSubjects(subjects: List<String>) = apply { this.subjects = subjects }
+
+    // Google Books metadata
+    fun withPreviewLink(link: String?) = apply { this.previewLink = link }
+    fun withInfoLink(link: String?) = apply { this.infoLink = link }
+    fun withMaturityRating(rating: MaturityRating) = apply { this.maturityRating = rating }
+    fun withPrintType(type: PrintType) = apply { this.printType = type }
 
     fun build() = Book(
         id = id,
         title = title,
+        subtitle = subtitle,
         imageUrl = imageUrl,
         authors = authors,
         description = description,
         languages = languages,
         firstPublishYear = firstPublishYear,
-        averageRating = averageRating,
-        ratingCount = ratingCount,
         numPages = numPages,
-        numEditions = numEditions,
         purchased = purchased,
         spineColor = spineColor,
+        provider = provider,
         // Personal metadata
         readingStatus = readingStatus,
         personalRating = personalRating,
@@ -88,8 +100,12 @@ class TestBookBuilder {
         isbn = isbn,
         publisher = publisher,
         publishDate = publishDate,
-        internetArchiveId = internetArchiveId,
-        subjects = subjects
+        subjects = subjects,
+        // Google Books metadata
+        previewLink = previewLink,
+        infoLink = infoLink,
+        maturityRating = maturityRating,
+        printType = printType,
     )
 
     companion object {
@@ -102,10 +118,7 @@ class TestBookBuilder {
             .withAuthors(listOf("Test Author", "Another Author"))
             .withDescription("A comprehensive guide to software testing")
             .withFirstPublishYear("2020")
-            .withAverageRating(4.5)
-            .withRatingCount(42)
             .withNumPages(250)
-            .withNumEditions(3)
             .withPurchased(true)
             .build()
 
@@ -117,9 +130,6 @@ class TestBookBuilder {
             .withTitle("Minimal Book")
             .withAuthors(emptyList())
             .withDescription("")
-            .withAverageRating(null)
-            .withRatingCount(0)
-            .withNumEditions(0)
             .build()
 
         /**

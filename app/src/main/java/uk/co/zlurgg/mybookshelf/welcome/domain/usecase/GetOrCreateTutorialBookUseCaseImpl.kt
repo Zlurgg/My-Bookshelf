@@ -55,10 +55,7 @@ class GetOrCreateTutorialBookUseCaseImpl(
             description = BookDetailConstants.TUTORIAL_BOOK_DESCRIPTION,
             languages = listOf("en"),
             firstPublishYear = null,
-            averageRating = BookDetailConstants.TUTORIAL_BOOK_RATING,
-            ratingCount = BookDetailConstants.TUTORIAL_BOOK_RATING_COUNT,
             numPages = null,
-            numEditions = BookDetailConstants.TUTORIAL_BOOK_EDITION_COUNT,
             purchased = false,
             spineColor = BookColorGenerator.generateSpineColor(),
             readingStatus = ReadingStatus.FINISHED,
@@ -69,7 +66,6 @@ class GetOrCreateTutorialBookUseCaseImpl(
             isbn = null,
             publisher = BookDetailConstants.TUTORIAL_BOOK_PUBLISHER,
             publishDate = null,
-            internetArchiveId = null
         )
 
         when (val upsertResult = bookRepository.upsertSystemBook(tutorialBook)) {

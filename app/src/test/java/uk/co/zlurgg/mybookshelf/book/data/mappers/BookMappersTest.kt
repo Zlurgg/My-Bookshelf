@@ -3,6 +3,9 @@ package uk.co.zlurgg.mybookshelf.book.data.mappers
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.MaturityRating
+import uk.co.zlurgg.mybookshelf.book.domain.model.PrintType
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
@@ -19,10 +22,7 @@ class BookMappersTest {
             .withAuthorNames(listOf("Author One"))
             .withLanguages(listOf("eng"))
             .withFirstPublishYear(1999)
-            .withRatingsAverage(4.5)
-            .withRatingsCount(10)
             .withNumPagesMedian(321)
-            .withNumEditions(2)
             .withSubjects(listOf("Fiction", "Adventure"))
             .build()
 
@@ -34,10 +34,8 @@ class BookMappersTest {
         assertEquals(listOf("Author One"), book.authors)
         assertEquals(listOf("eng"), book.languages)
         assertEquals("1999", book.firstPublishYear)
-        assertEquals(4.5, book.averageRating!!, 0.0)
-        assertEquals(10, book.ratingCount)
         assertEquals(321, book.numPages)
-        assertEquals(2, book.numEditions)
+        assertEquals(BookProvider.OPEN_LIBRARY, book.provider)
         // spineColor is placeholder (0) for search results - actual color generated when added to shelf
         assertEquals(0, book.spineColor)
         assertEquals(listOf("Fiction", "Adventure"), book.subjects)
@@ -53,10 +51,7 @@ class BookMappersTest {
             .withAuthorNames(null)
             .withLanguages(null)
             .withFirstPublishYear(2001)
-            .withRatingsAverage(3.0)
-            .withRatingsCount(0)
             .withNumPagesMedian(100)
-            .withNumEditions(null)
             .build()
 
         val book = dto.toBook()
@@ -64,7 +59,7 @@ class BookMappersTest {
         assertTrue(book.imageUrl.contains("/b/id/555-"))
         assertEquals(emptyList<String>(), book.authors)
         assertEquals(emptyList<String>(), book.languages)
-        assertEquals(0, book.numEditions)
+        assertEquals(BookProvider.OPEN_LIBRARY, book.provider)
         assertEquals(emptyList<String>(), book.subjects)
     }
 
@@ -73,18 +68,21 @@ class BookMappersTest {
         val original = TestBookBuilder()
             .withId("ID1")
             .withTitle("Title")
+            .withSubtitle("A Subtitle")
             .withImageUrl("http://example.com/img.jpg")
             .withAuthors(listOf("A1", "A2"))
             .withDescription("Desc")
             .withLanguages(listOf("eng"))
             .withFirstPublishYear("1988")
-            .withAverageRating(4.0)
-            .withRatingCount(42)
             .withNumPages(250)
-            .withNumEditions(3)
             .withPurchased(true)
             .withSpineColor(0xFF112233.toInt())
+            .withProvider(BookProvider.GOOGLE_BOOKS)
             .withSubjects(listOf("History", "Biography"))
+            .withPreviewLink("https://books.google.com/preview")
+            .withInfoLink("https://books.google.com/info")
+            .withMaturityRating(MaturityRating.NOT_MATURE)
+            .withPrintType(PrintType.BOOK)
             .build()
 
         val entity: BookEntity = original.toBookEntity()
@@ -92,17 +90,33 @@ class BookMappersTest {
 
         assertEquals(original.id, mappedBack.id)
         assertEquals(original.title, mappedBack.title)
+        assertEquals(original.subtitle, mappedBack.subtitle)
         assertEquals(original.imageUrl, mappedBack.imageUrl)
         assertEquals(original.authors, mappedBack.authors)
         assertEquals(original.description, mappedBack.description)
         assertEquals(original.languages, mappedBack.languages)
         assertEquals(original.firstPublishYear, mappedBack.firstPublishYear)
-        assertEquals(original.averageRating!!, mappedBack.averageRating!!, 0.0)
-        assertEquals(original.ratingCount, mappedBack.ratingCount)
         assertEquals(original.numPages, mappedBack.numPages)
-        assertEquals(original.numEditions, mappedBack.numEditions)
         assertEquals(original.purchased, mappedBack.purchased)
         assertEquals(original.spineColor, mappedBack.spineColor)
+        assertEquals(original.provider, mappedBack.provider)
         assertEquals(original.subjects, mappedBack.subjects)
+        assertEquals(original.previewLink, mappedBack.previewLink)
+        assertEquals(original.infoLink, mappedBack.infoLink)
+        assertEquals(original.maturityRating, mappedBack.maturityRating)
+        assertEquals(original.printType, mappedBack.printType)
+    }
+
+    @Test
+    fun `book roundtrip entity mapping preserves OL provider`() {
+        val original = TestBookBuilder()
+            .withId("OL123W")
+            .withProvider(BookProvider.OPEN_LIBRARY)
+            .build()
+
+        val entity: BookEntity = original.toBookEntity()
+        val mappedBack = entity.toBook()
+
+        assertEquals(BookProvider.OPEN_LIBRARY, mappedBack.provider)
     }
 }

@@ -3,17 +3,18 @@ package uk.co.zlurgg.mybookshelf.book.domain.model
 data class Book(
     val id: String,
     val title: String,
+    val subtitle: String? = null,
     val authors: List<String>,
     val imageUrl: String,
     val description: String?,
     val languages: List<String>,
     val firstPublishYear: String?,
-    val averageRating: Double?,
-    val ratingCount: Int?,
     val numPages: Int?,
-    val numEditions: Int,
     val purchased: Boolean,
     val spineColor: Int, // ARGB color as Int - generated once and persisted for consistency
+
+    // Provider tracking
+    val provider: BookProvider = BookProvider.GOOGLE_BOOKS,
 
     // Personal metadata (NOT exported for privacy)
     val readingStatus: ReadingStatus = ReadingStatus.NOT_READ,
@@ -26,8 +27,11 @@ data class Book(
     val isbn: String? = null,
     val publisher: String? = null,
     val publishDate: String? = null,
-    val internetArchiveId: String? = null,
+    val subjects: List<String> = emptyList(),
 
-    // Subjects/categories from API
-    val subjects: List<String> = emptyList()
+    // Google Books metadata (null for OL-sourced books)
+    val previewLink: String? = null,
+    val infoLink: String? = null,
+    val maturityRating: MaturityRating = MaturityRating.UNKNOWN,
+    val printType: PrintType = PrintType.UNKNOWN,
 )

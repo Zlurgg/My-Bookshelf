@@ -95,8 +95,5 @@ Enjoy building your personal library! 📚
     /**
      * Tutorial book default rating values
      */
-    const val TUTORIAL_BOOK_RATING = 5.0
     const val TUTORIAL_BOOK_PERSONAL_RATING = 5f
-    const val TUTORIAL_BOOK_RATING_COUNT = 1
-    const val TUTORIAL_BOOK_EDITION_COUNT = 1
 }

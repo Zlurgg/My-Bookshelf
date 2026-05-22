@@ -252,7 +252,7 @@ class AddBookToShelfUseCaseTest {
         val upsertedBook = mockBookRepository.lastUpsertedBook!!
         assertEquals("Should preserve all book fields", book.title, upsertedBook.title)
         assertEquals("Should preserve authors", book.authors, upsertedBook.authors)
-        assertEquals("Should preserve rating", book.averageRating, upsertedBook.averageRating)
+        assertEquals("Should preserve provider", book.provider, upsertedBook.provider)
         assertEquals("Should preserve purchase status", book.purchased, upsertedBook.purchased)
         assertTrue("Should generate spine color for new book", upsertedBook.spineColor != 0)
     }

@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookclub.data.mappers
 
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClub
 import uk.co.zlurgg.mybookshelf.bookclub.domain.model.BookClubMembership
 import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
@@ -55,17 +56,16 @@ fun BookClubMembershipEntity.toMembership(): BookClubMembership = BookClubMember
 fun BookClubBookDto.toBookDomain(): Book = Book(
     id = id,
     title = title,
+    subtitle = subtitle,
     authors = authors,
     imageUrl = coverUrl ?: "",
     isbn = isbn,
     firstPublishYear = firstPublishYear?.toString(),
     numPages = pageCount,
-    averageRating = averageRating?.toDouble(),
-    ratingCount = ratingCount,
+    provider = BookProvider.entries.find { it.name == provider } ?: BookProvider.GOOGLE_BOOKS,
     // Remaining fields use defaults
     description = null,
     languages = emptyList(),
-    numEditions = 0,
     purchased = false,
     spineColor = spineColor
 )
@@ -81,14 +81,13 @@ fun Book.toBookClubBookDto(
 ): BookClubBookDto = BookClubBookDto(
     id = id,
     title = title,
+    subtitle = subtitle,
     authors = authors,
     coverUrl = imageUrl,
     isbn = isbn,
-    workId = id, // OpenLibrary work ID is the book ID
+    provider = provider.name,
     firstPublishYear = firstPublishYear?.toIntOrNull(),
     pageCount = numPages,
-    averageRating = averageRating?.toFloat(),
-    ratingCount = ratingCount,
     spineColor = spineColor,
     addedBy = addedBy,
     addedByName = addedByName

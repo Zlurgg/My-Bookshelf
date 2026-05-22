@@ -14,10 +14,7 @@ val sampleBooks = List(50) {
         spineColor = BookColorGenerator.generateSpineColor(),
         languages = listOf(""),
         firstPublishYear = null,
-        averageRating = null,
-        ratingCount = null,
         numPages = 1000,
-        numEditions = 1
     )
 }
 val sampleBook =
@@ -31,8 +28,5 @@ val sampleBook =
         spineColor = BookColorGenerator.generateSpineColor(),
         languages = listOf(""),
         firstPublishYear = null,
-        averageRating = null,
-        ratingCount = null,
         numPages = 1000,
-        numEditions = 1
     )

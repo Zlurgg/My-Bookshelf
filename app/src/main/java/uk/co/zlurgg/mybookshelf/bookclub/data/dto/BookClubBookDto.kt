@@ -19,6 +19,8 @@ data class BookClubBookDto(
 
     val title: String = "",
 
+    val subtitle: String? = null,
+
     val authors: List<String> = emptyList(),
 
     @get:PropertyName("cover_url")
@@ -27,9 +29,7 @@ data class BookClubBookDto(
 
     val isbn: String? = null,
 
-    @get:PropertyName("work_id")
-    @set:PropertyName("work_id")
-    var workId: String? = null,
+    val provider: String = "GOOGLE_BOOKS",
 
     @get:PropertyName("first_publish_year")
     @set:PropertyName("first_publish_year")
@@ -38,14 +38,6 @@ data class BookClubBookDto(
     @get:PropertyName("page_count")
     @set:PropertyName("page_count")
     var pageCount: Int? = null,
-
-    @get:PropertyName("average_rating")
-    @set:PropertyName("average_rating")
-    var averageRating: Float? = null,
-
-    @get:PropertyName("rating_count")
-    @set:PropertyName("rating_count")
-    var ratingCount: Int? = null,
 
     @get:PropertyName("spine_color")
     @set:PropertyName("spine_color")

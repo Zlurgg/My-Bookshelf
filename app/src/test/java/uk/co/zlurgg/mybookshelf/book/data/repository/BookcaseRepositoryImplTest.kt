@@ -425,15 +425,16 @@ private fun uk.co.zlurgg.mybookshelf.book.domain.model.Book.toEntity() =
     BookEntity(
         id = this.id,
         title = this.title,
+        subtitle = this.subtitle,
         imageUrl = this.imageUrl,
         authors = this.authors,
         description = this.description,
         languages = this.languages,
         firstPublishYear = this.firstPublishYear,
-        ratingsAverage = this.averageRating,
-        ratingsCount = this.ratingCount,
         numPagesMedian = this.numPages,
-        numEditions = this.numEditions,
         purchased = this.purchased,
-        spineColor = this.spineColor
+        spineColor = this.spineColor,
+        provider = this.provider.name,
+        maturityRating = this.maturityRating.name,
+        printType = this.printType.name,
     )
