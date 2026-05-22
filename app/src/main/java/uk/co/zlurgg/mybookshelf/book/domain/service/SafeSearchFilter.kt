@@ -17,10 +17,12 @@ object SafeSearchFilter {
     )
 
     fun isBookSafe(book: Book): Boolean {
-        if (book.subjects.isEmpty()) return true
-        return book.subjects.none { subject ->
-            val lower = subject.lowercase()
-            blockedKeywords.any { keyword -> lower.contains(keyword) }
-        }
+        if (containsBlockedKeyword(book.title)) return false
+        return book.subjects.none { containsBlockedKeyword(it) }
+    }
+
+    private fun containsBlockedKeyword(text: String): Boolean {
+        val lower = text.lowercase()
+        return blockedKeywords.any { keyword -> lower.contains(keyword) }
     }
 }

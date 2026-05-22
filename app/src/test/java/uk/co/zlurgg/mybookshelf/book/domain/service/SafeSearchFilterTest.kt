@@ -83,6 +83,35 @@ class SafeSearchFilterTest {
         assertTrue(SafeSearchFilter.isBookSafe(book))
     }
 
+    // Title-based filtering
+
+    @Test
+    fun `book with explicit title and empty subjects is blocked`() {
+        val book = TestBookBuilder()
+            .withTitle("Erotica")
+            .withSubjects(emptyList())
+            .build()
+        assertFalse(SafeSearchFilter.isBookSafe(book))
+    }
+
+    @Test
+    fun `book with explicit keyword in title is blocked even with safe subjects`() {
+        val book = TestBookBuilder()
+            .withTitle("Best BDSM Stories 2024")
+            .withSubjects(listOf("Fiction", "Short stories"))
+            .build()
+        assertFalse(SafeSearchFilter.isBookSafe(book))
+    }
+
+    @Test
+    fun `book with safe title and empty subjects passes`() {
+        val book = TestBookBuilder()
+            .withTitle("A History of Science")
+            .withSubjects(emptyList())
+            .build()
+        assertTrue(SafeSearchFilter.isBookSafe(book))
+    }
+
     // New keyword coverage
 
     @Test
