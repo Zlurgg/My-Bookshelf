@@ -1,7 +1,7 @@
 package uk.co.zlurgg.mybookshelf.book.data.network
 
-import uk.co.zlurgg.mybookshelf.book.data.dto.BookWorkDto
-import uk.co.zlurgg.mybookshelf.book.data.dto.SearchResponseDto
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
@@ -14,7 +14,10 @@ interface RemoteBookDataSource {
         titleFilter: String? = null,
         subjectFilter: String? = null,
         sort: String? = null
-    ): Result<SearchResponseDto, DataError.Remote>
+    ): Result<BookSearchResponse, DataError.Remote>
 
-    suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote>
+    suspend fun getBookDescription(
+        bookId: String,
+        provider: BookProvider
+    ): Result<String?, DataError.Remote>
 }

@@ -13,16 +13,22 @@ class AndroidSystemLanguageProvider(
         private const val TAG = "SystemLanguageProvider"
     }
 
-    @Suppress("TooGenericExceptionCaught")
     override fun getCurrentLanguageCode(): String {
-        val locale = try {
-            context.resources.configuration.locales[0]
-        } catch (e: Exception) {
-            Timber.tag(TAG).e(e, "Failed to get locale, using default")
-            Locale.getDefault()
-        } ?: Locale.getDefault()
+        return mapToOpenLibraryLanguageCode(getDeviceLocale().language)
+    }
 
-        return mapToOpenLibraryLanguageCode(locale.language)
+    override fun getRawLanguageCode(): String {
+        return getDeviceLocale().language
+    }
+
+    private fun getDeviceLocale(): Locale {
+        val locales = context.resources.configuration.locales
+        return if (locales.isEmpty) {
+            Timber.tag(TAG).w("Locale list is empty, using default")
+            Locale.getDefault()
+        } else {
+            locales[0]
+        }
     }
 
     private fun mapToOpenLibraryLanguageCode(languageCode: String): String {

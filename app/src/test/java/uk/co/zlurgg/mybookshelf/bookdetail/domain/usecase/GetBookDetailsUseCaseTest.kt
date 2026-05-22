@@ -9,6 +9,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
@@ -126,7 +127,7 @@ class GetBookDetailsUseCaseTest {
         mockBookRepository.addBook(book)
 
         // When
-        val result = useCase.loadBookDescription(bookId)
+        val result = useCase.loadBookDescription(bookId, BookProvider.GOOGLE_BOOKS)
 
         // Then
         assertTrue("Should return success", result is Result.Success)
@@ -139,7 +140,7 @@ class GetBookDetailsUseCaseTest {
         mockBookRepository.remoteErrorToReturn = DataError.Remote.UNKNOWN
 
         // When
-        val result = useCase.loadBookDescription(bookId)
+        val result = useCase.loadBookDescription(bookId, BookProvider.GOOGLE_BOOKS)
 
         // Then
         assertTrue("Should return error", result is Result.Error)
@@ -152,7 +153,7 @@ class GetBookDetailsUseCaseTest {
         val nonExistentBookId = "does-not-exist"
 
         // When
-        val result = useCase.loadBookDescription(nonExistentBookId)
+        val result = useCase.loadBookDescription(nonExistentBookId, BookProvider.GOOGLE_BOOKS)
 
         // Then
         // Should return success even if book doesn't exist (null description is valid)

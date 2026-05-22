@@ -1,8 +1,9 @@
 package uk.co.zlurgg.mybookshelf.testutil.mocks
 
-import uk.co.zlurgg.mybookshelf.book.data.dto.BookWorkDto
-import uk.co.zlurgg.mybookshelf.book.data.dto.SearchResponseDto
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
@@ -16,7 +17,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
     var lastSearchQuery: String? = null
     var lastSearchParams: SearchParams? = null
 
-    private var configuredSearchResponse: SearchResponseDto? = null
+    private var configuredSearchResponse: BookSearchResponse? = null
 
     data class SearchParams(
         val query: String,
@@ -28,18 +29,19 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         val sort: String?
     )
 
-    fun configureSearchResponse(response: SearchResponseDto) {
+    fun configureSearchResponse(response: BookSearchResponse) {
         configuredSearchResponse = response
     }
 
     fun configureSearchResults(count: Int) {
-        val results = (1..count).map { index ->
+        val books = (1..count).map { index ->
             TestSearchedBookDtoBuilder()
                 .withId("/works/OL${index}W")
                 .withTitle("Test Book $index")
                 .build()
+                .toBook()
         }
-        configuredSearchResponse = SearchResponseDto(numFound = count, results = results)
+        configuredSearchResponse = BookSearchResponse(totalResults = count, books = books)
     }
 
     fun reset() {
@@ -49,9 +51,9 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         lastSearchQuery = null
         lastSearchParams = null
         configuredSearchResponse = null
-        configuredBookDetails = null
-        getBookDetailsCallCount = 0
-        lastBookWorkId = null
+        configuredDescription = null
+        getBookDescriptionCallCount = 0
+        lastBookId = null
         networkError = DataError.Remote.REQUEST_TIMEOUT
     }
 
@@ -63,42 +65,43 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         titleFilter: String?,
         subjectFilter: String?,
         sort: String?
-    ): Result<SearchResponseDto, DataError.Remote> {
+    ): Result<BookSearchResponse, DataError.Remote> {
         searchBooksCallCount++
         lastSearchQuery = query
         lastSearchParams = SearchParams(query, resultLimit, language, authorFilter, titleFilter, subjectFilter, sort)
 
         return when {
             shouldThrowException -> Result.Error(networkError)
-            returnEmptyResults -> Result.Success(SearchResponseDto(numFound = 0, results = emptyList()))
+            returnEmptyResults -> Result.Success(BookSearchResponse(totalResults = 0, books = emptyList()))
             configuredSearchResponse != null -> Result.Success(configuredSearchResponse!!)
             else -> {
-                // Default response with some test data
-                val defaultResults = listOf(
-                    TestSearchedBookDtoBuilder.withAllFields(),
-                    TestSearchedBookDtoBuilder.withMinimalFields()
+                val defaultBooks = listOf(
+                    TestSearchedBookDtoBuilder.withAllFields().toBook(),
+                    TestSearchedBookDtoBuilder.withMinimalFields().toBook()
                 )
-                Result.Success(SearchResponseDto(numFound = defaultResults.size, results = defaultResults))
+                Result.Success(BookSearchResponse(totalResults = defaultBooks.size, books = defaultBooks))
             }
         }
     }
 
-    private var configuredBookDetails: BookWorkDto? = null
-    var getBookDetailsCallCount = 0
-    var lastBookWorkId: String? = null
+    private var configuredDescription: String? = null
+    var getBookDescriptionCallCount = 0
+    var lastBookId: String? = null
 
-    fun configureBookDetailsResponse(bookDetails: BookWorkDto) {
-        configuredBookDetails = bookDetails
+    fun configureBookDescription(description: String?) {
+        configuredDescription = description
     }
 
-    override suspend fun getBookDetails(bookWorkId: String): Result<BookWorkDto, DataError.Remote> {
-        getBookDetailsCallCount++
-        lastBookWorkId = bookWorkId
+    override suspend fun getBookDescription(
+        bookId: String,
+        provider: BookProvider
+    ): Result<String?, DataError.Remote> {
+        getBookDescriptionCallCount++
+        lastBookId = bookId
 
         return when {
             shouldThrowException -> Result.Error(networkError)
-            configuredBookDetails != null -> Result.Success(configuredBookDetails!!)
-            else -> Result.Success(BookWorkDto(description = "Default test description"))
+            else -> Result.Success(configuredDescription ?: "Default test description")
         }
     }
 }

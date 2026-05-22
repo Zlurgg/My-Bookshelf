@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.book.domain.service
 
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.MaturityRating
 
 object SafeSearchFilter {
 
@@ -17,6 +18,10 @@ object SafeSearchFilter {
     )
 
     fun isBookSafe(book: Book): Boolean {
+        // Server-side content rating from Google Books — most reliable signal
+        if (book.maturityRating == MaturityRating.MATURE) return false
+
+        // Client-side keyword filtering (still needed for OL fallback books)
         if (containsBlockedKeyword(book.title)) return false
         return book.subjects.none { containsBlockedKeyword(it) }
     }

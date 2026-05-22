@@ -422,7 +422,10 @@ class BookDetailViewModelTest {
         override suspend operator fun invoke(bookId: String, shelfId: String?): Flow<BookDetailsWithShelfStatus> =
             flowOf(bookDetailsToReturn)
 
-        override suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local> =
+        override suspend fun loadBookDescription(
+            bookId: String,
+            provider: uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+        ): Result<Unit, DataError.Local> =
             Result.Success(Unit)
 
         fun reset() {

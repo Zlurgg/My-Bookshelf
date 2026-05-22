@@ -38,12 +38,13 @@ object HttpClientFactory {
             install(HttpRequestRetry) {
                 maxRetries = MAX_RETRIES
                 retryIf { _, httpResponse ->
-                    // Retry on server errors (5xx) and rate limiting (429)
+                    // Retry on server errors (5xx) only.
+                    // 429 not retried — Google Books returns 429 for daily quota exhaustion (not transient).
+                    // FallbackRemoteBookDataSource handles this by switching providers.
                     httpResponse.status == HttpStatusCode.InternalServerError ||
                         httpResponse.status == HttpStatusCode.BadGateway ||
                         httpResponse.status == HttpStatusCode.ServiceUnavailable ||
-                        httpResponse.status == HttpStatusCode.GatewayTimeout ||
-                        httpResponse.status == HttpStatusCode.TooManyRequests
+                        httpResponse.status == HttpStatusCode.GatewayTimeout
                 }
                 retryOnExceptionIf { _, cause ->
                     // Retry on network-related exceptions

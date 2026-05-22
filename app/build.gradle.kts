@@ -58,6 +58,8 @@ android {
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
             buildConfigField("String", "SITE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf\"")
+            val googleBooksApiKey = localProperties.getProperty("GOOGLE_BOOKS_API_KEY", "")
+            buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$googleBooksApiKey\"")
         }
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -70,6 +72,8 @@ android {
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
             buildConfigField("String", "SITE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf\"")
+            val googleBooksApiKey = localProperties.getProperty("GOOGLE_BOOKS_API_KEY", "")
+            buildConfigField("String", "GOOGLE_BOOKS_API_KEY", "\"$googleBooksApiKey\"")
         }
     }
     compileOptions {

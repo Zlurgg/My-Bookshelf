@@ -36,3 +36,8 @@ interface BookApiService {
  * Useful for dependency injection and provider-specific configurations.
  */
 interface OpenLibraryBookApi : BookApiService
+
+/**
+ * Marker interface to identify Google Books specific API services.
+ */
+interface GoogleBooksBookApi : BookApiService

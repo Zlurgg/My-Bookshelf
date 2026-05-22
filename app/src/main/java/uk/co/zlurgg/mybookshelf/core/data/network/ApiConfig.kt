@@ -57,6 +57,17 @@ object ApiConfig {
         }
     }
 
+    object GoogleBooks {
+        val apiKey: String = BuildConfig.GOOGLE_BOOKS_API_KEY
+        const val BASE_URL = "https://www.googleapis.com/books/v1"
+        val searchEndpoint = "$BASE_URL/volumes"
+        fun volumeEndpoint(volumeId: String) = "$BASE_URL/volumes/$volumeId"
+
+        object DefaultParams {
+            const val MAX_RESULTS = 40
+        }
+    }
+
     object Http {
         val socketTimeout: Long = httpTimeoutMillis
         val requestTimeout: Long = httpTimeoutMillis

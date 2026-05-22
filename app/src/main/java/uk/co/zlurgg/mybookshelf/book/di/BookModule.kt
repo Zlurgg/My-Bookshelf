@@ -3,8 +3,12 @@ package uk.co.zlurgg.mybookshelf.book.di
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import uk.co.zlurgg.mybookshelf.book.data.network.KtorRemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.data.network.FallbackRemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.data.network.GoogleBooksRemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.data.network.OpenLibraryRemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.data.network.api.GoogleBooksApiService
+import uk.co.zlurgg.mybookshelf.book.data.network.api.GoogleBooksBookApi
 import uk.co.zlurgg.mybookshelf.book.data.network.api.OpenLibraryApiService
 import uk.co.zlurgg.mybookshelf.book.data.network.api.OpenLibraryBookApi
 import uk.co.zlurgg.mybookshelf.book.data.repository.BookRepositoryImpl
@@ -23,9 +27,21 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCaseImpl
 
 val bookModule = module {
-    // Network
+    // Network — both providers
+    singleOf(::GoogleBooksApiService).bind<GoogleBooksBookApi>()
     singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
-    singleOf(::KtorRemoteBookDataSource).bind<RemoteBookDataSource>()
+
+    // Data sources — both providers
+    singleOf(::GoogleBooksRemoteBookDataSource)
+    singleOf(::OpenLibraryRemoteBookDataSource)
+
+    // Fallback wrapper as the single RemoteBookDataSource
+    single<RemoteBookDataSource> {
+        FallbackRemoteBookDataSource(
+            primary = get<GoogleBooksRemoteBookDataSource>(),
+            fallback = get<OpenLibraryRemoteBookDataSource>()
+        )
+    }
 
     // Repositories
     single<BookshelfRepository> { BookshelfRepositoryImpl(get(), get()) }

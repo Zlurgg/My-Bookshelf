@@ -72,11 +72,11 @@ class BookDetailViewModel(
                 loadClubReviews(bookDetails.clubCode)
                 loadClubComments(bookDetails.clubCode)
             }
-        }
 
-        // Load book description separately (non-blocking)
-        viewModelScope.launch {
-            bookDetailUseCases.getBookDetails.loadBookDescription(bookId)
+            // Load book description separately (non-blocking, but after book is loaded for provider)
+            val provider = bookDetails.book?.provider
+                ?: uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider.GOOGLE_BOOKS
+            bookDetailUseCases.getBookDetails.loadBookDescription(bookId, provider)
                 .onSuccess {
                     // Reload book data once to get updated description
                     val bookDetails = bookDetailUseCases.getBookDetails(bookId, shelfId).first()

@@ -6,13 +6,13 @@ import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBookEntity
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.service.BookColorGenerator
 import uk.co.zlurgg.mybookshelf.core.data.database.dao.BookshelfDao
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.result.map as resultMap
 
 class BookRepositoryImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
@@ -36,9 +36,11 @@ class BookRepositoryImpl(
         }
     }
 
-    override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
-        return remoteBookDataSource.getBookDetails(bookId)
-            .resultMap { bookDetails -> bookDetails.description }
+    override suspend fun getBookDescription(
+        bookId: String,
+        provider: BookProvider
+    ): Result<String?, DataError.Remote> {
+        return remoteBookDataSource.getBookDescription(bookId, provider)
     }
 
     override suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local> {

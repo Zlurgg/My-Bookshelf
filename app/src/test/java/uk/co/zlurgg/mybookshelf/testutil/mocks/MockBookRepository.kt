@@ -64,7 +64,10 @@ class MockBookRepository : BookRepository {
         return Result.Success(Unit)
     }
 
-    override suspend fun getBookDescription(bookId: String): Result<String?, DataError.Remote> {
+    override suspend fun getBookDescription(
+        bookId: String,
+        provider: uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+    ): Result<String?, DataError.Remote> {
         remoteErrorToReturn?.let { return Result.Error(it) }
         val book = books[bookId]
         return Result.Success(book?.description)

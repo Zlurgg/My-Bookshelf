@@ -1,6 +1,5 @@
 package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
-import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
 import uk.co.zlurgg.mybookshelf.book.domain.service.SafeSearchFilter
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -8,9 +7,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.map
 
 /**
- * Implementation of SearchBooksUseCase that retrieves book data from OpenLibrary API.
+ * Implementation of SearchBooksUseCase that retrieves book data from RemoteBookDataSource.
  * Results are sorted by the API's default relevance algorithm.
- * Follows Clean Architecture by coordinating between data and domain layers.
  */
 class SearchBooksUseCaseImpl(
     private val remoteBookDataSource: RemoteBookDataSource
@@ -56,16 +54,15 @@ class SearchBooksUseCaseImpl(
             titleFilter = titleFilter,
             subjectFilter = subjectFilter,
             sort = null
-        ).map { dto ->
-            val allBooks = dto.results.map { it.toBook() }
+        ).map { response ->
             val safeBooks = if (safeSearchEnabled) {
-                allBooks.filter { SafeSearchFilter.isBookSafe(it) }
+                response.books.filter { SafeSearchFilter.isBookSafe(it) }
             } else {
-                allBooks
+                response.books
             }
             SearchResult(
                 books = safeBooks,
-                filteredCount = allBooks.size - safeBooks.size
+                filteredCount = response.books.size - safeBooks.size
             )
         }
     }

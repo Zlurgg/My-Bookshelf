@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase
 
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
@@ -11,5 +12,5 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
  */
 interface GetBookDetailsUseCase {
     suspend operator fun invoke(bookId: String, shelfId: String?): Flow<BookDetailsWithShelfStatus>
-    suspend fun loadBookDescription(bookId: String): Result<Unit, DataError.Local>
+    suspend fun loadBookDescription(bookId: String, provider: BookProvider): Result<Unit, DataError.Local>
 }

@@ -162,10 +162,8 @@ class BookRepositoryImplTest {
         assertEquals("Should preserve description", completeBook.description, retrievedBook.description)
         assertEquals("Should preserve languages", completeBook.languages, retrievedBook.languages)
         assertEquals("Should preserve publish year", completeBook.firstPublishYear, retrievedBook.firstPublishYear)
-        assertEquals("Should preserve rating", completeBook.averageRating, retrievedBook.averageRating)
-        assertEquals("Should preserve rating count", completeBook.ratingCount, retrievedBook.ratingCount)
         assertEquals("Should preserve page count", completeBook.numPages, retrievedBook.numPages)
-        assertEquals("Should preserve edition count", completeBook.numEditions, retrievedBook.numEditions)
+        assertEquals("Should preserve provider", completeBook.provider, retrievedBook.provider)
         assertEquals("Should preserve purchase status", completeBook.purchased, retrievedBook.purchased)
         assertEquals("Should preserve spine color", completeBook.spineColor, retrievedBook.spineColor)
     }
@@ -176,7 +174,7 @@ class BookRepositoryImplTest {
         val bookWithNulls = TestBookBuilder()
             .withId("book-with-nulls")
             .withTitle("Book with Null Fields")
-            .withAverageRating(null)
+            .withDescription(null)
             .build()
 
         // When
@@ -185,7 +183,7 @@ class BookRepositoryImplTest {
         // Then
         val retrievedBook = getBookOrFail("book-with-nulls")
         assertEquals("Should preserve title", bookWithNulls.title, retrievedBook.title)
-        assertEquals("Should handle null rating", null, retrievedBook.averageRating)
+        assertNull("Should handle null description", retrievedBook.description)
     }
 
     @Test
@@ -242,58 +240,31 @@ class BookRepositoryImplTest {
 
     @Test
     fun `getBookDescription returns success when remote source succeeds`() = runTest {
-        // Given
         val bookId = "test-book-details"
         val expectedDescription = "This is a test book description"
+        mockRemoteDataSource.configureBookDescription(expectedDescription)
 
-        // Configure mock to return book details with description
-        val mockBookDetails = uk.co.zlurgg.mybookshelf.book.data.dto.BookWorkDto(
-            description = expectedDescription
+        val result = repository.getBookDescription(
+            bookId,
+            uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider.GOOGLE_BOOKS
         )
-        mockRemoteDataSource.configureBookDetailsResponse(mockBookDetails)
 
-        // When
-        val result = repository.getBookDescription(bookId)
-
-        // Then
         assertTrue("Should return success", result is Result.Success)
-        val description = (result as Result.Success).data
-        assertEquals("Should return correct description", expectedDescription, description)
+        assertEquals(expectedDescription, (result as Result.Success).data)
     }
 
     @Test
     fun `getBookDescription returns error when remote source fails`() = runTest {
-        // Given
-        val bookId = "failing-book"
         mockRemoteDataSource.shouldThrowException = true
         mockRemoteDataSource.networkError = DataError.Remote.NO_INTERNET
 
-        // When
-        val result = repository.getBookDescription(bookId)
-
-        // Then
-        assertTrue("Should return error", result is Result.Error)
-        val error = (result as Result.Error).error
-        assertEquals("Should return network error", DataError.Remote.NO_INTERNET, error)
-    }
-
-    @Test
-    fun `getBookDescription handles null description gracefully`() = runTest {
-        // Given
-        val bookId = "book-no-description"
-
-        val mockBookDetails = uk.co.zlurgg.mybookshelf.book.data.dto.BookWorkDto(
-            description = null
+        val result = repository.getBookDescription(
+            "failing-book",
+            uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider.GOOGLE_BOOKS
         )
-        mockRemoteDataSource.configureBookDetailsResponse(mockBookDetails)
 
-        // When
-        val result = repository.getBookDescription(bookId)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val description = (result as Result.Success).data
-        assertNull("Should return null for missing description", description)
+        assertTrue("Should return error", result is Result.Error)
+        assertEquals(DataError.Remote.NO_INTERNET, (result as Result.Error).error)
     }
 
     @Test
