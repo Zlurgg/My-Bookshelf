@@ -25,11 +25,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class FallbackRemoteBookDataSourceTest {
 
     private val primaryResults = BookSearchResponse(
-        totalResults = 1,
         books = listOf(createTestBook("google-1", BookProvider.GOOGLE_BOOKS))
     )
     private val fallbackResults = BookSearchResponse(
-        totalResults = 1,
         books = listOf(createTestBook("ol-1", BookProvider.OPEN_LIBRARY))
     )
 
@@ -232,7 +230,7 @@ class FallbackRemoteBookDataSourceTest {
      */
     class StubRemoteBookDataSource(
         private val searchResult: Result<BookSearchResponse, DataError.Remote> =
-            Result.Success(BookSearchResponse(0, emptyList())),
+            Result.Success(BookSearchResponse(emptyList())),
         private val descriptionResult: Result<String?, DataError.Remote> =
             Result.Success(null),
     ) : RemoteBookDataSource {

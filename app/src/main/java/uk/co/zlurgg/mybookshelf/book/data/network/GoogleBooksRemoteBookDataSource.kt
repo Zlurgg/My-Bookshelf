@@ -52,7 +52,6 @@ class GoogleBooksRemoteBookDataSource(
         }.map { dto ->
             Timber.tag(TAG).d("Results: %d total, %d returned", dto.totalItems, dto.items?.size ?: 0)
             BookSearchResponse(
-                totalResults = dto.totalItems,
                 books = dto.items?.map { it.toBook() } ?: emptyList()
             )
         }

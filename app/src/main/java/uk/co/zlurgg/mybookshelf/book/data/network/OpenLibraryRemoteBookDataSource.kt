@@ -50,7 +50,6 @@ class OpenLibraryRemoteBookDataSource(
         }.map { dto ->
             Timber.tag(TAG).d("Results: %d total, %d returned", dto.numFound, dto.results.size)
             BookSearchResponse(
-                totalResults = dto.numFound,
                 books = dto.results.map { it.toBook() }
             )
         }

@@ -64,7 +64,7 @@ class SearchBooksUseCaseTest {
                 .toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(totalResults = testBooks.size, books = testBooks)
+            BookSearchResponse(books = testBooks)
         )
 
         val result = useCase("test query")
@@ -197,7 +197,7 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(totalResults = testBooks.size, books = testBooks)
+            BookSearchResponse(books = testBooks)
         )
 
         val result = useCase("test", safeSearchEnabled = true)
@@ -225,7 +225,7 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(totalResults = testBooks.size, books = testBooks)
+            BookSearchResponse(books = testBooks)
         )
 
         val result = useCase("test", safeSearchEnabled = false)
@@ -251,7 +251,7 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(totalResults = testBooks.size, books = testBooks)
+            BookSearchResponse(books = testBooks)
         )
 
         val result = useCase("test", safeSearchEnabled = true)

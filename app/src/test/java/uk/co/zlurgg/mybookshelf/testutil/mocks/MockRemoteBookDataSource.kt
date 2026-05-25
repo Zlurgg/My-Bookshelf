@@ -41,7 +41,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
                 .build()
                 .toBook()
         }
-        configuredSearchResponse = BookSearchResponse(totalResults = count, books = books)
+        configuredSearchResponse = BookSearchResponse(books = books)
     }
 
     fun reset() {
@@ -72,14 +72,14 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
 
         return when {
             shouldThrowException -> Result.Error(networkError)
-            returnEmptyResults -> Result.Success(BookSearchResponse(totalResults = 0, books = emptyList()))
+            returnEmptyResults -> Result.Success(BookSearchResponse(books = emptyList()))
             configuredSearchResponse != null -> Result.Success(configuredSearchResponse!!)
             else -> {
                 val defaultBooks = listOf(
                     TestSearchedBookDtoBuilder.withAllFields().toBook(),
                     TestSearchedBookDtoBuilder.withMinimalFields().toBook()
                 )
-                Result.Success(BookSearchResponse(totalResults = defaultBooks.size, books = defaultBooks))
+                Result.Success(BookSearchResponse(books = defaultBooks))
             }
         }
     }
