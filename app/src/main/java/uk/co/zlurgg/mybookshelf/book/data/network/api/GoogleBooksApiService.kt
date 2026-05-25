@@ -2,6 +2,7 @@ package uk.co.zlurgg.mybookshelf.book.data.network.api
 
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.statement.HttpResponse
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
@@ -17,8 +18,9 @@ class GoogleBooksApiService(
         sort: String?
     ): HttpResponse {
         return httpClient.get(ApiConfig.GoogleBooks.searchEndpoint) {
+            // API key is sent as a header (not ?key=) to keep it out of request logs.
+            header(GOOGLE_API_KEY_HEADER, ApiConfig.GoogleBooks.apiKey)
             parameter("q", query)
-            parameter("key", ApiConfig.GoogleBooks.apiKey)
             parameter("maxResults", resultLimit ?: ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS)
             parameter("printType", "books")
             language?.let { parameter("langRestrict", it) }
@@ -28,7 +30,11 @@ class GoogleBooksApiService(
 
     override suspend fun getBookDetails(bookId: String): HttpResponse {
         return httpClient.get(ApiConfig.GoogleBooks.volumeEndpoint(bookId)) {
-            parameter("key", ApiConfig.GoogleBooks.apiKey)
+            header(GOOGLE_API_KEY_HEADER, ApiConfig.GoogleBooks.apiKey)
         }
+    }
+
+    private companion object {
+        const val GOOGLE_API_KEY_HEADER = "X-Goog-Api-Key"
     }
 }
