@@ -38,4 +38,7 @@ data class BookEntity(
     val infoLink: String? = null,
     val maturityRating: String = "UNKNOWN",
     val printType: String = "UNKNOWN",
+
+    // Per-user search artifact (Google `searchInfo.textSnippet`); not synced.
+    val searchSnippet: String? = null,
 )

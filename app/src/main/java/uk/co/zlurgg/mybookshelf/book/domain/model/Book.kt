@@ -34,4 +34,19 @@ data class Book(
     val infoLink: String? = null,
     val maturityRating: MaturityRating = MaturityRating.UNKNOWN,
     val printType: PrintType = PrintType.UNKNOWN,
+
+    // Per-user search artifact from Google Books `searchInfo.textSnippet`.
+    // NOT synced through Firestore — see `BookClubBookDto`. Used as a UI
+    // stopgap when `description` is blank.
+    val searchSnippet: String? = null,
 )
+
+/**
+ * Prefer the full [Book.description] when present, otherwise fall back to the
+ * per-user [Book.searchSnippet]. Returns null when both are blank.
+ *
+ * Used by the search dialog and book-detail screen so the user sees something
+ * during the gap between initial book load and the full description fetch.
+ */
+fun Book.displayDescription(): String? =
+    description?.takeIf { it.isNotBlank() } ?: searchSnippet?.takeIf { it.isNotBlank() }

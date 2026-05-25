@@ -38,6 +38,8 @@ fun GoogleBookItemDto.toBook(): Book {
         infoLink = volumeInfo?.infoLink?.takeIf { it.startsWith(HTTPS_PREFIX) },
         maturityRating = MaturityRating.fromApiValue(volumeInfo?.maturityRating),
         printType = PrintType.fromApiValue(volumeInfo?.printType),
+        // textSnippet contains HTML similar to descriptions — strip before storing
+        searchSnippet = stripHtml(this.searchInfo?.textSnippet),
     )
 }
 

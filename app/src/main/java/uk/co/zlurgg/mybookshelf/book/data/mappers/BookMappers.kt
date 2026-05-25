@@ -76,6 +76,8 @@ fun Book.toBookEntity(): BookEntity {
         infoLink = infoLink,
         maturityRating = maturityRating.name,
         printType = printType.name,
+        // Per-user search snippet (not synced to Firestore)
+        searchSnippet = searchSnippet,
     )
 }
 
@@ -109,5 +111,7 @@ fun BookEntity.toBook(): Book {
         infoLink = infoLink,
         maturityRating = MaturityRating.valueOf(maturityRating),
         printType = PrintType.valueOf(printType),
+        // Per-user search snippet (not synced to Firestore)
+        searchSnippet = searchSnippet,
     )
 }

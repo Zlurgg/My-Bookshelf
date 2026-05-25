@@ -9,6 +9,7 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.book.data.dto.google.GoogleBookItemDto
 import uk.co.zlurgg.mybookshelf.book.data.dto.google.GoogleImageLinksDto
 import uk.co.zlurgg.mybookshelf.book.data.dto.google.GoogleIndustryIdentifierDto
+import uk.co.zlurgg.mybookshelf.book.data.dto.google.GoogleSearchInfoDto
 import uk.co.zlurgg.mybookshelf.book.data.dto.google.GoogleVolumeInfoDto
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.model.MaturityRating
@@ -191,6 +192,43 @@ class GoogleBookMappersTest {
 
         assertNull(book.previewLink)
         assertNull(book.infoLink)
+    }
+
+    @Test
+    fun `toBook maps searchInfo textSnippet into searchSnippet with HTML stripped`() {
+        val dto = GoogleBookItemDto(
+            id = "test",
+            volumeInfo = GoogleVolumeInfoDto(description = null),
+            searchInfo = GoogleSearchInfoDto(
+                textSnippet = "A <b>great</b> snippet &amp; preview"
+            ),
+        )
+
+        val book = dto.toBook()
+
+        assertEquals("A great snippet & preview", book.searchSnippet)
+    }
+
+    @Test
+    fun `toBook leaves searchSnippet null when searchInfo is absent`() {
+        val dto = GoogleBookItemDto(
+            id = "test",
+            volumeInfo = GoogleVolumeInfoDto(description = "Real description"),
+            searchInfo = null,
+        )
+
+        assertNull(dto.toBook().searchSnippet)
+    }
+
+    @Test
+    fun `toBook leaves searchSnippet null when textSnippet is null`() {
+        val dto = GoogleBookItemDto(
+            id = "test",
+            volumeInfo = GoogleVolumeInfoDto(),
+            searchInfo = GoogleSearchInfoDto(textSnippet = null),
+        )
+
+        assertNull(dto.toBook().searchSnippet)
     }
 
     @Test

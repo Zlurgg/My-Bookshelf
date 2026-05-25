@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.displayDescription
 import uk.co.zlurgg.mybookshelf.book.presentation.components.LoadImage
 
 @Composable
@@ -180,6 +181,14 @@ fun BookSearchDialog(
                                                 Text(
                                                     text = year,
                                                     maxLines = 1
+                                                )
+                                            }
+                                            book.displayDescription()?.let { preview ->
+                                                Text(
+                                                    text = preview,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    maxLines = 2,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }

@@ -83,6 +83,7 @@ class BookMappersTest {
             .withInfoLink("https://books.google.com/info")
             .withMaturityRating(MaturityRating.NOT_MATURE)
             .withPrintType(PrintType.BOOK)
+            .withSearchSnippet("A short preview snippet")
             .build()
 
         val entity: BookEntity = original.toBookEntity()
@@ -105,6 +106,7 @@ class BookMappersTest {
         assertEquals(original.infoLink, mappedBack.infoLink)
         assertEquals(original.maturityRating, mappedBack.maturityRating)
         assertEquals(original.printType, mappedBack.printType)
+        assertEquals(original.searchSnippet, mappedBack.searchSnippet)
     }
 
     @Test

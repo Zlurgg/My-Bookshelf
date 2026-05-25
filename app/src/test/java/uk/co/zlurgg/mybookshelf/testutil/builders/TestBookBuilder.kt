@@ -45,6 +45,9 @@ class TestBookBuilder {
     private var maturityRating = MaturityRating.UNKNOWN
     private var printType = PrintType.UNKNOWN
 
+    // Per-user search artifact (Google `searchInfo.textSnippet`)
+    private var searchSnippet: String? = null
+
     fun withId(id: String) = apply { this.id = id }
     fun withTitle(title: String) = apply { this.title = title }
     fun withSubtitle(subtitle: String?) = apply { this.subtitle = subtitle }
@@ -77,6 +80,9 @@ class TestBookBuilder {
     fun withMaturityRating(rating: MaturityRating) = apply { this.maturityRating = rating }
     fun withPrintType(type: PrintType) = apply { this.printType = type }
 
+    // Per-user search artifact
+    fun withSearchSnippet(snippet: String?) = apply { this.searchSnippet = snippet }
+
     fun build() = Book(
         id = id,
         title = title,
@@ -106,6 +112,8 @@ class TestBookBuilder {
         infoLink = infoLink,
         maturityRating = maturityRating,
         printType = printType,
+        // Per-user search artifact
+        searchSnippet = searchSnippet,
     )
 
     companion object {

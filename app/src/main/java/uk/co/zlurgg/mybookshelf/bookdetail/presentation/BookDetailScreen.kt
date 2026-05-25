@@ -37,6 +37,7 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PurchasedTogg
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ReadingStatusCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ShelfActionsCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.SignInHintCard
+import uk.co.zlurgg.mybookshelf.book.domain.model.displayDescription
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBook
 import uk.co.zlurgg.mybookshelf.book.presentation.util.withMediumImage
 
@@ -216,7 +217,7 @@ fun BookDetailsScreen(
                 // 3. Common info section
                 item {
                     DescriptionCard(
-                        description = state.book.description,
+                        description = state.book.displayDescription(),
                         initiallyExpanded = isTutorialBook,
                         outlined = !isTutorialBook
                     )
