@@ -22,6 +22,8 @@ class GoogleBooksRemoteBookDataSource(
     private val apiKeyProvider: () -> String = { ApiConfig.GoogleBooks.apiKey },
 ) : RemoteBookDataSource {
 
+    private val queryBuilder = BookSearchQueryBuilder(GOOGLE_BOOKS_PREFIXES)
+
     override suspend fun searchBooks(
         query: String,
         resultLimit: Int?,
@@ -37,7 +39,7 @@ class GoogleBooksRemoteBookDataSource(
             return Result.Error(DataError.Remote.PROVIDER_UNAVAILABLE)
         }
 
-        val finalQuery = buildQuery(query, authorFilter, titleFilter, subjectFilter)
+        val finalQuery = queryBuilder.build(query, authorFilter, titleFilter, subjectFilter)
         // Google Books uses ISO 639-1 two-letter codes (e.g. "en"), not OL three-letter codes
         val finalLanguage = language ?: systemLanguageProvider.getRawLanguageCode()
 
@@ -68,40 +70,13 @@ class GoogleBooksRemoteBookDataSource(
         }.map { it.toDescription() }
     }
 
-    private fun buildQuery(
-        baseQuery: String,
-        authorFilter: String?,
-        titleFilter: String?,
-        subjectFilter: String?
-    ): String {
-        val parts = mutableListOf<String>()
-
-        if (baseQuery.isNotBlank()) {
-            parts.add(sanitizeFilterInput(baseQuery))
-        }
-
-        authorFilter?.takeIf { it.isNotBlank() }?.let {
-            parts.add(formatFilterField(it, "inauthor"))
-        }
-        titleFilter?.takeIf { it.isNotBlank() }?.let {
-            parts.add(formatFilterField(it, "intitle"))
-        }
-        subjectFilter?.takeIf { it.isNotBlank() }?.let {
-            parts.add(formatFilterField(it, "subject"))
-        }
-
-        return parts.joinToString(" ")
-    }
-
-    private fun sanitizeFilterInput(input: String): String = input.trim().replace("\"", "")
-
-    private fun formatFilterField(raw: String, prefix: String): String {
-        val sanitized = sanitizeFilterInput(raw)
-        val quoted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
-        return "$prefix:$quoted"
-    }
-
     companion object {
         private const val TAG = "GoogleBooksSearch"
+
+        private val GOOGLE_BOOKS_PREFIXES = mapOf(
+            BookSearchQueryBuilder.FilterField.AUTHOR to "inauthor",
+            BookSearchQueryBuilder.FilterField.TITLE to "intitle",
+            BookSearchQueryBuilder.FilterField.SUBJECT to "subject",
+        )
     }
 }

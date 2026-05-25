@@ -18,6 +18,8 @@ class OpenLibraryRemoteBookDataSource(
     private val systemLanguageProvider: SystemLanguageProvider
 ) : RemoteBookDataSource {
 
+    private val queryBuilder = BookSearchQueryBuilder(OPEN_LIBRARY_PREFIXES)
+
     override suspend fun searchBooks(
         query: String,
         resultLimit: Int?,
@@ -27,7 +29,7 @@ class OpenLibraryRemoteBookDataSource(
         subjectFilter: String?,
         sort: String?
     ): Result<BookSearchResponse, DataError.Remote> {
-        val finalQuery = buildQuery(query, authorFilter, titleFilter, subjectFilter)
+        val finalQuery = queryBuilder.build(query, authorFilter, titleFilter, subjectFilter)
         val finalLanguage = language ?: systemLanguageProvider.getCurrentLanguageCode()
 
         Timber.tag(TAG).d("=== OPEN LIBRARY SEARCH ===")
@@ -64,42 +66,13 @@ class OpenLibraryRemoteBookDataSource(
         }.map { it.description }
     }
 
-    private fun sanitizeFilterInput(input: String): String = input.trim().replace("\"", "")
-
-    private fun formatFilterField(raw: String, prefix: String): String {
-        val sanitized = sanitizeFilterInput(raw)
-        val quoted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
-        return "$prefix:$quoted"
-    }
-
-    private fun buildQuery(
-        baseQuery: String,
-        authorFilter: String?,
-        titleFilter: String?,
-        subjectFilter: String? = null
-    ): String {
-        val queryParts = mutableListOf<String>()
-
-        if (baseQuery.isNotBlank()) {
-            queryParts.add(sanitizeFilterInput(baseQuery))
-        }
-
-        authorFilter?.takeIf { it.isNotBlank() }?.let {
-            queryParts.add(formatFilterField(it, prefix = "author"))
-        }
-
-        titleFilter?.takeIf { it.isNotBlank() }?.let {
-            queryParts.add(formatFilterField(it, prefix = "title"))
-        }
-
-        subjectFilter?.takeIf { it.isNotBlank() }?.let {
-            queryParts.add(formatFilterField(it, prefix = "subject"))
-        }
-
-        return queryParts.joinToString(" ")
-    }
-
     companion object {
         private const val TAG = "OpenLibrarySearch"
+
+        private val OPEN_LIBRARY_PREFIXES = mapOf(
+            BookSearchQueryBuilder.FilterField.AUTHOR to "author",
+            BookSearchQueryBuilder.FilterField.TITLE to "title",
+            BookSearchQueryBuilder.FilterField.SUBJECT to "subject",
+        )
     }
 }
