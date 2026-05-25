@@ -10,8 +10,11 @@ data class SearchResult(
 )
 
 /**
- * UseCase interface for searching books via OpenLibrary API.
- * Results are sorted by the API's default relevance algorithm.
+ * UseCase interface for searching books.
+ *
+ * Backed by Google Books as the primary provider with an OpenLibrary fallback
+ * (see [uk.co.zlurgg.mybookshelf.book.data.network.FallbackRemoteBookDataSource]).
+ * Results are sorted by the active provider's default relevance algorithm.
  */
 interface SearchBooksUseCase {
     suspend operator fun invoke(

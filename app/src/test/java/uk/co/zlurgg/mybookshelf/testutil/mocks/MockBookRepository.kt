@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.testutil.mocks
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -69,7 +70,7 @@ class MockBookRepository : BookRepository {
 
     override suspend fun getBookDescription(
         bookId: String,
-        provider: uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+        provider: BookProvider
     ): Result<String?, DataError.Remote> {
         remoteErrorToReturn?.let { return Result.Error(it) }
         val book = books[bookId]

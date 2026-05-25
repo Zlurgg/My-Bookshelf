@@ -11,6 +11,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -246,7 +247,7 @@ class BookRepositoryImplTest {
 
         val result = repository.getBookDescription(
             bookId,
-            uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider.GOOGLE_BOOKS
+            BookProvider.GOOGLE_BOOKS
         )
 
         assertTrue("Should return success", result is Result.Success)
@@ -260,7 +261,7 @@ class BookRepositoryImplTest {
 
         val result = repository.getBookDescription(
             "failing-book",
-            uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider.GOOGLE_BOOKS
+            BookProvider.GOOGLE_BOOKS
         )
 
         assertTrue("Should return error", result is Result.Error)

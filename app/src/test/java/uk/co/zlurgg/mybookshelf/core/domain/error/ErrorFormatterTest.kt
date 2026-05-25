@@ -55,6 +55,10 @@ class ErrorFormatterTest {
             ErrorFormatter.formatDataErrorMessage(DataError.Remote.MALFORMED_REQUEST)
         )
         assertEquals(
+            "Search provider is unavailable.",
+            ErrorFormatter.formatDataErrorMessage(DataError.Remote.PROVIDER_UNAVAILABLE)
+        )
+        assertEquals(
             "Unknown network error occurred.",
             ErrorFormatter.formatDataErrorMessage(DataError.Remote.UNKNOWN)
         )
