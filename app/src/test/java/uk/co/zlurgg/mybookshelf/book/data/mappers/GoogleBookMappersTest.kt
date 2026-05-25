@@ -155,6 +155,45 @@ class GoogleBookMappersTest {
     }
 
     @Test
+    fun `toBook coerces non-HTTPS previewLink and infoLink to null`() {
+        val hostileSchemes = listOf(
+            "http://books.google.com/preview",
+            "mailto:attacker@example.com",
+            "intent://books.google.com/preview#Intent;scheme=https;end",
+            "javascript:alert(1)",
+            "tel:+15551234567",
+            "",
+        )
+        hostileSchemes.forEach { value ->
+            val dto = GoogleBookItemDto(
+                id = "test",
+                volumeInfo = GoogleVolumeInfoDto(
+                    previewLink = value,
+                    infoLink = value,
+                ),
+            )
+
+            val book = dto.toBook()
+
+            assertNull("previewLink should be null for input '$value'", book.previewLink)
+            assertNull("infoLink should be null for input '$value'", book.infoLink)
+        }
+    }
+
+    @Test
+    fun `toBook leaves previewLink and infoLink null when DTO values are null`() {
+        val dto = GoogleBookItemDto(
+            id = "test",
+            volumeInfo = GoogleVolumeInfoDto(previewLink = null, infoLink = null),
+        )
+
+        val book = dto.toBook()
+
+        assertNull(book.previewLink)
+        assertNull(book.infoLink)
+    }
+
+    @Test
     fun `stripHtml removes HTML tags and decodes entities`() {
         assertEquals("Hello World", stripHtml("<b>Hello</b> <i>World</i>"))
         assertEquals("Tom & Jerry", stripHtml("Tom &amp; Jerry"))

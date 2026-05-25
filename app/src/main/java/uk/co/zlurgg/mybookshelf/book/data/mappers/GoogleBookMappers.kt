@@ -34,14 +34,15 @@ fun GoogleBookItemDto.toBook(): Book {
         publisher = volumeInfo?.publisher,
         publishDate = volumeInfo?.publishedDate,
         subjects = volumeInfo?.categories ?: emptyList(),
-        previewLink = volumeInfo?.previewLink,
-        infoLink = volumeInfo?.infoLink,
+        previewLink = volumeInfo?.previewLink?.takeIf { it.startsWith(HTTPS_PREFIX) },
+        infoLink = volumeInfo?.infoLink?.takeIf { it.startsWith(HTTPS_PREFIX) },
         maturityRating = MaturityRating.fromApiValue(volumeInfo?.maturityRating),
         printType = PrintType.fromApiValue(volumeInfo?.printType),
     )
 }
 
 private const val YEAR_LENGTH = 4
+private const val HTTPS_PREFIX = "https://"
 
 /**
  * Strips HTML tags and decodes entities from Google Books descriptions.
