@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.AuthUseCases
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus
 import uk.co.zlurgg.mybookshelf.book.domain.service.BookReviewProvider
 import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -51,42 +52,53 @@ class BookDetailViewModel(
 
     private fun loadBookDetails() {
         viewModelScope.launch {
-            // Load book details once - no continuous collection to avoid race conditions
-            // Manual state updates in action handlers keep UI synchronized
-            val bookDetails = bookDetailUseCases.getBookDetails(bookId, shelfId).first()
-            _state.update { currentState ->
-                currentState.copy(
-                    book = bookDetails.book,
-                    onShelf = bookDetails.isOnShelf,
-                    isBookClub = bookDetails.isBookClub,
-                    clubCode = bookDetails.clubCode,
-                    clubCreatorId = bookDetails.clubCreatorId,
-                    addedByUserId = bookDetails.addedByUserId,
-                    isLoading = false
-                )
+            val details = loadInitialBookState()
+            if (details.isBookClub && details.clubCode != null) {
+                loadClubReviews(details.clubCode)
+                loadClubComments(details.clubCode)
             }
-
-            // Load club reviews and comments if this is a book club book
-            if (bookDetails.isBookClub && bookDetails.clubCode != null) {
-                loadClubReviews(bookDetails.clubCode)
-                loadClubComments(bookDetails.clubCode)
-            }
-
-            // Description fetch:
-            //   - Skip if a description is already cached (avoid wasted quota on every screen open).
-            //   - On success, persist via a targeted column UPDATE (does NOT clobber the user's
-            //     personal metadata that may be saving concurrently) and merge into in-memory
-            //     state — no re-query of the DB.
-            //   - On error, intentionally ignored; UI stays usable without a description.
-            val book = bookDetails.book
-            if (book != null && book.description.isNullOrBlank()) {
-                bookDetailUseCases.getBookDescription(book.id, book.provider)
-                    .onSuccess { fetched ->
-                        bookDetailUseCases.updateBookDescription(book.id, fetched)
-                        _state.update { it.copy(book = it.book?.copy(description = fetched)) }
-                    }
-            }
+            details.book?.let { maybeFetchDescription(it) }
         }
+    }
+
+    /**
+     * Loads book + shelf + club metadata once and pushes it into state.
+     *
+     * Returns the details so the orchestrator can route on them directly,
+     * avoiding a "did the state actually update?" follow-up read.
+     */
+    private suspend fun loadInitialBookState(): BookDetailsWithShelfStatus {
+        val details = bookDetailUseCases.getBookDetails(bookId, shelfId).first()
+        _state.update { currentState ->
+            currentState.copy(
+                book = details.book,
+                onShelf = details.isOnShelf,
+                isBookClub = details.isBookClub,
+                clubCode = details.clubCode,
+                clubCreatorId = details.clubCreatorId,
+                addedByUserId = details.addedByUserId,
+                isLoading = false
+            )
+        }
+        return details
+    }
+
+    /**
+     * Fetches and persists the book's description when the cached value is blank.
+     *
+     * Persist-then-merge ordering is intentional: persistence is the source of
+     * truth for "we don't need to re-fetch this." Merging into state without
+     * persisting would reproduce the original 1.4 bug on the next screen open.
+     *
+     * Errors are intentionally ignored — the UI stays usable without a description.
+     */
+    private suspend fun maybeFetchDescription(book: Book) {
+        if (!book.description.isNullOrBlank()) return
+        bookDetailUseCases.getBookDescription(book.id, book.provider)
+            .onSuccess { fetched ->
+                bookDetailUseCases.updateBookDescription(book.id, fetched)
+                _state.update { it.copy(book = it.book?.copy(description = fetched)) }
+            }
     }
 
     private fun loadClubReviews(clubCode: String) {
