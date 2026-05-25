@@ -169,23 +169,26 @@ If both return `200`, proceed with the steps below. If either returns `401`/`403
 
 **Steps (assuming step 0 succeeded):**
 1. In `GoogleBooksApiService.searchBooks` / `getBookDetails`, remove `parameter("key", ApiConfig.GoogleBooks.apiKey)` and replace with `header("X-Goog-Api-Key", ApiConfig.GoogleBooks.apiKey)`.
-2. Leave the Ktor logging plugin at `LogLevel.ALL` for debug — it's fine to log headers; the previous version of S1 was wrong to recommend dropping log level. With the key out of the URL, headers logged is acceptable (the request body for these endpoints is empty).
+2. **Add credential redaction to the Ktor Logger.** `LogLevel.ALL` still logs request headers — including the new `X-Goog-Api-Key` value — so moving the key URL→header on its own only relocates the leak. The Logger must strip credential values regardless of where they appear.
 
-**Regex-redact fallback (only if step 0 fails):** keep `?key=` and add a custom `Logger` implementation that strips the `key=…` portion before forwarding to `Timber`. Concretely:
-```kotlin
-logger = object : Logger {
-    private val keyPattern = Regex("([?&])key=[^&\\s]*")
-    override fun log(message: String) {
-        Timber.tag("HttpClient").v(keyPattern.replace(message, "$1key=REDACTED"))
-    }
-}
-```
-This is brittle (a future code path that logs the key from elsewhere won't be covered) but is the second-best option if header auth isn't supported. Document the brittleness in a code comment so a future reader doesn't simplify it away.
+   Implement a `redactSensitiveValues(message: String): String` helper in `HttpClientFactory.kt` driven by two file-level lists:
+   ```kotlin
+   private val SENSITIVE_URL_PARAMS = listOf("key")        // e.g. ?key=AIza…
+   private val SENSITIVE_HEADER_NAMES = listOf("X-Goog-Api-Key")
+   ```
+   Use these to build regexes that replace the credential value with `REDACTED` while preserving the surrounding context. Wire the Logger callback to pass every log line through this helper before `println`/`Timber`.
 
-Lighter-touch alternative if the regex feels overengineered: drop the Ktor log level from `LogLevel.ALL` to `LogLevel.HEADERS` or `LogLevel.INFO` — the URL query string is omitted entirely, keeping the key out of logs at the cost of some debug utility (no request body/response body in logs). Reach for this only if step 0 fails *and* the regex approach is rejected.
+   Extension contract: adding a new provider whose credential rides in a URL param or header is a one-line addition to the relevant list. No new regexes or call-site changes. Add a code comment to that effect so the next provider integration uses the same channel.
+
+   Add a unit test (`HttpClientFactoryTest`) covering: URL param redaction (param first vs not first), header redaction (case-insensitive), no-op for unrelated content, both forms in the same message, and the false-positive case (`?keyword=cooking` not matched).
+
+**Why the redaction is the load-bearing part, not the URL→header swap:** the swap moves the credential from one logged surface (URL) to another (header). Both `LogLevel.ALL` and `LogLevel.HEADERS` still log headers. The only Ktor log levels that omit headers entirely are `INFO` and `NONE` — both of which destroy debugging utility. Redacting at the Logger boundary is the standard pattern: keep full debug visibility, strip only the values that must not leak.
+
+**Note on release builds:** `CoreModule.kt:35` wires `enableLogging = BuildConfig.DEBUG`, so release builds run at `LogLevel.NONE` and emit no HTTP logs at all. The redaction therefore protects debug builds — developer machines, sideloaded internal APKs, CI logs, bug-report dumps captured during dev. Closed-testing-track APKs (release builds) don't depend on it.
 
 **Verification:**
-- Build a debug APK after the fix, run a search, `adb logcat | grep -E "AIza[A-Za-z0-9_-]{30,}"` — should produce no matches. (Don't use `grep -i key` — it matches "keyboard," "keyguard," and every Android system log containing the word "key," all false positives.)
+- `./gradlew :app:testDebugUnitTest --tests "*HttpClientFactoryTest*"` passes — proves the redaction logic.
+- Build a debug APK, run a search, `adb logcat | grep -E "AIza[A-Za-z0-9_-]{30,}"` — must produce no matches against the actual key value. (Don't use `grep -i key` — false positives from "keyboard," "keyguard," etc.)
 - Confirm Google Books still serves results (proves auth still works).
 
 #### 1.7 Allowlist URL schemes before launching `previewLink` / `infoLink`
@@ -497,7 +500,7 @@ Specifically:
 - [ ] `BookDetailViewModel.loadBookDetails` merges the description into state without re-querying the DB (1.4d)
 - [ ] `updateDescription` DAO test verifies targeted UPDATE does not clobber personal metadata (1.4)
 - [ ] Blank-API-key path short-circuits with the new `DataError.Remote.PROVIDER_UNAVAILABLE` variant; `shouldFallback` includes it; `Timber.e` log emitted at the short-circuit site (1.5)
-- [ ] Google Books API key sent via `X-Goog-Api-Key` header, not URL query param — verified via `adb logcat` grep (1.6)
+- [ ] Google Books API key sent via `X-Goog-Api-Key` header AND `redactSensitiveValues` strips credential values from both URL query params (`?key=…`) and sensitive headers in the Ktor Logger output. Extension contract documented (one-line add to `SENSITIVE_URL_PARAMS` / `SENSITIVE_HEADER_NAMES` for new providers). Verified via `adb logcat | grep -E "AIza[A-Za-z0-9_-]{30,}"` returning zero matches and unit tests in `HttpClientFactoryTest` (1.6)
 - [ ] `previewLink` / `infoLink` HTTPS-coerced in the mapper and gated behind a scheme allowlist at the launch site; mapper tests cover hostile schemes (1.7)
 - [ ] Room schema reset to v1, `fallbackToDestructiveMigration` removed, schema dir contains exactly `1.json`; uninstall instructions communicated to internal testers (1.8)
 - [ ] `GoogleBooksRemoteBookDataSourceTest` exists and covers the listed cases (2.1)
