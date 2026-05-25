@@ -4,11 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus
-import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
-import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
@@ -72,17 +70,5 @@ class GetBookDetailsUseCaseImpl(
                     addedByUserId = addedByUserId,
                 )
             }
-    }
-
-    override suspend fun loadBookDescription(
-        bookId: String,
-        provider: BookProvider
-    ): Result<Unit, DataError.Local> {
-        // Load description from remote and update the book
-        val descriptionResult = bookRepository.getBookDescription(bookId, provider)
-        return when (descriptionResult) {
-            is Result.Success -> Result.Success(Unit)
-            is Result.Error -> Result.Error(DataError.Local.UNKNOWN)
-        }
     }
 }

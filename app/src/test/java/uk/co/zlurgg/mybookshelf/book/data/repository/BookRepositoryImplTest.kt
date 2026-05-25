@@ -268,6 +268,51 @@ class BookRepositoryImplTest {
     }
 
     @Test
+    fun `updateDescription persists description and preserves other book fields`() = runTest {
+        // Given
+        val original = TestBookBuilder()
+            .withId("desc-book")
+            .withTitle("Fixed Title")
+            .withDescription(null)
+            .withPersonalNotes("My notes")
+            .withPersonalRating(3.5f)
+            .build()
+        saveBook(original)
+
+        // When
+        val result = repository.updateDescription("desc-book", "Fresh description")
+
+        // Then
+        assertTrue("Should return success", result is Result.Success)
+        val retrieved = getBookOrFail("desc-book")
+        assertEquals("Fresh description", retrieved.description)
+        assertEquals("Fixed Title", retrieved.title)
+        assertEquals("My notes", retrieved.personalNotes)
+        assertEquals(3.5f, retrieved.personalRating)
+    }
+
+    @Test
+    fun `updateDescription maps DAO exception to DataError Local`() = runTest {
+        // Given — closing the database before invoking the DAO causes Room to throw
+        // (IllegalStateException). ErrorMapper should catch and surface DataError.Local.
+        database.close()
+
+        // When
+        val result = repository.updateDescription("any-book", "anything")
+
+        // Then
+        assertTrue("Should return error when DAO throws", result is Result.Error)
+        val error = (result as Result.Error).error
+        // The error type is DataError.Local by repository contract; we just confirm
+        // it produced an error result (no need to re-check the static type).
+        assertEquals(
+            "Should map IllegalStateException to DATABASE_ERROR",
+            DataError.Local.DATABASE_ERROR,
+            error
+        )
+    }
+
+    @Test
     fun `upsertBook with extremely long data fields`() = runTest {
         // Given
         val longString = "A".repeat(10000) // Very long string

@@ -17,7 +17,6 @@ import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.BookDetailUseCases
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.result.onError
 import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants.DebounceDelayMs
 
@@ -73,18 +72,20 @@ class BookDetailViewModel(
                 loadClubComments(bookDetails.clubCode)
             }
 
-            // Load book description separately (non-blocking, but after book is loaded for provider)
-            val provider = bookDetails.book?.provider
-                ?: uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider.GOOGLE_BOOKS
-            bookDetailUseCases.getBookDetails.loadBookDescription(bookId, provider)
-                .onSuccess {
-                    // Reload book data once to get updated description
-                    val bookDetails = bookDetailUseCases.getBookDetails(bookId, shelfId).first()
-                    _state.update { it.copy(book = bookDetails.book) }
-                }
-                .onError {
-                    // ignore, keep UI usable
-                }
+            // Description fetch:
+            //   - Skip if a description is already cached (avoid wasted quota on every screen open).
+            //   - On success, persist via a targeted column UPDATE (does NOT clobber the user's
+            //     personal metadata that may be saving concurrently) and merge into in-memory
+            //     state — no re-query of the DB.
+            //   - On error, intentionally ignored; UI stays usable without a description.
+            val book = bookDetails.book
+            if (book != null && book.description.isNullOrBlank()) {
+                bookDetailUseCases.getBookDescription(book.id, book.provider)
+                    .onSuccess { fetched ->
+                        bookDetailUseCases.updateBookDescription(book.id, fetched)
+                        _state.update { it.copy(book = it.book?.copy(description = fetched)) }
+                    }
+            }
         }
     }
 

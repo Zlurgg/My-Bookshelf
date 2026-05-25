@@ -43,6 +43,15 @@ class BookRepositoryImpl(
         return remoteBookDataSource.getBookDescription(bookId, provider)
     }
 
+    override suspend fun updateDescription(
+        bookId: String,
+        description: String?
+    ): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.updateDescription(bookId, description)
+        }
+    }
+
     override suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             dao.upsert(book.toBookEntity())

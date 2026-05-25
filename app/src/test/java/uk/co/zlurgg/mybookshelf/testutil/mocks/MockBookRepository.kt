@@ -33,10 +33,13 @@ class MockBookRepository : BookRepository {
         upsertSystemBookCallCount = 0
         getBookByIdCallCount = 0
         deleteBooksCallCount = 0
+        updateDescriptionCallCount = 0
         lastUpsertedBook = null
         lastUpsertedSystemBook = null
         lastQueriedBookId = null
         lastDeletedBookIds = emptyList()
+        lastUpdatedDescriptionBookId = null
+        lastUpdatedDescription = null
         nonRemovableBookIdsFlow.value = emptySet()
     }
 
@@ -71,6 +74,22 @@ class MockBookRepository : BookRepository {
         remoteErrorToReturn?.let { return Result.Error(it) }
         val book = books[bookId]
         return Result.Success(book?.description)
+    }
+
+    var updateDescriptionCallCount = 0
+    var lastUpdatedDescriptionBookId: String? = null
+    var lastUpdatedDescription: String? = null
+
+    override suspend fun updateDescription(
+        bookId: String,
+        description: String?
+    ): Result<Unit, DataError.Local> {
+        updateDescriptionCallCount++
+        lastUpdatedDescriptionBookId = bookId
+        lastUpdatedDescription = description
+        errorToReturn?.let { return Result.Error(it) }
+        books[bookId] = books[bookId]?.copy(description = description) ?: return Result.Success(Unit)
+        return Result.Success(Unit)
     }
 
     override suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local> {

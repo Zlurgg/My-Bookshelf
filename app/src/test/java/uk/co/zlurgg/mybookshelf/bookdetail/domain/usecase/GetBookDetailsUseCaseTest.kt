@@ -9,9 +9,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
-import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
-import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookcaseRepository
@@ -22,8 +19,10 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookshelfRepository
  * Tests business logic:
  * - Book retrieval with shelf status
  * - Handling missing books
- * - Description loading from remote
  * - Error handling
+ *
+ * Description fetching is tested in [GetBookDescriptionUseCaseTest] /
+ * [UpdateBookDescriptionUseCaseTest] — split out per the 1.4 remediation.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class GetBookDetailsUseCaseTest {
@@ -113,51 +112,6 @@ class GetBookDetailsUseCaseTest {
         // Then
         assertTrue("Should be on fiction shelf", result1.isOnShelf)
         assertFalse("Should not be on scifi shelf", result2.isOnShelf)
-    }
-
-    @Test
-    fun `loadBookDescription returns success when description loaded`() = runTest {
-        // Given
-        val bookId = "book-1"
-        val book = TestBookBuilder()
-            .withId(bookId)
-            .withDescription("Original description")
-            .build()
-
-        mockBookRepository.addBook(book)
-
-        // When
-        val result = useCase.loadBookDescription(bookId, BookProvider.GOOGLE_BOOKS)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-    }
-
-    @Test
-    fun `loadBookDescription returns error when repository fails`() = runTest {
-        // Given
-        val bookId = "book-1"
-        mockBookRepository.remoteErrorToReturn = DataError.Remote.UNKNOWN
-
-        // When
-        val result = useCase.loadBookDescription(bookId, BookProvider.GOOGLE_BOOKS)
-
-        // Then
-        assertTrue("Should return error", result is Result.Error)
-        // Error is correctly typed after unwrapping Result.Error
-    }
-
-    @Test
-    fun `loadBookDescription handles missing book gracefully`() = runTest {
-        // Given
-        val nonExistentBookId = "does-not-exist"
-
-        // When
-        val result = useCase.loadBookDescription(nonExistentBookId, BookProvider.GOOGLE_BOOKS)
-
-        // Then
-        // Should return success even if book doesn't exist (null description is valid)
-        assertTrue("Should handle gracefully", result is Result.Success || result is Result.Error)
     }
 
     @Test

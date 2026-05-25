@@ -18,6 +18,18 @@ interface BookDao {
     @Query("DELETE FROM BookEntity WHERE id IN (:bookIds)")
     suspend fun deleteBooksById(bookIds: List<String>)
 
+    /**
+     * Targeted update for the description column only.
+     *
+     * Intentionally a column-scoped UPDATE rather than a full-row upsert: callers
+     * (notably the book-detail description fetch in [BookRepository.updateDescription])
+     * write the description in parallel with debounced personal-metadata writes
+     * (notes/rating/status). A full-row upsert here would clobber any in-flight
+     * personal-metadata write from the user.
+     */
+    @Query("UPDATE BookEntity SET description = :description WHERE id = :bookId")
+    suspend fun updateDescription(bookId: String, description: String?)
+
     @Query(
         """
         SELECT * FROM BookEntity b

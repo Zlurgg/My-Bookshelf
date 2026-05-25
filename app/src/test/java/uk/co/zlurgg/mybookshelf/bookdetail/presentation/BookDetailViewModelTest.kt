@@ -29,11 +29,14 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookReview
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.service.BookReviewProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.BookDetailUseCases
+import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.GetBookDescriptionUseCase
 import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.GetBookDetailsUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.ToggleBookPurchaseUseCase
+import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.UpdateBookDescriptionUseCase
 import uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase.UpdateBookMetadataUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
@@ -57,6 +60,8 @@ class BookDetailViewModelTest {
 
     // Simplified inline mocks for ViewModel UI testing
     private val mockGetBookDetails = SimpleGetBookDetailsUseCase()
+    private val mockGetBookDescription = SimpleGetBookDescriptionUseCase()
+    private val mockUpdateBookDescription = SimpleUpdateBookDescriptionUseCase()
     private val mockAddBookToShelf = SimpleAddBookToShelfUseCase()
     private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
     private val mockUpsertBook = SimpleUpsertBookUseCase()
@@ -66,6 +71,8 @@ class BookDetailViewModelTest {
     @After
     fun tearDown() {
         mockGetBookDetails.reset()
+        mockGetBookDescription.reset()
+        mockUpdateBookDescription.reset()
         mockAddBookToShelf.reset()
         mockRemoveBookFromShelf.reset()
         mockUpsertBook.reset()
@@ -144,6 +151,8 @@ class BookDetailViewModelTest {
     private fun createViewModel(): BookDetailViewModel {
         val useCases = BookDetailUseCases(
             getBookDetails = mockGetBookDetails,
+            getBookDescription = mockGetBookDescription,
+            updateBookDescription = mockUpdateBookDescription,
             addBookToShelf = mockAddBookToShelf,
             removeBookFromShelf = mockRemoveBookFromShelf,
             upsertBook = mockUpsertBook,
@@ -388,6 +397,62 @@ class BookDetailViewModelTest {
     }
 
     @Test
+    fun `loadBookDetails skips description fetch when book description is populated`() = runTest(testDispatcher) {
+        // Given
+        val cachedBook = TestBookBuilder()
+            .withId("book-1")
+            .withDescription("Already cached description")
+            .build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(cachedBook, isOnShelf = true)
+
+        // When
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.awaitState()
+
+        // Then
+        assertEquals("Should not fetch when cached", 0, mockGetBookDescription.callCount)
+        assertEquals("Should not persist when cached", 0, mockUpdateBookDescription.callCount)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `loadBookDetails fetches and persists description when missing`() = runTest(testDispatcher) {
+        // Given
+        val emptyDescriptionBook = TestBookBuilder()
+            .withId("book-1")
+            .withDescription(null)
+            .build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(emptyDescriptionBook, isOnShelf = true)
+        mockGetBookDescription.descriptionToReturn = "Newly fetched description"
+
+        // When
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        val state = stateHelper.awaitState()
+
+        // Then
+        assertEquals("Should fetch description once", 1, mockGetBookDescription.callCount)
+        assertEquals("Should persist via updateBookDescription", 1, mockUpdateBookDescription.callCount)
+        assertEquals(
+            "Persist should target the same book id",
+            "book-1",
+            mockUpdateBookDescription.lastBookId
+        )
+        assertEquals(
+            "Persist should write the fetched description",
+            "Newly fetched description",
+            mockUpdateBookDescription.lastDescription
+        )
+        assertEquals(
+            "State should reflect the fetched description (in-place merge, no DB re-query)",
+            "Newly fetched description",
+            state?.book?.description
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
     fun `remove book click handles error correctly`() = runTest(testDispatcher) {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
@@ -422,14 +487,56 @@ class BookDetailViewModelTest {
         override suspend operator fun invoke(bookId: String, shelfId: String?): Flow<BookDetailsWithShelfStatus> =
             flowOf(bookDetailsToReturn)
 
-        override suspend fun loadBookDescription(
-            bookId: String,
-            provider: uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
-        ): Result<Unit, DataError.Local> =
-            Result.Success(Unit)
-
         fun reset() {
             bookDetailsToReturn = BookDetailsWithShelfStatus(null, false)
+        }
+    }
+
+    private class SimpleGetBookDescriptionUseCase : GetBookDescriptionUseCase {
+        var descriptionToReturn: String? = "Fetched description"
+        var remoteErrorToReturn: DataError.Remote? = null
+        var callCount = 0
+        var lastBookId: String? = null
+
+        override suspend operator fun invoke(
+            bookId: String,
+            provider: BookProvider,
+        ): Result<String?, DataError.Remote> {
+            callCount++
+            lastBookId = bookId
+            remoteErrorToReturn?.let { return Result.Error(it) }
+            return Result.Success(descriptionToReturn)
+        }
+
+        fun reset() {
+            descriptionToReturn = "Fetched description"
+            remoteErrorToReturn = null
+            callCount = 0
+            lastBookId = null
+        }
+    }
+
+    private class SimpleUpdateBookDescriptionUseCase : UpdateBookDescriptionUseCase {
+        var shouldSucceed = true
+        var callCount = 0
+        var lastBookId: String? = null
+        var lastDescription: String? = null
+
+        override suspend operator fun invoke(
+            bookId: String,
+            description: String?,
+        ): Result<Unit, DataError.Local> {
+            callCount++
+            lastBookId = bookId
+            lastDescription = description
+            return if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+        }
+
+        fun reset() {
+            shouldSucceed = true
+            callCount = 0
+            lastBookId = null
+            lastDescription = null
         }
     }
 

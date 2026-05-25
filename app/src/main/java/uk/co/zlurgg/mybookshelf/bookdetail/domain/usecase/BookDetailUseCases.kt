@@ -10,6 +10,8 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
  */
 class BookDetailUseCases(
     val getBookDetails: GetBookDetailsUseCase,
+    val getBookDescription: GetBookDescriptionUseCase,
+    val updateBookDescription: UpdateBookDescriptionUseCase,
     val addBookToShelf: AddBookToShelfUseCase,
     val removeBookFromShelf: RemoveBookFromShelfUseCase,
     val upsertBook: UpsertBookUseCase,

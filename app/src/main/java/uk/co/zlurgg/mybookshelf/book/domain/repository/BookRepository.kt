@@ -15,6 +15,15 @@ interface BookRepository {
     suspend fun getBookDescription(bookId: String, provider: BookProvider): Result<String?, DataError.Remote>
 
     /**
+     * Persists a fetched book description via a targeted column UPDATE.
+     *
+     * Does NOT use `upsertBook` — that would write the entire row and clobber
+     * any concurrent personal-metadata writes (notes/rating/status) the user
+     * may have queued while the network fetch was in flight.
+     */
+    suspend fun updateDescription(bookId: String, description: String?): Result<Unit, DataError.Local>
+
+    /**
      * Upserts a system book (e.g., tutorial book) with SystemOwnerIds.TUTORIAL as owner.
      * System books are visible to all users and not synced to cloud.
      */
