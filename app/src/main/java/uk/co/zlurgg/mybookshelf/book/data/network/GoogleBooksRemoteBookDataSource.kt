@@ -17,7 +17,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
 
 class GoogleBooksRemoteBookDataSource(
     private val apiService: GoogleBooksBookApi,
-    private val systemLanguageProvider: SystemLanguageProvider
+    private val systemLanguageProvider: SystemLanguageProvider,
+    // Injection seam for tests. Production wires the BuildConfig-backed value.
+    private val apiKeyProvider: () -> String = { ApiConfig.GoogleBooks.apiKey },
 ) : RemoteBookDataSource {
 
     override suspend fun searchBooks(
@@ -29,7 +31,7 @@ class GoogleBooksRemoteBookDataSource(
         subjectFilter: String?,
         sort: String?
     ): Result<BookSearchResponse, DataError.Remote> {
-        val apiKey = ApiConfig.GoogleBooks.apiKey
+        val apiKey = apiKeyProvider()
         if (apiKey.isBlank()) {
             Timber.tag(TAG).e("Google Books API key is not configured")
             return Result.Error(DataError.Remote.PROVIDER_UNAVAILABLE)

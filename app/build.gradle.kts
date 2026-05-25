@@ -135,6 +135,7 @@ dependencies {
     testImplementation(libs.androidx.test.core.ktx)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.arch.core.testing)
+    testImplementation(libs.ktor.client.mock)
     
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
