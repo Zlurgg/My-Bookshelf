@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7b68dc88761963d351a1a6c99b919414",
+    "identityHash": "90556de52b0e4ef8f87068fb6b881921",
     "entities": [
       {
         "tableName": "BookEntity",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT, `imageUrl` TEXT NOT NULL, `languages` TEXT NOT NULL, `authors` TEXT NOT NULL, `firstPublishYear` TEXT, `ratingsAverage` REAL, `ratingsCount` INTEGER, `numPagesMedian` INTEGER, `numEditions` INTEGER NOT NULL, `purchased` INTEGER NOT NULL, `spineColor` INTEGER NOT NULL, `readingStatus` TEXT NOT NULL, `personalRating` REAL NOT NULL, `personalNotes` TEXT NOT NULL, `dateAdded` INTEGER, `purchaseDate` INTEGER, `isbn` TEXT, `publisher` TEXT, `publishDate` TEXT, `internetArchiveId` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `subtitle` TEXT, `description` TEXT, `imageUrl` TEXT NOT NULL, `languages` TEXT NOT NULL, `authors` TEXT NOT NULL, `firstPublishYear` TEXT, `numPagesMedian` INTEGER, `purchased` INTEGER NOT NULL, `spineColor` INTEGER NOT NULL, `provider` TEXT NOT NULL, `readingStatus` TEXT NOT NULL, `personalRating` REAL NOT NULL, `personalNotes` TEXT NOT NULL, `dateAdded` INTEGER, `purchaseDate` INTEGER, `isbn` TEXT, `publisher` TEXT, `publishDate` TEXT, `subjects` TEXT NOT NULL, `previewLink` TEXT, `infoLink` TEXT, `maturityRating` TEXT NOT NULL, `printType` TEXT NOT NULL, `searchSnippet` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -19,6 +19,11 @@
             "columnName": "title",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "subtitle",
+            "columnName": "subtitle",
+            "affinity": "TEXT"
           },
           {
             "fieldPath": "description",
@@ -49,25 +54,9 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "ratingsAverage",
-            "columnName": "ratingsAverage",
-            "affinity": "REAL"
-          },
-          {
-            "fieldPath": "ratingsCount",
-            "columnName": "ratingsCount",
-            "affinity": "INTEGER"
-          },
-          {
             "fieldPath": "numPagesMedian",
             "columnName": "numPagesMedian",
             "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "numEditions",
-            "columnName": "numEditions",
-            "affinity": "INTEGER",
-            "notNull": true
           },
           {
             "fieldPath": "purchased",
@@ -79,6 +68,12 @@
             "fieldPath": "spineColor",
             "columnName": "spineColor",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "provider",
+            "columnName": "provider",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -125,8 +120,36 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "internetArchiveId",
-            "columnName": "internetArchiveId",
+            "fieldPath": "subjects",
+            "columnName": "subjects",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previewLink",
+            "columnName": "previewLink",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "infoLink",
+            "columnName": "infoLink",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "maturityRating",
+            "columnName": "maturityRating",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "printType",
+            "columnName": "printType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "searchSnippet",
+            "columnName": "searchSnippet",
             "affinity": "TEXT"
           }
         ],
@@ -213,7 +236,7 @@
       },
       {
         "tableName": "BookshelfBookCrossRef",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`shelfId` TEXT NOT NULL, `bookId` TEXT NOT NULL, `addedAt` INTEGER NOT NULL, PRIMARY KEY(`shelfId`, `bookId`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`shelfId` TEXT NOT NULL, `bookId` TEXT NOT NULL, `addedAt` INTEGER NOT NULL, `addedByUserId` TEXT, PRIMARY KEY(`shelfId`, `bookId`))",
         "fields": [
           {
             "fieldPath": "shelfId",
@@ -232,6 +255,11 @@
             "columnName": "addedAt",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "addedByUserId",
+            "columnName": "addedByUserId",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -244,7 +272,7 @@
       },
       {
         "tableName": "book_club_memberships",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `clubCode` TEXT NOT NULL, `localShelfId` TEXT NOT NULL, `joinedAt` INTEGER NOT NULL, `lastSyncedAt` INTEGER NOT NULL, `syncStatus` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `clubCode` TEXT NOT NULL, `localShelfId` TEXT NOT NULL, `joinedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -268,18 +296,6 @@
             "fieldPath": "joinedAt",
             "columnName": "joinedAt",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "lastSyncedAt",
-            "columnName": "lastSyncedAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "syncStatus",
-            "columnName": "syncStatus",
-            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -313,7 +329,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7b68dc88761963d351a1a6c99b919414')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '90556de52b0e4ef8f87068fb6b881921')"
     ]
   }
 }

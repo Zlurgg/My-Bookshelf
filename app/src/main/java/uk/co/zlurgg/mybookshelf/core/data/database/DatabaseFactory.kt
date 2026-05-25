@@ -15,7 +15,7 @@ class DatabaseFactory(
             MyBookshelfRoomDatabase::class.java,
             dbFile.absolutePath,
         )
-            .fallbackToDestructiveMigration(dropAllTables = true)
+            // No destructive fallback. Every schema bump must register a Migration(N, N+1) here.
             .build()
     }
 }
