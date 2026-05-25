@@ -3,8 +3,8 @@ package uk.co.zlurgg.mybookshelf.book.data.network
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.data.dto.google.GoogleBookItemDto
 import uk.co.zlurgg.mybookshelf.book.data.dto.google.GoogleBooksSearchResponseDto
-import uk.co.zlurgg.mybookshelf.book.data.mappers.stripHtml
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
+import uk.co.zlurgg.mybookshelf.book.data.mappers.toDescription
 import uk.co.zlurgg.mybookshelf.book.data.network.api.GoogleBooksBookApi
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
@@ -63,7 +63,7 @@ class GoogleBooksRemoteBookDataSource(
     ): Result<String?, DataError.Remote> {
         return ErrorMapper.httpNetworkCall<GoogleBookItemDto> {
             apiService.getBookDetails(bookId)
-        }.map { stripHtml(it.volumeInfo?.description) }
+        }.map { it.toDescription() }
     }
 
     private fun buildQuery(

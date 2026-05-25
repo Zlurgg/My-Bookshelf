@@ -23,7 +23,7 @@ fun GoogleBookItemDto.toBook(): Book {
         subtitle = volumeInfo?.subtitle,
         authors = volumeInfo?.authors ?: emptyList(),
         imageUrl = imageUrl,
-        description = stripHtml(volumeInfo?.description),
+        description = this.toDescription(),
         languages = listOfNotNull(volumeInfo?.language),
         firstPublishYear = volumeInfo?.publishedDate?.take(YEAR_LENGTH),
         numPages = volumeInfo?.pageCount,
@@ -43,6 +43,17 @@ fun GoogleBookItemDto.toBook(): Book {
     )
 }
 
+/**
+ * Single owner of "Google → domain description" mapping.
+ *
+ * Used by both [toBook] (search-result mapping path) and the
+ * `getBookDescription` flow on `GoogleBooksRemoteBookDataSource` (detail-fetch
+ * path). Keeps HTML stripping in one place so behavioural changes (e.g. entity
+ * handling) land everywhere at once.
+ */
+internal fun GoogleBookItemDto.toDescription(): String? =
+    stripHtml(this.volumeInfo?.description)
+
 private const val YEAR_LENGTH = 4
 private const val HTTPS_PREFIX = "https://"
 
@@ -51,7 +62,8 @@ private const val HTTPS_PREFIX = "https://"
  * Google returns descriptions with HTML formatting (<b>, <i>, <br>, &amp;, etc.).
  * We strip to plain text at the data layer to keep the domain model clean.
  *
- * Internal visibility: used by both GoogleBookMappers and GoogleBooksRemoteBookDataSource.
+ * Internal visibility: used by both GoogleBookMappers (search-snippet) and the
+ * shared [toDescription] mapper.
  */
 internal fun stripHtml(html: String?): String? {
     if (html == null) return null
