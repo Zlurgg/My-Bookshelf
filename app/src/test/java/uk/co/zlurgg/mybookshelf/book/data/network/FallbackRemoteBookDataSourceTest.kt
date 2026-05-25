@@ -10,6 +10,18 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
+/**
+ * Tests for the production [FallbackRemoteBookDataSource] class.
+ *
+ * Fallback semantics under test (narrow): the fallback fires only on errors that
+ * indicate Google Books is unavailable to *us specifically* — quota
+ * ([DataError.Remote.TOO_MANY_REQUESTS]), auth/restriction ([DataError.Remote.FORBIDDEN])
+ * and explicit provider-unavailability ([DataError.Remote.PROVIDER_UNAVAILABLE], emitted
+ * by the blank-API-key short-circuit). Transport errors that affect both providers
+ * equally ([DataError.Remote.NO_INTERNET], [DataError.Remote.SERVER_ERROR],
+ * [DataError.Remote.REQUEST_TIMEOUT]) surface as-is — falling back would waste a request
+ * and mask the real failure.
+ */
 class FallbackRemoteBookDataSourceTest {
 
     private val primaryResults = BookSearchResponse(
@@ -25,7 +37,7 @@ class FallbackRemoteBookDataSourceTest {
     fun `searchBooks returns primary results on success`() = runTest {
         val primary = StubRemoteBookDataSource(searchResult = Result.Success(primaryResults))
         val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
-        val sut = createFallbackDataSource(primary, fallback)
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
 
         val result = sut.searchBooks("test")
 
@@ -36,10 +48,124 @@ class FallbackRemoteBookDataSourceTest {
     }
 
     @Test
+    fun `searchBooks falls back on TOO_MANY_REQUESTS`() = runTest {
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.TOO_MANY_REQUESTS)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Success)
+        assertEquals("ol-1", (result as Result.Success).data.books[0].id)
+        assertEquals(1, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks falls back on FORBIDDEN`() = runTest {
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.FORBIDDEN)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Success)
+        assertEquals("ol-1", (result as Result.Success).data.books[0].id)
+        assertEquals(1, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks falls back on PROVIDER_UNAVAILABLE`() = runTest {
+        // PROVIDER_UNAVAILABLE is emitted by GoogleBooksRemoteBookDataSource when the
+        // API key is missing/blank. Per the graceful-degradation design, OL takes over.
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.PROVIDER_UNAVAILABLE)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Success)
+        assertEquals("ol-1", (result as Result.Success).data.books[0].id)
+        assertEquals(1, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks does NOT fall back on SERVER_ERROR`() = runTest {
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.SERVER_ERROR)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Error)
+        assertEquals(DataError.Remote.SERVER_ERROR, (result as Result.Error).error)
+        assertEquals(0, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks does NOT fall back on NO_INTERNET`() = runTest {
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.NO_INTERNET)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Error)
+        assertEquals(DataError.Remote.NO_INTERNET, (result as Result.Error).error)
+        assertEquals(0, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks does NOT fall back on REQUEST_TIMEOUT`() = runTest {
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.REQUEST_TIMEOUT)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Error)
+        assertEquals(DataError.Remote.REQUEST_TIMEOUT, (result as Result.Error).error)
+        assertEquals(0, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks surfaces fallback error when fallback also fails`() = runTest {
+        // Today's behavior: fallback's error surfaces (not the primary's). Pinned by test
+        // so a future change is a conscious decision, not a silent regression.
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.TOO_MANY_REQUESTS)
+        )
+        val fallback = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.SERVER_ERROR)
+        )
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Error)
+        assertEquals(DataError.Remote.SERVER_ERROR, (result as Result.Error).error)
+    }
+
+    @Test
     fun `getBookDescription routes Google Books provider to primary`() = runTest {
-        val primary = StubRemoteBookDataSource(descriptionResult = Result.Success("Google description"))
-        val fallback = StubRemoteBookDataSource(descriptionResult = Result.Success("OL description"))
-        val sut = createFallbackDataSource(primary, fallback)
+        val primary = StubRemoteBookDataSource(
+            descriptionResult = Result.Success("Google description")
+        )
+        val fallback = StubRemoteBookDataSource(
+            descriptionResult = Result.Success("OL description")
+        )
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
 
         val result = sut.getBookDescription("book-1", BookProvider.GOOGLE_BOOKS)
 
@@ -51,9 +177,13 @@ class FallbackRemoteBookDataSourceTest {
 
     @Test
     fun `getBookDescription routes OpenLibrary provider to fallback`() = runTest {
-        val primary = StubRemoteBookDataSource(descriptionResult = Result.Success("Google description"))
-        val fallback = StubRemoteBookDataSource(descriptionResult = Result.Success("OL description"))
-        val sut = createFallbackDataSource(primary, fallback)
+        val primary = StubRemoteBookDataSource(
+            descriptionResult = Result.Success("Google description")
+        )
+        val fallback = StubRemoteBookDataSource(
+            descriptionResult = Result.Success("OL description")
+        )
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
 
         val result = sut.getBookDescription("book-1", BookProvider.OPEN_LIBRARY)
 
@@ -64,74 +194,24 @@ class FallbackRemoteBookDataSourceTest {
     }
 
     @Test
-    fun `searchBooks falls back on TOO_MANY_REQUESTS`() = runTest {
-        val primary = StubRemoteBookDataSource(searchResult = Result.Error(DataError.Remote.TOO_MANY_REQUESTS))
-        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
-        val sut = createFallbackDataSource(primary, fallback)
+    fun `getBookDescription does NOT fall through providers on primary failure`() = runTest {
+        // Description fetch routes by provider only — it does not retry on the other source.
+        val primary = StubRemoteBookDataSource(
+            descriptionResult = Result.Error(DataError.Remote.TOO_MANY_REQUESTS)
+        )
+        val fallback = StubRemoteBookDataSource(
+            descriptionResult = Result.Success("OL description")
+        )
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
 
-        val result = sut.searchBooks("test")
-
-        assertTrue(result is Result.Success)
-        assertEquals("ol-1", (result as Result.Success).data.books[0].id)
-    }
-
-    @Test
-    fun `searchBooks falls back on FORBIDDEN`() = runTest {
-        val primary = StubRemoteBookDataSource(searchResult = Result.Error(DataError.Remote.FORBIDDEN))
-        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
-        val sut = createFallbackDataSource(primary, fallback)
-
-        val result = sut.searchBooks("test")
-
-        assertTrue(result is Result.Success)
-        assertEquals("ol-1", (result as Result.Success).data.books[0].id)
-    }
-
-    @Test
-    fun `searchBooks does NOT fall back on SERVER_ERROR`() = runTest {
-        val primary = StubRemoteBookDataSource(searchResult = Result.Error(DataError.Remote.SERVER_ERROR))
-        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
-        val sut = createFallbackDataSource(primary, fallback)
-
-        val result = sut.searchBooks("test")
+        val result = sut.getBookDescription("book-1", BookProvider.GOOGLE_BOOKS)
 
         assertTrue(result is Result.Error)
-        assertEquals(DataError.Remote.SERVER_ERROR, (result as Result.Error).error)
-        assertEquals(0, fallback.searchCallCount)
-    }
-
-    @Test
-    fun `searchBooks does NOT fall back on NO_INTERNET`() = runTest {
-        val primary = StubRemoteBookDataSource(searchResult = Result.Error(DataError.Remote.NO_INTERNET))
-        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
-        val sut = createFallbackDataSource(primary, fallback)
-
-        val result = sut.searchBooks("test")
-
-        assertTrue(result is Result.Error)
-        assertEquals(DataError.Remote.NO_INTERNET, (result as Result.Error).error)
-    }
-
-    @Test
-    fun `searchBooks does NOT fall back on REQUEST_TIMEOUT`() = runTest {
-        val primary = StubRemoteBookDataSource(searchResult = Result.Error(DataError.Remote.REQUEST_TIMEOUT))
-        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
-        val sut = createFallbackDataSource(primary, fallback)
-
-        val result = sut.searchBooks("test")
-
-        assertTrue(result is Result.Error)
-        assertEquals(DataError.Remote.REQUEST_TIMEOUT, (result as Result.Error).error)
+        assertEquals(DataError.Remote.TOO_MANY_REQUESTS, (result as Result.Error).error)
+        assertEquals(0, fallback.getDescriptionCallCount)
     }
 
     // === Helpers ===
-
-    private fun createFallbackDataSource(
-        primary: StubRemoteBookDataSource,
-        fallback: StubRemoteBookDataSource
-    ): FallbackDataSourceWrapper {
-        return FallbackDataSourceWrapper(primary, fallback)
-    }
 
     private fun createTestBook(id: String, provider: BookProvider) = Book(
         id = id,
@@ -179,66 +259,6 @@ class FallbackRemoteBookDataSourceTest {
         ): Result<String?, DataError.Remote> {
             getDescriptionCallCount++
             return descriptionResult
-        }
-    }
-
-    /**
-     * Wraps the fallback logic using stub data sources instead of concrete Google/OL classes.
-     * This tests the routing logic without requiring Ktor HTTP clients.
-     */
-    class FallbackDataSourceWrapper(
-        private val primary: StubRemoteBookDataSource,
-        private val fallback: StubRemoteBookDataSource,
-    ) : RemoteBookDataSource {
-
-        override suspend fun searchBooks(
-            query: String,
-            resultLimit: Int?,
-            language: String?,
-            authorFilter: String?,
-            titleFilter: String?,
-            subjectFilter: String?,
-            sort: String?
-        ): Result<BookSearchResponse, DataError.Remote> {
-            val result = primary.searchBooks(
-                query = query,
-                resultLimit = resultLimit,
-                language = language,
-                authorFilter = authorFilter,
-                titleFilter = titleFilter,
-                subjectFilter = subjectFilter,
-                sort = sort,
-            )
-
-            return when {
-                result is Result.Error && shouldFallback(result.error) -> {
-                    fallback.searchBooks(
-                        query = query,
-                        resultLimit = resultLimit,
-                        language = language,
-                        authorFilter = authorFilter,
-                        titleFilter = titleFilter,
-                        subjectFilter = subjectFilter,
-                        sort = sort,
-                    )
-                }
-                else -> result
-            }
-        }
-
-        override suspend fun getBookDescription(
-            bookId: String,
-            provider: BookProvider
-        ): Result<String?, DataError.Remote> {
-            return when (provider) {
-                BookProvider.GOOGLE_BOOKS -> primary.getBookDescription(bookId, provider)
-                BookProvider.OPEN_LIBRARY -> fallback.getBookDescription(bookId, provider)
-            }
-        }
-
-        private fun shouldFallback(error: DataError.Remote): Boolean {
-            return error == DataError.Remote.TOO_MANY_REQUESTS ||
-                error == DataError.Remote.FORBIDDEN
         }
     }
 }

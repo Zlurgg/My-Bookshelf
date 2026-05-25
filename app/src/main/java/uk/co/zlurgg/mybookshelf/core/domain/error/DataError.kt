@@ -12,6 +12,7 @@ sealed interface DataError : Error {
         NOT_FOUND,
         SERIALIZATION,
         MALFORMED_REQUEST,
+        PROVIDER_UNAVAILABLE,
         UNKNOWN
     }
 

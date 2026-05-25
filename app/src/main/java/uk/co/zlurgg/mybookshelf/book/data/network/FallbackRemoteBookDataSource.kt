@@ -7,8 +7,8 @@ import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 class FallbackRemoteBookDataSource(
-    private val primary: GoogleBooksRemoteBookDataSource,
-    private val fallback: OpenLibraryRemoteBookDataSource,
+    private val primary: RemoteBookDataSource,
+    private val fallback: RemoteBookDataSource,
 ) : RemoteBookDataSource {
 
     override suspend fun searchBooks(
@@ -62,7 +62,8 @@ class FallbackRemoteBookDataSource(
 
     private fun shouldFallback(error: DataError.Remote): Boolean {
         return error == DataError.Remote.TOO_MANY_REQUESTS ||
-            error == DataError.Remote.FORBIDDEN
+            error == DataError.Remote.FORBIDDEN ||
+            error == DataError.Remote.PROVIDER_UNAVAILABLE
     }
 
     companion object {

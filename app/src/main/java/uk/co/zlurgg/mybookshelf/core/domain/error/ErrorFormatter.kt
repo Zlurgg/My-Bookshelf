@@ -38,6 +38,7 @@ object ErrorFormatter {
         DataError.Remote.NOT_FOUND -> "Requested resource not found."
         DataError.Remote.SERIALIZATION -> "Data format error."
         DataError.Remote.MALFORMED_REQUEST -> "Invalid request format."
+        DataError.Remote.PROVIDER_UNAVAILABLE -> "Search provider is unavailable."
         DataError.Remote.UNKNOWN -> "Unknown network error occurred."
     }
 

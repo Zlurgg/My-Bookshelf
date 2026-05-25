@@ -31,8 +31,8 @@ class GoogleBooksRemoteBookDataSource(
     ): Result<BookSearchResponse, DataError.Remote> {
         val apiKey = ApiConfig.GoogleBooks.apiKey
         if (apiKey.isBlank()) {
-            Timber.tag(TAG).w("Google Books API key is not configured, returning FORBIDDEN")
-            return Result.Error(DataError.Remote.FORBIDDEN)
+            Timber.tag(TAG).e("Google Books API key is not configured")
+            return Result.Error(DataError.Remote.PROVIDER_UNAVAILABLE)
         }
 
         val finalQuery = buildQuery(query, authorFilter, titleFilter, subjectFilter)
