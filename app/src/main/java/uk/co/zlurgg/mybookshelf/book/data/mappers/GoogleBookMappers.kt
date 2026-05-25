@@ -10,7 +10,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.PrintType
 fun GoogleBookItemDto.toBook(): Book {
     val volumeInfo = this.volumeInfo
     val isbn = volumeInfo?.industryIdentifiers
-        ?.firstOrNull { it.type == "ISBN_13" }?.identifier
+        ?.firstOrNull { it.type == ISBN_13_TYPE }?.identifier
         ?: volumeInfo?.industryIdentifiers?.firstOrNull()?.identifier
 
     // Google serves HTTP URLs — force HTTPS
@@ -25,7 +25,10 @@ fun GoogleBookItemDto.toBook(): Book {
         imageUrl = imageUrl,
         description = this.toDescription(),
         languages = listOfNotNull(volumeInfo?.language),
-        firstPublishYear = volumeInfo?.publishedDate?.take(YEAR_LENGTH),
+        // Google returns ISO dates ("2010", "2010-05", "2010-05-15") but also
+        // historical/uncertain forms ("c. 2010", "19??", "2010s"). Extract the
+        // first run of four digits so garbage like "c. 2" never reaches storage.
+        firstPublishYear = volumeInfo?.publishedDate?.let { YEAR_REGEX.find(it)?.value },
         numPages = volumeInfo?.pageCount,
         purchased = false,
         spineColor = 0,
@@ -54,8 +57,9 @@ fun GoogleBookItemDto.toBook(): Book {
 internal fun GoogleBookItemDto.toDescription(): String? =
     stripHtml(this.volumeInfo?.description)
 
-private const val YEAR_LENGTH = 4
+private const val ISBN_13_TYPE = "ISBN_13"
 private const val HTTPS_PREFIX = "https://"
+private val YEAR_REGEX = Regex("\\d{4}")
 
 /**
  * Strips HTML tags and decodes entities from Google Books descriptions.

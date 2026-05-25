@@ -6,7 +6,7 @@ enum class PrintType {
     UNKNOWN;
 
     companion object {
-        fun fromApiValue(value: String?): PrintType = when (value) {
+        fun fromApiValue(value: String?): PrintType = when (value?.uppercase()) {
             "BOOK" -> BOOK
             "MAGAZINE" -> MAGAZINE
             else -> UNKNOWN

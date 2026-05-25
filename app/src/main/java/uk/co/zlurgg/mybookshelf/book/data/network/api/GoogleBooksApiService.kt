@@ -24,7 +24,7 @@ class GoogleBooksApiService(
             header(GOOGLE_API_KEY_HEADER, apiKeyProvider())
             parameter("q", query)
             parameter("maxResults", resultLimit ?: ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS)
-            parameter("printType", "books")
+            parameter("printType", ApiConfig.GoogleBooks.DefaultParams.PRINT_TYPE_BOOKS)
             language?.let { parameter("langRestrict", it) }
             sort?.let { parameter("orderBy", it) }
         }

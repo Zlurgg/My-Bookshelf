@@ -6,7 +6,7 @@ enum class MaturityRating {
     UNKNOWN;
 
     companion object {
-        fun fromApiValue(value: String?): MaturityRating = when (value) {
+        fun fromApiValue(value: String?): MaturityRating = when (value?.uppercase()) {
             "NOT_MATURE" -> NOT_MATURE
             "MATURE" -> MATURE
             else -> UNKNOWN

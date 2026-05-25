@@ -66,10 +66,10 @@ class OpenLibraryRemoteBookDataSource(
 
     private fun sanitizeFilterInput(input: String): String = input.trim().replace("\"", "")
 
-    private fun formatFilterField(raw: String, prefix: String? = null): String {
+    private fun formatFilterField(raw: String, prefix: String): String {
         val sanitized = sanitizeFilterInput(raw)
         val quoted = if (sanitized.contains(" ")) "\"$sanitized\"" else sanitized
-        return if (prefix != null) "$prefix:$quoted" else quoted
+        return "$prefix:$quoted"
     }
 
     private fun buildQuery(

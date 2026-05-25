@@ -65,6 +65,7 @@ object ApiConfig {
 
         object DefaultParams {
             const val MAX_RESULTS = 40
+            const val PRINT_TYPE_BOOKS = "books"
         }
     }
 

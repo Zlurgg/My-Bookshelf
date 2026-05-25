@@ -136,13 +136,16 @@ fun BookSearchDialog(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "No books found for \"${state.query}\"",
+                                text = stringResource(
+                                    R.string.search_no_results_found,
+                                    state.query
+                                ),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Try different keywords or check your spelling",
+                                text = stringResource(R.string.search_no_results_suggestion),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
