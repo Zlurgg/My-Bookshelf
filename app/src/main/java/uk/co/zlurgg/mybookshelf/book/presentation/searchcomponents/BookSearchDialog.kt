@@ -61,7 +61,7 @@ fun BookSearchDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 2.dp, bottom = 4.dp)
+                    .padding(top = 2.dp)
             ) {
                 BookSearchBar(
                     searchQuery = state.query,
@@ -121,7 +121,24 @@ fun BookSearchDialog(
                             text = it,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            modifier = Modifier.padding(
+                                horizontal = 16.dp,
+                                vertical = 2.dp
+                            )
+                        )
+                    }
+                    // Google Books TOS attribution — shown alongside the result
+                    // count so it's visible without scrolling to the end of the list.
+                    if (showGoogleAttribution && state.results.isNotEmpty()) {
+                        Text(
+                            text = stringResource(R.string.powered_by_google),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 6.dp
+                            )
                         )
                     }
                 }
@@ -224,21 +241,6 @@ fun BookSearchDialog(
                                         }
                                     }
                                     trailingContent(book, isExisting)
-                                }
-                            }
-
-                            // Google Books TOS attribution
-                            if (showGoogleAttribution) {
-                                item {
-                                    Text(
-                                        text = stringResource(R.string.powered_by_google),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(
-                                            horizontal = 16.dp,
-                                            vertical = 8.dp
-                                        )
-                                    )
                                 }
                             }
                         }

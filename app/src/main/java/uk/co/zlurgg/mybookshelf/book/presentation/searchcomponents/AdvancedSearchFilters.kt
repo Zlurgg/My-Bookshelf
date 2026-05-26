@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
@@ -77,7 +78,11 @@ fun SearchFilters(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(32.dp),
+                .height(32.dp)
+                // Align the row with the visible left edge of the checkboxes in
+                // row 1. Material 3 Checkbox centers its glyph within a 40dp
+                // touch surface, so the visible glyph starts ~12dp from the row.
+                .padding(start = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
