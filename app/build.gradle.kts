@@ -1,5 +1,33 @@
 import java.util.Properties
 import java.io.FileInputStream
+import java.io.ByteArrayOutputStream
+
+/**
+ * Attempts to detect the host machine's LAN IP so a physical device on the same
+ * Wi-Fi can reach the Firebase emulators. Returns null if detection fails or
+ * yields a loopback/link-local address — caller falls back to the emulator host.
+ */
+fun detectLanIp(): String? {
+    val os = System.getProperty("os.name").lowercase()
+    val command = when {
+        os.contains("mac") -> listOf("ipconfig", "getifaddr", "en0")
+        os.contains("linux") -> listOf("sh", "-c", "hostname -I | awk '{print \$1}'")
+        else -> return null
+    }
+    return runCatching {
+        val process = ProcessBuilder(command).redirectErrorStream(true).start()
+        val output = ByteArrayOutputStream().use { buf ->
+            process.inputStream.copyTo(buf)
+            buf.toString(Charsets.UTF_8).trim()
+        }
+        process.waitFor()
+        output.takeIf {
+            it.matches(Regex("""\d+\.\d+\.\d+\.\d+""")) &&
+                !it.startsWith("127.") &&
+                !it.startsWith("169.254.")
+        }
+    }.getOrNull()
+}
 
 plugins {
     alias(libs.plugins.android.application)
@@ -51,10 +79,24 @@ android {
 
     buildTypes {
         debug {
-            // Firebase emulator host - defaults to Android Emulator's localhost alias
-            // Override in local.properties: firebase.emulator.host=192.168.1.x
-            val emulatorHost = localProperties.getProperty("firebase.emulator.host", "10.0.2.2")
+            // Firebase emulator hosts — two values so a single debug APK works on both
+            // the Android Emulator (which routes localhost via 10.0.2.2) and a physical
+            // device on the same LAN (which needs the dev machine's LAN IP).
+            // FirebaseEmulatorConfig picks between them at runtime via Build.FINGERPRINT.
+            //
+            // Override either in local.properties:
+            //   firebase.emulator.host.emulator=10.0.2.2
+            //   firebase.emulator.host.device=192.168.1.x
+            //
+            // If firebase.emulator.host.device is unset, Gradle attempts to auto-detect
+            // the LAN IP via `ipconfig getifaddr en0` (macOS) / `hostname -I` (linux).
+            val emulatorHost = localProperties.getProperty("firebase.emulator.host.emulator")
+                ?: localProperties.getProperty("firebase.emulator.host", "10.0.2.2")
+            val deviceHost = localProperties.getProperty("firebase.emulator.host.device")
+                ?: detectLanIp()
+                ?: emulatorHost
             buildConfigField("String", "FIREBASE_EMULATOR_HOST", "\"$emulatorHost\"")
+            buildConfigField("String", "FIREBASE_EMULATOR_DEVICE_HOST", "\"$deviceHost\"")
             buildConfigField("String", "OPEN_LIBRARY_BASE_URL", "\"https://openlibrary.org\"")
             buildConfigField("long", "HTTP_TIMEOUT_MILLIS", "20000L")
             buildConfigField("String", "SITE_BASE_URL", "\"https://zlurgg.github.io/My-Bookshelf\"")

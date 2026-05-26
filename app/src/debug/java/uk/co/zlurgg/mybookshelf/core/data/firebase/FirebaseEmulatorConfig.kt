@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.core.data.firebase
 
+import android.os.Build
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
@@ -25,12 +26,37 @@ object FirebaseEmulatorConfig {
 
     private const val TAG = "FirebaseEmulator"
 
-    // Configurable via local.properties: firebase.emulator.host=192.168.1.x
-    // Defaults to 10.0.2.2 (Android emulator's localhost alias)
-    private val EMULATOR_HOST = BuildConfig.FIREBASE_EMULATOR_HOST
+    // The same debug APK runs on the Android Emulator (which routes localhost via
+    // 10.0.2.2) and on a physical device (which needs the dev machine's LAN IP).
+    // Both candidates are baked into BuildConfig; we pick at runtime via Build.*.
+    // Override either in local.properties:
+    //   firebase.emulator.host.emulator=10.0.2.2
+    //   firebase.emulator.host.device=192.168.1.x
+    private val EMULATOR_HOST = if (isRunningOnAndroidEmulator()) {
+        BuildConfig.FIREBASE_EMULATOR_HOST
+    } else {
+        BuildConfig.FIREBASE_EMULATOR_DEVICE_HOST
+    }
     private const val FIRESTORE_PORT = 8080
     private const val AUTH_PORT = 9099
     private const val CONNECTION_TIMEOUT_MS = 2000
+
+    private fun isRunningOnAndroidEmulator(): Boolean {
+        val fingerprint = Build.FINGERPRINT.orEmpty()
+        val model = Build.MODEL.orEmpty()
+        val product = Build.PRODUCT.orEmpty()
+        val hardware = Build.HARDWARE.orEmpty()
+        return fingerprint.startsWith("generic") ||
+            fingerprint.startsWith("unknown") ||
+            fingerprint.contains("emulator", ignoreCase = true) ||
+            model.contains("google_sdk") ||
+            model.contains("Emulator") ||
+            model.contains("Android SDK built for") ||
+            product.contains("sdk_gphone") ||
+            product == "google_sdk" ||
+            hardware == "goldfish" ||
+            hardware == "ranchu"
+    }
 
     @Volatile
     private var isConfigured = false
