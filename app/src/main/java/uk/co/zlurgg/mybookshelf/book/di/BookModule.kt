@@ -27,12 +27,15 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCaseImpl
 
 val bookModule = module {
-    // Network — both providers
-    singleOf(::GoogleBooksApiService).bind<GoogleBooksBookApi>()
+    // Network — both providers.
+    // Google classes use explicit `single { … }` (not `singleOf`) because they have an
+    // `apiKeyProvider: () -> String` test seam with a default — `singleOf` ignores
+    // Kotlin defaults and would try to resolve Function0 from the DI graph.
+    single<GoogleBooksBookApi> { GoogleBooksApiService(httpClient = get()) }
     singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
 
     // Data sources — both providers
-    singleOf(::GoogleBooksRemoteBookDataSource)
+    single { GoogleBooksRemoteBookDataSource(apiService = get(), systemLanguageProvider = get()) }
     singleOf(::OpenLibraryRemoteBookDataSource)
 
     // Fallback wrapper as the single RemoteBookDataSource
