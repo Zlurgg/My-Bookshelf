@@ -364,7 +364,11 @@ class BookshelfViewModel(
 
         bookshelfUseCases.searchBooks(
             query = params.general ?: "",
-            resultLimit = 15,
+            // null defers to ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS (40).
+            // The Google Books post-fetch language filter trims roughly half of
+            // those, so a 40-result cap typically yields ~20 visible English
+            // titles — better coverage at the same per-request quota cost.
+            resultLimit = null,
             language = null,
             authorFilter = params.author,
             titleFilter = params.title,

@@ -55,8 +55,15 @@ class GoogleBooksRemoteBookDataSource(
             )
         }.map { dto ->
             Timber.tag(TAG).d("Results: %d total, %d returned", dto.totalItems, dto.items?.size ?: 0)
+            // Google's `langRestrict` is best-effort — it still returns books with
+            // English descriptions but non-English content (e.g. Urdu Harry Potter
+            // translations marked `"language": "ur"`). Filter before mapping so we
+            // don't pay to convert items we'll discard.
             BookSearchResponse(
-                books = dto.items?.map { it.toBook() } ?: emptyList()
+                books = dto.items
+                    ?.filter { it.volumeInfo?.language == ENGLISH_LANGUAGE_CODE }
+                    ?.map { it.toBook() }
+                    ?: emptyList()
             )
         }
     }
@@ -72,6 +79,7 @@ class GoogleBooksRemoteBookDataSource(
 
     companion object {
         private const val TAG = "GoogleBooksSearch"
+        private const val ENGLISH_LANGUAGE_CODE = "en"
 
         private val GOOGLE_BOOKS_PREFIXES = mapOf(
             BookSearchQueryBuilder.FilterField.AUTHOR to "inauthor",

@@ -223,6 +223,21 @@ class GoogleBooksRemoteBookDataSourceTest {
     }
 
     @Test
+    fun `non-English items are filtered out before mapping`() = runTest {
+        // langRestrict is best-effort — items with non-`en` language must be
+        // dropped post-fetch (the cheap defensive filter from the search-
+        // quality plan).
+        val sut = buildDataSource { respondJson(MIXED_LANGUAGE_RESPONSE) }
+
+        val result = sut.searchBooks(query = "harry potter")
+
+        assertTrue(result is Result.Success)
+        val books = (result as Result.Success).data.books
+        assertEquals("Only the en-tagged book survives", 1, books.size)
+        assertEquals("en-book", books[0].id)
+    }
+
+    @Test
     fun `HTTP 429 maps to TOO_MANY_REQUESTS without retry`() = runTest {
         var calls = 0
         val sut = buildDataSource {
@@ -343,6 +358,7 @@ class GoogleBooksRemoteBookDataSourceTest {
                     "authors": ["Joshua Bloch"],
                     "description": "A comprehensive guide to Java.",
                     "publishedDate": "2018",
+                    "language": "en",
                     "imageLinks": {
                       "thumbnail": "http://books.google.com/img/test.jpg"
                     },
@@ -354,6 +370,37 @@ class GoogleBooksRemoteBookDataSourceTest {
                   },
                   "searchInfo": {
                     "textSnippet": "<b>Effective</b> Java best practices"
+                  }
+                }
+              ]
+            }
+        """
+
+        private const val MIXED_LANGUAGE_RESPONSE = """
+            {
+              "totalItems": 3,
+              "items": [
+                {
+                  "id": "en-book",
+                  "volumeInfo": {
+                    "title": "English Book",
+                    "authors": ["English Author"],
+                    "language": "en"
+                  }
+                },
+                {
+                  "id": "ur-book",
+                  "volumeInfo": {
+                    "title": "Urdu Translation",
+                    "authors": ["Some Author"],
+                    "language": "ur"
+                  }
+                },
+                {
+                  "id": "no-lang-book",
+                  "volumeInfo": {
+                    "title": "Missing Language",
+                    "authors": ["Mystery"]
                   }
                 }
               ]
