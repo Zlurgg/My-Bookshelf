@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,6 +45,11 @@ fun BookSearchDialog(
     onDismiss: () -> Unit,
     trailingContent: @Composable (book: Book, isExisting: Boolean) -> Unit
 ) {
+    // Recomputed only when the result set changes; avoids a linear scan on
+    // every recomposition (typing, scroll, focus changes) of the dialog.
+    val showGoogleAttribution = remember(state.results) {
+        state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }
+    }
     AlertDialog(
         onDismissRequest = {
             if (!state.isLoading) onDismiss()
@@ -204,7 +210,7 @@ fun BookSearchDialog(
                             }
 
                             // Google Books TOS attribution
-                            if (state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }) {
+                            if (showGoogleAttribution) {
                                 item {
                                     Text(
                                         text = stringResource(R.string.powered_by_google),
