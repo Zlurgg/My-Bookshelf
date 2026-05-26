@@ -23,9 +23,15 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.book.data.network.api.GoogleBooksApiService
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.core.data.service.AndroidAppAttestation
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.service.SystemLanguageProvider
+
+private val TEST_ATTESTATION = AndroidAppAttestation(
+    packageName = "uk.co.zlurgg.mybookshelf.test",
+    signingCertSha1Hex = "0000000000000000000000000000000000000000",
+)
 
 /**
  * Tests for [GoogleBooksRemoteBookDataSource] via Ktor [MockEngine].
@@ -66,6 +72,7 @@ class GoogleBooksRemoteBookDataSourceTest {
         }
         val apiService = GoogleBooksApiService(
             httpClient = httpClient,
+            attestation = TEST_ATTESTATION,
             apiKeyProvider = { apiKey },
         )
         return GoogleBooksRemoteBookDataSource(

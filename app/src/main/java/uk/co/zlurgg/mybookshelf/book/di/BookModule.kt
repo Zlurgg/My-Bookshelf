@@ -31,7 +31,7 @@ val bookModule = module {
     // Google classes use explicit `single { … }` (not `singleOf`) because they have an
     // `apiKeyProvider: () -> String` test seam with a default — `singleOf` ignores
     // Kotlin defaults and would try to resolve Function0 from the DI graph.
-    single<GoogleBooksBookApi> { GoogleBooksApiService(httpClient = get()) }
+    single<GoogleBooksBookApi> { GoogleBooksApiService(httpClient = get(), attestation = get()) }
     singleOf(::OpenLibraryApiService).bind<OpenLibraryBookApi>()
 
     // Data sources — both providers

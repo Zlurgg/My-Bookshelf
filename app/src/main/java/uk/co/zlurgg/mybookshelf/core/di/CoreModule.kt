@@ -19,6 +19,7 @@ import uk.co.zlurgg.mybookshelf.core.data.network.HttpClientFactory
 import uk.co.zlurgg.mybookshelf.core.data.preferences.SearchPreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.data.preferences.ThemePreferencesImpl
 import uk.co.zlurgg.mybookshelf.core.data.preferences.WelcomePreferencesImpl
+import uk.co.zlurgg.mybookshelf.core.data.service.AndroidAppAttestation
 import uk.co.zlurgg.mybookshelf.core.data.service.AndroidSystemLanguageProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.SystemTimeProvider
 import uk.co.zlurgg.mybookshelf.core.data.service.UuidIdGenerator
@@ -39,6 +40,7 @@ val coreModule = module {
     singleOf(::UuidIdGenerator).bind<IdGenerator>()
     singleOf(::SystemTimeProvider).bind<TimeProvider>()
     singleOf(::AndroidSystemLanguageProvider).bind<SystemLanguageProvider>()
+    single { AndroidAppAttestation.from(get()) }
 
     // Database
     single<DatabaseFactory> { DatabaseFactory(get()) }
