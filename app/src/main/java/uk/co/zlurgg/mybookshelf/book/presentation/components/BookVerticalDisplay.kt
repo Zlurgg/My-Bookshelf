@@ -28,6 +28,7 @@ import uk.co.zlurgg.mybookshelf.book.presentation.util.DefaultSpineShadow
 import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStrip
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
+import uk.co.zlurgg.mybookshelf.book.presentation.util.withSpineImage
 
 @Composable
 fun BookVertical(
@@ -73,7 +74,7 @@ fun BookVertical(
             ) {
                 // Book image integrated into spine (no separate shadow/background)
                 LoadImage(
-                    imageUrl = book.imageUrl,
+                    imageUrl = book.withSpineImage(),
                     title = book.title,
                     modifier = Modifier
                         .size((thickness * 0.8f).dp)

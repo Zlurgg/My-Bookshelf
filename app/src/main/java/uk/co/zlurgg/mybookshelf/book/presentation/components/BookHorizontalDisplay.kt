@@ -28,6 +28,7 @@ import uk.co.zlurgg.mybookshelf.book.presentation.util.DefaultSpineShadow
 import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStripHorizontal
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
+import uk.co.zlurgg.mybookshelf.book.presentation.util.withSpineImage
 
 @Composable
 fun BookHorizontal(
@@ -80,7 +81,7 @@ fun BookHorizontal(
                 )
 
                 LoadImage(
-                    imageUrl = book.imageUrl,
+                    imageUrl = book.withSpineImage(),
                     title = book.title,
                     modifier = Modifier
                         .size((thickness * 0.9f).dp)

@@ -20,3 +20,23 @@ fun Book.withMediumImage(): String = when (provider) {
     BookProvider.GOOGLE_BOOKS ->
         imageUrl.replace("zoom=1", "zoom=3").replace("&edge=curl", "")
 }
+
+/**
+ * Returns a URL suitable for tiny cover renderings embedded inside a spine.
+ *
+ * For Google Books, strips the `&edge=curl` page-curl effect and bumps the
+ * `zoom` parameter so the spine shows the same physical cover scan as the
+ * detail screen. Google sometimes maps low and high `zoom` values to different
+ * cover scans (thumbnail tier vs preview tier), which made the same book look
+ * different between shelf and detail — unifying the zoom level fixes that.
+ * The curl strip is independent: it looks fine on cover-face surfaces (the
+ * search dialog) but reads as a gimmick inside a 3D spine gradient.
+ *
+ * OL URLs have no curl parameter and use size suffixes rather than zoom —
+ * returned unchanged here so spines keep using the `-S` variant for fast
+ * shelf loads; bumping size for spines on OL is a separate decision.
+ */
+fun Book.withSpineImage(): String = when (provider) {
+    BookProvider.OPEN_LIBRARY -> imageUrl
+    BookProvider.GOOGLE_BOOKS -> imageUrl.replace("zoom=1", "zoom=3").replace("&edge=curl", "")
+}

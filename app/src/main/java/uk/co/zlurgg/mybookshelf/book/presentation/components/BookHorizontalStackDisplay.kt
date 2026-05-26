@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
+import uk.co.zlurgg.mybookshelf.book.presentation.util.withSpineImage
 
 @Composable
 fun BookHorizontalStack(
@@ -64,7 +65,7 @@ fun BookHorizontalStack(
                     )
 
                     LoadImage(
-                        imageUrl = book.imageUrl,
+                        imageUrl = book.withSpineImage(),
                         title = book.title,
                         modifier = Modifier
                             .size(20.dp)

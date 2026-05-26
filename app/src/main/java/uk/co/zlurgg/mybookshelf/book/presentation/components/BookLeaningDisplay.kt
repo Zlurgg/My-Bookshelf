@@ -29,6 +29,7 @@ import uk.co.zlurgg.mybookshelf.book.presentation.util.LeaningSpineShadow
 import uk.co.zlurgg.mybookshelf.book.presentation.util.SpineHighlightStrip
 import uk.co.zlurgg.mybookshelf.book.presentation.util.calculateSpineColors
 import uk.co.zlurgg.mybookshelf.book.presentation.util.getBookThickness
+import uk.co.zlurgg.mybookshelf.book.presentation.util.withSpineImage
 
 @Composable
 fun BookLeaning(
@@ -76,7 +77,7 @@ fun BookLeaning(
             ) {
                 // Book image integrated into spine (no separate effects)
                 LoadImage(
-                    imageUrl = book.imageUrl,
+                    imageUrl = book.withSpineImage(),
                     title = book.title,
                     modifier = Modifier
                         .size((thickness * 0.75f).dp)
