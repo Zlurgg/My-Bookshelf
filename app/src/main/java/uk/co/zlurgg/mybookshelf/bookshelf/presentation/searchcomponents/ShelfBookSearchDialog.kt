@@ -1,13 +1,16 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.presentation.preview.sampleBooks
@@ -33,14 +36,16 @@ fun ShelfBookSearchDialog(
                 IconButton(onClick = { callbacks.onRemoveBook(book) }) {
                     Icon(
                         Icons.Default.Delete,
-                        contentDescription = stringResource(id = R.string.action_remove_short)
+                        contentDescription = stringResource(id = R.string.action_remove_short),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             } else {
                 IconButton(onClick = { callbacks.onAddBook(book) }) {
                     Icon(
                         Icons.Default.Add,
-                        contentDescription = stringResource(id = R.string.action_add_short)
+                        contentDescription = stringResource(id = R.string.action_add_short),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

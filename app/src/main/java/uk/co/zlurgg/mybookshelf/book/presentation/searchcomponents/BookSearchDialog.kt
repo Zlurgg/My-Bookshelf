@@ -1,22 +1,25 @@
 package uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -162,51 +165,66 @@ fun BookSearchDialog(
                         LazyColumn(
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            items(state.results) { book ->
+                            itemsIndexed(state.results) { index, book ->
                                 val isExisting = state.existingBookIds.contains(book.id)
-                                ListItem(
-                                    leadingContent = {
+                                val stripeColor = if (index % 2 == 1) {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .background(stripeColor)
+                                        .clickable { onBookClick(book) }
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    if (book.imageUrl.isNotBlank()) {
                                         LoadImage(
                                             imageUrl = book.imageUrl,
                                             title = book.title,
-                                            modifier = Modifier.size(48.dp)
+                                            modifier = Modifier
+                                                .width(56.dp)
+                                                .aspectRatio(2f / 3f)
                                         )
-                                    },
-                                    headlineContent = {
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                    }
+                                    Column(modifier = Modifier.weight(1f)) {
                                         Text(
                                             text = book.title,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurface,
                                             maxLines = 2,
                                             overflow = TextOverflow.Ellipsis
                                         )
-                                    },
-                                    supportingContent = {
-                                        Column {
+                                        Text(
+                                            text = book.authors.joinToString(", "),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        book.firstPublishYear?.let { year ->
                                             Text(
-                                                text = book.authors.joinToString(", "),
-                                                maxLines = 1,
+                                                text = year,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 1
+                                            )
+                                        }
+                                        book.displayDescription()?.let { preview ->
+                                            Text(
+                                                text = preview,
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                maxLines = 2,
                                                 overflow = TextOverflow.Ellipsis
                                             )
-                                            book.firstPublishYear?.let { year ->
-                                                Text(
-                                                    text = year,
-                                                    maxLines = 1
-                                                )
-                                            }
-                                            book.displayDescription()?.let { preview ->
-                                                Text(
-                                                    text = preview,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    maxLines = 2,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                            }
                                         }
-                                    },
-                                    trailingContent = {
-                                        trailingContent(book, isExisting)
-                                    },
-                                    modifier = Modifier.clickable { onBookClick(book) }
-                                )
+                                    }
+                                    trailingContent(book, isExisting)
+                                }
                             }
 
                             // Google Books TOS attribution

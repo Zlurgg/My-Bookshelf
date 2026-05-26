@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.library.presentation.searchcomponents
 
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
@@ -7,7 +8,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchDialog
@@ -45,7 +48,8 @@ fun LibraryBookSearchDialog(
                 IconButton(onClick = { onAddBook(book) }) {
                     Icon(
                         Icons.Default.Add,
-                        contentDescription = stringResource(R.string.library_add_book)
+                        contentDescription = stringResource(R.string.library_add_book),
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
