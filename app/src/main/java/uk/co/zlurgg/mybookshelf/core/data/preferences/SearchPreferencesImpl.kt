@@ -24,7 +24,7 @@ class SearchPreferencesImpl(
         dataStore.data.map { prefs ->
             SearchPreferenceState(
                 searchByTitle = prefs[SEARCH_BY_TITLE_KEY] ?: true,
-                searchByAuthor = prefs[SEARCH_BY_AUTHOR_KEY] ?: true,
+                searchByAuthor = prefs[SEARCH_BY_AUTHOR_KEY] ?: false,
                 searchBySubject = prefs[SEARCH_BY_SUBJECT_KEY] ?: false,
                 safeSearchEnabled = prefs[SAFE_SEARCH_ENABLED_KEY] ?: true
             )

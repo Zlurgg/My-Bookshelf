@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 
 data class SearchPreferenceState(
     val searchByTitle: Boolean = true,
-    val searchByAuthor: Boolean = true,
+    val searchByAuthor: Boolean = false,
     val searchBySubject: Boolean = false,
     val safeSearchEnabled: Boolean = true
 )

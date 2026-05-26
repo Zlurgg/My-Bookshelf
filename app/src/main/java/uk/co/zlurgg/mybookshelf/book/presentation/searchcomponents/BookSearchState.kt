@@ -10,7 +10,7 @@ data class BookSearchState(
     val hasSearched: Boolean = false,
     val existingBookIds: Set<String> = emptySet(),
     val searchByTitle: Boolean = true,
-    val searchByAuthor: Boolean = true,
+    val searchByAuthor: Boolean = false,
     val searchBySubject: Boolean = false,
     val safeSearchEnabled: Boolean = true,
     val filteredCount: Int = 0,

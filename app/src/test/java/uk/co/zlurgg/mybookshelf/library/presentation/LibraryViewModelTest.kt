@@ -28,6 +28,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.library.domain.usecase.DeleteBooksFromLibraryUseCase
 import uk.co.zlurgg.mybookshelf.library.domain.usecase.GetAllLibraryBooksUseCase
@@ -790,6 +791,7 @@ class LibraryViewModelTest {
     fun `toggle title filter retriggers remote search with updated results`() = runTest(testDispatcher) {
         val initialResults = listOf(TestBookBuilder().withId("r1").withTitle("Result 1").build())
         stubSearchBooks.searchResultsToReturn = initialResults
+        stubSearchPreferences.seed(SearchPreferenceState(searchByAuthor = true))
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
@@ -821,6 +823,7 @@ class LibraryViewModelTest {
     fun `toggle author filter retriggers remote search with updated results`() = runTest(testDispatcher) {
         val initialResults = listOf(TestBookBuilder().withId("r1").withTitle("Result 1").build())
         stubSearchBooks.searchResultsToReturn = initialResults
+        stubSearchPreferences.seed(SearchPreferenceState(searchByAuthor = true))
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
@@ -850,6 +853,7 @@ class LibraryViewModelTest {
 
     @Test
     fun `cannot uncheck title filter when author is already unchecked`() = runTest(testDispatcher) {
+        stubSearchPreferences.seed(SearchPreferenceState(searchByAuthor = true))
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
         stateHelper.getCurrentState()
@@ -892,6 +896,7 @@ class LibraryViewModelTest {
 
     @Test
     fun `can toggle filter when both are checked`() = runTest(testDispatcher) {
+        stubSearchPreferences.seed(SearchPreferenceState(searchByAuthor = true))
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
         stateHelper.getCurrentState()

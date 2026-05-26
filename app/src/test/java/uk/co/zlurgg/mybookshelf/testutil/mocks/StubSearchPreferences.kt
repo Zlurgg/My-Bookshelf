@@ -16,6 +16,14 @@ class StubSearchPreferences : SearchPreferences {
         _flow.value = state
     }
 
+    /**
+     * Pre-set the observed prefs state for a test, without recording it as a
+     * persisted update — distinguishes test setup from VM-driven persistence.
+     */
+    fun seed(state: SearchPreferenceState) {
+        _flow.value = state
+    }
+
     fun reset() {
         _flow.value = SearchPreferenceState()
         lastUpdatedState = null

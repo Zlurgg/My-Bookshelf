@@ -25,6 +25,7 @@ import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
+import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestShelfBuilder
@@ -306,6 +307,7 @@ class BookshelfViewModelTest {
     @Test
     fun `cannot uncheck title filter when author is already unchecked`() = runTest(testDispatcher) {
         mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        stubSearchPreferences.seed(SearchPreferenceState(searchByAuthor = true))
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
@@ -352,6 +354,7 @@ class BookshelfViewModelTest {
     @Test
     fun `can toggle filter when both are checked`() = runTest(testDispatcher) {
         mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        stubSearchPreferences.seed(SearchPreferenceState(searchByAuthor = true))
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
@@ -436,6 +439,7 @@ class BookshelfViewModelTest {
     @Test
     fun `cannot uncheck title when author and subject both unchecked`() = runTest(testDispatcher) {
         mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        stubSearchPreferences.seed(SearchPreferenceState(searchByAuthor = true))
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
