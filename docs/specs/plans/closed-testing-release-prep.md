@@ -26,7 +26,24 @@ Read:
 
 (An earlier draft pointed at section 10 of `google-books-api-integration.md` for a Cloud Console restrictions checklist — that section is "Fast-Follows (Post-Merge)" and doesn't cover this. Section 3.1 below is the source of truth.)
 
-(An earlier version of this plan opened with a "Phase 1 — Data safety" section covering Room schema reset and destructive-migration removal. That work has moved to the predecessor as item 1.8 because it's pure code with no ops component. Phases below retain their original numbering so existing references still resolve.)
+(An earlier version of this plan opened with a "Phase 1 — Data safety" section covering Room schema reset and destructive-migration removal. That work has moved to the predecessor as item 1.8 because it's pure code with no ops component. The current Phase 1 below is unrelated — it covers a preventative test added in response to a runtime DI crash. Later phases retain their original numbering so existing references still resolve.)
+
+## Phase 1 — Preventative checks
+
+### 1.1 Koin module `verify()` test
+
+**Why.** On 2026-05-26 the app crashed on cold launch after S5 of the predecessor introduced an `apiKeyProvider: () -> String = { ApiConfig.GoogleBooks.apiKey }` test seam on `GoogleBooksApiService` and `GoogleBooksRemoteBookDataSource`, both wired via `singleOf(::Ctor)` in `BookModule`. Koin's `singleOf` ignores Kotlin default-parameter values and tries to resolve every constructor parameter from the graph — the unregistered `() -> String` blew up at runtime. All 685 unit tests passed (they construct these classes directly, never through Koin); only an actual launch surfaced it. Fix landed in the predecessor by switching to explicit `single { Ctor(...) }` so the Kotlin default applies.
+
+This class of bug — `singleOf` ignoring defaults, a missing `bind`, an unresolved `Function0`/N type, a typo in a constructor parameter — will recur as long as no test exercises the modules end-to-end.
+
+**Fix.** Add a unit test that calls `module.verify()` on every module passed to `startKoin` in `MyBookShelfApp`. Koin's `verify()` walks each definition and confirms every constructor parameter is resolvable from the merged graph; it catches the exact failure mode that caused this crash without needing a device. Likely requires adding `org.koin:koin-test` to `testImplementation` if not already present.
+
+The module list in the test must mirror the `startKoin { modules(...) }` block — add a one-line comment in the test pointing at that as the source of truth so future module additions don't silently skip verification.
+
+**Definition of done.**
+- [ ] Test added under `app/src/test/.../di/`, runs in the standard `./gradlew test` flow, passes.
+- [ ] Verify it would have caught the 2026-05-26 bug: locally revert `BookModule.kt` to `singleOf(::GoogleBooksApiService)` and `singleOf(::GoogleBooksRemoteBookDataSource)`, run the test, confirm it fails citing the unresolved `Function0`. Revert the revert before committing.
+- [ ] The test covers every module currently passed to `startKoin`.
 
 ## Phase 2 — Observability
 
@@ -149,6 +166,7 @@ If 429s spike, item 1.4 of the predecessor plan should have eliminated redundant
 Promotion to closed testing is gated on **all** of the following:
 
 - [ ] Predecessor's item 1.8 (schema reset) has merged on `main`; verified `version = 1` and `fallbackToDestructiveMigration` removed.
+- [ ] 1.1 — Koin module `verify()` test added; passes; covers every module passed to `startKoin`. Confirmed (via local revert experiment) it would have caught the 2026-05-26 startup crash.
 - [ ] 2.1 — Crashlytics integrated end-to-end (plugin, dep, release Firebase project, `google-services.json`, `CrashlyticsTree`). Required: 1.5 lands as graceful-degradation, so the `PROVIDER_UNAVAILABLE` log is the only signal a blank/revoked key is in production. Also captures Compose runtime crashes, Room failures, Firebase auth issues, and anything else release-build testers hit.
 - [ ] 2.2 — `previewLink` / `infoLink` mapper coercion + launch-site allowlist verified present (work owned by predecessor's 1.7).
 - [ ] 3.1 — Books API key restricted by Android app + release SHA-1 + bundle ID, restricted to Books API only. Debug-key 403 trap addressed (either debug SHA-1 added to same key or separate debug key wired).
