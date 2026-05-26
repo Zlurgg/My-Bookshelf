@@ -1,10 +1,28 @@
 # Google Books Integration — Review Remediation Plan
 
-**Status:** Pending — follow-up from code review of `spike-test-google-books`
+**Status:** ✅ Delivered on `spike-test-google-books` across sessions S1–S6 (2026-05-26). All Phase 1–4 items landed; see DoD checklist at the foot of this doc and `git log spike-test-google-books` for per-commit delivery. Retained as historical reference for the *why* behind each decision below.
 **Branch:** `spike-test-google-books`
-**Source:** Code review against `main` (2026-05-25)
-**Scope:** Code-quality remediation only. Release-engineering concerns (Room schema reset, Crashlytics wiring, Cloud Console key restrictions, release smoke tests) are covered separately in `closed-testing-release-prep.md`, which runs **after** this plan is merged.
+**Source:** Code review against `main` (2026-05-25); delivery confirmed 2026-05-26
+**Scope:** Code-quality remediation only. Release-engineering concerns (Crashlytics wiring, Cloud Console key restrictions, release smoke tests) are covered separately in `closed-testing-release-prep.md`, which runs **after** this plan is merged.
 **Related plans:** `google-books-api-integration.md`, `google-books-search-quality.md`, `closed-testing-release-prep.md`
+
+## Delivery summary (added post-delivery)
+
+Sessions S1–S6 each took a logical slice of this plan:
+
+- **S1** — Phase 1.1 (DIP), 1.2 (real test), 1.5 (PROVIDER_UNAVAILABLE) (`68c6c617` later fixed the Koin singleOf default-param trap from this seam, also captured in `closed-testing-release-prep.md` 1.1)
+- **S2** — Phase 1.6 (key→header + `redactSensitiveValues`), 1.7 (HTTPS coerce + `openExternalUrl` allowlist)
+- **S3** — Phase 1.4 (description-fetch end-to-end refactor: `BookshelfDao.updateDescription` + `BookRepository.updateDescription` + `GetBookDescriptionUseCase` + `UpdateBookDescriptionUseCase`), Phase 2.9 (`loadBookDetails` thin orchestrator)
+- **S4** — Phase 1.3 (image audit: `withSmallImage`/`withLargeImage` deleted, `withMediumImage` switched to `zoom=3`), Phase 1.8 (Room v1 reset), Phase 2.6 (`searchSnippet` separate field)
+- **S5** — Phase 2.1 (Google data-source test with MockEngine), 2.2 (OL data-source test), 2.3 (BookProvider imports), 2.4 (delete BookOverviewCard), 2.5 (drop unused `totalResults`), 2.7 (KDoc), 2.8 (consolidate HTML stripping via `GoogleBookItemDto.toDescription()`)
+- **S6** — Phase 3.1 (`BookSearchQueryBuilder` extraction), 3.2 (OL signature), 3.3 (`PRINT_TYPE_BOOKS` / `ISBN_13_TYPE`), 3.4 (MAX_RESULTS = 40), 3.5 (strings.xml), 3.6 (year regex), 3.7 (case-insensitive enums), 4.1 (memoize provider check)
+
+Notable deviations from the plan as written:
+
+- **1.5 — `PROVIDER_UNAVAILABLE` shape.** Plan suggested `data object PROVIDER_UNAVAILABLE : Remote`; reality is an enum entry because `DataError.Remote` is an enum class. Semantically identical.
+- **1.6 — `apiKeyProvider` injection seam.** S5 added a `() -> String` default-param test seam on `GoogleBooksApiService` and `GoogleBooksRemoteBookDataSource` to make the blank-key path reachable. This later triggered the Koin `singleOf` default-param crash, fixed by switching the two registrations to explicit `single { Ctor(arg = get()) }` (`68c6c617`). `closed-testing-release-prep.md` Phase 1.1 captures the preventative Koin `verify()` test so the next instance of this class of bug fails in CI rather than on a device.
+- **3.4 — MAX_RESULTS reconciliation.** Plan said "either update integration plan to 40 or update code to 15"; chose the former. The 40 cap (Google's per-page hard max) is now reflected in `ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS` and unblocked the related `google-books-search-quality.md` item 1 (ViewModel was capping at 15).
+- **Post-delivery UX polish during on-device testing.** Layout fixes that weren't in this plan but landed on-branch: search dialog row redesign (portrait cover + zebra stripe + conditional image slot), spine page-curl strip + zoom parity (`withSpineImage`), attribution moved to top of dialog, safe-search row alignment, default search filter switched to title-only, blank-title results filtered. These are captured as appropriate in `google-books-search-quality.md` (items 4, 5) and as observed deltas in `google-books-api-integration.md`.
 
 ## Purpose
 
@@ -490,30 +508,30 @@ A merge-ready branch satisfies all Phase 1 items, all Phase 2 items, and as many
 "Merge-ready" here means the branch can land on `main` cleanly — it does **not** mean "ready for closed testing." The latter is gated by `closed-testing-release-prep.md`.
 
 Specifically:
-- [ ] `FallbackRemoteBookDataSource` depends only on `RemoteBookDataSource` (1.1)
-- [ ] `FallbackRemoteBookDataSourceTest` instantiates the production class (no wrapper) (1.2)
-- [ ] Fallback semantics decision recorded (narrow vs broad) and prod + tests agree (1.2)
-- [ ] `withSmallImage` / `withLargeImage` deleted; `withMediumImage` audited and confirmed to produce a meaningfully different image (or switched to `smallThumbnail`) (1.3)
-- [ ] Description fetch no longer fires when `book.description` is already populated (1.4b)
-- [ ] Description fetch persists via targeted `BookshelfDao.updateDescription` + `BookRepository.updateDescription` (NOT `upsertBook`) (1.4)
-- [ ] `loadBookDescription` is split into its own use case (`GetBookDescriptionUseCase`) (1.4)
-- [ ] `BookDetailViewModel.loadBookDetails` merges the description into state without re-querying the DB (1.4d)
-- [ ] `updateDescription` DAO test verifies targeted UPDATE does not clobber personal metadata (1.4)
-- [ ] Blank-API-key path short-circuits with the new `DataError.Remote.PROVIDER_UNAVAILABLE` variant; `shouldFallback` includes it; `Timber.e` log emitted at the short-circuit site (1.5)
-- [ ] Google Books API key sent via `X-Goog-Api-Key` header AND `redactSensitiveValues` strips credential values from both URL query params (`?key=…`) and sensitive headers in the Ktor Logger output. Extension contract documented (one-line add to `SENSITIVE_URL_PARAMS` / `SENSITIVE_HEADER_NAMES` for new providers). Verified via `adb logcat | grep -E "AIza[A-Za-z0-9_-]{30,}"` returning zero matches and unit tests in `HttpClientFactoryTest` (1.6)
-- [ ] `previewLink` / `infoLink` HTTPS-coerced in the mapper and gated behind a scheme allowlist at the launch site; mapper tests cover hostile schemes (1.7)
-- [ ] Room schema reset to v1, `fallbackToDestructiveMigration` removed, schema dir contains exactly `1.json`; uninstall instructions communicated to internal testers (1.8)
-- [ ] `GoogleBooksRemoteBookDataSourceTest` exists and covers the listed cases (2.1)
-- [ ] `OpenLibraryRemoteBookDataSourceTest` exists and recovers coverage from the deleted file (2.2)
-- [ ] Inline-qualified `BookProvider` references removed from test files (2.3)
-- [ ] `BookOverviewCard.kt` is deleted (2.4)
-- [ ] `totalResults` is either used or removed with a written rationale (2.5)
-- [ ] `textSnippet` is mapped into a separate `Book.searchSnippet` field (not into `description`) (2.6)
-- [ ] `BookClubBookDto` and `BookClubMappers` do not reference `searchSnippet` (verified by grep) (2.6)
-- [ ] `SearchBooksUseCase` KDoc updated or removed (2.7)
-- [ ] HTML stripping has a single owner per path (search vs description) — comment or shared mapper (2.8)
-- [ ] `BookDetailViewModel.loadBookDetails` is a thin orchestrator with extracted `loadInitialBookState` / `maybeFetchDescription` helpers (2.9)
-- [ ] All Detekt rules pass; all tests pass (including the new `updateDescription` tests in 1.4)
+- [x] `FallbackRemoteBookDataSource` depends only on `RemoteBookDataSource` (1.1)
+- [x] `FallbackRemoteBookDataSourceTest` instantiates the production class (no wrapper) (1.2)
+- [x] Fallback semantics decision recorded (narrow vs broad) and prod + tests agree (1.2)
+- [x] `withSmallImage` / `withLargeImage` deleted; `withMediumImage` audited and confirmed to produce a meaningfully different image (or switched to `smallThumbnail`) (1.3)
+- [x] Description fetch no longer fires when `book.description` is already populated (1.4b)
+- [x] Description fetch persists via targeted `BookshelfDao.updateDescription` + `BookRepository.updateDescription` (NOT `upsertBook`) (1.4)
+- [x] `loadBookDescription` is split into its own use case (`GetBookDescriptionUseCase`) (1.4)
+- [x] `BookDetailViewModel.loadBookDetails` merges the description into state without re-querying the DB (1.4d)
+- [x] `updateDescription` DAO test verifies targeted UPDATE does not clobber personal metadata (1.4)
+- [x] Blank-API-key path short-circuits with the new `DataError.Remote.PROVIDER_UNAVAILABLE` variant; `shouldFallback` includes it; `Timber.e` log emitted at the short-circuit site (1.5)
+- [x] Google Books API key sent via `X-Goog-Api-Key` header AND `redactSensitiveValues` strips credential values from both URL query params (`?key=…`) and sensitive headers in the Ktor Logger output. Extension contract documented (one-line add to `SENSITIVE_URL_PARAMS` / `SENSITIVE_HEADER_NAMES` for new providers). Verified via `adb logcat | grep -E "AIza[A-Za-z0-9_-]{30,}"` returning zero matches and unit tests in `HttpClientFactoryTest` (1.6)
+- [x] `previewLink` / `infoLink` HTTPS-coerced in the mapper and gated behind a scheme allowlist at the launch site; mapper tests cover hostile schemes (1.7)
+- [x] Room schema reset to v1, `fallbackToDestructiveMigration` removed, schema dir contains exactly `1.json`; uninstall instructions communicated to internal testers (1.8)
+- [x] `GoogleBooksRemoteBookDataSourceTest` exists and covers the listed cases (2.1)
+- [x] `OpenLibraryRemoteBookDataSourceTest` exists and recovers coverage from the deleted file (2.2)
+- [x] Inline-qualified `BookProvider` references removed from test files (2.3)
+- [x] `BookOverviewCard.kt` is deleted (2.4)
+- [x] `totalResults` is either used or removed with a written rationale (2.5)
+- [x] `textSnippet` is mapped into a separate `Book.searchSnippet` field (not into `description`) (2.6)
+- [x] `BookClubBookDto` and `BookClubMappers` do not reference `searchSnippet` (verified by grep) (2.6)
+- [x] `SearchBooksUseCase` KDoc updated or removed (2.7)
+- [x] HTML stripping has a single owner per path (search vs description) — comment or shared mapper (2.8)
+- [x] `BookDetailViewModel.loadBookDetails` is a thin orchestrator with extracted `loadInitialBookState` / `maybeFetchDescription` helpers (2.9)
+- [x] All Detekt rules pass; all tests pass (including the new `updateDescription` tests in 1.4)
 
 ## Out of scope
 
