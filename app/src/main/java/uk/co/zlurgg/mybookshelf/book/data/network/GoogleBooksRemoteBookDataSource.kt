@@ -59,9 +59,13 @@ class GoogleBooksRemoteBookDataSource(
             // English descriptions but non-English content (e.g. Urdu Harry Potter
             // translations marked `"language": "ur"`). Filter before mapping so we
             // don't pay to convert items we'll discard.
+            // Also drop items with no title — Google occasionally returns rows with
+            // a populated ISBN/imageUrl but a blank title; they render as a row of
+            // metadata with nothing for the user to identify.
             BookSearchResponse(
                 books = dto.items
                     ?.filter { it.volumeInfo?.language == ENGLISH_LANGUAGE_CODE }
+                    ?.filter { !it.volumeInfo?.title.isNullOrBlank() }
                     ?.map { it.toBook() }
                     ?: emptyList()
             )
