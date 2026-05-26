@@ -1,10 +1,31 @@
 # Google Books API Integration Plan
 
-**Status:** Draft v3 — post second review  
+**Status:** ✅ Delivered on `spike-test-google-books` across sessions S1–S6 and subsequent UX polish. Two Section 10 fast-follows (pagination, printType filtering) remain explicitly out of scope and open for future work. Retained as historical design reference for the *why* behind architecture choices below.  
 **Branch:** `spike-test-google-books`  
-**Date:** 2026-05-22  
+**Date:** 2026-05-22 (delivery confirmed 2026-05-26)  
 **Revision:** v2 2026-05-22 — addressed retry/fallback conflict, provider tracking, layer placement, query building, HTML handling, enum typing, TOS analysis, test ordering, API key safety, pagination  
 **Revision:** v3 2026-05-22 — fixed getBookDescription routing bug, added provider param to interface, HttpClientFactory comment, stripHtml visibility, quote stripping rationale, printType filtering deferred, commit strategy for UI changes
+
+## Delivery summary (added post-delivery)
+
+What landed beyond or differently from the plan as written:
+
+- **Database version: reset to 1, not bumped to 5.** Item 1.8 of `google-books-integration-review-fixes.md` collapsed the schema since there are no real users to migrate. Same destructive-migration effect, cleaner starting state.
+- **API key transport: header, not URL parameter.** Predecessor's 1.6 moved the key from `?key=…` to `X-Goog-Api-Key` to stop logcat exposure. `HttpClientFactory.redactSensitiveValues` provides defense-in-depth.
+- **Blank API key handling refined.** Plan said "fail to FORBIDDEN → fallback to OL"; delivery introduced `DataError.Remote.PROVIDER_UNAVAILABLE` as a distinct signal (item 1.5) so the loud blank-key bug doesn't hide inside the same code path as a 403-from-Google. Both errors are in `FallbackRemoteBookDataSource.shouldFallback`.
+- **Result cap reconciled.** Plan's `MAX_RESULTS = 15` was raised to 40 once on-device testing showed the ViewModel was capping below the API default (`google-books-search-quality.md` item 1).
+- **English-language post-fetch filter added** (`google-books-search-quality.md` item 2) — `langRestrict` proved best-effort.
+- **Blank-title filter added** during on-device testing — Google occasionally returns rows with metadata but no title.
+- **DI wiring: `single { }` for Google services**, not `singleOf(::)`. The plan-suggested `singleOf` crashed at runtime because the `apiKeyProvider` test seam carries a Kotlin default value that `singleOf` ignores. Captured in `closed-testing-release-prep.md` as Phase 1.1 (Koin verify() test) so this class of bug fails fast in CI from now on.
+- **Spine-vs-detail image parity.** Plan added `withMediumImage()` for the detail screen; spines still used the raw URL which both had Google's page-curl effect and a smaller `zoom=1` scan. Added `withSpineImage()` to normalize.
+- **Search dialog UX redesigned beyond the original plan.** Custom Row layout, portrait cover, zebra stripe, conditional image slot, attribution promoted to the top.
+- **Default search filter: title only.** Original UI defaulted to title + author both checked, which produced confusing AND-filter empty results on common queries; default changed to title only with user choices persisted.
+
+**Still open (Section 10 fast-follows):**
+- Pagination via `startIndex` / `offset`
+- PrintType filtering as a user-toggleable option
+
+These are unblocked from delivery but not in scope for the spike branch.
 
 ## Goal
 
@@ -1069,8 +1090,8 @@ Execute in this order to maintain a compilable project at each step. Tests are i
 
 ## 11. Google Books TOS Checklist
 
-- [ ] Display "Powered by Google" near search results (only when showing Google results)
-- [ ] Each book result links to Google Books page (via `infoLink`)
-- [ ] Use only approved terminology: "Google Books", "Google Preview"
-- [ ] Search results from one provider at a time (fallback, not mixed)
-- [ ] Do not charge users without Google's written permission (app is free)
+- [x] Display "Powered by Google" near search results (only when showing Google results) — `BookSearchDialog.kt`, promoted from list-footer to dialog body so it's visible without scrolling
+- [x] Each book result links to Google Books page (via `infoLink`) — `PublicationDetailsCard.kt` via `openExternalUrl` with HTTPS allowlist
+- [x] Use only approved terminology: "Google Books", "Google Preview" — verified via grep
+- [x] Search results from one provider at a time (fallback, not mixed) — `FallbackRemoteBookDataSource` returns a single provider's result set per call
+- [x] Do not charge users without Google's written permission (app is free)
