@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-build manifest overlay.
+
+  Disables Crashlytics in debug builds so dev crashes do not pollute the
+  production Firebase console (debug already routes Firestore/Auth through
+  the local emulator via FirebaseEmulatorConfig; Crashlytics has no emulator
+  equivalent, so without this flag, debug crashes would still ship to the
+  real my-bookshelf-c1e91 project).
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application>
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="false"
+            tools:replace="android:value" />
+    </application>
+</manifest>
