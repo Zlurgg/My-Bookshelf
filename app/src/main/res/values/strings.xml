@@ -120,6 +120,7 @@
     <string name="publication_isbn_label">ISBN: %1$s</string>
     <string name="publication_pages_label">%1$d pages</string>
     <string name="publication_view_on_google_books">View on Google Books</string>
+    <string name="publication_view_on_google_play">View on Google Play</string>
     <string name="publication_google_preview">Google Preview</string>
     <string name="powered_by_google">Powered by Google</string>
     <string name="publication_not_available">Not available</string>

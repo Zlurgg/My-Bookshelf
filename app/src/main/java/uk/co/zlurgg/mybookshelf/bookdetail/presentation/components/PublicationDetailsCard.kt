@@ -16,7 +16,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
-import uk.co.zlurgg.mybookshelf.book.presentation.util.openExternalUrl
+import uk.co.zlurgg.mybookshelf.book.presentation.util.isPlayBooksUrl
+import uk.co.zlurgg.mybookshelf.book.presentation.util.openGoogleBooksUrl
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.BookDetailUiConstants
 
 /**
@@ -85,13 +86,18 @@ fun PublicationDetailsCard(
 
             infoLink?.let { url ->
                 Spacer(modifier = Modifier.height(4.dp))
-                TextButton(onClick = { openExternalUrl(uriHandler, url) }) {
-                    Text(stringResource(R.string.publication_view_on_google_books))
+                val labelRes = if (isPlayBooksUrl(url)) {
+                    R.string.publication_view_on_google_play
+                } else {
+                    R.string.publication_view_on_google_books
+                }
+                TextButton(onClick = { openGoogleBooksUrl(uriHandler, url) }) {
+                    Text(stringResource(labelRes))
                 }
             }
 
             previewLink?.let { url ->
-                TextButton(onClick = { openExternalUrl(uriHandler, url) }) {
+                TextButton(onClick = { openGoogleBooksUrl(uriHandler, url) }) {
                     Text(stringResource(R.string.publication_google_preview))
                 }
             }
