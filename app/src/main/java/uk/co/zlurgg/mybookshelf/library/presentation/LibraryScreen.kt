@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
@@ -40,6 +41,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -367,6 +369,10 @@ fun LibraryScreen(
         }
     }
 
+    // Hoisted at screen scope so scroll position survives the dialog's
+    // platform-window teardown when the user navigates to the detail screen.
+    val searchListState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
+
     // Remote search dialog
     if (state.isSearchDialogVisible) {
         LibraryBookSearchDialog(
@@ -378,7 +384,8 @@ fun LibraryScreen(
             onToggleSafeSearch = { onAction(LibraryAction.OnToggleSafeSearch) },
             onBookClick = { book -> onAction(LibraryAction.OnSearchResultBookClick(book)) },
             onAddBook = { book -> onAction(LibraryAction.OnAddBookToLibrary(book)) },
-            onDismiss = { onAction(LibraryAction.OnDismissSearchDialog) }
+            onDismiss = { onAction(LibraryAction.OnDismissSearchDialog) },
+            lazyListState = searchListState,
         )
     }
 

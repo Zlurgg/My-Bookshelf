@@ -14,7 +14,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.AlertDialog
@@ -46,7 +48,12 @@ fun BookSearchDialog(
     onToggleSafeSearch: () -> Unit,
     onBookClick: (Book) -> Unit,
     onDismiss: () -> Unit,
-    trailingContent: @Composable (book: Book, isExisting: Boolean) -> Unit
+    trailingContent: @Composable (book: Book, isExisting: Boolean) -> Unit,
+    // Hoisted so callers can preserve scroll across the search → detail → back
+    // round trip. The AlertDialog's own saveable scope is destroyed when the
+    // platform window is torn down on navigation, so an internal state would
+    // reset to top on return.
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     // Recomputed only when the result set changes; avoids a linear scan on
     // every recomposition (typing, scroll, focus changes) of the dialog.
@@ -180,6 +187,7 @@ fun BookSearchDialog(
 
                     else -> {
                         LazyColumn(
+                            state = lazyListState,
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             itemsIndexed(state.results) { index, book ->

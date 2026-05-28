@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -33,6 +34,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -342,10 +344,15 @@ fun BookshelfScreen(
         )
     }
 
+    // Hoisted at screen scope so scroll position survives the dialog's
+    // platform-window teardown when the user navigates to the detail screen.
+    val searchListState = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
+
     // Search dialog
     if (state.isSearchDialogVisible) {
         ShelfBookSearchDialog(
             state = state.bookSearchState,
+            lazyListState = searchListState,
             callbacks = object : BookSearchCallbacks {
                 override val onQueryChange: (String) -> Unit = { query ->
                     onAction(BookshelfAction.OnSearchQueryChange(query))

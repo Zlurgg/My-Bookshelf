@@ -1,6 +1,8 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.presentation.searchcomponents
 
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -20,7 +22,8 @@ import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchSta
 @Composable
 fun ShelfBookSearchDialog(
     state: BookSearchState,
-    callbacks: BookSearchCallbacks
+    callbacks: BookSearchCallbacks,
+    lazyListState: LazyListState = rememberLazyListState(),
 ) {
     BookSearchDialog(
         state = state,
@@ -31,6 +34,7 @@ fun ShelfBookSearchDialog(
         onToggleSafeSearch = callbacks.onToggleSafeSearch,
         onBookClick = callbacks.onBookClick,
         onDismiss = callbacks.onDismiss,
+        lazyListState = lazyListState,
         trailingContent = { book, isExisting ->
             if (isExisting) {
                 IconButton(onClick = { callbacks.onRemoveBook(book) }) {
