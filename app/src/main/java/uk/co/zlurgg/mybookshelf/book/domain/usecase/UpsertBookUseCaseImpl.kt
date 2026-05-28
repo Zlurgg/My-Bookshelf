@@ -4,9 +4,11 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
+import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 class UpsertBookUseCaseImpl(
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val timeProvider: TimeProvider,
 ) : UpsertBookUseCase {
 
     override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> {
@@ -27,8 +29,10 @@ class UpsertBookUseCaseImpl(
                 purchased = existingBook.purchased
             )
         } else {
-            // New book - use as-is
-            book
+            // New book - default dateAdded at insert time. The column-scoped
+            // update use cases no longer copy + re-insert the row, so this is
+            // the only place left that can set it.
+            book.copy(dateAdded = book.dateAdded ?: timeProvider.currentTimeMillis())
         }
 
         return bookRepository.upsertBook(bookToUpsert)

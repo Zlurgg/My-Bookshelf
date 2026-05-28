@@ -108,7 +108,11 @@ internal class BookClubRepositoryHelper(
 
         for (bookDto in clubBooks) {
             try {
-                val book = bookDto.toBookDomain()
+                // Default dateAdded at insert: column-scoped update use cases no
+                // longer backfill on edit, so insert sites must own this field.
+                val book = bookDto.toBookDomain().let {
+                    it.copy(dateAdded = it.dateAdded ?: timeProvider.currentTimeMillis())
+                }
                 val bookEntity = book.toBookEntity()
 
                 bookshelfDao.upsert(bookEntity)

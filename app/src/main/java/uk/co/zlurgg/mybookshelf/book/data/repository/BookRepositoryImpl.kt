@@ -24,7 +24,7 @@ class BookRepositoryImpl(
 
     override suspend fun getBookById(bookId: String): Result<Book?, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
-            dao.getBookById(bookId)?.toBook() ?: previewCache[bookId]
+            dao.getBookById(bookId)?.toBook()
         }
     }
 
@@ -35,6 +35,8 @@ class BookRepositoryImpl(
         previewCache.clear()
         books.forEach { previewCache[it.id] = it }
     }
+
+    override fun peekPreview(bookId: String): Book? = previewCache[bookId]
 
     override suspend fun upsertBook(book: Book): Result<Unit, DataError.Local> {
         val safeBook = if (book.spineColor == 0) {
@@ -60,6 +62,31 @@ class BookRepositoryImpl(
     ): Result<Unit, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
             dao.updateDescription(bookId, description)
+        }
+    }
+
+    override suspend fun updatePersonalMetadata(
+        bookId: String,
+        readingStatus: String?,
+        personalRating: Float?,
+        personalNotes: String?,
+    ): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.updatePersonalMetadata(
+                id = bookId,
+                readingStatus = readingStatus,
+                personalRating = personalRating,
+                personalNotes = personalNotes,
+            )
+        }
+    }
+
+    override suspend fun updatePurchased(
+        bookId: String,
+        purchased: Boolean,
+    ): Result<Unit, DataError.Local> {
+        return ErrorMapper.safeSuspendCall(TAG) {
+            dao.updatePurchased(bookId, purchased)
         }
     }
 

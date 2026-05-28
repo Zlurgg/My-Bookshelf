@@ -11,6 +11,7 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class MockBookRepository : BookRepository {
 
     private val books = mutableMapOf<String, Book>()
+    private val previewCache = mutableMapOf<String, Book>()
     private val personalBooksFlow = MutableStateFlow<List<Book>>(emptyList())
 
     var errorToReturn: DataError.Local? = null
@@ -26,10 +27,22 @@ class MockBookRepository : BookRepository {
     var lastDeletedBookIds: List<String> = emptyList()
     var lastCachedPreviewIds: List<String> = emptyList()
 
+    // Column-scoped update tracking — preview-cache leak fix moved personal-metadata
+    // writes off get-then-upsert onto targeted UPDATEs, so tests assert on these.
+    var updatePersonalMetadataCallCount = 0
+    var lastPersonalMetadataBookId: String? = null
+    var lastPersonalMetadataReadingStatus: String? = null
+    var lastPersonalMetadataRating: Float? = null
+    var lastPersonalMetadataNotes: String? = null
+    var updatePurchasedCallCount = 0
+    var lastPurchasedBookId: String? = null
+    var lastPurchasedValue: Boolean? = null
+
     private val nonRemovableBookIdsFlow = MutableStateFlow<Set<String>>(emptySet())
 
     fun reset() {
         books.clear()
+        previewCache.clear()
         errorToReturn = null
         remoteErrorToReturn = null
         upsertBookCallCount = 0
@@ -38,6 +51,14 @@ class MockBookRepository : BookRepository {
         deleteBooksCallCount = 0
         cacheSearchPreviewsCallCount = 0
         updateDescriptionCallCount = 0
+        updatePersonalMetadataCallCount = 0
+        lastPersonalMetadataBookId = null
+        lastPersonalMetadataReadingStatus = null
+        lastPersonalMetadataRating = null
+        lastPersonalMetadataNotes = null
+        updatePurchasedCallCount = 0
+        lastPurchasedBookId = null
+        lastPurchasedValue = null
         lastUpsertedBook = null
         lastUpsertedSystemBook = null
         lastQueriedBookId = null
@@ -97,6 +118,43 @@ class MockBookRepository : BookRepository {
         return Result.Success(Unit)
     }
 
+    override suspend fun updatePersonalMetadata(
+        bookId: String,
+        readingStatus: String?,
+        personalRating: Float?,
+        personalNotes: String?,
+    ): Result<Unit, DataError.Local> {
+        updatePersonalMetadataCallCount++
+        lastPersonalMetadataBookId = bookId
+        lastPersonalMetadataReadingStatus = readingStatus
+        lastPersonalMetadataRating = personalRating
+        lastPersonalMetadataNotes = personalNotes
+        errorToReturn?.let { return Result.Error(it) }
+        // UPDATE on a missing row is a no-op (matches DAO behaviour).
+        val existing = books[bookId] ?: return Result.Success(Unit)
+        books[bookId] = existing.copy(
+            readingStatus = readingStatus?.let {
+                uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus.valueOf(it)
+            } ?: existing.readingStatus,
+            personalRating = personalRating ?: existing.personalRating,
+            personalNotes = personalNotes ?: existing.personalNotes,
+        )
+        return Result.Success(Unit)
+    }
+
+    override suspend fun updatePurchased(
+        bookId: String,
+        purchased: Boolean,
+    ): Result<Unit, DataError.Local> {
+        updatePurchasedCallCount++
+        lastPurchasedBookId = bookId
+        lastPurchasedValue = purchased
+        errorToReturn?.let { return Result.Error(it) }
+        val existing = books[bookId] ?: return Result.Success(Unit)
+        books[bookId] = existing.copy(purchased = purchased)
+        return Result.Success(Unit)
+    }
+
     override suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local> {
         upsertSystemBookCallCount++
         lastUpsertedSystemBook = book
@@ -116,7 +174,11 @@ class MockBookRepository : BookRepository {
     override fun cacheSearchPreviews(books: List<Book>) {
         cacheSearchPreviewsCallCount++
         lastCachedPreviewIds = books.map { it.id }
+        previewCache.clear()
+        books.forEach { previewCache[it.id] = it }
     }
+
+    override fun peekPreview(bookId: String): Book? = previewCache[bookId]
 
     override fun getAllPersonalBooks(): Flow<List<Book>> = personalBooksFlow
 

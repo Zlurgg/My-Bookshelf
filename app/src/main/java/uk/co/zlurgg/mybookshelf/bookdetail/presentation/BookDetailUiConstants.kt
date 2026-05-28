@@ -19,6 +19,8 @@ object BookDetailUiConstants {
     // Ratings — used by ClubRatingCard
     const val MaxStars = 5
 
-    // Timing — used by ViewModel (notes debounce + review debounce)
+    // Timing — used by ViewModel for the club-review debounce. Personal-notes
+    // writes are no longer debounced: column-scoped UPDATE is cheap enough to
+    // run per keystroke. Firestore-bound review writes still batch.
     const val DebounceDelayMs = 2000L
 }

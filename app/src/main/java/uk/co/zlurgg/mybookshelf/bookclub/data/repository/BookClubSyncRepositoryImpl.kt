@@ -135,7 +135,11 @@ internal class BookClubSyncRepositoryImpl(
         val booksToAdd = remoteBookIds - localBookIds
         for (bookDto in remoteBooks.filter { it.id in booksToAdd }) {
             try {
-                val book = bookDto.toBookDomain()
+                // Default dateAdded at insert: column-scoped update use cases no
+                // longer backfill on edit, so insert sites must own this field.
+                val book = bookDto.toBookDomain().let {
+                    it.copy(dateAdded = it.dateAdded ?: timeProvider.currentTimeMillis())
+                }
                 val bookEntity = book.toBookEntity()
                 bookshelfDao.upsert(bookEntity)
 

@@ -54,11 +54,16 @@ class GetBookDetailsUseCaseImpl(
             .map { books -> books.any { it.id == bookId } }
         return combine(
             shelfStatusFlow,
-            // Convert single book fetch to Flow behavior by getting book once
+            // Convert single book fetch to Flow behavior by getting book once.
+            // DB-first: a persisted book always wins, so personal metadata is
+            // preserved. Falls back to the preview cache when no row exists,
+            // which is the only legitimate cache consumer in the codebase —
+            // the compose is explicit so future readers don't re-route the
+            // cache through the repository's `getBookById`.
             flow {
                 val bookResult = bookRepository.getBookById(bookId)
                 val book = when (bookResult) {
-                    is Result.Success -> bookResult.data
+                    is Result.Success -> bookResult.data ?: bookRepository.peekPreview(bookId)
                     is Result.Error -> null // Handle error gracefully in UI
                 }
                 emit(book)

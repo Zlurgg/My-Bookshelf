@@ -7,12 +7,17 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 
+/**
+ * Under v3, ToggleBookPurchaseUseCase delegates to a column-scoped UPDATE on
+ * the purchased flag — no get-then-upsert, no full-row write, no preservation
+ * gymnastics. The returned [Book] is the input copied with the new flag; DB
+ * personal metadata isn't read back because nothing else changed.
+ */
 class ToggleBookPurchaseUseCaseTest {
 
     private val mockBookRepository = MockBookRepository()
@@ -24,325 +29,108 @@ class ToggleBookPurchaseUseCaseTest {
     }
 
     @Test
-    fun `execute marks unpurchased book as purchased`() = runTest {
-        // Given
+    fun `marks unpurchased book as purchased via column-scoped update`() = runTest {
         val unpurchasedBook = TestBookBuilder()
             .withId("test-book")
             .withTitle("Test Book")
             .withPurchased(false)
             .build()
 
-        // When
         val result = useCase(unpurchasedBook, true)
 
-        // Then
         assertTrue("Should return success", result is Result.Success)
         val updatedBook = (result as Result.Success).data
-        assertTrue("Book should be marked as purchased", updatedBook.purchased)
-        assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
-
-        val upsertedBook = mockBookRepository.lastUpsertedBook!!
-        assertTrue("Upserted book should be purchased", upsertedBook.purchased)
-        assertEquals("Should preserve book ID", unpurchasedBook.id, upsertedBook.id)
-        assertEquals("Should preserve book title", unpurchasedBook.title, upsertedBook.title)
+        assertTrue("Returned book should be purchased", updatedBook.purchased)
+        assertEquals("test-book", updatedBook.id)
+        assertEquals(1, mockBookRepository.updatePurchasedCallCount)
+        assertEquals("test-book", mockBookRepository.lastPurchasedBookId)
+        assertEquals(true, mockBookRepository.lastPurchasedValue)
+        assertEquals("Must not full-row upsert", 0, mockBookRepository.upsertBookCallCount)
     }
 
     @Test
-    fun `execute marks purchased book as unpurchased`() = runTest {
-        // Given
+    fun `marks purchased book as unpurchased`() = runTest {
         val purchasedBook = TestBookBuilder()
             .withId("purchased-book")
-            .withTitle("Already Purchased Book")
             .withPurchased(true)
             .build()
 
-        // When
         val result = useCase(purchasedBook, false)
 
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertFalse("Book should be marked as unpurchased", updatedBook.purchased)
-        assertEquals("Should call upsertBook once", 1, mockBookRepository.upsertBookCallCount)
-
-        val upsertedBook = mockBookRepository.lastUpsertedBook!!
-        assertFalse("Upserted book should be unpurchased", upsertedBook.purchased)
+        assertTrue(result is Result.Success)
+        assertFalse((result as Result.Success).data.purchased)
+        assertEquals(false, mockBookRepository.lastPurchasedValue)
     }
 
     @Test
-    fun `execute keeps purchase status same when toggling to current status`() = runTest {
-        // Given
-        val purchasedBook = TestBookBuilder()
-            .withId("already-purchased")
-            .withPurchased(true)
-            .build()
+    fun `toggle to current status still issues the column update`() = runTest {
+        // The use case does not care whether the value changed — the ViewModel
+        // computes the new flag. Repository call still happens.
+        val purchasedBook = TestBookBuilder().withId("already-purchased").withPurchased(true).build()
 
-        // When - Set to purchased again (same status)
         val result = useCase(purchasedBook, true)
 
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertTrue("Book should remain purchased", updatedBook.purchased)
-        assertEquals("Should still call upsertBook", 1, mockBookRepository.upsertBookCallCount)
+        assertTrue(result is Result.Success)
+        assertEquals(1, mockBookRepository.updatePurchasedCallCount)
     }
 
     @Test
-    fun `execute preserves all book data except purchase status`() = runTest {
-        // Given
+    fun `returns purchased copy of the supplied book, never a DB read`() = runTest {
         val originalBook = TestBookBuilder.completeBook()
 
-        // When
         val result = useCase(originalBook, !originalBook.purchased)
 
-        // Then
-        assertTrue("Should return success", result is Result.Success)
+        assertTrue(result is Result.Success)
         val updatedBook = (result as Result.Success).data
-
-        // All fields should be preserved except purchase status
-        assertEquals("Should preserve ID", originalBook.id, updatedBook.id)
-        assertEquals("Should preserve title", originalBook.title, updatedBook.title)
-        assertEquals("Should preserve image URL", originalBook.imageUrl, updatedBook.imageUrl)
-        assertEquals("Should preserve authors", originalBook.authors, updatedBook.authors)
-        assertEquals("Should preserve description", originalBook.description, updatedBook.description)
-        assertEquals("Should preserve languages", originalBook.languages, updatedBook.languages)
-        assertEquals("Should preserve publish year", originalBook.firstPublishYear, updatedBook.firstPublishYear)
-        assertEquals("Should preserve page count", originalBook.numPages, updatedBook.numPages)
-        assertEquals("Should preserve provider", originalBook.provider, updatedBook.provider)
-        assertEquals("Should preserve spine color", originalBook.spineColor, updatedBook.spineColor)
-
-        // Only purchase status should change
-        assertEquals("Should toggle purchase status", !originalBook.purchased, updatedBook.purchased)
+        assertEquals(originalBook.id, updatedBook.id)
+        assertEquals(originalBook.title, updatedBook.title)
+        assertEquals(originalBook.authors, updatedBook.authors)
+        assertEquals(originalBook.description, updatedBook.description)
+        assertEquals(originalBook.personalRating, updatedBook.personalRating)
+        assertEquals(originalBook.personalNotes, updatedBook.personalNotes)
+        assertEquals(originalBook.readingStatus, updatedBook.readingStatus)
+        assertEquals(!originalBook.purchased, updatedBook.purchased)
     }
 
     @Test
-    fun `execute handles book with minimal data`() = runTest {
-        // Given
-        val minimalBook = TestBookBuilder.minimalBook()
+    fun `toggle on a previewed (cache-only) book is a no-op against storage`() = runTest {
+        // v3 invariant: column UPDATE on a missing row is a SQLite no-op, so a
+        // previewed book never gets promoted into the library by a tap on the
+        // purchased toggle (the screen gates the card under v3, but the
+        // storage-layer guarantee is what the test locks in).
+        val previewBook = TestBookBuilder().withId("preview-only").withPurchased(false).build()
 
-        // When
-        val result = useCase(minimalBook, true)
+        val result = useCase(previewBook, true)
 
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertTrue("Should mark minimal book as purchased", updatedBook.purchased)
-        assertEquals("Should preserve minimal book structure", minimalBook.title, updatedBook.title)
+        assertTrue(result is Result.Success)
+        assertEquals(1, mockBookRepository.updatePurchasedCallCount)
+        assertNull(
+            "Previewed book must NOT be promoted into storage",
+            mockBookRepository.getStoredBook("preview-only")
+        )
     }
 
     @Test
-    fun `execute handles book with null description`() = runTest {
-        // Given
-        val bookWithNullRating = TestBookBuilder()
-            .withId("no-rating-book")
-            .withDescription(null)
-            .withPurchased(false)
-            .build()
-
-        // When
-        val result = useCase(bookWithNullRating, true)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertTrue("Should mark book as purchased", updatedBook.purchased)
-        assertNull("Should preserve null description", updatedBook.description)
-    }
-
-    @Test
-    fun `execute handles book with empty authors list`() = runTest {
-        // Given
-        val bookWithNoAuthors = TestBookBuilder()
-            .withId("anonymous-book")
-            .withAuthors(emptyList())
-            .withPurchased(false)
-            .build()
-
-        // When
-        val result = useCase(bookWithNoAuthors, true)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertTrue("Should mark book as purchased", updatedBook.purchased)
-        assertTrue("Should preserve empty authors list", updatedBook.authors.isEmpty())
-    }
-
-    @Test
-    fun `execute returns error when repository fails`() = runTest {
-        // Given
+    fun `returns error when repository fails`() = runTest {
         val book = TestBookBuilder().withId("test-book").build()
         mockBookRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
-        // When
         val result = useCase(book, true)
 
-        // Then
-        assertTrue("Should return error", result is Result.Error)
-        val error = (result as Result.Error).error
-        assertEquals(DataError.Local.DATABASE_ERROR, error)
-        // getBookById returns error first, so upsertBook is never called
-        assertEquals("Should not call upsertBook", 0, mockBookRepository.upsertBookCallCount)
+        assertTrue(result is Result.Error)
+        assertEquals(DataError.Local.DATABASE_ERROR, (result as Result.Error).error)
+        assertEquals(0, mockBookRepository.upsertBookCallCount)
     }
 
     @Test
-    fun `execute handles books with special characters in data`() = runTest {
-        // Given
-        val bookWithSpecialChars = TestBookBuilder()
-            .withId("special-book-éñ")
-            .withTitle("Book with Émojis 📚 and Special Çhars")
-            .withAuthors(listOf("Authör Namé", "José María"))
-            .withDescription("Description with <HTML> & special chars: αβγ")
-            .withPurchased(false)
-            .build()
+    fun `multiple toggles all hit the column update`() = runTest {
+        val book = TestBookBuilder().withId("toggle-test").withPurchased(false).build()
 
-        // When
-        val result = useCase(bookWithSpecialChars, true)
+        useCase(book, true)
+        useCase(book.copy(purchased = true), false)
+        useCase(book, true)
 
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertTrue("Should mark book as purchased", updatedBook.purchased)
-        assertEquals("Should preserve special chars in title", bookWithSpecialChars.title, updatedBook.title)
-        assertEquals("Should preserve special chars in authors", bookWithSpecialChars.authors, updatedBook.authors)
-        assertEquals(
-            "Should preserve special chars in description",
-            bookWithSpecialChars.description,
-            updatedBook.description
-        )
-    }
-
-    @Test
-    fun `execute works with extreme values`() = runTest {
-        // Given
-        val bookWithExtremeValues = TestBookBuilder()
-            .withId("extreme-book")
-            .withNumPages(0)
-            .withPurchased(false)
-            .build()
-
-        // When
-        val result = useCase(bookWithExtremeValues, true)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertTrue("Should mark book as purchased", updatedBook.purchased)
-        assertEquals("Should preserve zero pages", 0, updatedBook.numPages)
-    }
-
-    @Test
-    fun `execute multiple toggles maintain data integrity`() = runTest {
-        // Given
-        val originalBook = TestBookBuilder()
-            .withId("toggle-test")
-            .withTitle("Toggle Test Book")
-            .withPurchased(false)
-            .build()
-
-        // When - Toggle to purchased
-        val firstResult = useCase(originalBook, true)
-        assertTrue("First toggle should succeed", firstResult is Result.Success)
-        val firstUpdatedBook = (firstResult as Result.Success).data
-
-        // When - Toggle back to unpurchased
-        val secondResult = useCase(firstUpdatedBook, false)
-        assertTrue("Second toggle should succeed", secondResult is Result.Success)
-        val secondUpdatedBook = (secondResult as Result.Success).data
-
-        // When - Toggle to purchased again
-        val thirdResult = useCase(secondUpdatedBook, true)
-
-        // Then
-        assertTrue("Third toggle should succeed", thirdResult is Result.Success)
-        val finalBook = (thirdResult as Result.Success).data
-
-        assertTrue("Final book should be purchased", finalBook.purchased)
-        assertEquals("Should preserve original data through multiple toggles", originalBook.title, finalBook.title)
-        assertEquals("Should preserve original ID", originalBook.id, finalBook.id)
-        assertEquals("Should call upsertBook three times", 3, mockBookRepository.upsertBookCallCount)
-    }
-
-    @Test
-    fun `execute preserves personal metadata when toggling existing book`() = runTest {
-        // Given - Book already exists with personal metadata
-        val existingBook = TestBookBuilder()
-            .withId("book-with-metadata")
-            .withTitle("Old Title")
-            .withPersonalRating(4.5f)
-            .withPersonalNotes("Amazing read!")
-            .withReadingStatus(ReadingStatus.FINISHED)
-            .withDateAdded(1609459200000L)
-            .withPurchaseDate(1609545600000L)
-            .withPurchased(false)
-            .build()
-        mockBookRepository.addBook(existingBook)
-
-        // Fresh book from API (same ID, updated title, NO personal data)
-        val freshBookFromApi = TestBookBuilder()
-            .withId("book-with-metadata") // Same ID
-            .withTitle("Updated Title from API")
-            .withPersonalRating(0f) // API doesn't have this
-            .withPersonalNotes("") // API doesn't have this
-            .withReadingStatus(ReadingStatus.NOT_READ) // Default
-            .withDateAdded(null) // API doesn't track this
-            .withPurchaseDate(null) // API doesn't track this
-            .withPurchased(false)
-            .build()
-
-        // When - Toggle purchased on fresh API book
-        val result = useCase(freshBookFromApi, true)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-
-        // API data should be updated
-        assertEquals("Should update title from API", "Updated Title from API", updatedBook.title)
-        assertTrue("Should toggle purchased status", updatedBook.purchased)
-
-        // Personal metadata should be preserved from existing book
-        assertEquals("Should preserve personal rating", 4.5f, updatedBook.personalRating, 0.01f)
-        assertEquals("Should preserve personal notes", "Amazing read!", updatedBook.personalNotes)
-        assertEquals(
-            "Should preserve reading status",
-            ReadingStatus.FINISHED,
-            updatedBook.readingStatus
-        )
-        assertEquals("Should preserve dateAdded", 1609459200000L, updatedBook.dateAdded)
-        assertEquals("Should preserve purchaseDate", 1609545600000L, updatedBook.purchaseDate)
-    }
-
-    @Test
-    fun `execute works normally for new books without existing metadata`() = runTest {
-        // Given - Book does NOT exist in repository
-        val newBookFromApi = TestBookBuilder()
-            .withId("new-book")
-            .withTitle("Brand New Book")
-            .withPersonalRating(0f)
-            .withPersonalNotes("")
-            .withReadingStatus(ReadingStatus.NOT_READ)
-            .withDateAdded(null)
-            .withPurchaseDate(null)
-            .withPurchased(false)
-            .build()
-
-        // When - Toggle purchased on new book
-        val result = useCase(newBookFromApi, true)
-
-        // Then
-        assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-
-        // Should use API data as-is
-        assertEquals("Should use API title", "Brand New Book", updatedBook.title)
-        assertTrue("Should set purchased to true", updatedBook.purchased)
-        assertEquals("Should use default rating", 0f, updatedBook.personalRating, 0.01f)
-        assertEquals("Should use default notes", "", updatedBook.personalNotes)
-        assertEquals(
-            "Should use default reading status",
-            ReadingStatus.NOT_READ,
-            updatedBook.readingStatus
-        )
+        assertEquals(3, mockBookRepository.updatePurchasedCallCount)
+        assertEquals(0, mockBookRepository.upsertBookCallCount)
     }
 }

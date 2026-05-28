@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.core.data.database.dao
 
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
@@ -29,6 +30,64 @@ interface BookDao {
      */
     @Query("UPDATE BookEntity SET description = :description WHERE id = :bookId")
     suspend fun updateDescription(bookId: String, description: String?)
+
+    /**
+     * Targeted update for the reading-status column only.
+     *
+     * Same parallel-write rationale as [updateDescription]: a full-row upsert
+     * would clobber any in-flight write to another personal-metadata column.
+     *
+     * `status` is the [ReadingStatus] enum's `.name` — Room cannot convert the
+     * enum directly without a registered TypeConverter, and the entity stores
+     * the status as `String`.
+     */
+    @Query("UPDATE BookEntity SET readingStatus = :status WHERE id = :id")
+    suspend fun updateReadingStatus(id: String, status: String)
+
+    /**
+     * Targeted update for the personal-rating column only.
+     *
+     * Same parallel-write rationale as [updateDescription].
+     */
+    @Query("UPDATE BookEntity SET personalRating = :rating WHERE id = :id")
+    suspend fun updatePersonalRating(id: String, rating: Float)
+
+    /**
+     * Targeted update for the personal-notes column only.
+     *
+     * Same parallel-write rationale as [updateDescription].
+     */
+    @Query("UPDATE BookEntity SET personalNotes = :notes WHERE id = :id")
+    suspend fun updatePersonalNotes(id: String, notes: String)
+
+    /**
+     * Targeted update for the purchased column only.
+     *
+     * Same parallel-write rationale as [updateDescription].
+     */
+    @Query("UPDATE BookEntity SET purchased = :purchased WHERE id = :id")
+    suspend fun updatePurchased(id: String, purchased: Boolean)
+
+    /**
+     * Multi-column personal-metadata update wrapped in a single transaction so a
+     * multi-field write keeps the all-or-none atomicity the full-row upsert
+     * previously provided. Null parameters mean "leave this column alone."
+     *
+     * UPDATE on a row that doesn't exist is a silent no-op in SQLite — same
+     * shape as [updateDescription], so the preview-cache path doesn't promote
+     * a previewed book into local storage.
+     */
+    @Transaction
+    suspend fun updatePersonalMetadata(
+        id: String,
+        readingStatus: String? = null,
+        personalRating: Float? = null,
+        personalNotes: String? = null,
+    ) {
+        readingStatus?.let { updateReadingStatus(id, it) }
+        personalRating?.let { updatePersonalRating(id, it) }
+        personalNotes?.let { updatePersonalNotes(id, it) }
+    }
 
     @Query(
         """

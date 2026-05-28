@@ -32,10 +32,9 @@ class BookDetailViewModel(
     private val _state = MutableStateFlow(BookDetailState(hasShelfContext = shelfId != null))
     val state: StateFlow<BookDetailState> = _state.asStateFlow()
 
-    // Job for debounced auto-save of personal notes
-    private var saveNotesJob: Job? = null
-
-    // Job for debounced auto-save of club review
+    // Job for debounced auto-save of club review (Firestore-bound — debounced
+    // to batch network writes). Personal-notes writes are no longer debounced;
+    // column-scoped UPDATEs make per-keystroke saves cheap.
     private var saveReviewJob: Job? = null
 
     init {
@@ -253,22 +252,7 @@ class BookDetailViewModel(
                     }
                 }
             }
-            BookDetailAction.OnBackClick -> {
-                viewModelScope.launch {
-                    // Cancel any pending debounced save
-                    saveNotesJob?.cancel()
-
-                    // Always save current notes state before navigating (idempotent operation)
-                    bookDetailUseCases.updateBookMetadata(
-                        bookId = bookId,
-                        personalNotes = state.value.book?.personalNotes
-                    )
-                    // Note: Ignoring result - this is best-effort save before navigation
-
-                    // Navigate back after save completes
-                    onNavigateBack?.invoke()
-                }
-            }
+            BookDetailAction.OnBackClick -> onNavigateBack?.invoke()
             is BookDetailAction.OnRemoveBookClick -> {
                 val currentShelfId = shelfId ?: return
                 viewModelScope.launch {
@@ -320,26 +304,18 @@ class BookDetailViewModel(
                 }
             }
             is BookDetailAction.OnPersonalNotesChange -> {
-                // Cancel previous auto-save job if user is still typing
-                saveNotesJob?.cancel()
-
-                // Update state immediately (optimistic UI)
+                // Optimistic UI update, then immediate write — the underlying
+                // DAO call is a single column-scoped UPDATE, so per-keystroke
+                // I/O is cheap (no read, no full-row write).
                 _state.update { it.updateBook { book -> book?.copy(personalNotes = action.notes) } }
-
-                // Start debounced auto-save (2 seconds after user stops typing)
-                saveNotesJob = viewModelScope.launch {
-                    delay(DebounceDelayMs)
-
-                    // Execute actual save to database
+                viewModelScope.launch {
                     when (
                         val metadataResult = bookDetailUseCases.updateBookMetadata(
                             bookId = bookId,
                             personalNotes = action.notes
                         )
                     ) {
-                        is Result.Success -> {
-                            // Save successful - state already updated above
-                        }
+                        is Result.Success -> Unit
                         is Result.Error -> {
                             _state.update { it.withError(metadataResult.error, "update personal notes") }
                         }

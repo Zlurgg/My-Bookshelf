@@ -241,9 +241,9 @@ class SearchBooksUseCaseTest {
 
     @Test
     fun `successful search writes safe-filtered results to the preview cache`() = runTest {
-        // The preview cache lets BookDetailViewModel render a tapped search
-        // result via BookRepository.getBookById without first persisting it
-        // to the local DB — that previously polluted the Library view.
+        // The preview cache lets GetBookDetailsUseCase render a tapped search
+        // result via BookRepository.peekPreview (DB-first, cache-fallback) without
+        // first persisting it to the local DB — that previously polluted Library.
         val testBooks = listOf(
             TestSearchedBookDtoBuilder()
                 .withId("/works/SAFE1")

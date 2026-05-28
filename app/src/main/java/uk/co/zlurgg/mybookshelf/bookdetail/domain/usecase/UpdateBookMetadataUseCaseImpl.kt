@@ -4,18 +4,17 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
-import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
 
 /**
  * Implementation of UpdateBookMetadataUseCase.
  *
- * Updates a book's personal metadata with validation.
- * Personal metadata includes reading status, personal rating, notes, and dates.
- * This data is NOT exported/shared - it stays local to the user's device.
+ * Validates input and delegates to a single column-scoped repository call so
+ * that an edit never resurrects a previewed book or clobbers a parallel write
+ * to another column. The repository wraps the DAO call in ErrorMapper; this
+ * use case is pure delegation and does not re-wrap.
  */
 class UpdateBookMetadataUseCaseImpl(
     private val bookRepository: BookRepository,
-    private val timeProvider: TimeProvider,
 ) : UpdateBookMetadataUseCase {
 
     companion object {
@@ -28,37 +27,18 @@ class UpdateBookMetadataUseCaseImpl(
         readingStatus: ReadingStatus?,
         personalRating: Float?,
         personalNotes: String?,
-        purchaseDate: Long?
     ): Result<Unit, DataError> {
-        // Validate personal rating (0.0-5.0, where 0 = unrated)
-        if (personalRating != null && (personalRating !in 0f..MAX_RATING)) {
+        if (personalRating != null && personalRating !in 0f..MAX_RATING) {
             return Result.Error(DataError.Validation.INVALID_FORMAT)
         }
-
-        // Validate personal notes length
         if (personalNotes != null && personalNotes.length > MAX_NOTES_LENGTH) {
             return Result.Error(DataError.Validation.TOO_LONG)
         }
-
-        // Get existing book
-        val existingBook = when (val getResult = bookRepository.getBookById(bookId)) {
-            is Result.Success -> getResult.data ?: return Result.Error(DataError.Local.NOT_FOUND)
-            is Result.Error -> return getResult
-        }
-
-        // Update book with new metadata
-        // null parameter = "don't change this field"
-        // explicit value (including 0f/"") = "update to this value"
-        val updatedBook = existingBook.copy(
-            readingStatus = readingStatus ?: existingBook.readingStatus,
-            personalRating = personalRating ?: existingBook.personalRating,
-            personalNotes = personalNotes ?: existingBook.personalNotes,
-            purchaseDate = purchaseDate ?: existingBook.purchaseDate,
-            // Auto-set dateAdded if not already set
-            dateAdded = existingBook.dateAdded ?: timeProvider.currentTimeMillis()
+        return bookRepository.updatePersonalMetadata(
+            bookId = bookId,
+            readingStatus = readingStatus?.name,
+            personalRating = personalRating,
+            personalNotes = personalNotes,
         )
-
-        // Save updated book
-        return bookRepository.upsertBook(updatedBook)
     }
 }

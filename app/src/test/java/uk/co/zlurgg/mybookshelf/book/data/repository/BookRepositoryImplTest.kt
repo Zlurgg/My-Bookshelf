@@ -12,6 +12,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
+import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -314,24 +315,36 @@ class BookRepositoryImplTest {
     }
 
     @Test
-    fun `getBookById falls back to preview cache when DB has no row`() = runTest {
-        // Cached search results should be readable through getBookById without
-        // first being persisted — that's the whole point of the preview cache.
+    fun `getBookById does NOT fall back to the preview cache`() = runTest {
+        // v3 contract: getBookById is DAO-only. Cache access lives on peekPreview.
+        // Routing cache through getBookById previously caused metadata-update use
+        // cases to promote previewed books into the library on back-press.
         val cachedOnly = TestBookBuilder()
             .withId("cache-only")
             .withTitle("Cached Preview")
             .build()
         repository.cacheSearchPreviews(listOf(cachedOnly))
 
-        val retrieved = getBookOrFail("cache-only")
-
-        assertEquals("Should return cached title", "Cached Preview", retrieved.title)
+        assertNull("getBookById must ignore the cache", getBookOrNull("cache-only"))
     }
 
     @Test
-    fun `getBookById prefers DB row over preview cache for the same id`() = runTest {
-        // DB row carries personal metadata (notes, rating, reading status) that
-        // the cached API version would not have, so DB must win.
+    fun `peekPreview returns the cached book when present and null when absent`() = runTest {
+        val cachedOnly = TestBookBuilder()
+            .withId("cache-only")
+            .withTitle("Cached Preview")
+            .build()
+        repository.cacheSearchPreviews(listOf(cachedOnly))
+
+        assertEquals("Cached Preview", repository.peekPreview("cache-only")?.title)
+        assertNull("No cache entry", repository.peekPreview("nothing-cached"))
+    }
+
+    @Test
+    fun `getBookById and peekPreview are independent for the same id`() = runTest {
+        // DB row and cache entry can both exist for the same id — callers compose
+        // them explicitly (DB-first) in GetBookDetailsUseCase rather than letting
+        // the repository decide.
         val dbBook = TestBookBuilder()
             .withId("conflicting-id")
             .withTitle("DB Title")
@@ -344,14 +357,13 @@ class BookRepositoryImplTest {
         saveBook(dbBook)
         repository.cacheSearchPreviews(listOf(cachedBook))
 
-        val retrieved = getBookOrFail("conflicting-id")
-
-        assertEquals("DB row must win", "DB Title", retrieved.title)
-        assertEquals("Personal metadata must be preserved", "Important notes", retrieved.personalNotes)
+        assertEquals("DB Title", getBookOrFail("conflicting-id").title)
+        assertEquals("Important notes", getBookOrFail("conflicting-id").personalNotes)
+        assertEquals("API Title", repository.peekPreview("conflicting-id")?.title)
     }
 
     @Test
-    fun `cacheSearchPreviews stores all books in one call`() = runTest {
+    fun `cacheSearchPreviews stores all books readable via peekPreview`() = runTest {
         val books = listOf(
             TestBookBuilder().withId("a").withTitle("A").build(),
             TestBookBuilder().withId("b").withTitle("B").build(),
@@ -360,16 +372,15 @@ class BookRepositoryImplTest {
 
         repository.cacheSearchPreviews(books)
 
-        assertEquals("A", getBookOrFail("a").title)
-        assertEquals("B", getBookOrFail("b").title)
-        assertEquals("C", getBookOrFail("c").title)
+        assertEquals("A", repository.peekPreview("a")?.title)
+        assertEquals("B", repository.peekPreview("b")?.title)
+        assertEquals("C", repository.peekPreview("c")?.title)
     }
 
     @Test
     fun `cacheSearchPreviews evicts entries from previous calls`() = runTest {
         // Each search supersedes the previous — older entries are unreachable
-        // through the UI (the search dialog only shows the latest result set),
-        // so the cache should not accumulate them across queries.
+        // through the UI, so the cache should not accumulate them across queries.
         val firstSearch = listOf(
             TestBookBuilder().withId("old-1").withTitle("Old 1").build(),
             TestBookBuilder().withId("old-2").withTitle("Old 2").build(),
@@ -380,9 +391,81 @@ class BookRepositoryImplTest {
         repository.cacheSearchPreviews(firstSearch)
         repository.cacheSearchPreviews(secondSearch)
 
-        assertNull("Old cached entry should be evicted", getBookOrNull("old-1"))
-        assertNull("Old cached entry should be evicted", getBookOrNull("old-2"))
-        assertEquals("New entry should be readable", "New 1", getBookOrFail("new-1").title)
+        assertNull("Old cached entry should be evicted", repository.peekPreview("old-1"))
+        assertNull("Old cached entry should be evicted", repository.peekPreview("old-2"))
+        assertEquals("New 1", repository.peekPreview("new-1")?.title)
+    }
+
+    @Test
+    fun `updatePersonalMetadata on a row that does not exist is a silent no-op`() = runTest {
+        // SQLite UPDATE on a missing row is a no-op. This is the leak-fix
+        // invariant at the storage layer — a previewed book (no DB row) cannot
+        // be promoted into the library by an edit on the detail screen.
+        val result = repository.updatePersonalMetadata(
+            bookId = "ghost-id",
+            readingStatus = "FINISHED",
+            personalRating = 5.0f,
+            personalNotes = "Should not land",
+        )
+
+        assertTrue("UPDATE on missing row must succeed", result is Result.Success)
+        assertNull("Row must NOT exist after no-op", getBookOrNull("ghost-id"))
+    }
+
+    @Test
+    fun `updatePersonalMetadata writes each non-null column and leaves others alone`() = runTest {
+        val original = TestBookBuilder()
+            .withId("meta-book")
+            .withReadingStatus(ReadingStatus.NOT_READ)
+            .withPersonalRating(0f)
+            .withPersonalNotes("original")
+            .build()
+        saveBook(original)
+
+        val notesOnly = repository.updatePersonalMetadata(
+            bookId = "meta-book",
+            personalNotes = "updated notes",
+        )
+        assertTrue(notesOnly is Result.Success)
+        val afterNotes = getBookOrFail("meta-book")
+        assertEquals("updated notes", afterNotes.personalNotes)
+        assertEquals("Reading status untouched", ReadingStatus.NOT_READ, afterNotes.readingStatus)
+        assertEquals("Rating untouched", 0f, afterNotes.personalRating)
+
+        val ratingOnly = repository.updatePersonalMetadata(bookId = "meta-book", personalRating = 4.5f)
+        assertTrue(ratingOnly is Result.Success)
+        val afterRating = getBookOrFail("meta-book")
+        assertEquals(4.5f, afterRating.personalRating)
+        assertEquals("Notes untouched", "updated notes", afterRating.personalNotes)
+    }
+
+    @Test
+    fun `updatePurchased on a row that does not exist is a silent no-op`() = runTest {
+        val result = repository.updatePurchased(bookId = "ghost-id", purchased = true)
+
+        assertTrue(result is Result.Success)
+        assertNull(getBookOrNull("ghost-id"))
+    }
+
+    @Test
+    fun `updatePurchased writes only the purchased column`() = runTest {
+        val original = TestBookBuilder()
+            .withId("purchased-book")
+            .withTitle("Original")
+            .withPurchased(false)
+            .withPersonalNotes("keeps these")
+            .withPersonalRating(3.5f)
+            .build()
+        saveBook(original)
+
+        val result = repository.updatePurchased(bookId = "purchased-book", purchased = true)
+
+        assertTrue(result is Result.Success)
+        val updated = getBookOrFail("purchased-book")
+        assertEquals(true, updated.purchased)
+        assertEquals("Original", updated.title)
+        assertEquals("keeps these", updated.personalNotes)
+        assertEquals(3.5f, updated.personalRating)
     }
 
     @Test

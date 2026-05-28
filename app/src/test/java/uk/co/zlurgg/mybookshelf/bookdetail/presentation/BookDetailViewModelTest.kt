@@ -508,6 +508,46 @@ class BookDetailViewModelTest {
     }
 
     @Test
+    fun `OnBackClick does not call updateBookMetadata`() = runTest(testDispatcher) {
+        // v3: column-scoped per-keystroke saves removed the need for a back-flush.
+        // OnBackClick is pure nav so it can't accidentally promote a previewed
+        // book into storage on the way out.
+        val testBook = TestBookBuilder().withId("book-1").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+
+        var backInvoked = false
+        val viewModel = createViewModel()
+        viewModel.setNavigationCallback { backInvoked = true }
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.awaitState()
+
+        viewModel.onAction(BookDetailAction.OnBackClick)
+
+        assertEquals("Back must not call updateBookMetadata", 0, mockUpdateBookMetadata.callCount)
+        assertTrue("Back callback must fire", backInvoked)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnPersonalNotesChange writes through immediately with no debounce`() = runTest(testDispatcher) {
+        // v3: column-scoped UPDATE is cheap, so per-keystroke writes replace the
+        // 2-second debounce. Without this, the back-flush gymnastics resurfaces.
+        val testBook = TestBookBuilder().withId("book-1").withPersonalNotes("").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.awaitState()
+
+        viewModel.onAction(BookDetailAction.OnPersonalNotesChange("new note"))
+
+        assertEquals("Save must fire immediately", 1, mockUpdateBookMetadata.callCount)
+        assertEquals("Should target this book", "book-1", mockUpdateBookMetadata.lastBookId)
+        assertEquals("Should write the new note", "new note", mockUpdateBookMetadata.lastNotes)
+        stateHelper.cleanup()
+    }
+
+    @Test
     fun `remove book click handles error correctly`() = runTest(testDispatcher) {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
@@ -645,18 +685,27 @@ class BookDetailViewModelTest {
 
     private class SimpleUpdateBookMetadataUseCase : UpdateBookMetadataUseCase {
         var shouldSucceed = true
+        var callCount = 0
+        var lastBookId: String? = null
+        var lastNotes: String? = null
 
         override suspend operator fun invoke(
             bookId: String,
             readingStatus: ReadingStatus?,
             personalRating: Float?,
             personalNotes: String?,
-            purchaseDate: Long?
-        ): Result<Unit, DataError> =
-            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+        ): Result<Unit, DataError> {
+            callCount++
+            lastBookId = bookId
+            lastNotes = personalNotes
+            return if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+        }
 
         fun reset() {
             shouldSucceed = true
+            callCount = 0
+            lastBookId = null
+            lastNotes = null
         }
     }
 }

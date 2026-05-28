@@ -194,34 +194,40 @@ fun BookDetailsScreen(
                         }
                     }
                     else -> {
-                        // Regular book — personal cards for all owned books
-                        item {
-                            ReadingStatusCard(
-                                readingStatus = state.book.readingStatus,
-                                onReadingStatusChange = { status ->
-                                    onAction(BookDetailAction.OnReadingStatusChange(status))
-                                }
-                            )
-                        }
-                        item {
-                            PersonalNotesCard(
-                                personalRating = state.book.personalRating,
-                                onPersonalRatingChange = { rating ->
-                                    onAction(BookDetailAction.OnPersonalRatingChange(rating))
-                                },
-                                notes = state.book.personalNotes,
-                                onNotesChange = { notes ->
-                                    onAction(BookDetailAction.OnPersonalNotesChange(notes))
-                                }
-                            )
-                        }
-                        item {
-                            PurchasedToggleCard(
-                                purchased = state.book.purchased,
-                                onPurchaseToggle = {
-                                    onAction(BookDetailAction.OnPurchaseClick)
-                                }
-                            )
+                        // Regular book — personal cards only when the book is in the
+                        // library. Gating on `hasShelfContext` here would re-render
+                        // editable cards for shelf-search previews (book opened from
+                        // a shelf's search dialog before the user adds it), which
+                        // routes edits into silent no-ops under column-scoped writes.
+                        if (state.isInLibrary) {
+                            item {
+                                ReadingStatusCard(
+                                    readingStatus = state.book.readingStatus,
+                                    onReadingStatusChange = { status ->
+                                        onAction(BookDetailAction.OnReadingStatusChange(status))
+                                    }
+                                )
+                            }
+                            item {
+                                PersonalNotesCard(
+                                    personalRating = state.book.personalRating,
+                                    onPersonalRatingChange = { rating ->
+                                        onAction(BookDetailAction.OnPersonalRatingChange(rating))
+                                    },
+                                    notes = state.book.personalNotes,
+                                    onNotesChange = { notes ->
+                                        onAction(BookDetailAction.OnPersonalNotesChange(notes))
+                                    }
+                                )
+                            }
+                            item {
+                                PurchasedToggleCard(
+                                    purchased = state.book.purchased,
+                                    onPurchaseToggle = {
+                                        onAction(BookDetailAction.OnPurchaseClick)
+                                    }
+                                )
+                            }
                         }
                     }
                 }

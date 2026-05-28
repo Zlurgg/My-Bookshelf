@@ -10,6 +10,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
+import uk.co.zlurgg.mybookshelf.testutil.helpers.TestTimeProvider
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 
 /**
@@ -23,7 +24,8 @@ import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 class UpsertBookUseCaseTest {
 
     private val mockRepository = MockBookRepository()
-    private val useCase = UpsertBookUseCaseImpl(mockRepository)
+    private val testTimeProvider = TestTimeProvider(currentTime = 1234567890L)
+    private val useCase = UpsertBookUseCaseImpl(mockRepository, testTimeProvider)
 
     @After
     fun tearDown() {
@@ -31,12 +33,14 @@ class UpsertBookUseCaseTest {
     }
 
     @Test
-    fun `successfully inserts new book`() = runTest {
+    fun `successfully inserts new book and backfills dateAdded at insert`() = runTest {
         // Given
         val newBook = TestBookBuilder()
             .withId("new-book")
             .withTitle("New Book")
+            .withDateAdded(null)
             .build()
+        testTimeProvider.setTime(1700000000000L)
 
         // When
         val result = useCase(newBook)
@@ -44,7 +48,14 @@ class UpsertBookUseCaseTest {
         // Then
         assertTrue("Should return success", result is Result.Success)
         assertEquals("Should call upsert once", 1, mockRepository.upsertBookCallCount)
-        assertEquals("Should upsert correct book", newBook, mockRepository.lastUpsertedBook)
+        val stored = mockRepository.lastUpsertedBook!!
+        assertEquals("Should preserve id", newBook.id, stored.id)
+        assertEquals("Should preserve title", newBook.title, stored.title)
+        assertEquals(
+            "dateAdded must be backfilled at insert since update use cases no longer do it",
+            1700000000000L,
+            stored.dateAdded,
+        )
     }
 
     @Test
@@ -98,7 +109,13 @@ class UpsertBookUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals("Should preserve all book data", completeBook, mockRepository.lastUpsertedBook)
+        val stored = mockRepository.lastUpsertedBook!!
+        // dateAdded is backfilled at insert; everything else preserved as-is.
+        assertEquals(
+            "Should preserve all non-dateAdded fields",
+            completeBook.copy(dateAdded = stored.dateAdded),
+            stored,
+        )
     }
 
     @Test
@@ -111,7 +128,12 @@ class UpsertBookUseCaseTest {
 
         // Then
         assertTrue("Should return success", result is Result.Success)
-        assertEquals("Should handle minimal book", minimalBook, mockRepository.lastUpsertedBook)
+        val stored = mockRepository.lastUpsertedBook!!
+        assertEquals(
+            "Should handle minimal book (dateAdded backfilled)",
+            minimalBook.copy(dateAdded = stored.dateAdded),
+            stored,
+        )
     }
 
     @Test
