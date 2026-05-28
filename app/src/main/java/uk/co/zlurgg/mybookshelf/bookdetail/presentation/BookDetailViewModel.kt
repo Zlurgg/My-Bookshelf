@@ -73,6 +73,7 @@ class BookDetailViewModel(
             currentState.copy(
                 book = details.book,
                 onShelf = details.isOnShelf,
+                isInLibrary = details.isInLibrary,
                 isBookClub = details.isBookClub,
                 clubCode = details.clubCode,
                 clubCreatorId = details.clubCreatorId,
@@ -214,6 +215,18 @@ class BookDetailViewModel(
                             is Result.Error -> {
                                 _state.update { it.withError(addResult.error, "add book to shelf") }
                             }
+                        }
+                    }
+                }
+            }
+            is BookDetailAction.OnAddToLibraryClick -> {
+                viewModelScope.launch {
+                    when (val upsertResult = bookDetailUseCases.upsertBook(action.book)) {
+                        is Result.Success -> {
+                            _state.update { it.copy(isInLibrary = true) }
+                        }
+                        is Result.Error -> {
+                            _state.update { it.withError(upsertResult.error, "add book to library") }
                         }
                     }
                 }

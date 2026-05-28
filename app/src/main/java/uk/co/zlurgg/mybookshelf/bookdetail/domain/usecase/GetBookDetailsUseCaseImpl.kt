@@ -3,6 +3,7 @@ package uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookDetailsWithShelfStatus
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
@@ -49,26 +50,30 @@ class GetBookDetailsUseCaseImpl(
         } else {
             flow { emit(false) }
         }
-        return shelfStatusFlow
-            .combine(
-                // Convert single book fetch to Flow behavior by getting book once
-                flow {
-                    val bookResult = bookRepository.getBookById(bookId)
-                    val book = when (bookResult) {
-                        is Result.Success -> bookResult.data
-                        is Result.Error -> null // Handle error gracefully in UI
-                    }
-                    emit(book)
+        val isInLibraryFlow = bookRepository.getAllPersonalBooks()
+            .map { books -> books.any { it.id == bookId } }
+        return combine(
+            shelfStatusFlow,
+            // Convert single book fetch to Flow behavior by getting book once
+            flow {
+                val bookResult = bookRepository.getBookById(bookId)
+                val book = when (bookResult) {
+                    is Result.Success -> bookResult.data
+                    is Result.Error -> null // Handle error gracefully in UI
                 }
-            ) { isOnShelf, book ->
-                BookDetailsWithShelfStatus(
-                    book = book,
-                    isOnShelf = isOnShelf,
-                    isBookClub = isBookClub,
-                    clubCode = clubCode,
-                    clubCreatorId = clubCreatorId,
-                    addedByUserId = addedByUserId,
-                )
-            }
+                emit(book)
+            },
+            isInLibraryFlow,
+        ) { isOnShelf, book, isInLibrary ->
+            BookDetailsWithShelfStatus(
+                book = book,
+                isOnShelf = isOnShelf,
+                isInLibrary = isInLibrary,
+                isBookClub = isBookClub,
+                clubCode = clubCode,
+                clubCreatorId = clubCreatorId,
+                addedByUserId = addedByUserId,
+            )
+        }
     }
 }

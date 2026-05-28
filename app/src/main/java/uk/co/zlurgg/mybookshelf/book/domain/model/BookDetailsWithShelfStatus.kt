@@ -6,6 +6,7 @@ package uk.co.zlurgg.mybookshelf.book.domain.model
 data class BookDetailsWithShelfStatus(
     val book: Book?,
     val isOnShelf: Boolean,
+    val isInLibrary: Boolean = false,
     val isBookClub: Boolean = false,
     val clubCode: String? = null,
     val clubCreatorId: String? = null,

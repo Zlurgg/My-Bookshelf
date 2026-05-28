@@ -31,6 +31,7 @@ import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ClubCommentsC
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.ClubRatingCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.DescriptionCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.LanguagesCard
+import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.LibraryActionsCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PersonalNotesCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PublicationDetailsCard
 import uk.co.zlurgg.mybookshelf.bookdetail.presentation.components.PurchasedToggleCard
@@ -92,18 +93,29 @@ fun BookDetailsScreen(
             },
             bottomBar = {
                 // Hide actions for tutorial book and guests on club shelves
-                if (!isTutorialBook && state.hasShelfContext && !(state.isBookClub && !state.isSignedIn)) {
-                    ShelfActionsCard(
-                        book = state.book,
-                        onShelf = state.onShelf,
-                        canRemove = state.canRemoveFromShelf,
-                        onAddToShelf = { book ->
-                            onAction(BookDetailAction.OnAddBookClick(book))
-                        },
-                        onRemoveFromShelf = { book ->
-                            onAction(BookDetailAction.OnRemoveBookClick(book))
-                        }
-                    )
+                if (!isTutorialBook && !(state.isBookClub && !state.isSignedIn)) {
+                    if (state.hasShelfContext) {
+                        ShelfActionsCard(
+                            book = state.book,
+                            onShelf = state.onShelf,
+                            canRemove = state.canRemoveFromShelf,
+                            onAddToShelf = { book ->
+                                onAction(BookDetailAction.OnAddBookClick(book))
+                            },
+                            onRemoveFromShelf = { book ->
+                                onAction(BookDetailAction.OnRemoveBookClick(book))
+                            }
+                        )
+                    } else if (!state.isInLibrary) {
+                        // Opened from the Library search → detail flow on a book the user
+                        // hasn't yet added. Give them a way to save it without going back.
+                        LibraryActionsCard(
+                            book = state.book,
+                            onAddToLibrary = { book ->
+                                onAction(BookDetailAction.OnAddToLibraryClick(book))
+                            }
+                        )
+                    }
                 }
             },
             modifier = modifier

@@ -10,6 +10,7 @@ data class BookDetailState(
     val book: Book? = null,
     val onShelf: Boolean = false,
     val hasShelfContext: Boolean = true,
+    val isInLibrary: Boolean = false,
     val errorMessage: String? = null,
     // Auth
     val currentUserId: String? = null,

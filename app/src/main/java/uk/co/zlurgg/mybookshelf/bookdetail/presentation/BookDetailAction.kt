@@ -7,6 +7,7 @@ sealed interface BookDetailAction {
     data object OnPurchaseClick : BookDetailAction
     data class OnAddBookClick(val book: Book) : BookDetailAction
     data class OnRemoveBookClick(val book: Book) : BookDetailAction
+    data class OnAddToLibraryClick(val book: Book) : BookDetailAction
     data object OnBackClick : BookDetailAction
 
     // Personal metadata actions (NOT exported for privacy)

@@ -225,6 +225,61 @@ class BookDetailViewModelTest {
     }
 
     @Test
+    fun `add to library upserts and flips isInLibrary`() = runTest(testDispatcher) {
+        // When user opens detail screen from Library on a previewed book (cached
+        // but not yet persisted), the LibraryActionsCard fires this action so
+        // they don't have to navigate back and re-find the book to save it.
+        val testBook = TestBookBuilder().withId("preview-book").withTitle("Preview").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(
+            book = testBook,
+            isOnShelf = false,
+            isInLibrary = false,
+        )
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.awaitState()
+
+        val stateAfterAdd = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnAddToLibraryClick(testBook))
+        }
+
+        assertEquals(
+            "Should call upsert with the previewed book",
+            "preview-book",
+            mockUpsertBook.lastUpsertedBook?.id,
+        )
+        assertTrue("Should mark book as in library", stateAfterAdd?.isInLibrary == true)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `add to library surfaces error on upsert failure`() = runTest(testDispatcher) {
+        val testBook = TestBookBuilder().withId("fail-book").build()
+        mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(
+            book = testBook,
+            isOnShelf = false,
+            isInLibrary = false,
+        )
+        mockUpsertBook.shouldSucceed = false
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.awaitState()
+
+        val stateAfterAdd = stateHelper.executeAndGetState {
+            viewModel.onAction(BookDetailAction.OnAddToLibraryClick(testBook))
+        }
+
+        assertFalse("isInLibrary stays false on failure", stateAfterAdd?.isInLibrary == true)
+        assertTrue(
+            "Should surface an error message",
+            stateAfterAdd?.errorMessage?.contains("add book to library") == true
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
     fun `toggle purchase updates book purchased status`() = runTest(testDispatcher) {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withPurchased(false).build()
@@ -564,12 +619,16 @@ class BookDetailViewModelTest {
 
     private class SimpleUpsertBookUseCase : UpsertBookUseCase {
         var shouldSucceed = true
+        var lastUpsertedBook: Book? = null
 
-        override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> =
-            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+        override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> {
+            lastUpsertedBook = book
+            return if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
+        }
 
         fun reset() {
             shouldSucceed = true
+            lastUpsertedBook = null
         }
     }
 
