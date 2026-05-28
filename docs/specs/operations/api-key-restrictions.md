@@ -2,6 +2,8 @@
 
 Cloud Console state is not source-controlled. This file is the durable record of which API keys exist, what they restrict to, and who applied the restriction. Update it whenever a key, a SHA-1, or an API allowlist entry changes.
 
+For how the Android-app restriction mechanism actually works (build-time injection, runtime headers, Google's edge check, threat model), see [`google-books-api-key-security.md`](google-books-api-key-security.md).
+
 ## Project
 
 - **Firebase / GCP project:** `my-bookshelf-c1e91`
