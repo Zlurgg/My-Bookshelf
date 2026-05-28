@@ -22,8 +22,12 @@ import org.junit.runner.RunWith
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.WelcomePreferences
 
 /**
- * Integration test for WelcomePreferences with real DataStore.
- * Tests DataStore persistence and retrieval of per-user welcome screen state.
+ * Integration test for [WelcomePreferencesImpl] with real DataStore.
+ *
+ * Welcome state is per-device (single boolean), so the only persisted facts are:
+ * initial value, set, idempotence, and survival across instances. Per-user tests
+ * existed previously when the API took a userId; they were removed when the
+ * design moved to per-device (see [WelcomePreferences] docstring).
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -36,16 +40,11 @@ class WelcomePreferencesIntegrationTest {
     private val testScope = TestScope(testDispatcher + Job())
     private var testFileName = ""
 
-    // Test user IDs
-    private val guestUserId: String? = null
-    private val userA = "firebase-user-a"
-    private val userB = "firebase-user-b"
-
     @Before
     fun setup() {
         context = ApplicationProvider.getApplicationContext()
 
-        // Create a unique DataStore file name for each test to avoid singleton conflicts
+        // Per-test unique file name so the DataStore singleton doesn't bleed between tests.
         testFileName = "test_welcome_preferences_${System.currentTimeMillis()}"
 
         testDataStore = PreferenceDataStoreFactory.create(
@@ -55,128 +54,55 @@ class WelcomePreferencesIntegrationTest {
             }
         )
 
-        welcomePreferences = WelcomePreferencesImpl(context, testDataStore)
+        welcomePreferences = WelcomePreferencesImpl(testDataStore)
     }
 
     @After
     fun tearDown() {
-        // Clean up test DataStore file
         context.preferencesDataStoreFile(testFileName).delete()
     }
 
     @Test
-    fun hasShownWelcomeReturnsFalseInitiallyForGuest() = runTest {
-        // Given - Fresh install
+    fun hasShownWelcomeReturnsFalseInitially() = runTest {
+        val hasShown = welcomePreferences.hasShownWelcome().first()
 
-        // When - Check if welcome was shown for guest
-        val hasShown = welcomePreferences.hasShownWelcome(guestUserId).first()
-
-        // Then - Should be false
-        assertFalse("Welcome should not be shown initially for guest", hasShown)
+        assertFalse("Welcome should not be shown on a fresh install", hasShown)
     }
 
     @Test
-    fun hasShownWelcomeReturnsFalseInitiallyForUser() = runTest {
-        // Given - Fresh install
+    fun setWelcomeShownPersistsToDataStore() = runTest {
+        assertFalse(welcomePreferences.hasShownWelcome().first())
 
-        // When - Check if welcome was shown for a user
-        val hasShown = welcomePreferences.hasShownWelcome(userA).first()
+        welcomePreferences.setWelcomeShown()
 
-        // Then - Should be false
-        assertFalse("Welcome should not be shown initially for user", hasShown)
-    }
-
-    @Test
-    fun setWelcomeShownPersistsToDataStoreForGuest() = runTest {
-        // Given - Initial state
-        assertFalse(welcomePreferences.hasShownWelcome(guestUserId).first())
-
-        // When - Mark welcome as shown for guest
-        welcomePreferences.setWelcomeShown(guestUserId)
-
-        // Then - Should persist
-        assertTrue("Welcome shown state should persist for guest",
-            welcomePreferences.hasShownWelcome(guestUserId).first())
-    }
-
-    @Test
-    fun setWelcomeShownPersistsToDataStoreForUser() = runTest {
-        // Given - Initial state
-        assertFalse(welcomePreferences.hasShownWelcome(userA).first())
-
-        // When - Mark welcome as shown for user
-        welcomePreferences.setWelcomeShown(userA)
-
-        // Then - Should persist
-        assertTrue("Welcome shown state should persist for user",
-            welcomePreferences.hasShownWelcome(userA).first())
+        assertTrue(
+            "Welcome shown state should persist after set",
+            welcomePreferences.hasShownWelcome().first()
+        )
     }
 
     @Test
     fun setWelcomeShownPersistsAcrossInstances() = runTest {
-        // Given - First instance marks welcome as shown
-        welcomePreferences.setWelcomeShown(userA)
+        welcomePreferences.setWelcomeShown()
 
-        // When - Create new instance with same DataStore
-        val newInstance = WelcomePreferencesImpl(context, testDataStore)
+        // Same backing DataStore, fresh impl — simulates a recreated repository.
+        val newInstance = WelcomePreferencesImpl(testDataStore)
 
-        // Then - Should still be true
-        assertTrue("Welcome state should persist across instances",
-            newInstance.hasShownWelcome(userA).first())
+        assertTrue(
+            "Welcome state should survive a new repository instance",
+            newInstance.hasShownWelcome().first()
+        )
     }
 
     @Test
     fun multipleCallsToSetWelcomeShownAreIdempotent() = runTest {
-        // Given/When - Call multiple times
-        welcomePreferences.setWelcomeShown(userA)
-        welcomePreferences.setWelcomeShown(userA)
-        welcomePreferences.setWelcomeShown(userA)
+        welcomePreferences.setWelcomeShown()
+        welcomePreferences.setWelcomeShown()
+        welcomePreferences.setWelcomeShown()
 
-        // Then - Should still be true
-        assertTrue("Multiple calls should be idempotent",
-            welcomePreferences.hasShownWelcome(userA).first())
-    }
-
-    @Test
-    fun differentUsersHaveIndependentWelcomeState() = runTest {
-        // Given - User A has seen welcome, user B hasn't
-        welcomePreferences.setWelcomeShown(userA)
-
-        // When - Check state for both users
-        val userAHasShown = welcomePreferences.hasShownWelcome(userA).first()
-        val userBHasShown = welcomePreferences.hasShownWelcome(userB).first()
-
-        // Then - Only user A should show as welcomed
-        assertTrue("User A should have seen welcome", userAHasShown)
-        assertFalse("User B should not have seen welcome", userBHasShown)
-    }
-
-    @Test
-    fun guestAndUserHaveIndependentWelcomeState() = runTest {
-        // Given - Guest has seen welcome
-        welcomePreferences.setWelcomeShown(guestUserId)
-
-        // When - Check state for guest and user
-        val guestHasShown = welcomePreferences.hasShownWelcome(guestUserId).first()
-        val userHasShown = welcomePreferences.hasShownWelcome(userA).first()
-
-        // Then - Only guest should show as welcomed
-        assertTrue("Guest should have seen welcome", guestHasShown)
-        assertFalse("User should not have seen welcome", userHasShown)
-    }
-
-    @Test
-    fun multipleUsersCanEachSeeWelcome() = runTest {
-        // Given - User A and B both see welcome
-        welcomePreferences.setWelcomeShown(userA)
-        welcomePreferences.setWelcomeShown(userB)
-
-        // When - Check state for both users
-        val userAHasShown = welcomePreferences.hasShownWelcome(userA).first()
-        val userBHasShown = welcomePreferences.hasShownWelcome(userB).first()
-
-        // Then - Both should show as welcomed
-        assertTrue("User A should have seen welcome", userAHasShown)
-        assertTrue("User B should have seen welcome", userBHasShown)
+        assertTrue(
+            "Repeated set calls should not flip the flag back",
+            welcomePreferences.hasShownWelcome().first()
+        )
     }
 }

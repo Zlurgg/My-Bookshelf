@@ -137,13 +137,9 @@ class BookRepositoryIntegrationTest {
             description = "Test description",
             languages = listOf("en"),
             firstPublishYear = "2024",
-            ratingsAverage = 4.5,
-            ratingsCount = 100,
             numPagesMedian = 300,
-            numEditions = 5,
             purchased = false,
             spineColor = 0xFF8B4513.toInt(),
-            // New fields with default values
             readingStatus = "NOT_READ",
             personalRating = 0f,
             personalNotes = "",
@@ -152,7 +148,6 @@ class BookRepositoryIntegrationTest {
             isbn = null,
             publisher = null,
             publishDate = null,
-            internetArchiveId = null
         )
     }
 }

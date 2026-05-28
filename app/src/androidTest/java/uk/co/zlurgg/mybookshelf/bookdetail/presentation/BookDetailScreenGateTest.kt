@@ -79,12 +79,17 @@ class BookDetailScreenGateTest {
     )
 
     private fun assertPersonalCardsVisible() {
-        composeRule.onNodeWithText("Reading Status").performScrollTo().assertIsDisplayed()
+        // "Not Read" is the dropdown value for ReadingStatus.NOT_READ — unique to
+        // ReadingStatusCard. "Reading Status" is ambiguous because the string is
+        // used as both the card title and the dropdown label.
+        composeRule.onNodeWithText("Not Read").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Rating and Review").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Unowned").performScrollTo().assertIsDisplayed()
     }
 
     private fun assertPersonalCardsHidden() {
+        // assertDoesNotExist is robust to N matching nodes (passes iff N == 0), so
+        // the title/label duplication is harmless here.
         composeRule.onNodeWithText("Reading Status").assertDoesNotExist()
         composeRule.onNodeWithText("Rating and Review").assertDoesNotExist()
         composeRule.onNodeWithText("Unowned").assertDoesNotExist()

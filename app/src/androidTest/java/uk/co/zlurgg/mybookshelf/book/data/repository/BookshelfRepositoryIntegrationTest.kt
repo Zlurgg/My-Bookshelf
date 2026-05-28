@@ -183,10 +183,7 @@ class BookshelfRepositoryIntegrationTest {
             description = "Test description",
             languages = listOf("en"),
             firstPublishYear = "2024",
-            ratingsAverage = 4.5,
-            ratingsCount = 100,
             numPagesMedian = 300,
-            numEditions = 5,
             purchased = false,
             spineColor = 0xFF8B4513.toInt()
         )

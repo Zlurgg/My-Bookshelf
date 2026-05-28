@@ -18,7 +18,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.util.ShelfStyle
 import uk.co.zlurgg.mybookshelf.core.data.database.MyBookshelfRoomDatabase
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookshelfBookCrossRef
-import uk.co.zlurgg.mybookshelf.core.domain.service.TimeProvider
+import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 /**
  * Integration test for BookcaseRepository with real Room database.
@@ -37,11 +37,6 @@ class BookcaseRepositoryIntegrationTest {
         override fun getCurrentUserId(): String? = null
     }
 
-    // Stub TimeProvider - returns fixed timestamp
-    private val stubTimeProvider = object : TimeProvider {
-        override fun currentTimeMillis(): Long = System.currentTimeMillis()
-    }
-
     @Before
     fun setup() {
         database = Room.inMemoryDatabaseBuilder(
@@ -49,7 +44,7 @@ class BookcaseRepositoryIntegrationTest {
             MyBookshelfRoomDatabase::class.java
         ).build()
 
-        repository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider, stubTimeProvider)
+        repository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
     }
 
     @After
@@ -72,7 +67,7 @@ class BookcaseRepositoryIntegrationTest {
         repository.addShelf(shelf)
 
         // Then - Shelf should be retrievable
-        val retrieved = repository.getShelfById("shelf-1")
+        val retrieved = (repository.getShelfById("shelf-1") as Result.Success).data
         assertEquals("shelf-1", retrieved?.id)
         assertEquals("Fiction", retrieved?.name)
         assertEquals(ShelfStyle.DarkWood, retrieved?.shelfStyle)
@@ -96,7 +91,7 @@ class BookcaseRepositoryIntegrationTest {
         repository.updateShelf(updatedShelf)
 
         // Then - Changes should persist
-        val retrieved = repository.getShelfById("shelf-1")
+        val retrieved = (repository.getShelfById("shelf-1") as Result.Success).data
         assertEquals("Updated Name", retrieved?.name)
         assertEquals(5, retrieved?.position)
     }
@@ -208,7 +203,7 @@ class BookcaseRepositoryIntegrationTest {
         repository.addShelf(Bookshelf("shelf-2", "Second", emptyList(), ShelfStyle.DarkWood, 1))
 
         // When - Create new repository instance (simulating app restart)
-        val newRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider, stubTimeProvider)
+        val newRepository = BookcaseRepositoryImpl(database.bookshelfDao, stubCurrentUserProvider)
         val shelves = newRepository.getAllShelves().first()
 
         // Then - Positions should persist
@@ -226,10 +221,7 @@ class BookcaseRepositoryIntegrationTest {
             description = "Test description",
             languages = listOf("en"),
             firstPublishYear = "2024",
-            ratingsAverage = 4.5,
-            ratingsCount = 100,
             numPagesMedian = 300,
-            numEditions = 5,
             purchased = false,
             spineColor = 0xFF8B4513.toInt()
         )
