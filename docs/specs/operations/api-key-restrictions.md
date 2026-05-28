@@ -12,14 +12,13 @@ For how the Android-app restriction mechanism actually works (build-time injecti
 
 ## Keys in this project
 
-### Google Books API key (`AIzaSyAUd…`)
+### Google Books API key
 
 Baked into the APK at build time via `local.properties → GOOGLE_BOOKS_API_KEY → BuildConfig.GOOGLE_BOOKS_API_KEY`, sent on every Books API request as the `X-Goog-Api-Key` header (see `GoogleBooksApiService`).
 
 | Field | Value |
 | --- | --- |
 | Cloud Console key UUID | `95d5837c-ab12-4753-b72e-ab9550512b6e` |
-| Key prefix | `AIzaSyAUd…` |
 | Used by | `GoogleBooksApiService` (every Books search + volume lookup) |
 | Application restriction | **Android apps** |
 | API restriction | **Books API** only |
@@ -31,7 +30,7 @@ Baked into the APK at build time via `local.properties → GOOGLE_BOOKS_API_KEY 
 | Purpose | SHA-1 | Source |
 | --- | --- | --- |
 | Debug builds (`./gradlew assembleDebug`, Android Studio Run) | `87:8D:01:48:21:6E:86:3D:EA:E1:27:9A:C1:BD:AB:B6:E0:16:20:DB` | `~/.android/debug.keystore` (shared with anyone holding the repo) |
-| Local release builds (`./gradlew assembleRelease`, sideloaded testing) | `9F:2F:9F:7A:F4:EA:E8:33:B9:CD:3F:B2:9A:2B:59:3D:69:EB:BC:C0` | `/Users/josephbrightman/StudioProjects/android-keystores/zlurgg-release-key.keystore` |
+| Local release builds (`./gradlew assembleRelease`, sideloaded testing) | `9F:2F:9F:7A:F4:EA:E8:33:B9:CD:3F:B2:9A:2B:59:3D:69:EB:BC:C0` | `~/StudioProjects/android-keystores/zlurgg-release-key.keystore` |
 | Play Store distribution (Play App Signing) | `<TODO after first Play upload — see Play Console → Setup → App integrity → App signing key certificate → SHA-1>` | Play Console (Google-managed) |
 
 **Risk accepted:** anyone with the debug keystore (in practice, anyone with the repo plus the standard Android debug keystore) can use this key against the project quota. At current scale (closed testing, small cohort, modest quota), that's fine.
@@ -53,7 +52,7 @@ Typically hidden from the default Credentials list view (scroll or remove filter
 
 ```
 keytool -list -v \
-  -keystore /Users/josephbrightman/StudioProjects/android-keystores/zlurgg-release-key.keystore \
+  -keystore ~/StudioProjects/android-keystores/zlurgg-release-key.keystore \
   -alias zlurgg
 ```
 
