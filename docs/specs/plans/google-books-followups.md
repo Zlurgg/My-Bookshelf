@@ -82,29 +82,17 @@ Google Books API attribution (`source=gbs_api`) is not a paid referral, and the 
 
 Not a near-term ask. Captured here so we don't lose the thread when item 4 lands.
 
-### 6. Preserve search-dialog state across preview-and-back navigation
+### 6. Preserve search-dialog state across preview-and-back navigation — fixed
 
-Surfaced during on-device testing. When a user searches, taps a result to preview it, then navigates back from the detail screen, the search dialog comes up empty — query and result list are gone. The user has to retype and re-search, which is friction when they're browsing several books in the same search.
+Fixed 2026-05-27 alongside the preview-cache work. Root cause for Bookshelf was the `MyBookShelfApp.kt` click handler explicitly dispatching `OnDismissSearchDialog` before navigating — that rebuilt `bookSearchState` from scratch (preserving only preferences) and forced the user to re-search on return. The dispatch was removed; the search dialog now stays open with its results, query, and error state intact across the search → detail → back round trip. The Library callsite was never auto-dismissing, so it inherits the same behaviour for free.
 
-**Likely causes (investigate before fixing):**
-- `OnSearchResultBookClick` in the relevant ViewModel may close the dialog as a side-effect of triggering navigation.
-- The `navigateToBook` flag is cleared on return — that clear may also reset `bookSearchState.query` and `.results`.
-- The dialog visibility flag (`isSearchDialogVisible`) is being toggled off as part of the navigation flow.
+VM-level assertion (`OnSearchResultBookClick` must not toggle `isSearchDialogVisible`) added to both `BookshelfViewModelTest` and `LibraryViewModelTest` to lock the contract in. Full reasoning in [preview-cache-library-leak.md](preview-cache-library-leak.md) under "Bonus: search dialog now persists across the round trip."
 
-**Possible fixes, by increasing scope:**
-- **Cheapest:** keep `bookSearchState` intact through the navigate-out + navigate-back round trip; reopen the dialog automatically on return so the user lands back on their results.
-- **Moderate:** keep the dialog visible while the detail screen sits in front of it (so back drops the user straight into the still-open dialog, no flicker).
-- **Largest:** convert the preview pane from a separate navigation destination to a bottom-sheet overlay above the search dialog — the user never leaves the search context.
+If on-device verification surfaces a Library-side regression, treat it as a separate bug — the obvious dismiss path is already gone.
 
-Affects both `BookshelfScreen` and `LibraryScreen` (both invoke `BookSearchDialog` and both call `OnSearchResultBookClick`).
+### 7. Preview-cache library leak — fixed
 
-### 7. Preview-cache library leak — separate plan
-
-Out of scope for this doc but adjacent: the `OnSearchResultBookClick` handler in both `BookshelfViewModel` and `LibraryViewModel` upserts the tapped book into the local DB before navigating to the detail screen. The library query at `BookDao.getAllPersonalBooks()` then treats those rows as library entries because the storage layer has no signal distinguishing "previewed" from "explicitly added." Tapping a search result silently adds it to the user's library.
-
-Latent since 2025-09-03 (commit `cb611f02`); made user-visible by the Library screen (commits `d5ec0f76` → `9b839e03`); confirmed during the 2026-05-27 closed-testing smoke test.
-
-Full design + DoD in **[preview-cache-library-leak.md](preview-cache-library-leak.md)**. Closed testing ships with the bug known and noted to testers; the fix (Option A, nav-route seed) is the targeted next-session work.
+Fixed 2026-05-27 via Option C (repository-level preview cache), superseding the original Option A (nav-route seed) design. `BookRepositoryImpl` now holds a process-scoped cache that `SearchBooksUseCase` writes to and `getBookById` falls back to. `OnSearchResultBookClick` no longer writes to the DB. Full details in [preview-cache-library-leak.md](preview-cache-library-leak.md).
 
 ### 8. Cover-image quality on the detail screen — documented, not planned
 

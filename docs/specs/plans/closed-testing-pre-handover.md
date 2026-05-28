@@ -20,15 +20,17 @@ Three independent changes plus documentation:
 
 ## What was deferred and where to find it
 
-### Preview-cache library leak (planned, not fixed)
+### Preview-cache library leak (fixed in the follow-up session)
 
-Tapping a search-result row in either the Bookshelf or Library search dialog writes the previewed book to the local DB before navigating to the detail screen. The library query treats all DB rows that aren't on a shelf as "in the library", so previewed books appear in the user's library even though they only intended to look. Eight-month-old latent bug; surfaced once the Library screen was added.
+Tapping a search-result row in either the Bookshelf or Library search dialog used to write the previewed book to the local DB before navigating to the detail screen. The library query treats all DB rows that aren't on a shelf as "in the library", so previewed books appeared in the user's library even though they only intended to look. Eight-month-old latent bug, surfaced once the Library screen was added.
 
-Full design + DoD in **`docs/specs/plans/preview-cache-library-leak.md`**. Chosen fix: Option A (nav-route seed) — make `Book` and its 5 nested enum types `@Serializable`, pass through `Route.BookDetail` as an optional seed, remove the upsert from both ViewModels, prefer-DB-fallback-to-seed in `BookDetailViewModel`. Estimated ~½ day with tests.
+**Fixed via Option C (repository-level preview cache), not Option A as originally planned.** With pre-release constraints relaxed (no live users, no schema-freeze) and after confirming the navigation layer is string-based rather than type-safe, the repository-cache approach won on smaller surface and cleaner architectural alignment. `BookRepositoryImpl` now holds a process-scoped `ConcurrentHashMap` cache populated by `SearchBooksUseCase` and read by `getBookById` as a DB fallback. The `Book` domain model and `NavigationRoute.BookDetail` are untouched. Full landed design in `docs/specs/plans/preview-cache-library-leak.md` under the "Chosen fix" section.
 
-**Important:** the schema-flag fix (`cachedAt`/`isPreviewOnly` column) was considered and rejected — it leaves orphan DB rows the user can never reach. Do not re-propose it. The plan documents why.
+The trade-off: cache is lost on process death. If Android kills the app between search-tap and detail render, the user lands on an empty detail screen and has to re-tap. Sub-second window on modern devices.
 
-When this lands, also annotate `docs/specs/plans/bookshelf-navigation-race.md` as superseded — the race it fixed no longer exists when the upsert is removed.
+The schema-flag approach (`cachedAt`/`isPreviewOnly` column) was again considered and rejected — orphan-row problem stands regardless of release stage. Do not re-propose.
+
+The race-fix from commit `4016bbd5` is preserved structurally. The race itself is no longer reachable (the click handler is now synchronous) so `bookshelf-navigation-race.md` should be annotated "race no longer reachable" if revisited.
 
 ### Cover-image quality (not planned)
 

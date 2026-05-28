@@ -1,8 +1,8 @@
 # Preview-cache library leak
 
-**Status:** Documented 2026-05-27 during closed-testing smoke test. Not yet scheduled. Targeted for the session immediately after closed testing ships, before opening to wider testers.
+**Status:** Fixed 2026-05-27 on branch `follow-up-fixes`. The chosen approach is **Option C — repository-level preview cache**, not the Option A nav-route seed originally documented below. Reasons recorded in the "Chosen fix" section at the bottom of this doc; the original Option A design is retained for historical context.
 **Origin:** Surfaced during Phase 4.1 smoke test ([closed-testing-release-prep.md](closed-testing-release-prep.md) §4.1). Latent since commit `cb611f02` (2025-09-03); made user-visible by the introduction of the Library screen (commits `d5ec0f76` → `9b839e03`).
-**Scope:** Eliminates the side-effect that "tapping a search result writes the book to the local database." Switches search-result navigation to seed `BookDetailViewModel` via a nav-route argument rather than via a pre-emptive upsert. Net effect: the local DB only contains books the user explicitly added.
+**Scope:** Eliminates the side-effect that "tapping a search result writes the book to the local database." Net effect: the local DB only contains books the user explicitly added.
 
 ## The bug
 
@@ -120,5 +120,90 @@ Verify nothing else in `Book` is a non-serialisable nested type. As of writing, 
 ## Out of scope
 
 - Pagination of search results (covered separately in [google-books-followups.md](google-books-followups.md) item 1).
-- Schema migration to add a `cachedAt` column. The whole point of choosing Option A is to avoid this.
+- Schema migration to add a `cachedAt` column. The orphan-row problem makes that approach wrong on its own merits, regardless of release stage.
 - Surfacing "books the user previewed recently" as a UI feature. If we ever want that, it should be a deliberate UX (e.g. a "Recently viewed" carousel), not a side-effect of caching. Build the feature on its own merits with its own storage.
+
+---
+
+## Chosen fix — Option C (repository-level preview cache)
+
+Adopted 2026-05-27, replaces Option A. Smaller surface, no domain-model changes, no navigation-layer changes.
+
+### Why Option A was set aside
+
+Two things came to light after the original Option A design was written:
+
+1. **The project's navigation layer is string-based, not type-safe.** `NavigationRoute` entries are annotated `@Serializable`, but at runtime navigation flows through `createRoute(id, shelfId) → "bookdetail/$id?shelfId=$shelfId"` with `navArgument(...) { type = NavType.StringType }`. Option A's preferred "custom `NavType<Book?>`" transport assumes type-safe routes. Falling back to a JSON-encoded `seedBookJson: String?` works but is the ugly half of the original A/B framing.
+2. **Pre-release constraints relaxed.** The original plan emphasised the schema-freeze; that no longer applies (the app has no live users). With the freeze gone, the cleaner industry-standard pattern — ID-only nav + repository cache — becomes available without compatibility cost.
+
+The orphan-row argument against the original `cachedAt`/`isPreviewOnly` schema-flag approach still stands and rules it out regardless.
+
+### What Option C does
+
+A process-scoped in-memory cache lives inside `BookRepositoryImpl`. `SearchBooksUseCase` writes the safe-filtered result set into it after a successful search. `BookRepository.getBookById` checks the DB first; on miss, it falls back to the cache. The DB-first ordering means personal metadata (notes, rating, reading status) always wins for books the user actually owns.
+
+Net effect: detail screen renders any tapped search result, no DB write ever happens until the user explicitly adds the book to a shelf or library.
+
+### File-by-file changes (as landed)
+
+- **`book/domain/repository/BookRepository.kt`** — new method `fun cacheSearchPreviews(books: List<Book>)` with kdoc.
+- **`book/data/repository/BookRepositoryImpl.kt`** — `ConcurrentHashMap<String, Book>` cache; `getBookById` falls back to it; new `cacheSearchPreviews` implementation.
+- **`book/domain/usecase/SearchBooksUseCaseImpl.kt`** — new `BookRepository` constructor param; `.onSuccess { bookRepository.cacheSearchPreviews(it.books) }` after the existing `.map { … }` block.
+- **`bookshelf/presentation/BookshelfViewModel.kt`** — `OnSearchResultBookClick` collapses to a single `_state.update { it.copy(navigateToBook = action.book) }`. No coroutine, no upsert, no error branch.
+- **`library/presentation/LibraryViewModel.kt`** — same collapse for its `OnSearchResultBookClick`.
+- **`bookshelf/domain/usecase/BookshelfUseCases.kt`** + **`bookshelf/di/BookshelfModule.kt`** — `upsertBook: UpsertBookUseCase` field removed (orphaned after the handler change). `LibraryUseCases` keeps its `upsertBook` field because `addBookToLibrary` (the explicit add flow) still uses it.
+
+DI auto-wires the new `BookRepository` dep on `SearchBooksUseCaseImpl` via `singleOf`; no Koin module edit needed there.
+
+### Tests landed
+
+- **`SearchBooksUseCaseTest`** — two new cases: cache write happens exactly once on success and contains only safe-filtered books; cache write does not happen on failure. Existing assertion shape preserved.
+- **`BookRepositoryImplTest`** — three new cases: `getBookById` falls back to cache when DB has no row; DB wins over cache for the same id (preserves personal metadata); `cacheSearchPreviews` stores all books in one call.
+- **`BookshelfViewModelTest`** — old "upserts then sets navigateToBook" test rewritten to assert no upsert happens. Error-branch test deleted (no error path remains).
+- **`LibraryViewModelTest`** — same surgery; explicit `assertNull` on `lastUpsertedBook` enforces "tap must not write to DB."
+- **`MockBookRepository`** — gains `cacheSearchPreviewsCallCount` + `lastCachedPreviewIds` tracking for assertion access.
+
+### Manual verification (still owed)
+
+1. Search a never-previewed book. Tap row, navigate back, open Library — book must NOT appear.
+2. Add a book via the `+` button — book must appear in Library (existing flow unchanged).
+3. Open an already-owned book detail, edit personal notes, back, reopen — notes preserved (proves DB-precedence).
+4. Force-stop the app between tap and detail render — accept empty detail screen (user re-taps from search). This is the documented trade-off for the in-memory cache.
+
+### Behaviours that did NOT change
+
+- The `Book` domain model is untouched. No `@Serializable` annotations added.
+- `NavigationRoute.BookDetail` is untouched. No new nav arguments.
+- `BookDetailViewModel`, `GetBookDetailsUseCase`, and the description-fetch flow are untouched — they still read by ID from the repository, which is now transparently cache-aware.
+- The Room schema is untouched. No migration, no schema bump.
+- `LibraryViewModel.addBookToLibrary` still upserts via `LibraryUseCases.upsertBook`. That's the legitimate "+ button" path, not the preview path. It stays.
+
+### Cost / trade-off accepted
+
+The preview cache is process-scoped only. If Android kills the app between the search-tap and the detail screen's first render, the user lands on an empty detail screen and has to re-tap. The window is small (typically sub-second on modern devices), and the cost of the alternative (Option A's `@Serializable` plumbing on the domain model + JSON in nav-route strings) is judged not worth paying for that edge case. Revisit if it bites.
+
+### Bound on growth — clear-on-search
+
+`cacheSearchPreviews` clears the cache before writing the new result set. Each search supersedes the previous; older entries are unreachable through the UI (the search dialog only shows the latest result set), so they would be dead weight. Memory ceiling is one search worth of books — roughly 20 visible English titles × ~2 KB each = ~40 KB. Avoids unbounded growth across long sessions.
+
+Without this, the cache would only be reclaimed on process kill, since the `BookRepositoryImpl` singleton holds a strong reference to it for the process lifetime. GC cannot help in that arrangement.
+
+### Bonus: search dialog now persists across the round trip
+
+The cache enabled a UX fix that previously required a deeper change: the search dialog now stays open and retains its results when the user taps a result, previews it, and returns. Previously the click handler in `MyBookShelfApp.kt` explicitly dispatched `OnDismissSearchDialog`, which rebuilt `bookSearchState` from scratch (preserving only preferences) — so on return the user saw an empty dialog and had to re-search. With the cache in place there is no architectural need to dismiss; the dispatch was removed, and a new ViewModel test asserts that `OnSearchResultBookClick` does not toggle `isSearchDialogVisible`.
+
+The Library callsite never auto-dismissed, so no change there — but the same VM assertion now locks that behaviour in for both screens. This retires (or downgrades) [google-books-followups.md](google-books-followups.md) item 6 for the Bookshelf surface.
+
+### Bonus: scroll position now survives the round trip
+
+`BookSearchDialog` renders a `LazyColumn` inside an `AlertDialog`. AlertDialog uses a platform-level window, and Compose-nav tears that window down when the user navigates to a different destination — even when the parent screen's composable scope stays alive. The `LazyListState` lived inside the dialog's saveable scope, so it died with the window and the list snapped back to the top on return.
+
+Fix: hoist the `LazyListState` into the parent screen (`LibraryScreen` and `BookshelfScreen`) via `rememberSaveable(saver = LazyListState.Saver)`. State now lives in the screen's saveable scope (which survives nav round-trips), and is passed down through `LibraryBookSearchDialog` / `ShelfBookSearchDialog` into the shared `BookSearchDialog`. The dialog's previous internal `rememberLazyListState()` is kept as the parameter default so existing tests and previews still compile unchanged.
+
+### Bonus: detail screen now offers "Add to Library" for previewed books
+
+Before this fix the detail screen had a `ShelfActionsCard` gated on `state.hasShelfContext`. Books opened from Library (no shelfId) had no add affordance — the user could preview but couldn't save without going back. New `LibraryActionsCard` renders in the bottomBar when `!hasShelfContext && !isInLibrary && !isTutorialBook && !(isBookClub && !isSignedIn)`, calling `BookDetailAction.OnAddToLibraryClick(book)` which routes through `bookDetailUseCases.upsertBook(book)`. State carries new `isInLibrary: Boolean` populated from a new `getAllPersonalBooks()` flow combined into `GetBookDetailsUseCase`. Asymmetric by design — removal stays gated behind the Library screen's selection-mode + confirmation dialog so the only delete path keeps its safety net.
+
+### Supersession
+
+The race-fix from commit `4016bbd5` (`OnBookClick` / `OnSearchResultBookClick` split, `LaunchedEffect(state.navigateToBook)` pattern in screen roots) is preserved. The race itself no longer exists — the click handler is now synchronous so there's nothing async between tap and navigate — but the split is still useful for clarity and the `LaunchedEffect` pattern continues to work correctly. `bookshelf-navigation-race.md` should be annotated as "race no longer reachable" rather than "superseded."
