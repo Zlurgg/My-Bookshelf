@@ -23,7 +23,6 @@ val bookshelfModule = module {
             getShelfBooks = get(),
             addBookToShelf = get(),
             removeBookFromShelf = get(),
-            upsertBook = get(),
             updateShelfTidyMode = get()
         )
     }

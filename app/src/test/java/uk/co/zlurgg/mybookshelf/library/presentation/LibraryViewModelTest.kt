@@ -443,43 +443,39 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `search result book click upserts then sets navigateToBook`() = runTest(testDispatcher) {
+    fun `search result tap navigates without persisting or dismissing`() = runTest(testDispatcher) {
         val book = TestBookBuilder().withId("clicked-book").withTitle("Clicked Book").build()
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
         stateHelper.getCurrentState()
 
+        // Open the search dialog so we can verify it stays open across the tap.
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        advanceUntilIdle()
+
         viewModel.onAction(LibraryAction.OnSearchResultBookClick(book))
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()
 
-        assertTrue(
-            "Should have cached clicked book",
-            stubUpsertBook.lastUpsertedBook?.id == "clicked-book"
+        // The previewed book must NOT be written to the local DB on click —
+        // that would leak it into the Library view. Persistence happens only
+        // when the user explicitly adds the book (OnAddBookToLibrary).
+        assertNull(
+            "Tap must not upsert into the local DB",
+            stubUpsertBook.lastUpsertedBook
         )
         assertEquals("Should set navigateToBook", "clicked-book", state!!.navigateToBook?.id)
-        stateHelper.cleanup()
-    }
-
-    @Test
-    fun `search result book click error surfaces in bookSearchState`() = runTest(testDispatcher) {
-        stubUpsertBook.shouldSucceed = false
-        val book = TestBookBuilder().withId("fail-book").build()
-
-        val viewModel = createViewModel()
-        val stateHelper = viewModel.state.testHelper(this)
-        stateHelper.getCurrentState()
-
-        viewModel.onAction(LibraryAction.OnSearchResultBookClick(book))
-        advanceUntilIdle()
-        val state = stateHelper.getCurrentState()
-
-        assertTrue(
-            "Should have error message",
-            state!!.bookSearchState.errorMessage != null
+        assertNull(
+            "Tap should not surface an error",
+            state.bookSearchState.errorMessage
         )
-        assertNull("Should not navigate", state.navigateToBook)
+        // The search dialog must remain visible — preview cache enables preserving
+        // the result list across the search → detail → back round trip.
+        assertTrue(
+            "Tap must not dismiss the search dialog",
+            state.isSearchDialogVisible
+        )
         stateHelper.cleanup()
     }
 

@@ -19,10 +19,12 @@ class MockBookRepository : BookRepository {
     var upsertSystemBookCallCount = 0
     var getBookByIdCallCount = 0
     var deleteBooksCallCount = 0
+    var cacheSearchPreviewsCallCount = 0
     var lastUpsertedBook: Book? = null
     var lastUpsertedSystemBook: Book? = null
     var lastQueriedBookId: String? = null
     var lastDeletedBookIds: List<String> = emptyList()
+    var lastCachedPreviewIds: List<String> = emptyList()
 
     private val nonRemovableBookIdsFlow = MutableStateFlow<Set<String>>(emptySet())
 
@@ -34,11 +36,13 @@ class MockBookRepository : BookRepository {
         upsertSystemBookCallCount = 0
         getBookByIdCallCount = 0
         deleteBooksCallCount = 0
+        cacheSearchPreviewsCallCount = 0
         updateDescriptionCallCount = 0
         lastUpsertedBook = null
         lastUpsertedSystemBook = null
         lastQueriedBookId = null
         lastDeletedBookIds = emptyList()
+        lastCachedPreviewIds = emptyList()
         lastUpdatedDescriptionBookId = null
         lastUpdatedDescription = null
         nonRemovableBookIdsFlow.value = emptySet()
@@ -107,6 +111,11 @@ class MockBookRepository : BookRepository {
 
     fun setNonRemovableBookIds(ids: Set<String>) {
         nonRemovableBookIdsFlow.value = ids
+    }
+
+    override fun cacheSearchPreviews(books: List<Book>) {
+        cacheSearchPreviewsCallCount++
+        lastCachedPreviewIds = books.map { it.id }
     }
 
     override fun getAllPersonalBooks(): Flow<List<Book>> = personalBooksFlow

@@ -10,16 +10,19 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.testutil.builders.TestSearchedBookDtoBuilder
+import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockRemoteBookDataSource
 
 class SearchBooksUseCaseTest {
 
     private val mockRemoteDataSource = MockRemoteBookDataSource()
-    private val useCase = SearchBooksUseCaseImpl(mockRemoteDataSource)
+    private val mockBookRepository = MockBookRepository()
+    private val useCase = SearchBooksUseCaseImpl(mockRemoteDataSource, mockBookRepository)
 
     @After
     fun tearDown() {
         mockRemoteDataSource.reset()
+        mockBookRepository.reset()
     }
 
     @Test
@@ -234,6 +237,55 @@ class SearchBooksUseCaseTest {
         val searchResult = (result as Result.Success).data
         assertEquals(2, searchResult.books.size)
         assertEquals(0, searchResult.filteredCount)
+    }
+
+    @Test
+    fun `successful search writes safe-filtered results to the preview cache`() = runTest {
+        // The preview cache lets BookDetailViewModel render a tapped search
+        // result via BookRepository.getBookById without first persisting it
+        // to the local DB — that previously polluted the Library view.
+        val testBooks = listOf(
+            TestSearchedBookDtoBuilder()
+                .withId("/works/SAFE1")
+                .withTitle("Safe Book")
+                .withSubjects(listOf("Fiction"))
+                .build().toBook(),
+            TestSearchedBookDtoBuilder()
+                .withId("/works/EXPLICIT")
+                .withTitle("Explicit Book")
+                .withSubjects(listOf("Erotica"))
+                .build().toBook()
+        )
+        mockRemoteDataSource.configureSearchResponse(BookSearchResponse(books = testBooks))
+
+        val result = useCase("test", safeSearchEnabled = true)
+
+        assertTrue("Should return success", result is Result.Success)
+        assertEquals(
+            "Cache write must happen exactly once on success",
+            1,
+            mockBookRepository.cacheSearchPreviewsCallCount
+        )
+        assertEquals(
+            "Only safe-filtered books should be cached",
+            listOf("SAFE1"),
+            mockBookRepository.lastCachedPreviewIds
+        )
+    }
+
+    @Test
+    fun `failed search does not write to the preview cache`() = runTest {
+        mockRemoteDataSource.shouldThrowException = true
+        mockRemoteDataSource.networkError = DataError.Remote.NO_INTERNET
+
+        val result = useCase("test query")
+
+        assertTrue("Should return error", result is Result.Error)
+        assertEquals(
+            "Cache must not be written on failure",
+            0,
+            mockBookRepository.cacheSearchPreviewsCallCount
+        )
     }
 
     @Test

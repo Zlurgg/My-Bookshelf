@@ -20,7 +20,6 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchResult
-import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.UpdateShelfTidyModeUseCase
@@ -53,7 +52,6 @@ class BookshelfViewModelTest {
     private val mockGetShelfBooks = SimpleGetShelfBooksUseCase()
     private val mockAddBookToShelf = SimpleAddBookToShelfUseCase()
     private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
-    private val mockUpsertBook = SimpleUpsertBookUseCase()
     private val mockUpdateShelfTidyMode = SimpleUpdateShelfTidyModeUseCase()
     private val mockGetShelfById = MockGetShelfByIdUseCase()
     private val stubSearchPreferences = StubSearchPreferences()
@@ -67,7 +65,6 @@ class BookshelfViewModelTest {
         mockGetShelfBooks.reset()
         mockAddBookToShelf.reset()
         mockRemoveBookFromShelf.reset()
-        mockUpsertBook.reset()
         mockGetShelfById.reset()
         stubSearchPreferences.reset()
     }
@@ -80,7 +77,6 @@ class BookshelfViewModelTest {
             getShelfBooks = mockGetShelfBooks,
             addBookToShelf = mockAddBookToShelf,
             removeBookFromShelf = mockRemoveBookFromShelf,
-            upsertBook = mockUpsertBook,
             updateShelfTidyMode = mockUpdateShelfTidyMode
         )
         return BookshelfViewModel(
@@ -164,48 +160,39 @@ class BookshelfViewModelTest {
     }
 
     @Test
-    fun `search result book click upserts then sets navigateToBook`() = runTest(testDispatcher) {
+    fun `search result tap navigates without persisting or dismissing`() = runTest(testDispatcher) {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
         mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
 
+        // Open the search dialog so we can verify it stays open across the tap.
+        stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnSearchClick)
+        }
+
         // When
         val stateAfterClick = stateHelper.executeAndGetState {
             viewModel.onAction(BookshelfAction.OnSearchResultBookClick(testBook))
         }
 
         // Then
+        // The previewed book must NOT be persisted to the local DB on click —
+        // that would leak it into the Library view. Persistence happens only
+        // when the user explicitly adds the book to a shelf (OnAddBookClick).
         assertEquals("Should set navigateToBook", testBook, stateAfterClick?.navigateToBook)
-        stateHelper.cleanup()
-    }
-
-    @Test
-    fun `search result book click error surfaces in bookSearchState`() = runTest(testDispatcher) {
-        // Given
-        val testBook = TestBookBuilder().withId("book-1").build()
-        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
-        mockUpsertBook.shouldSucceed = false
-
-        val viewModel = createViewModel()
-        val stateHelper = viewModel.state.testHelper(this)
-
-        // When
-        val stateAfterClick = stateHelper.executeAndGetState {
-            viewModel.onAction(BookshelfAction.OnSearchResultBookClick(testBook))
-        }
-
-        // Then
-        assertTrue(
-            "Should set error in bookSearchState",
-            stateAfterClick?.bookSearchState?.errorMessage != null
+        assertEquals(
+            "Tap should not surface an error",
+            null,
+            stateAfterClick?.bookSearchState?.errorMessage
         )
+        // The search dialog must remain visible — preview cache enables preserving
+        // the result list across the search → detail → back round trip.
         assertTrue(
-            "Should contain operation context",
-            stateAfterClick?.bookSearchState?.errorMessage?.contains("open book") == true
+            "Tap must not dismiss the search dialog",
+            stateAfterClick?.isSearchDialogVisible == true
         )
-        assertEquals("navigateToBook should remain null", null, stateAfterClick?.navigateToBook)
         stateHelper.cleanup()
     }
 
@@ -555,17 +542,6 @@ class BookshelfViewModelTest {
         var shouldSucceed = true
 
         override suspend operator fun invoke(bookId: String, shelfId: String): Result<Unit, DataError.Local> =
-            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
-
-        fun reset() {
-            shouldSucceed = true
-        }
-    }
-
-    private class SimpleUpsertBookUseCase : UpsertBookUseCase {
-        var shouldSucceed = true
-
-        override suspend operator fun invoke(book: Book): Result<Unit, DataError.Local> =
             if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {

@@ -314,6 +314,78 @@ class BookRepositoryImplTest {
     }
 
     @Test
+    fun `getBookById falls back to preview cache when DB has no row`() = runTest {
+        // Cached search results should be readable through getBookById without
+        // first being persisted — that's the whole point of the preview cache.
+        val cachedOnly = TestBookBuilder()
+            .withId("cache-only")
+            .withTitle("Cached Preview")
+            .build()
+        repository.cacheSearchPreviews(listOf(cachedOnly))
+
+        val retrieved = getBookOrFail("cache-only")
+
+        assertEquals("Should return cached title", "Cached Preview", retrieved.title)
+    }
+
+    @Test
+    fun `getBookById prefers DB row over preview cache for the same id`() = runTest {
+        // DB row carries personal metadata (notes, rating, reading status) that
+        // the cached API version would not have, so DB must win.
+        val dbBook = TestBookBuilder()
+            .withId("conflicting-id")
+            .withTitle("DB Title")
+            .withPersonalNotes("Important notes")
+            .build()
+        val cachedBook = TestBookBuilder()
+            .withId("conflicting-id")
+            .withTitle("API Title")
+            .build()
+        saveBook(dbBook)
+        repository.cacheSearchPreviews(listOf(cachedBook))
+
+        val retrieved = getBookOrFail("conflicting-id")
+
+        assertEquals("DB row must win", "DB Title", retrieved.title)
+        assertEquals("Personal metadata must be preserved", "Important notes", retrieved.personalNotes)
+    }
+
+    @Test
+    fun `cacheSearchPreviews stores all books in one call`() = runTest {
+        val books = listOf(
+            TestBookBuilder().withId("a").withTitle("A").build(),
+            TestBookBuilder().withId("b").withTitle("B").build(),
+            TestBookBuilder().withId("c").withTitle("C").build(),
+        )
+
+        repository.cacheSearchPreviews(books)
+
+        assertEquals("A", getBookOrFail("a").title)
+        assertEquals("B", getBookOrFail("b").title)
+        assertEquals("C", getBookOrFail("c").title)
+    }
+
+    @Test
+    fun `cacheSearchPreviews evicts entries from previous calls`() = runTest {
+        // Each search supersedes the previous — older entries are unreachable
+        // through the UI (the search dialog only shows the latest result set),
+        // so the cache should not accumulate them across queries.
+        val firstSearch = listOf(
+            TestBookBuilder().withId("old-1").withTitle("Old 1").build(),
+            TestBookBuilder().withId("old-2").withTitle("Old 2").build(),
+        )
+        val secondSearch = listOf(
+            TestBookBuilder().withId("new-1").withTitle("New 1").build(),
+        )
+        repository.cacheSearchPreviews(firstSearch)
+        repository.cacheSearchPreviews(secondSearch)
+
+        assertNull("Old cached entry should be evicted", getBookOrNull("old-1"))
+        assertNull("Old cached entry should be evicted", getBookOrNull("old-2"))
+        assertEquals("New entry should be readable", "New 1", getBookOrFail("new-1").title)
+    }
+
+    @Test
     fun `upsertBook with extremely long data fields`() = runTest {
         // Given
         val longString = "A".repeat(10000) // Very long string

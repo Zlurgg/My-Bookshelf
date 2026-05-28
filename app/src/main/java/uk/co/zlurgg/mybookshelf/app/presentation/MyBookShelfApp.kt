@@ -230,7 +230,10 @@ fun MyBookShelfApp() {
                             },
                             onBookClick = { book ->
                                 viewModel.onAction(BookshelfAction.OnBookClick(book))
-                                viewModel.onAction(BookshelfAction.OnDismissSearchDialog)
+                                // Search dialog is intentionally not dismissed here — the
+                                // preview cache means we can preserve search results across
+                                // the search → detail → back round trip so the user doesn't
+                                // have to re-query when previewing several books in a row.
                                 navController.navigate(
                                     NavigationRoute.BookDetail.createRoute(book.id, shelfId)
                                 ) {

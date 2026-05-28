@@ -1,17 +1,23 @@
 package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
+import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.service.SafeSearchFilter
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.map
+import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 
 /**
  * Implementation of SearchBooksUseCase that retrieves book data from RemoteBookDataSource.
  * Results are sorted by the API's default relevance algorithm.
+ *
+ * Successful results are written to [BookRepository.cacheSearchPreviews] so that the detail
+ * screen can render a tapped search result without first persisting it to the local DB.
  */
 class SearchBooksUseCaseImpl(
-    private val remoteBookDataSource: RemoteBookDataSource
+    private val remoteBookDataSource: RemoteBookDataSource,
+    private val bookRepository: BookRepository,
 ) : SearchBooksUseCase {
 
     companion object {
@@ -64,6 +70,8 @@ class SearchBooksUseCaseImpl(
                 books = safeBooks,
                 filteredCount = response.books.size - safeBooks.size
             )
+        }.onSuccess { result ->
+            bookRepository.cacheSearchPreviews(result.books)
         }
     }
 }

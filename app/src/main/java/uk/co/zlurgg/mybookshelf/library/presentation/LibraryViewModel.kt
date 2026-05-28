@@ -190,26 +190,7 @@ class LibraryViewModel(
                 addBookToLibrary(action.book)
             }
             is LibraryAction.OnSearchResultBookClick -> {
-                viewModelScope.launch {
-                    when (val cacheResult = libraryUseCases.upsertBook(action.book)) {
-                        is Result.Success -> {
-                            _state.update { it.copy(navigateToBook = action.book) }
-                        }
-                        is Result.Error -> {
-                            Timber.tag(TAG).e("Failed to cache book: %s", cacheResult.error)
-                            _state.update {
-                                it.copy(
-                                    bookSearchState = it.bookSearchState.copy(
-                                        errorMessage = ErrorFormatter.formatDataErrorMessage(
-                                            cacheResult.error,
-                                            "open book"
-                                        )
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
+                _state.update { it.copy(navigateToBook = action.book) }
             }
             is LibraryAction.OnNavigationHandled -> {
                 _state.update { it.copy(navigateToBook = null) }

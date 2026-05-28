@@ -100,26 +100,7 @@ class BookshelfViewModel(
                 queryFlow.tryEmit("")
             }
             is BookshelfAction.OnSearchResultBookClick -> {
-                viewModelScope.launch {
-                    when (val cacheResult = bookshelfUseCases.upsertBook(action.book)) {
-                        is Result.Success -> {
-                            _state.update { it.copy(navigateToBook = action.book) }
-                        }
-                        is Result.Error -> {
-                            Timber.tag(TAG).e("Failed to cache book: %s", cacheResult.error)
-                            _state.update {
-                                it.copy(
-                                    bookSearchState = it.bookSearchState.copy(
-                                        errorMessage = ErrorFormatter.formatDataErrorMessage(
-                                            cacheResult.error,
-                                            "open book"
-                                        )
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
+                _state.update { it.copy(navigateToBook = action.book) }
             }
             is BookshelfAction.OnNavigationHandled -> {
                 _state.update { it.copy(navigateToBook = null) }

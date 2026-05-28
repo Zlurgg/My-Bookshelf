@@ -29,6 +29,17 @@ interface BookRepository {
      */
     suspend fun upsertSystemBook(book: Book): Result<Unit, DataError.Local>
 
+    /**
+     * Caches search-result books in memory so a subsequent [getBookById] can
+     * return them without a DB write. Used by the search → detail-screen path
+     * to avoid polluting the local DB (and therefore the Library view) with
+     * books the user only previewed.
+     *
+     * The cache is process-scoped and lost on process death. Detail screens
+     * opened after a process restart fall back to the empty-state behaviour.
+     */
+    fun cacheSearchPreviews(books: List<Book>)
+
     // Library
     fun getAllPersonalBooks(): Flow<List<Book>>
 

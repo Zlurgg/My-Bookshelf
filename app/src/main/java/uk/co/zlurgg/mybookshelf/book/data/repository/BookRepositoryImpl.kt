@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.book.data.repository
 
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
@@ -19,10 +20,20 @@ class BookRepositoryImpl(
     private val dao: BookshelfDao,
 ) : BookRepository {
 
+    private val previewCache = ConcurrentHashMap<String, Book>()
+
     override suspend fun getBookById(bookId: String): Result<Book?, DataError.Local> {
         return ErrorMapper.safeSuspendCall(TAG) {
-            dao.getBookById(bookId)?.toBook()
+            dao.getBookById(bookId)?.toBook() ?: previewCache[bookId]
         }
+    }
+
+    override fun cacheSearchPreviews(books: List<Book>) {
+        // Each search supersedes the previous: only the currently-visible
+        // result set is reachable through the search dialog, so older entries
+        // are dead weight. Bounds the cache at one search worth of books.
+        previewCache.clear()
+        books.forEach { previewCache[it.id] = it }
     }
 
     override suspend fun upsertBook(book: Book): Result<Unit, DataError.Local> {
