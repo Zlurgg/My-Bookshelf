@@ -190,6 +190,10 @@ class BookDetailViewModel(
     fun onAction(action: BookDetailAction) {
         when (action) {
             is BookDetailAction.OnAddBookClick -> {
+                // Mirrors OnAddToLibraryClick: stay on the detail screen on success so
+                // the user can immediately set personal metadata (rating, notes, status)
+                // or undo a misplaced add. State updates flip ShelfActionsCard's
+                // affordance so the screen reflects the new membership.
                 val currentShelfId = shelfId ?: return
                 viewModelScope.launch {
                     val onShelf = state.value.onShelf
@@ -199,7 +203,6 @@ class BookDetailViewModel(
                         when (val removeResult = bookDetailUseCases.removeBookFromShelf(book.id, currentShelfId)) {
                             is Result.Success -> {
                                 _state.update { it.toggleShelfStatus(false) }
-                                onNavigateBack?.invoke()
                             }
                             is Result.Error -> {
                                 _state.update { it.withError(removeResult.error, "remove book from shelf") }
@@ -209,7 +212,6 @@ class BookDetailViewModel(
                         when (val addResult = bookDetailUseCases.addBookToShelf(book, currentShelfId)) {
                             is Result.Success -> {
                                 _state.update { it.toggleShelfStatus(true) }
-                                onNavigateBack?.invoke()
                             }
                             is Result.Error -> {
                                 _state.update { it.withError(addResult.error, "add book to shelf") }
@@ -254,12 +256,14 @@ class BookDetailViewModel(
             }
             BookDetailAction.OnBackClick -> onNavigateBack?.invoke()
             is BookDetailAction.OnRemoveBookClick -> {
+                // Mirrors OnAddBookClick / OnAddToLibraryClick: stay on the detail
+                // screen so the user can undo an accidental remove (toggle back via
+                // ShelfActionsCard) without re-navigating. Symmetric with add.
                 val currentShelfId = shelfId ?: return
                 viewModelScope.launch {
                     when (val removeResult = bookDetailUseCases.removeBookFromShelf(bookId, currentShelfId)) {
                         is Result.Success -> {
                             _state.update { it.toggleShelfStatus(false) }
-                            onNavigateBack?.invoke()
                         }
                         is Result.Error -> {
                             _state.update { it.withError(removeResult.error, "remove book from shelf") }

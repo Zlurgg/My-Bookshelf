@@ -181,46 +181,47 @@ class BookDetailViewModelTest {
     }
 
     @Test
-    fun `add book to shelf updates onShelf state`() = runTest(testDispatcher) {
-        // Given
+    fun `add book to shelf updates onShelf state and stays on detail`() = runTest(testDispatcher) {
+        // Mirrors OnAddToLibraryClick: state flips, screen stays open so the user
+        // can set personal metadata or undo. Auto-nav after add is the bug the
+        // mirror was introduced to fix.
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = false)
 
+        var backInvoked = false
         val viewModel = createViewModel()
+        viewModel.setNavigationCallback { backInvoked = true }
         val stateHelper = viewModel.state.testHelper(this)
-
-        // Wait for initial load
         stateHelper.awaitState()
 
-        // When
         val stateAfterAdd = stateHelper.executeAndGetState {
             viewModel.onAction(BookDetailAction.OnAddBookClick(testBook))
         }
 
-        // Then
         assertTrue("Should update onShelf to true", stateAfterAdd?.onShelf == true)
+        assertFalse("Add must not auto-nav back", backInvoked)
         stateHelper.cleanup()
     }
 
     @Test
-    fun `remove book from shelf updates onShelf state`() = runTest(testDispatcher) {
-        // Given
+    fun `remove book from shelf updates onShelf state and stays on detail`() = runTest(testDispatcher) {
+        // Mirror symmetry: remove also stays on detail so the user can immediately
+        // undo (re-add) without a round trip. Predictable parity with add.
         val testBook = TestBookBuilder().withId("book-1").withTitle("Test Book").build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
 
+        var backInvoked = false
         val viewModel = createViewModel()
+        viewModel.setNavigationCallback { backInvoked = true }
         val stateHelper = viewModel.state.testHelper(this)
-
-        // Wait for initial load
         stateHelper.awaitState()
 
-        // When
         val stateAfterRemove = stateHelper.executeAndGetState {
             viewModel.onAction(BookDetailAction.OnRemoveBookClick(testBook))
         }
 
-        // Then
         assertFalse("Should update onShelf to false", stateAfterRemove?.onShelf == true)
+        assertFalse("Remove must not auto-nav back", backInvoked)
         stateHelper.cleanup()
     }
 
