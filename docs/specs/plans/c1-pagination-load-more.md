@@ -1,11 +1,11 @@
 # C1 — Pagination + "Load more" for remote book search
 
-**Status:** Plan v3 — second review pass on 2026-05-29 resolved the open `pageSize` provenance (now a required field on `BookSearchResponse`, not inferred from a constant), removed the use case's existing `cacheSearchPreviews` write to avoid double-caching with the VM, and added a min-length guard on `OnLoadMore`. Awaiting implementation in a fresh session.
+**Status:** Plan v4 — third review pass on 2026-05-29 pinned the OL `pageSize` source: today the VMs pass `resultLimit = null` and `OpenLibraryApiService.searchBooks` skips the `limit` query param entirely, so OL serves its server-side default of 100. v4 introduces `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100` and routes the OL data source through it so `pageSize` is always a known value the impl asked for. References to "15" in v3 were stale from a legacy plan inheriting an unverified number; corrected throughout. v3 still resolved the open `pageSize` provenance (required field on `BookSearchResponse`), removed the use case's `cacheSearchPreviews` write, and added the `OnLoadMore` min-length guard. Awaiting implementation in a fresh session.
 **Scope:** Add pagination to the remote search path (Google Books + OpenLibrary). Surface a "Load more" button at the bottom of the shelf, library, and book-club search dialog result lists. Library-scope search (added in commit `1159e279`) is unaffected — local results return synchronously.
 
 ## Goal
 
-Today every remote search returns the first page (40 Google / 15 OL) and stops. C1 lets the user request the next page on demand without re-typing, while keeping the same provider abstraction, the same fallback semantics for first-page requests, and the existing preview-cache → tap-row-into-detail flow intact across pages.
+Today every remote search returns the first page (40 Google / 100 OL) and stops. C1 lets the user request the next page on demand without re-typing, while keeping the same provider abstraction, the same fallback semantics for first-page requests, and the existing preview-cache → tap-row-into-detail flow intact across pages.
 
 ## Where it applies
 
@@ -42,7 +42,7 @@ Google page 1: maxResults=40 → 40 raw items
               → state.results.size == 18
 ```
 
-Using `state.results.size == 18` as the next `startIndex` re-fetches rows 18–57 — overlapping the first page massively. OL doesn't post-filter so `state.results.size == 15` is accidentally correct there, which makes the bug provider-asymmetric and easy to miss in tests.
+Using `state.results.size == 18` as the next `startIndex` re-fetches rows 18–57 — overlapping the first page massively. OL doesn't post-filter so `state.results.size == 100` (its default page) is accidentally correct there, which makes the bug provider-asymmetric and easy to miss in tests.
 
 **Fix:** `BookSearchResponse` and `SearchResult` gain `rawPageSize: Int` — the count of items the provider *actually returned* before any post-filtering. The ViewModel accumulates `nextStartIndex += response.rawPageSize`. End-of-results is `rawPageSize < pageSize` (which also subsumes the empty-page case). `pageSize` is itself a required field on the response (see §Data model) — see "Provider asymmetry" below for why a hard-coded constant is wrong.
 
@@ -118,7 +118,7 @@ data class BookSearchResponse(
     val rawPageSize: Int,
     // The page size the data source asked the provider for on THIS request.
     // Required for the same compile-time-safety reason. Google's effective
-    // page is 40, OL's is 15 — and page 1 of a fresh search can fall back
+    // page is 40, OL's is 100 — and page 1 of a fresh search can fall back
     // from Google to OL, so the VM cannot assume a fixed constant. Returning
     // it from the data source makes "did we get a full page?" provider-aware
     // without any inference on the consumer side.
@@ -202,7 +202,23 @@ BookSearchResponse(
 )
 ```
 
-The same pattern in `OpenLibraryRemoteBookDataSource`: capture the value the impl actually passed to `parameter("limit", it)` and return it as `pageSize`.
+The same pattern in `OpenLibraryRemoteBookDataSource` — with one prerequisite: today's OL impl does `resultLimit?.let { parameter("limit", it) }` so when the VM passes `resultLimit = null` (which it does — `BookshelfViewModel.kt:378`, `LibraryViewModel.kt:397`), OL receives no `limit` and serves its server-side default of 100. There is no "value the impl actually passed" to capture.
+
+**Add `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100`** (matching today's effective behavior — OL's `/search.json` default) and route the OL impl through it:
+
+```kotlin
+// OpenLibraryApiService:
+val requestedLimit = resultLimit ?: ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS
+parameter("limit", requestedLimit)
+// ...later in the data source response:
+BookSearchResponse(
+    books = dto.results.map { it.toBook() },
+    rawPageSize = dto.results.size,   // OL doesn't post-filter
+    pageSize = requestedLimit,
+)
+```
+
+Picking 100 (vs 15 from the v3 plan, vs 40 to match Google) preserves today's behavior on the OL fallback path. Reducing it would regress the result count users see when Google falls back. The number must match in three places: the constant, the OL data source pageSize population, and the test row.
 
 `FallbackRemoteBookDataSource` threads `startIndex` through and short-circuits fallback when non-null per the §Fallback decision.
 
@@ -275,7 +291,7 @@ private suspend fun performSearch(append: Boolean = false) {
                         filteredCount = result.filteredCount,
                         nextStartIndex = baseStartIndex + result.rawPageSize,
                         // Provider-aware: result.pageSize is the size the
-                        // data source actually requested (Google 40, OL 15,
+                        // data source actually requested (Google 40, OL 100,
                         // possibly different if page 1 fell back to OL).
                         canLoadMore = result.rawPageSize >= result.pageSize,
                     )
@@ -401,7 +417,7 @@ The `LazyColumn` adds a footer `item` that renders:
 | Track `loadMoreJob` ref | Use `loadMoreFlow` + merged `collectLatest` | All cancellation paths share one primitive — toggle handlers can't forget. |
 | Accumulate `filteredCount` across pages | Per-page reset | "M filtered" climbing across loads is confusing in the dialog header. Per-page is what the current UX implies. |
 | `BookSearchResponse.totalResults: Int = 0` default | `rawPageSize: Int` (no default) | A data source that forgets to populate now fails to compile rather than silently advertising "page is empty." |
-| Page-size constant unspecified | `pageSize: Int` returned by each data source on `BookSearchResponse` / `SearchResult` | Page 1 fallback (Google→OL) is still enabled by design, so the effective page size can change between requests. Inferring from a constant would hide the OL-served-page-1 case where the VM would compare a 15-row response against Google's 40 and incorrectly conclude end-of-results. The data source already knows what it asked for; returning it removes all inference. |
+| Page-size constant unspecified | `pageSize: Int` returned by each data source on `BookSearchResponse` / `SearchResult` | Page 1 fallback (Google→OL) is still enabled by design, so the effective page size can change between requests. Inferring from a constant would hide the OL-served-page-1 case where the VM would compare a 100-row response against Google's 40 and incorrectly conclude end-of-results. The data source already knows what it asked for; returning it removes all inference. |
 
 ## Open decisions (v3)
 
@@ -432,7 +448,8 @@ The `LazyColumn` adds a footer `item` that renders:
 | VM | `closeSearchDialog` preserves `libraryScopeEnabled` | Asymmetry fix |
 | VM | `cacheSearchPreviews` called with accumulated list, not per-page batch | Preview-cache invariant |
 | Use case | `cacheSearchPreviews` no longer called from `SearchBooksUseCaseImpl` | Single-writer invariant — VM owns the cache under pagination |
-| VM | `canLoadMore` true when page 1 fell back to OL and returned a full 15 rows; false when it returned 14 | `pageSize` propagation across the fallback path |
+| VM | `canLoadMore` true when page 1 fell back to OL and returned a full 100 rows; false when it returned 99 | `pageSize` propagation across the fallback path |
+| Data source | `OpenLibraryApiService` sends `parameter("limit", 100)` when caller passes `resultLimit = null` (not the today-default of "skip the param entirely") | OL `pageSize` is always well-defined |
 | VM | `OnLoadMore` is a no-op when query is below `MIN_SEARCH_QUERY_LENGTH` | Defensive guard against in-flight load-more during query delete |
 | Screen | (optional) Load-more button visible when `canLoadMore`; spinner when `isLoadingMore` | Visual contract |
 
@@ -448,7 +465,7 @@ The `LazyColumn` adds a footer `item` that renders:
 
 1. **Data model.** Add `rawPageSize: Int` and `pageSize: Int` to `BookSearchResponse` and `SearchResult` (no defaults).
 2. **API services.** Add `startIndex: Int?` to `BookApiService`. Implement in `GoogleBooksApiService` (`parameter("startIndex", ...)`) and `OpenLibraryApiService` (`parameter("offset", ...)`). Apply `coerceAtLeast(0)` at both sites.
-3. **Data sources.** Thread `startIndex` through `RemoteBookDataSource` interface, Google + OL impls, and `FallbackRemoteBookDataSource`. Each impl populates `rawPageSize` from the raw items count *before* its own post-filter step, and `pageSize` from the limit it just asked the provider for. Fallback short-circuits when `startIndex != null`.
+3. **Data sources.** Thread `startIndex` through `RemoteBookDataSource` interface, Google + OL impls, and `FallbackRemoteBookDataSource`. Each impl populates `rawPageSize` from the raw items count *before* its own post-filter step, and `pageSize` from the limit it just asked the provider for. Fallback short-circuits when `startIndex != null`. **Add `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100`** and update `OpenLibraryApiService` to always send `parameter("limit", resultLimit ?: MAX_RESULTS)` so OL's `pageSize` is always a known value (today the impl skips the param entirely when null).
 4. **Use case.** `SearchBooksUseCase` gains `startIndex` parameter. Returns per-page `filteredCount` (not accumulated). Returns `rawPageSize` and `pageSize`. **Removes** the existing `bookRepository.cacheSearchPreviews(result.books)` call — the VM is the sole cache writer under pagination.
 5. **State + actions + helpers.** Add `BookSearchState` fields (`nextStartIndex`, `isLoadingMore`, `canLoadMore`). Add `BookSearchState.withFreshSearch()` helper. Add `OnLoadMore` to `BookshelfAction` and `LibraryAction`.
 6. **ViewModels.** Refactor `performSearch` into `performSearch(append: Boolean)`. Replace standalone `observeDebouncedQuery` with a merged `queryFlow + loadMoreFlow` `collectLatest`. Wire `OnLoadMore`. Apply to both `BookshelfViewModel` and `LibraryViewModel`. Fix `closeSearchDialog` libraryScopeEnabled asymmetry. Update `performLibrarySearch` to zero pagination fields.
@@ -468,7 +485,8 @@ The `LazyColumn` adds a footer `item` that renders:
 
 ## Review notes for the next session
 
-- The `rawPageSize` field is the load-bearing simplification — anything that "improves" the data model by dropping it should be rejected. Same goes for `pageSize`: a future "just use the constant" refactor reintroduces the OL-served-page-1 bug where a 15-row response gets compared against Google's 40.
+- The `rawPageSize` field is the load-bearing simplification — anything that "improves" the data model by dropping it should be rejected. Same goes for `pageSize`: a future "just use the constant" refactor reintroduces the OL-served-page-1 bug where a 100-row response gets compared against Google's 40.
+- The `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100` constant is load-bearing in the opposite direction: don't remove it on the assumption that "OL has a sensible default anyway." Without an explicit constant, the OL data source can't populate `pageSize` reliably and the `canLoadMore` predicate breaks on the OL fallback path.
 - The merged `queryFlow + loadMoreFlow` `collectLatest` is the load-bearing cancellation primitive — if someone refactors to per-call `Job` tracking, the toggle-during-load-more race comes back.
 - `SearchBooksUseCaseImpl` no longer writes to the preview cache. If a future reviewer "restores" it for consistency, the result is double-write per page with a transiently-wrong cache between the two writes.
 - Re-verify the existing-code state at the top of this doc hasn't drifted (especially `BookSearchState`, `performSearch`, `cacheSearchPreviews`, and `closeSearchDialog`) if other PRs land first.
