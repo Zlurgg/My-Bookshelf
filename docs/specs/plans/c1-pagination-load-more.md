@@ -1,50 +1,121 @@
 # C1 — Pagination + "Load more" for remote book search
 
-**Status:** Plan drafted 2026-05-29 during a planning pass on the `last-few-tweaks-I-promise` branch. Awaiting review before a fresh session implements. Originates from `google-books-followups.md` item 1, flagged C1 in `next-session-handover.md`.
-**Scope:** Add pagination to the remote search path (Google Books + OpenLibrary). Surface a "Load more" button at the bottom of the shelf, library, and book-club search dialog result lists. Library-scope search (the local-library toggle added in commit `1159e279`) is unaffected — local results return synchronously and don't paginate.
+**Status:** Plan v2 — incorporates 2026-05-29 code-review feedback (provider-asymmetric `startIndex` bug, fallback-during-pagination, cancellation gap, `cacheSearchPreviews` clobber, several state-shape issues). Awaiting implementation in a fresh session.
+**Scope:** Add pagination to the remote search path (Google Books + OpenLibrary). Surface a "Load more" button at the bottom of the shelf, library, and book-club search dialog result lists. Library-scope search (added in commit `1159e279`) is unaffected — local results return synchronously.
 
 ## Goal
 
-Today every remote search returns the first page (40 Google / 15 OL) and stops. Users who can't find a book in that window have to refine the query. C1 lets the user request the next page on demand without re-typing, while keeping the same provider abstraction and not breaking the existing fallback semantics.
+Today every remote search returns the first page (40 Google / 15 OL) and stops. C1 lets the user request the next page on demand without re-typing, while keeping the same provider abstraction, the same fallback semantics for first-page requests, and the existing preview-cache → tap-row-into-detail flow intact across pages.
 
 ## Where it applies
 
 | Dialog | Paginate? | Why |
 |---|---|---|
-| `BookSearchDialog` (base) | yes — new props | The button + `isLoadingMore` state live in the base composable |
-| `ShelfBookSearchDialog` | yes | Primary use case (shelf search) |
-| `LibraryBookSearchDialog` | yes | Library-tab remote search is identical use case |
-| Book-club search | yes (automatic) | Reuses `ShelfBookSearchDialog`, no separate wiring |
-| Library-scope mode (`libraryScopeEnabled = true`) | **no** | Local books are returned in full; no paging needed |
+| `BookSearchDialog` (base) | yes — new props | Button + `isLoadingMore` state live in the base composable |
+| `ShelfBookSearchDialog` | yes | Primary use case |
+| `LibraryBookSearchDialog` | yes | Library-tab remote search shape is identical |
+| Book-club search | yes (automatic) | Reuses `ShelfBookSearchDialog` |
+| Library-scope mode (`libraryScopeEnabled = true`) | **no** | Local results are returned in full |
 
 ## Existing code state (verified during planning recon, 2026-05-29)
 
-- `BookSearchResponse.kt` has only `books: List<Book>`. **No `totalResults`** — was deliberately dropped during spike delivery (no consumer at the time, see `google-books-followups.md` §1).
-- `BookApiService.searchBooks(...)` takes `query / resultLimit / language / sort` only. **No `startIndex`.**
-- `GoogleBooksApiService:28` uses `parameter("maxResults", resultLimit ?: ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS)`. No `startIndex` parameter sent.
-- `OpenLibraryApiService:50` uses `parameter("limit", it)`. No `offset` parameter sent.
-- Both data sources already see the totals in the DTO response: `dto.totalItems` (Google) and `dto.numFound` (OL) — currently logged via Timber and discarded.
-- `FallbackRemoteBookDataSource.searchBooks` (lines 14-51) passes all params through; needs a new `startIndex` slot.
-- `BookSearchState` has `results`, `existingBookIds`, `filteredCount` — no current-page or loading-more state.
-- `BookshelfViewModel.performSearch()` (lines 340-375) replaces results wholesale on every call. `observeDebouncedQuery` uses `collectLatest` — already cancels in-flight prior calls when a new query arrives.
-- `LibraryViewModel` has its own `performRemoteSearch` (analog of Bookshelf's `performSearch`). Same shape.
-- `BookSearchDialog` renders a `LazyColumn` with `itemsIndexed(state.results)`. A footer row is the natural place for the load-more button.
+- `BookSearchResponse.kt` has only `books: List<Book>` (no totals).
+- `BookApiService.searchBooks(...)` takes `query / resultLimit / language / sort` — no `startIndex`.
+- `GoogleBooksRemoteBookDataSource.searchBooks` **post-filters** the response: language filter (`it.volumeInfo?.language == "en"`) + blank-title filter (`GoogleBooksRemoteBookDataSource.kt:65-71`). Then `SearchBooksUseCaseImpl.invoke` post-filters again with Safe Search (`SearchBooksUseCaseImpl.kt:64-72`).
+- `OpenLibraryRemoteBookDataSource.searchBooks` does **not** post-filter (`OpenLibraryRemoteBookDataSource.kt:52-57`).
+- Both data sources log the provider-reported totals (`dto.totalItems` Google, `dto.numFound` OL) but discard them.
+- `FallbackRemoteBookDataSource.searchBooks` (lines 14-51) falls back from Google to OL on `TOO_MANY_REQUESTS / FORBIDDEN / PROVIDER_UNAVAILABLE`.
+- `BookRepositoryImpl.cacheSearchPreviews` **clears the cache** before writing the new batch (`BookRepositoryImpl.kt:31-37`). Naïvely calling it per page would lose page-1 entries.
+- `BookshelfState.closeSearchDialog` (`BookshelfViewModel.kt:467-480`) **does NOT preserve `libraryScopeEnabled`** — a pre-existing asymmetry vs `LibraryViewModel`'s `OnDismissSearchDialog` which does preserve it.
+- `BookSearchState.withLoading` (`BookSearchState.kt:29-33`) only resets `isLoading / isTyping / errorMessage` — adding pagination fields manually at every reset site would be fragile.
+
+## Critical correctness — `startIndex` index space
+
+**Provider asymmetry — this is the bug the review caught.**
+
+Google's `startIndex` is into the *unfiltered* result stream. OL's `offset` likewise. But our data sources/use case post-filter:
+
+```
+Google page 1: maxResults=40 → 40 raw items
+              → language filter drops 20 → 20 items
+              → Safe Search filter drops 2 → 18 items
+              → state.results.size == 18
+```
+
+Using `state.results.size == 18` as the next `startIndex` re-fetches rows 18–57 — overlapping the first page massively. OL doesn't post-filter so `state.results.size == 15` is accidentally correct there, which makes the bug provider-asymmetric and easy to miss in tests.
+
+**Fix:** `BookSearchResponse` and `SearchResult` gain `rawPageSize: Int` — the count of items the provider *actually returned* before any post-filtering. The ViewModel accumulates `nextStartIndex += response.rawPageSize`. End-of-results is `rawPageSize < requestedPageSize` (which also subsumes the empty-page case).
+
+## End-of-results detection
+
+For the same reason, `result.books.isEmpty()` (post-filter) is the wrong signal — a page where Safe Search nuked everything would falsely terminate pagination while the provider has more.
+
+Use `rawPageSize < requestedPageSize` as the **only** end-of-results signal. This is uniform across providers and doesn't depend on Google's estimated `totalItems` (which is sometimes high, sometimes low). The plan v1's "totalResults vs results.size" predicate is replaced entirely.
+
+**Consequence:** `BookSearchResponse.totalResults` and `SearchResult.totalResults` are **not added** at all. One field shaved off every layer. Header copy "Showing N of M results" is dropped — the showing-count alone (`results.size`) is fine.
+
+## Fallback during pagination
+
+Plan v1 didn't address this. Scenario: Google succeeds at `startIndex=0`, returns 40 rows; user taps Load More; Google 429s on `startIndex=40`; `FallbackRemoteBookDataSource` swaps to OL with the same `startIndex=40`, but that's `offset=40` into a *completely different result set*. The accumulated list becomes Google rows + OL-from-offset-40 with no rational ordering.
+
+**Decision: disable fallback for `startIndex != null` and surface the error.** Simplest and honest. `FallbackRemoteBookDataSource.searchBooks` short-circuits to `primary` only when `startIndex != null`:
+
+```kotlin
+override suspend fun searchBooks(
+    query: String,
+    ...,
+    startIndex: Int?,
+): Result<BookSearchResponse, DataError.Remote> {
+    val result = primary.searchBooks(query, ..., startIndex)
+    if (startIndex != null) return result  // load-more must not provider-switch
+    return when {
+        result is Result.Error && shouldFallback(result.error) -> fallback.searchBooks(...)
+        else -> result
+    }
+}
+```
+
+The ViewModel sees the load-more error and shows it inline; the user can retry or refine the query. Fresh searches (page 1) keep the existing fallback behavior.
+
+## Cancellation primitive
+
+Plan v1 cancelled `loadMoreJob` only on `OnSearchQueryChange`. But filter toggles, safe-search toggle, and library-scope toggle all call `retriggerSearchIfNeeded()` which emits through `queryFlow` — `collectLatest` cancels the prior debounced `performSearch` but **does not touch the separately-launched `loadMoreJob`**. The load-more result would land on top of the fresh page-1 result.
+
+**Revised approach: emit load-more requests through a `SharedFlow` collected inside the same `observeDebouncedQuery` scope.** One `collectLatest` cancels both. Avoids per-call-site `loadMoreJob?.cancel()` discipline that's easy to forget.
+
+```kotlin
+private val loadMoreFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+// in init / observeDebouncedQuery scope:
+merge(
+    queryFlow.debounce(SEARCH_DEBOUNCE_MS).map { ... -> SearchTrigger.Fresh(it) },
+    loadMoreFlow.map { SearchTrigger.More },
+).collectLatest { trigger ->
+    when (trigger) {
+        is SearchTrigger.Fresh -> { /* min-length gate; performSearch(append=false) */ }
+        is SearchTrigger.More  -> performSearch(append = true)
+    }
+}
+
+// in OnLoadMore handler:
+loadMoreFlow.tryEmit(Unit)
+```
+
+`merge` + `collectLatest` means any new trigger cancels the previous in-flight `performSearch`, regardless of whether it was a query change, filter toggle, library-scope toggle, or another load-more.
 
 ## Data model changes
 
 ### `BookSearchResponse` (domain)
 
-Reintroduce the total:
-
 ```kotlin
 data class BookSearchResponse(
     val books: List<Book>,
-    // Page-of-results total reported by the provider. Google's `totalItems`
-    // is an estimate — sometimes over, sometimes under the true count. OL's
-    // `numFound` is exact. Used as a non-authoritative cap; the actual
-    // end-of-results signal is "we got fewer rows than we asked for OR an
-    // empty page came back."
-    val totalResults: Int = 0,
+    // Pre-filter count of items the provider actually returned. Used to
+    // advance pagination correctly (post-filter `books.size` would lie) and
+    // to detect end-of-results uniformly: rawPageSize < requestedPageSize.
+    // Required — no default — so a data source that forgets to populate it
+    // fails to compile rather than silently advertising "page is empty."
+    val rawPageSize: Int,
 )
 ```
 
@@ -54,7 +125,7 @@ data class BookSearchResponse(
 data class SearchResult(
     val books: List<Book>,
     val filteredCount: Int,
-    val totalResults: Int,
+    val rawPageSize: Int,
 )
 ```
 
@@ -63,36 +134,66 @@ data class SearchResult(
 ```kotlin
 data class BookSearchState(
     ...
-    val totalResults: Int = 0,
-    val nextStartIndex: Int = 0,   // 0 means "fresh search"; n means "next page begins at row n"
+    val nextStartIndex: Int = 0,
     val isLoadingMore: Boolean = false,
-    val canLoadMore: Boolean = false,  // derived from totalResults vs results.size (+ last-page-empty)
+    // Computed: derived values don't trigger spurious StateFlow re-emissions
+    // because data-class equality compares stored properties only. The
+    // append path sets nextStartIndex / isLoadingMore / etc., and this
+    // recomputes on read.
+    val canLoadMore: Boolean = false,
     ...
 )
 ```
 
-`canLoadMore` could be a `val` getter rather than a stored field if preferred — derive from `totalResults > results.size && !isLoadingMore && libraryScopeEnabled == false`.
+`canLoadMore` is stored (not a getter) and set explicitly by the ViewModel after each search resolves — keeps the predicate logic in one place and survives state copies cleanly.
+
+**New state helper:**
+
+```kotlin
+fun BookSearchState.withFreshSearch(): BookSearchState = copy(
+    isLoading = true,
+    isLoadingMore = false,
+    isTyping = false,
+    errorMessage = null,
+    results = emptyList(),
+    nextStartIndex = 0,
+    canLoadMore = false,
+    filteredCount = 0,
+)
+```
+
+Every fresh-search call site (`performSearch(append = false)`) uses `withFreshSearch()`. One place to update if pagination state grows.
 
 ## Architectural shape
 
 ### API layer
 
-`BookApiService.searchBooks(...)` gains `startIndex: Int? = null`. Each provider maps it to its own wire param:
+`BookApiService.searchBooks(...)` gains `startIndex: Int? = null`. Per-provider mapping in the impl:
 
-- **Google** — `parameter("startIndex", it)` when non-null (alongside `maxResults`).
-- **OL** — `parameter("offset", it)` when non-null (alongside `limit`).
+- **Google** — `parameter("startIndex", it)` when non-null.
+- **OL** — `parameter("offset", it)` when non-null.
 
-Single uniform parameter name on the interface, per-provider mapping in the impl. No need to split the interface for now.
+Defensive `coerceAtLeast(0)` at the API call site — Google and OL both reject negatives, and a stale `-1` from a bad state transition shouldn't surface as 4xx.
 
 ### `RemoteBookDataSource` + impls
 
-Add `startIndex: Int? = null` to the interface method, thread through both `GoogleBooksRemoteBookDataSource.searchBooks` and `OpenLibraryRemoteBookDataSource.searchBooks` and `FallbackRemoteBookDataSource.searchBooks`. Both impls already log the total — promote it into the returned `BookSearchResponse`.
+`searchBooks` gains `startIndex: Int? = null`. Each impl populates `BookSearchResponse.rawPageSize` from the raw provider items count (Google's `dto.items?.size ?: 0`, OL's `dto.results.size`) **before** post-filtering.
+
+```kotlin
+// GoogleBooksRemoteBookDataSource:
+val rawItems = dto.items ?: emptyList()
+BookSearchResponse(
+    books = rawItems
+        .filter { it.volumeInfo?.language == "en" }
+        .filter { !it.volumeInfo?.title.isNullOrBlank() }
+        .map { it.toBook() },
+    rawPageSize = rawItems.size,
+)
+```
+
+`FallbackRemoteBookDataSource` threads `startIndex` through and short-circuits fallback when non-null per the §Fallback decision.
 
 ### `SearchBooksUseCase`
-
-Gains `startIndex: Int? = null` parameter. Forwards to `RemoteBookDataSource.searchBooks(...)`. The Safe Search filter still applies per-page (returned `filteredCount` is per-page; the ViewModel accumulates).
-
-Existing call shape:
 
 ```kotlin
 suspend operator fun invoke(
@@ -103,72 +204,139 @@ suspend operator fun invoke(
     titleFilter: String? = null,
     subjectFilter: String? = null,
     safeSearchEnabled: Boolean = true,
-    startIndex: Int? = null,   // new
+    startIndex: Int? = null,
 ): Result<SearchResult, DataError.Remote>
 ```
 
+Returns `SearchResult(books = safeBooks, filteredCount = ..., rawPageSize = response.rawPageSize)` — passes through, doesn't shrink, the raw count.
+
 ### ViewModel changes (Bookshelf + Library)
 
-**New action:** `OnLoadMore` (`BookshelfAction.OnLoadMore`, `LibraryAction.OnLoadMore`).
+**New action:** `OnLoadMore` on both `BookshelfAction` and `LibraryAction`.
 
-**Handler:**
+**`performSearch(append: Boolean = false)`:**
 
 ```kotlin
-is BookshelfAction.OnLoadMore -> {
-    val s = _state.value.bookSearchState
-    if (!s.canLoadMore || s.isLoadingMore || s.libraryScopeEnabled) return@onAction
-    viewModelScope.launch { performSearch(append = true) }
+private suspend fun performSearch(append: Boolean = false) {
+    val current = _state.value.bookSearchState
+    if (append) {
+        if (!current.canLoadMore || current.libraryScopeEnabled) return
+        _state.update { it.copy(bookSearchState = it.bookSearchState.copy(isLoadingMore = true)) }
+    } else {
+        _state.update { it.copy(bookSearchState = it.bookSearchState.withFreshSearch()) }
+    }
+
+    val searchState = _state.value.bookSearchState
+    if (searchState.libraryScopeEnabled) {
+        performLibrarySearch(searchState)  // already resets pagination via withFreshSearch
+        return
+    }
+
+    val params = searchState.toSearchParams()
+    val requestedStart = if (append) searchState.nextStartIndex else 0
+
+    bookshelfUseCases.searchBooks(
+        ...,
+        startIndex = requestedStart.coerceAtLeast(0).takeIf { append },
+    )
+        .onSuccess { result ->
+            // Dedupe by id with a HashSet so append is O(n) not O(n²).
+            val mergedBooks = if (append) {
+                val seen = HashSet(searchState.results.map { it.id })
+                searchState.results + result.books.filter { seen.add(it.id) }
+            } else {
+                result.books
+            }
+            val pageSize = ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS  // see "Open decisions"
+            _state.update {
+                it.copy(
+                    bookSearchState = it.bookSearchState.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        hasSearched = true,
+                        errorMessage = null,
+                        results = mergedBooks,
+                        // Per-page reset (see "Filtered-count" decision).
+                        filteredCount = result.filteredCount,
+                        nextStartIndex = mergedBooks.size.let { _ ->
+                            (if (append) searchState.nextStartIndex else 0) + result.rawPageSize
+                        },
+                        canLoadMore = result.rawPageSize >= pageSize,
+                    )
+                )
+            }
+            // Cache the accumulated list, not the per-page batch — the repo's
+            // cacheSearchPreviews clears then writes, so passing only the
+            // page-2 batch would invalidate page-1 entries for tap-into-detail.
+            bookRepository.cacheSearchPreviews(mergedBooks)
+        }
+        .onError { error ->
+            _state.update {
+                it.copy(bookSearchState = it.bookSearchState.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    // Preserve results on load-more error; reset on fresh-search
+                    // error (results were already cleared by withFreshSearch).
+                    errorMessage = ErrorFormatter.formatDataErrorMessage(error, "search books"),
+                ))
+            }
+        }
 }
 ```
 
-**`performSearch(append: Boolean = false)`** is refactored:
-
-- On `append = false` (new query / filter toggle / safe-search toggle / library-scope toggle):
-  - Reset `nextStartIndex = 0`, clear `results`, set `isLoading = true`, `isLoadingMore = false`.
-- On `append = true`:
-  - Set `isLoadingMore = true` (keep existing `results` visible).
-  - Pass `startIndex = state.nextStartIndex` to the use case.
-- On success:
-  - If appending, **dedupe by book id** before concatenating — Google occasionally returns the same id across pages when results shift.
-  - Update `nextStartIndex = newResults.size`.
-  - Update `totalResults = result.totalResults`.
-  - Accumulate `filteredCount += result.filteredCount`.
-  - Compute `canLoadMore` (see below).
-- On error during load-more:
-  - **Preserve existing results.** Set `isLoadingMore = false` and set the error message — the user sees the rows they already loaded plus an inline error banner.
-
-**`canLoadMore` predicate:**
+**`OnLoadMore` handler:**
 
 ```kotlin
-fun canLoadMore(state: BookSearchState, lastPageWasEmpty: Boolean): Boolean {
-    if (state.libraryScopeEnabled) return false
-    if (lastPageWasEmpty) return false
-    if (state.totalResults <= 0) return false
-    return state.results.size < state.totalResults
+BookshelfAction.OnLoadMore -> {
+    loadMoreFlow.tryEmit(Unit)
 }
 ```
 
-Three reasons to hide the button: library scope, the last page came back empty (Google's `totalItems` was an over-estimate), or we've reached the total. Note that `totalResults` is an estimate from Google — the `lastPageWasEmpty` short-circuit is what actually stops us at the real end.
+(Same shape on `LibraryViewModel`.)
 
-**Cancelling in-flight load-more on new query:** the existing `collectLatest` in `observeDebouncedQuery` only covers the debounced path. A `performSearch(append = true)` call from `OnLoadMore` launches its own coroutine. To cancel it on a new query, track the load-more `Job` and cancel it from `OnSearchQueryChange`:
+**Library-scope guard for `performLibrarySearch`:** add explicit pagination reset so toggling into library scope from a paginated remote result doesn't leave `nextStartIndex` / `isLoadingMore` lingering:
 
 ```kotlin
-private var loadMoreJob: Job? = null
-
-// in OnLoadMore handler:
-loadMoreJob = viewModelScope.launch { performSearch(append = true) }
-
-// in OnSearchQueryChange handler:
-loadMoreJob?.cancel()
+private suspend fun performLibrarySearch(searchState: BookSearchState) {
+    bookshelfUseCases.searchLibraryBooks(query = ..., ...)
+        .onSuccess { books ->
+            _state.update {
+                it.copy(bookSearchState = it.bookSearchState.copy(
+                    isLoading = false,
+                    isLoadingMore = false,
+                    nextStartIndex = 0,
+                    canLoadMore = false,
+                    hasSearched = true,
+                    errorMessage = null,
+                    results = books,
+                    filteredCount = 0,
+                ))
+            }
+        }
+        .onError { ... }
+}
 ```
 
-Or — simpler — emit the "append" intent through a separate `SharedFlow` collected with `collectLatest` so cancellation is automatic. Implementer's call; both are fine.
+**Filter-toggle reset:** every existing toggle handler calls `retriggerSearchIfNeeded()`. Since pagination is driven through the merged `loadMoreFlow`/`queryFlow` `collectLatest`, any new `queryFlow.tryEmit(...)` from the retrigger automatically cancels an in-flight load-more — no per-handler `loadMoreJob?.cancel()` needed.
 
-**Filter-toggle reset:** every existing toggle handler currently calls `persistSearchPreferences()` + `retriggerSearchIfNeeded()`. `retriggerSearchIfNeeded` should be updated so the re-emitted query resets `nextStartIndex = 0` (since the underlying `performSearch` defaults `append = false`).
+### `closeSearchDialog` asymmetry fix
+
+While we're here, fix `BookshelfState.closeSearchDialog` to preserve `libraryScopeEnabled` (matching `LibraryViewModel`'s `OnDismissSearchDialog`). One line. Tangential but cheap.
+
+```kotlin
+bookSearchState = BookSearchState(
+    existingBookIds = bookSearchState.existingBookIds,
+    searchByTitle = bookSearchState.searchByTitle,
+    searchByAuthor = bookSearchState.searchByAuthor,
+    searchBySubject = bookSearchState.searchBySubject,
+    safeSearchEnabled = bookSearchState.safeSearchEnabled,
+    libraryScopeEnabled = bookSearchState.libraryScopeEnabled,
+)
+```
 
 ### UI
 
-`BookSearchDialog` gains two props:
+`BookSearchDialog` gains:
 
 ```kotlin
 isLoadingMore: Boolean,
@@ -176,79 +344,103 @@ canLoadMore: Boolean,
 onLoadMore: () -> Unit,
 ```
 
-The `LazyColumn` adds a footer `item { ... }` that renders the load-more button when `canLoadMore` and `!isLoadingMore`, or a small `CircularProgressIndicator` when `isLoadingMore`, or nothing when neither.
+The `LazyColumn` adds a footer `item` that renders:
 
-`ShelfBookSearchDialog` + `LibraryBookSearchDialog` pass these through. `BookSearchCallbacks` (in `bookshelf/presentation/searchcomponents/`) gains `val onLoadMore: () -> Unit`. `BookshelfScreen` + `LibraryScreen` wire the new callback to the action.
+- A `Button(onClick = onLoadMore)` labelled `R.string.search_load_more` when `canLoadMore && !isLoadingMore`.
+- A small `CircularProgressIndicator` when `isLoadingMore`.
+- Nothing otherwise.
 
-`R.string.search_load_more` = `"Load more results"`. `R.string.search_results_count_of_total` could be added for richer header copy (e.g. `"Showing 40 of 128 results"`) but isn't required.
+`ShelfBookSearchDialog` + `LibraryBookSearchDialog` pass these through. `BookSearchCallbacks` gains `val onLoadMore: () -> Unit`. `BookshelfScreen` + `LibraryScreen` wire the callback to the action.
 
-## Edge cases addressed
+`R.string.search_load_more` = `"Load more results"`.
 
-1. **Pagination skipped in library scope.** `OnLoadMore` is a no-op when `libraryScopeEnabled` is true; the button is hidden. Local results are returned in full from the use case.
-2. **Filter toggle / safe-search toggle / library-scope toggle resets to page 1.** Each toggle handler retriggers a fresh search; `performSearch(append = false)` zeroes `nextStartIndex` and replaces `results`.
-3. **New query cancels in-flight load-more.** Via tracked `Job.cancel()` or `collectLatest` on a load-more `SharedFlow`.
-4. **End-of-results detection.** Two predicates combined: `results.size >= totalResults` AND `lastPage.isEmpty()`. The empty fallback handles Google's bad estimates.
-5. **Error on load-more.** Existing results preserved; inline error message; `isLoadingMore` reset to false. The user can retry the load-more or refine the query.
-6. **Duplicate ids across pages.** Dedupe by id on append.
-7. **Safe-search `filteredCount` accumulates.** `state.filteredCount += result.filteredCount` per page.
-8. **Tap row → detail → back during load-more.** Existing `lazyListState` is hoisted by `ShelfBookSearchDialog` callers (per the existing scroll-preservation work in commit `04fb9aad`). Load-more state should also survive the round trip — kept in the ViewModel, not the dialog.
+## Edge cases addressed (v2)
 
-## Tests
+1. **Provider-asymmetric `startIndex`** — fixed by `rawPageSize` field.
+2. **Filter-killed page falsely terminating pagination** — fixed by `rawPageSize < requestedPageSize` predicate.
+3. **Provider switch via fallback mid-pagination** — fallback disabled when `startIndex != null`; error surfaced.
+4. **Cancellation across all retrigger paths** — single `collectLatest` over merged `queryFlow + loadMoreFlow`.
+5. **`withLoading()` doesn't reset pagination** — `withFreshSearch()` helper centralises the reset.
+6. **`closeSearchDialog` libraryScopeEnabled asymmetry** — fixed inline.
+7. **`performLibrarySearch` stale pagination state** — explicit reset on the local-search branch.
+8. **Preview-cache clobber on append** — VM passes the accumulated book list to `cacheSearchPreviews`, not the per-page batch.
+9. **Defensive `startIndex` validation** — `coerceAtLeast(0)` at the API call site.
+10. **HashSet-backed dedupe** — O(n) append cost.
+11. **Filtered-count semantics** — per-page reset (decision below), not accumulation.
+12. **Library-scope skip** — `performSearch(append = true)` returns early when `libraryScopeEnabled`; button hidden via `canLoadMore = false`.
+
+## Decisions changed from v1
+
+| v1 | v2 | Why |
+|---|---|---|
+| Add `totalResults` to response/state | **Drop entirely.** Use `rawPageSize` only. | Google's estimate is unreliable; the empty-page (`rawPageSize < pageSize`) predicate is uniform and honest. |
+| Track `loadMoreJob` ref | Use `loadMoreFlow` + merged `collectLatest` | All cancellation paths share one primitive — toggle handlers can't forget. |
+| Accumulate `filteredCount` across pages | Per-page reset | "M filtered" climbing across loads is confusing in the dialog header. Per-page is what the current UX implies. |
+| `BookSearchResponse.totalResults: Int = 0` default | `rawPageSize: Int` (no default) | A data source that forgets to populate now fails to compile rather than silently advertising "page is empty." |
+| Page-size constant unspecified | Use `ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS` (40) for Google, OL's existing default (15) | Provider-specific. The VM needs to know which constant to compare against `rawPageSize` — provider identity is in `Book.provider` on each result. See "Open decisions" §1. |
+
+## Open decisions (v2)
+
+1. **Provider identity for `pageSize` comparison.** The VM compares `rawPageSize < pageSize`, but `pageSize` differs per provider (40 Google, 15 OL). Options: (a) inspect the first book's `provider` field; (b) the data source returns its own `pageSize` in `BookSearchResponse` alongside `rawPageSize`; (c) the use case returns it in `SearchResult`. Recommend (b/c) — explicit signal beats inferring from the data. Adds one more Int to the response/result.
+2. **Per-provider page size discrepancy mid-search.** If Google has 200 results and runs out at page 5, falling back to OL is disabled by design (§Fallback). So a single search uses one provider end-to-end — no need to worry about mixing page sizes.
+3. **Bookshelf-only first vs both VMs.** Plan v2 wires both. If the diff is uncomfortably large, ship `BookshelfViewModel` first and follow up with `LibraryViewModel`; the data-layer plumbing is identical.
+
+## Tests (v2)
 
 | Layer | Test | What it locks |
 |---|---|---|
-| Use case | `SearchBooksUseCase` forwards `startIndex` to `RemoteBookDataSource` | Per-page passthrough |
-| Data source | `GoogleBooksRemoteBookDataSource` sets `startIndex` query param when non-null | Wire format |
-| Data source | `OpenLibraryRemoteBookDataSource` sets `offset` query param when non-null | Wire format |
-| Data source | `FallbackRemoteBookDataSource` threads `startIndex` to both primary and fallback | Doesn't drop it on fallback |
-| VM | `OnLoadMore appends to results and updates nextStartIndex` | Append shape |
-| VM | `OnLoadMore dedupes by id when Google returns duplicates` | Dedupe |
-| VM | `OnLoadMore is a no-op when libraryScopeEnabled is true` | Library-scope guard |
-| VM | `Filter toggle during pagination resets nextStartIndex to 0` | Re-trigger semantics |
-| VM | `Load-more error preserves existing results and sets error message` | Error path |
-| VM | `New query cancels in-flight load-more` | Cancellation |
-| VM | `canLoadMore false when results.size >= totalResults` | End detection |
-| VM | `canLoadMore false when last page came back empty` | Estimate-fallback |
-| Screen | (optional) Compose UI test that the button renders when canLoadMore | Visual contract |
-
-## Open decisions
-
-1. **`canLoadMore` as a stored state field or a computed getter on `BookSearchState`?** Either fine. Stored is more transparent in test assertions; computed avoids state-update boilerplate. Recommend computed.
-2. **Where to put the cancellation primitive — `Job` ref or `SharedFlow` + `collectLatest`?** Both work. Recommend the explicit `Job` since the existing `collectLatest` on the debounced path is already in use.
-3. **Filter accumulating across pages vs per-page reset.** Plan accumulates. If the user toggles safe search after loading 3 pages, `filteredCount` resets to 0 and starts again on the fresh page-1 search (because the toggle calls `performSearch(append = false)`).
-4. **Library scope mode `OnLoadMore` — silent no-op or assertion?** Silent no-op (button just isn't rendered when `libraryScopeEnabled`).
-5. **Page-size constant.** Stays at the existing `MAX_RESULTS` defaults per provider. Not parameterised in v1.
+| Use case | Forwards `startIndex` to `RemoteBookDataSource` | Per-page pass-through |
+| Use case | Returns `SearchResult.rawPageSize` from the underlying response | Raw-count propagation |
+| Use case | Per-page `filteredCount` does not accumulate inside the use case | Per-page reset semantics |
+| Data source | Google: `parameter("startIndex", ...)` set when non-null; `rawPageSize` populated from raw items count (before language/blank-title filter) | Wire format + raw-count source |
+| Data source | OL: `parameter("offset", ...)` set when non-null; `rawPageSize` populated | Wire format |
+| Data source | Fallback short-circuits to primary when `startIndex != null`, returns Google's error without falling to OL | Fallback-during-pagination guarantee |
+| VM | `OnLoadMore` advances `nextStartIndex` by `rawPageSize`, not `books.size` | The provider-asymmetric bug |
+| VM | `OnLoadMore` dedupes by id via `HashSet` (Google duplicate-id scenario) | Dedupe |
+| VM | `OnLoadMore` returns silently when `libraryScopeEnabled` | Library-scope guard |
+| VM | Filter toggle during pagination cancels in-flight load-more and resets to page 1 | Cancellation + reset |
+| VM | Load-more error preserves `results` and surfaces `errorMessage` | Error UX |
+| VM | New query during load-more cancels via merged `collectLatest` | Cancellation primitive |
+| VM | `canLoadMore` false when `rawPageSize < pageSize` (partial last page) | End detection |
+| VM | `canLoadMore` false after a page where Safe Search filtered everything but `rawPageSize == pageSize` | Filter-killed page does NOT terminate prematurely |
+| VM | `performLibrarySearch` zeros `nextStartIndex` / `isLoadingMore` / `canLoadMore` | Library-scope state cleanliness |
+| VM | `closeSearchDialog` preserves `libraryScopeEnabled` | Asymmetry fix |
+| VM | `cacheSearchPreviews` called with accumulated list, not per-page batch | Preview-cache invariant |
+| Screen | (optional) Load-more button visible when `canLoadMore`; spinner when `isLoadingMore` | Visual contract |
 
 ## Out of scope / deferred
 
-- **Per-provider page sizes.** Google's 40 and OL's 15 stay hard-coded as today.
-- **Infinite-scroll trigger.** Plan uses an explicit button (one click handler, no scroll-position threshold). If the button feels clunky, switch to `LazyListState.firstVisibleItemIndex + visibleItemsInfo` threshold detection in a follow-up.
+- **Per-provider page sizes parameterised.** Stays at the existing defaults.
+- **Infinite-scroll trigger.** Plan uses the explicit button. Switch later if it feels clunky.
 - **Persisting "what page am I on" across app death.** State is process-scoped only.
-- **OL `numFound` cross-checking.** OL's count is exact, Google's is an estimate. Plan treats them uniformly via the empty-page fallback.
+- **OL `numFound` cross-checking.** Plan ignores it; `rawPageSize` handles end detection uniformly.
+- **Header copy "Showing N of M".** Dropped with `totalResults`; only `results.size` shown.
 
 ## Execution order
 
-1. **Data model.** Add `totalResults` to `BookSearchResponse` and `SearchResult`.
-2. **API services.** Add `startIndex: Int?` to `BookApiService`. Implement in `GoogleBooksApiService` (`parameter("startIndex", it)`) and `OpenLibraryApiService` (`parameter("offset", it)`).
-3. **Data sources.** Thread `startIndex` through `RemoteBookDataSource` interface, both impls, and `FallbackRemoteBookDataSource`. Each impl populates `totalResults` from the existing logged DTO field.
-4. **Use case.** `SearchBooksUseCase` adds `startIndex` parameter and forwards. Update the impl to map `SearchResult` correctly.
-5. **State + actions.** Add `BookSearchState` fields; add `OnLoadMore` to `BookshelfAction` and `LibraryAction`.
-6. **ViewModels.** Refactor `performSearch` to `performSearch(append: Boolean)`. Wire `OnLoadMore`. Reset `nextStartIndex` on filter/safe/library-scope toggles. Cancel load-more on new query. Apply to both `BookshelfViewModel` and `LibraryViewModel`.
-7. **Library-scope guard.** When `libraryScopeEnabled` is true, `canLoadMore = false`; `OnLoadMore` is a no-op.
-8. **UI.** `BookSearchDialog` props + footer item; `ShelfBookSearchDialog` + `LibraryBookSearchDialog` thread the callback; `BookSearchCallbacks` adds `onLoadMore`; `BookshelfScreen` + `LibraryScreen` wire to the action.
-9. **Tests** per the table above.
-10. **Manual device verification.**
-    - Type a popular query → load page 1 (40 Google results visible) → tap "Load more" → another 40 append, dedupe verified by absence of repeats.
-    - Toggle Safe Search → list resets to page 1, `filteredCount` resets.
-    - Toggle Library-scope → button hidden, all local books shown synchronously.
-    - Network-loss mid-load-more → inline error, existing results stay.
-    - Type a new query during load-more → in-flight request cancels cleanly; new search starts.
-    - Library dialog: load-more works identically.
-    - Book-club shelf search: load-more works (via shared `ShelfBookSearchDialog`).
-11. **Commit.** Single commit per provider/feature: `feat(search): paginate remote results with load-more button`.
+1. **Data model.** Add `rawPageSize: Int` to `BookSearchResponse` and `SearchResult` (no defaults). Per the §Open-decisions §1, also add `pageSize: Int` so the VM doesn't need to infer it.
+2. **API services.** Add `startIndex: Int?` to `BookApiService`. Implement in `GoogleBooksApiService` (`parameter("startIndex", ...)`) and `OpenLibraryApiService` (`parameter("offset", ...)`). Apply `coerceAtLeast(0)` at both sites.
+3. **Data sources.** Thread `startIndex` through `RemoteBookDataSource` interface, Google + OL impls, and `FallbackRemoteBookDataSource`. Each impl populates `rawPageSize` from the raw items count *before* its own post-filter step. Fallback short-circuits when `startIndex != null`.
+4. **Use case.** `SearchBooksUseCase` gains `startIndex` parameter. Returns per-page `filteredCount` (not accumulated). Returns `rawPageSize` and `pageSize`.
+5. **State + actions + helpers.** Add `BookSearchState` fields (`nextStartIndex`, `isLoadingMore`, `canLoadMore`). Add `BookSearchState.withFreshSearch()` helper. Add `OnLoadMore` to `BookshelfAction` and `LibraryAction`.
+6. **ViewModels.** Refactor `performSearch` into `performSearch(append: Boolean)`. Replace standalone `observeDebouncedQuery` with a merged `queryFlow + loadMoreFlow` `collectLatest`. Wire `OnLoadMore`. Apply to both `BookshelfViewModel` and `LibraryViewModel`. Fix `closeSearchDialog` libraryScopeEnabled asymmetry. Update `performLibrarySearch` to zero pagination fields.
+7. **UI.** `BookSearchDialog` props + footer item; `ShelfBookSearchDialog` + `LibraryBookSearchDialog` thread the callback; `BookSearchCallbacks` adds `onLoadMore`; `BookshelfScreen` + `LibraryScreen` wire to the action.
+8. **Tests** per the table above.
+9. **Manual device verification.**
+   - Type a popular query → 40 Google results → tap "Load more" → 40 more, dedupe verified.
+   - Force Google to 429 mid-load-more (e.g. via toggling airplane mode briefly) → load-more error inline, existing results intact, **no fallback to OL** (verify Timber log).
+   - Toggle Safe Search → list resets to page 1, `filteredCount` resets to fresh page's count.
+   - Type a new query during a load-more → in-flight cancels cleanly; new search starts.
+   - Tap a row from page 2 → detail screen renders (preview cache hit).
+   - Tap a row from page 1 after page 2 has loaded → detail still renders (cache invariant).
+   - Toggle library-scope on → button hidden, all local books shown synchronously, `nextStartIndex`/`isLoadingMore` cleanly reset.
+   - Toggle library-scope off again → next remote search starts at page 1.
+   - Book-club shelf search: load-more works automatically (via shared `ShelfBookSearchDialog`).
+10. **Commit.** Single commit: `feat(search): paginate remote results with load-more button`.
 
 ## Review notes for the next session
 
-- Re-verify the existing-code state at top of this doc hasn't drifted (especially `BookSearchState` and `performSearch` if other PRs land first).
-- The "in-flight load-more cancellation" design (Job ref vs SharedFlow) is the only meaningful design call left. Defer until the implementer can see the existing flow shapes side by side.
-- Estimated implementation time from cold: ~3-4 hours for full plan (both providers, button, tests), assuming no major shape changes from review.
+- The `rawPageSize` field is the load-bearing simplification — anything that "improves" the data model by dropping it should be rejected.
+- The merged `queryFlow + loadMoreFlow` `collectLatest` is the load-bearing cancellation primitive — if someone refactors to per-call `Job` tracking, the toggle-during-load-more race comes back.
+- Re-verify the existing-code state at the top of this doc hasn't drifted (especially `BookSearchState`, `performSearch`, `cacheSearchPreviews`, and `closeSearchDialog`) if other PRs land first.
+- Estimated implementation time from cold: ~4-5 hours for full plan, slightly more than v1 due to the merged cancellation primitive and the preview-cache invariant.
