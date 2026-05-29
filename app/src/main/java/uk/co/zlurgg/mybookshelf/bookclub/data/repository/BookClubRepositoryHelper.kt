@@ -115,7 +115,12 @@ internal class BookClubRepositoryHelper(
                 }
                 val bookEntity = book.toBookEntity()
 
-                bookshelfDao.upsert(bookEntity)
+                // insertIfMissing, not upsert: the Firestore payload has no
+                // personal metadata. If this book is already in the user's
+                // personal library with rating/notes/status, a full-row upsert
+                // would clobber those columns. The cross-ref still gets written
+                // below so the book appears on the club shelf either way.
+                bookshelfDao.insertIfMissing(bookEntity)
 
                 val crossRef = BookshelfBookCrossRef(
                     shelfId = shelfId,

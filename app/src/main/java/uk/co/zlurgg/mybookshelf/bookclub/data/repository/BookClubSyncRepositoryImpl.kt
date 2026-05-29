@@ -141,7 +141,12 @@ internal class BookClubSyncRepositoryImpl(
                     it.copy(dateAdded = it.dateAdded ?: timeProvider.currentTimeMillis())
                 }
                 val bookEntity = book.toBookEntity()
-                bookshelfDao.upsert(bookEntity)
+                // insertIfMissing, not upsert: same reason as
+                // BookClubRepositoryHelper.downloadClubBooksToShelf — the
+                // Firestore-sourced row has no personal metadata, and a full-
+                // row upsert here would clobber any rating/notes/status the
+                // user has set on the same id in their personal library.
+                bookshelfDao.insertIfMissing(bookEntity)
 
                 val crossRef = BookshelfBookCrossRef(
                     shelfId = localShelfId,

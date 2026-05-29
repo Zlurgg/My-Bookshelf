@@ -1,5 +1,7 @@
 package uk.co.zlurgg.mybookshelf.core.data.database.dao
 
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Upsert
@@ -12,6 +14,19 @@ import uk.co.zlurgg.mybookshelf.core.data.database.entity.BookEntity
 interface BookDao {
     @Upsert
     suspend fun upsert(book: BookEntity)
+
+    /**
+     * INSERT OR IGNORE: writes the book only if no row with the same id already
+     * exists. Used by the book-club sync paths
+     * ([BookClubRepositoryHelper.downloadClubBooksToShelf] and
+     * [BookClubSyncRepositoryImpl.syncFromRemote]) where the book payload comes
+     * from Firestore with NO personal metadata. A plain [upsert] there would
+     * clobber `personalRating`, `personalNotes`, `readingStatus`, etc. on books
+     * the user separately owns. With this no-op-on-exists shape, the user's
+     * personal columns survive joining a club that shares an owned book.
+     */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertIfMissing(book: BookEntity)
 
     @Query("SELECT * FROM BookEntity WHERE id = :id")
     suspend fun getBookById(id: String): BookEntity?
