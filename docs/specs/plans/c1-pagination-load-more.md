@@ -1,6 +1,6 @@
 # C1 — Pagination + "Load more" for remote book search
 
-**Status:** Plan v4 — third review pass on 2026-05-29 pinned the OL `pageSize` source: today the VMs pass `resultLimit = null` and `OpenLibraryApiService.searchBooks` skips the `limit` query param entirely, so OL serves its server-side default of 100. v4 introduces `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100` and routes the OL data source through it so `pageSize` is always a known value the impl asked for. References to "15" in v3 were stale from a legacy plan inheriting an unverified number; corrected throughout. v3 still resolved the open `pageSize` provenance (required field on `BookSearchResponse`), removed the use case's `cacheSearchPreviews` write, and added the `OnLoadMore` min-length guard. Awaiting implementation in a fresh session.
+**Status:** Plan v5 — fourth review pass on 2026-05-29 clarified one implementation ambiguity that the v4 OL snippet left open: the `resultLimit ?: MAX_RESULTS` resolution lives in the data source (not the API service), so `requestedLimit` is in scope where the `BookSearchResponse` is constructed and the API service stays a thin pass-through. Pattern now matches between Google and OL — single source of truth per provider. v4 itself pinned the OL `pageSize` source via `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100` (today's VMs pass `resultLimit = null` and the OL impl skips the `limit` query param entirely, so OL serves its server-side default of 100). References to "15" in v3 were stale; corrected throughout. v3 still resolved the open `pageSize` provenance (required field on `BookSearchResponse`), removed the use case's `cacheSearchPreviews` write, and added the `OnLoadMore` min-length guard. Implementation-ready.
 **Scope:** Add pagination to the remote search path (Google Books + OpenLibrary). Surface a "Load more" button at the bottom of the shelf, library, and book-club search dialog result lists. Library-scope search (added in commit `1159e279`) is unaffected — local results return synchronously.
 
 ## Goal
@@ -204,21 +204,39 @@ BookSearchResponse(
 
 The same pattern in `OpenLibraryRemoteBookDataSource` — with one prerequisite: today's OL impl does `resultLimit?.let { parameter("limit", it) }` so when the VM passes `resultLimit = null` (which it does — `BookshelfViewModel.kt:378`, `LibraryViewModel.kt:397`), OL receives no `limit` and serves its server-side default of 100. There is no "value the impl actually passed" to capture.
 
-**Add `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100`** (matching today's effective behavior — OL's `/search.json` default) and route the OL impl through it:
+**Add `ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS = 100`** (matching today's effective behavior — OL's `/search.json` default) and resolve the limit in the **data source**, passing non-null to the API service:
 
 ```kotlin
-// OpenLibraryApiService:
+// OpenLibraryRemoteBookDataSource.searchBooks:
 val requestedLimit = resultLimit ?: ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS
-parameter("limit", requestedLimit)
-// ...later in the data source response:
-BookSearchResponse(
-    books = dto.results.map { it.toBook() },
-    rawPageSize = dto.results.size,   // OL doesn't post-filter
-    pageSize = requestedLimit,
-)
+val response = ErrorMapper.httpNetworkCall<SearchResponseDto> {
+    apiService.searchBooks(
+        query = queryBuilder.build(...),
+        resultLimit = requestedLimit,   // never null
+        language = language,
+        sort = sort,
+    )
+}
+response.map { dto ->
+    BookSearchResponse(
+        books = dto.results.map { it.toBook() },
+        rawPageSize = dto.results.size,   // OL doesn't post-filter
+        pageSize = requestedLimit,
+    )
+}
+
+// OpenLibraryApiService stays as-is — single source of truth for the
+// limit resolution is the data source. The service receives non-null
+// in practice but its signature can keep the nullable type for
+// interface parity with `BookApiService` and for tests that exercise
+// the null path.
 ```
 
+Same shape on the Google side: the data source resolves `requestedPageSize` from `resultLimit ?: ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS` and passes it through. The existing `?: MAX_RESULTS` in `GoogleBooksApiService.kt:28` becomes redundant under the new pattern — leave it as a defensive belt-and-braces, or simplify the service to drop it. Either is fine; flagging only because the duplicate could otherwise drift.
+
 Picking 100 (vs 15 from the v3 plan, vs 40 to match Google) preserves today's behavior on the OL fallback path. Reducing it would regress the result count users see when Google falls back. The number must match in three places: the constant, the OL data source pageSize population, and the test row.
+
+**Scale note on the 100 choice (for awareness, not action):** OL load-more accumulates 100 rows per click. After 5 OL load-mores the state holds 500 books, the dedupe `HashSet` has 500 entries, and `cacheSearchPreviews` clears+writes 500 books per click. All fine in practice for a search dialog; flagged only because it's a different scale curve than Google's 40/page. OL pagination only fires when page 1 fell back from Google (rare), so this almost never matters — but a future "ramp up OL usage" decision would amplify the cost.
 
 `FallbackRemoteBookDataSource` threads `startIndex` through and short-circuits fallback when non-null per the §Fallback decision.
 
