@@ -1,5 +1,6 @@
 package uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,69 +54,89 @@ fun SearchFilters(
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            // Three label+checkbox pairs distributed across the dialog width.
+            // SpaceBetween puts the first at the start (matching the prior
+            // layout's left alignment), the last at the end, and the middle
+            // pair centered. No outer padding — the Material Checkbox's own
+            // 40dp touch surface provides the visible inset.
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Checkbox(
-                checked = searchByTitle,
-                enabled = titleEnabled,
-                onCheckedChange = { onToggleTitle() }
-            )
-            Text(
-                text = stringResource(id = R.string.search_by_title),
-                style = MaterialTheme.typography.bodySmall
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = searchByTitle,
+                    enabled = titleEnabled,
+                    onCheckedChange = { onToggleTitle() }
+                )
+                Text(
+                    text = stringResource(id = R.string.search_by_title),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
-            Checkbox(
-                checked = searchByAuthor,
-                enabled = authorEnabled,
-                onCheckedChange = { onToggleAuthor() }
-            )
-            Text(
-                text = stringResource(id = R.string.search_by_author),
-                style = MaterialTheme.typography.bodySmall
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = searchByAuthor,
+                    enabled = authorEnabled,
+                    onCheckedChange = { onToggleAuthor() }
+                )
+                Text(
+                    text = stringResource(id = R.string.search_by_author),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
-            Checkbox(
-                checked = searchBySubject && !subjectDisabledByScope,
-                enabled = subjectEnabled && !subjectDisabledByScope,
-                onCheckedChange = { onToggleSubject() }
-            )
-            Text(
-                text = stringResource(id = R.string.search_by_subject),
-                style = MaterialTheme.typography.bodySmall
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = searchBySubject && !subjectDisabledByScope,
+                    enabled = subjectEnabled && !subjectDisabledByScope,
+                    onCheckedChange = { onToggleSubject() }
+                )
+                Text(
+                    text = stringResource(id = R.string.search_by_subject),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(32.dp)
-                // Align the row with the visible left edge of the checkboxes in
-                // row 1. Material 3 Checkbox centers its glyph within a 40dp
-                // touch surface, so the visible glyph starts ~12dp from the row.
-                .padding(start = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                // Match the left/right insets of the checkboxes in row 1. Material 3
+                // Checkbox centers its glyph within a 40dp touch surface, so the visible
+                // glyph starts ~12dp from the row edge.
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            // Each label+switch pair is wrapped in its own inner Row so SpaceBetween
+            // treats them as atomic items. With only Safe Search rendered, the single
+            // pair naturally stays start-aligned.
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = stringResource(id = R.string.safe_search_label),
-                style = MaterialTheme.typography.bodySmall
-            )
-            Switch(
-                checked = safeSearchEnabled,
-                onCheckedChange = { onToggleSafeSearch() },
-                modifier = Modifier.scale(0.8f)
-            )
-
-            if (showLibraryScopeToggle) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = stringResource(id = R.string.library_scope_label),
+                    text = stringResource(id = R.string.safe_search_label),
                     style = MaterialTheme.typography.bodySmall
                 )
                 Switch(
-                    checked = libraryScopeEnabled,
-                    onCheckedChange = { onToggleLibraryScope() },
+                    checked = safeSearchEnabled,
+                    onCheckedChange = { onToggleSafeSearch() },
                     modifier = Modifier.scale(0.8f)
                 )
+            }
+
+            if (showLibraryScopeToggle) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = stringResource(id = R.string.library_scope_label),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Switch(
+                        checked = libraryScopeEnabled,
+                        onCheckedChange = { onToggleLibraryScope() },
+                        modifier = Modifier.scale(0.8f)
+                    )
+                }
             }
         }
     }
