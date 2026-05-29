@@ -5,38 +5,47 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 
 /**
- * Returns a URL for a medium version of the cover image.
+ * Returns a higher-quality URL for the detail-screen hero.
  * Provider-aware: applies the correct URL transformation for each API.
  *
- * Google Books `zoom` parameter is undocumented in stable form. Google's
- * `volumeInfo.imageLinks.thumbnail` ships with `zoom=1` (~128px thumbnail);
- * `zoom=2` empirically often returns similar dimensions to `zoom=1`. Using
- * `zoom=3` to ensure a meaningfully larger image (medium per Google's loose
- * convention) for the book detail screen.
+ * Google Books: requests an 800-pixel-wide rendering via `&fife=w800`, the CDN
+ * scaling parameter. Produces a meaningfully sharper image when Google has a
+ * real cover scan. For volumes Google never indexed a cover scan for, the URL
+ * still returns Google's own "Image not available" graphic — that's accepted
+ * (matches the C6 decision in `next-session-handover.md`). A Coil-level
+ * fallback to another URL doesn't help because Google serves the placeholder
+ * with HTTP 200 and Coil treats it as a successful load.
  */
 fun Book.withMediumImage(): String = when (provider) {
     BookProvider.OPEN_LIBRARY ->
         imageUrl.replace(Regex("-[SML]\\.jpg$"), ApiConfig.OpenLibrary.CoverUrls.CoverSize.MEDIUM.suffix)
-    BookProvider.GOOGLE_BOOKS ->
-        imageUrl.replace("zoom=1", "zoom=3").replace("&edge=curl", "")
+    BookProvider.GOOGLE_BOOKS -> {
+        // Skip local-drawable markers (e.g. "local:tutorial_book_cover") and
+        // blank URLs — they aren't Google Books CDN URLs and appending fife
+        // breaks the LOCAL_DRAWABLES lookup in resolveImageModel.
+        if (imageUrl.isBlank() || imageUrl.startsWith("local:")) {
+            imageUrl
+        } else {
+            imageUrl
+                .replace(Regex("&zoom=\\d+"), "")
+                .replace("&edge=curl", "") + "&fife=w800"
+        }
+    }
 }
 
 /**
- * Returns a URL suitable for tiny cover renderings embedded inside a spine.
+ * Returns a URL suitable for cover renderings embedded inside a spine, in a
+ * search row, or anywhere else we want a small clean face.
  *
- * For Google Books, strips the `&edge=curl` page-curl effect and bumps the
- * `zoom` parameter so the spine shows the same physical cover scan as the
- * detail screen. Google sometimes maps low and high `zoom` values to different
- * cover scans (thumbnail tier vs preview tier), which made the same book look
- * different between shelf and detail — unifying the zoom level fixes that.
- * The curl strip is independent: it looks fine on cover-face surfaces (the
- * search dialog) but reads as a gimmick inside a 3D spine gradient.
+ * Google Books: same URL as [withMediumImage] — `zoom=1` with the curl
+ * stripped. Curl reads as a gimmick inside a 3D spine gradient and is just
+ * noise on a flat row.
  *
- * OL URLs have no curl parameter and use size suffixes rather than zoom —
- * returned unchanged here so spines keep using the `-S` variant for fast
- * shelf loads; bumping size for spines on OL is a separate decision.
+ * Open Library URLs have no curl parameter and use size suffixes rather than
+ * zoom — returned unchanged so spines keep using the `-S` variant for fast
+ * shelf loads.
  */
 fun Book.withSpineImage(): String = when (provider) {
     BookProvider.OPEN_LIBRARY -> imageUrl
-    BookProvider.GOOGLE_BOOKS -> imageUrl.replace("zoom=1", "zoom=3").replace("&edge=curl", "")
+    BookProvider.GOOGLE_BOOKS -> imageUrl.replace("&edge=curl", "")
 }
