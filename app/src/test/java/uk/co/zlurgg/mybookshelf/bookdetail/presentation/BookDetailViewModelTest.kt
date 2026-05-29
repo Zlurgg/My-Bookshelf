@@ -284,9 +284,8 @@ class BookDetailViewModelTest {
     fun `toggle purchase updates book purchased status`() = runTest(testDispatcher) {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withPurchased(false).build()
-        val purchasedBook = testBook.copy(purchased = true)
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
-        mockToggleBookPurchase.bookToReturn = purchasedBook
+        // ViewModel computes the new flag locally; success is the default.
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
@@ -429,7 +428,7 @@ class BookDetailViewModelTest {
         // Given
         val testBook = TestBookBuilder().withId("book-1").withPurchased(false).build()
         mockGetBookDetails.bookDetailsToReturn = BookDetailsWithShelfStatus(testBook, isOnShelf = true)
-        mockToggleBookPurchase.bookToReturn = null // Triggers error
+        mockToggleBookPurchase.shouldSucceed = false
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
@@ -674,13 +673,16 @@ class BookDetailViewModelTest {
     }
 
     private class SimpleToggleBookPurchaseUseCase : ToggleBookPurchaseUseCase {
-        var bookToReturn: Book? = null
+        var shouldSucceed = true
 
-        override suspend operator fun invoke(book: Book, purchased: Boolean): Result<Book, DataError.Local> =
-            bookToReturn?.let { Result.Success(it) } ?: Result.Error(DataError.Local.UNKNOWN)
+        override suspend operator fun invoke(
+            bookId: String,
+            purchased: Boolean,
+        ): Result<Unit, DataError.Local> =
+            if (shouldSucceed) Result.Success(Unit) else Result.Error(DataError.Local.UNKNOWN)
 
         fun reset() {
-            bookToReturn = null
+            shouldSucceed = true
         }
     }
 

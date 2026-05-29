@@ -234,21 +234,24 @@ class BookDetailViewModel(
             }
             is BookDetailAction.OnPurchaseClick -> {
                 viewModelScope.launch {
-                    val currentBook = state.value.book
-                    if (currentBook != null) {
-                        // Toggle: pass opposite of current purchased status
-                        when (
-                            val purchaseResult = bookDetailUseCases.toggleBookPurchase(
-                                currentBook,
-                                !currentBook.purchased
-                            )
-                        ) {
-                            is Result.Success -> {
-                                // Update state immediately following renameShelf pattern
-                                _state.update { it.copy(book = purchaseResult.data) }
+                    val currentBook = state.value.book ?: return@launch
+                    val newPurchased = !currentBook.purchased
+                    // The use case now returns Unit; the ViewModel owns the
+                    // optimistic state update from the value it already has.
+                    when (
+                        val purchaseResult = bookDetailUseCases.toggleBookPurchase(
+                            currentBook.id,
+                            newPurchased
+                        )
+                    ) {
+                        is Result.Success -> {
+                            _state.update {
+                                it.copy(book = it.book?.copy(purchased = newPurchased))
                             }
-                            is Result.Error -> {
-                                _state.update { it.withError(purchaseResult.error, "toggle book purchase") }
+                        }
+                        is Result.Error -> {
+                            _state.update {
+                                it.withError(purchaseResult.error, "toggle book purchase")
                             }
                         }
                     }

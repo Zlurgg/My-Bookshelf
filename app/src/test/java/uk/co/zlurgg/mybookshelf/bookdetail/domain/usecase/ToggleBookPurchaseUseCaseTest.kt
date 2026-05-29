@@ -3,7 +3,6 @@ package uk.co.zlurgg.mybookshelf.bookdetail.domain.usecase
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -13,10 +12,10 @@ import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 import uk.co.zlurgg.mybookshelf.testutil.mocks.MockBookRepository
 
 /**
- * Under v3, ToggleBookPurchaseUseCase delegates to a column-scoped UPDATE on
- * the purchased flag — no get-then-upsert, no full-row write, no preservation
- * gymnastics. The returned [Book] is the input copied with the new flag; DB
- * personal metadata isn't read back because nothing else changed.
+ * Under v3 + the B1 signature shrink, ToggleBookPurchaseUseCase is a thin
+ * delegator to a column-scoped UPDATE on the purchased flag — no get-then-
+ * upsert, no full-row write, no returned Book. The ViewModel owns the
+ * optimistic state copy from the value it already has.
  */
 class ToggleBookPurchaseUseCaseTest {
 
@@ -30,18 +29,9 @@ class ToggleBookPurchaseUseCaseTest {
 
     @Test
     fun `marks unpurchased book as purchased via column-scoped update`() = runTest {
-        val unpurchasedBook = TestBookBuilder()
-            .withId("test-book")
-            .withTitle("Test Book")
-            .withPurchased(false)
-            .build()
-
-        val result = useCase(unpurchasedBook, true)
+        val result = useCase("test-book", true)
 
         assertTrue("Should return success", result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertTrue("Returned book should be purchased", updatedBook.purchased)
-        assertEquals("test-book", updatedBook.id)
         assertEquals(1, mockBookRepository.updatePurchasedCallCount)
         assertEquals("test-book", mockBookRepository.lastPurchasedBookId)
         assertEquals(true, mockBookRepository.lastPurchasedValue)
@@ -50,15 +40,9 @@ class ToggleBookPurchaseUseCaseTest {
 
     @Test
     fun `marks purchased book as unpurchased`() = runTest {
-        val purchasedBook = TestBookBuilder()
-            .withId("purchased-book")
-            .withPurchased(true)
-            .build()
-
-        val result = useCase(purchasedBook, false)
+        val result = useCase("purchased-book", false)
 
         assertTrue(result is Result.Success)
-        assertFalse((result as Result.Success).data.purchased)
         assertEquals(false, mockBookRepository.lastPurchasedValue)
     }
 
@@ -66,30 +50,10 @@ class ToggleBookPurchaseUseCaseTest {
     fun `toggle to current status still issues the column update`() = runTest {
         // The use case does not care whether the value changed — the ViewModel
         // computes the new flag. Repository call still happens.
-        val purchasedBook = TestBookBuilder().withId("already-purchased").withPurchased(true).build()
-
-        val result = useCase(purchasedBook, true)
+        val result = useCase("already-purchased", true)
 
         assertTrue(result is Result.Success)
         assertEquals(1, mockBookRepository.updatePurchasedCallCount)
-    }
-
-    @Test
-    fun `returns purchased copy of the supplied book, never a DB read`() = runTest {
-        val originalBook = TestBookBuilder.completeBook()
-
-        val result = useCase(originalBook, !originalBook.purchased)
-
-        assertTrue(result is Result.Success)
-        val updatedBook = (result as Result.Success).data
-        assertEquals(originalBook.id, updatedBook.id)
-        assertEquals(originalBook.title, updatedBook.title)
-        assertEquals(originalBook.authors, updatedBook.authors)
-        assertEquals(originalBook.description, updatedBook.description)
-        assertEquals(originalBook.personalRating, updatedBook.personalRating)
-        assertEquals(originalBook.personalNotes, updatedBook.personalNotes)
-        assertEquals(originalBook.readingStatus, updatedBook.readingStatus)
-        assertEquals(!originalBook.purchased, updatedBook.purchased)
     }
 
     @Test
@@ -98,9 +62,7 @@ class ToggleBookPurchaseUseCaseTest {
         // previewed book never gets promoted into the library by a tap on the
         // purchased toggle (the screen gates the card under v3, but the
         // storage-layer guarantee is what the test locks in).
-        val previewBook = TestBookBuilder().withId("preview-only").withPurchased(false).build()
-
-        val result = useCase(previewBook, true)
+        val result = useCase("preview-only", true)
 
         assertTrue(result is Result.Success)
         assertEquals(1, mockBookRepository.updatePurchasedCallCount)
@@ -112,10 +74,9 @@ class ToggleBookPurchaseUseCaseTest {
 
     @Test
     fun `returns error when repository fails`() = runTest {
-        val book = TestBookBuilder().withId("test-book").build()
         mockBookRepository.errorToReturn = DataError.Local.DATABASE_ERROR
 
-        val result = useCase(book, true)
+        val result = useCase("test-book", true)
 
         assertTrue(result is Result.Error)
         assertEquals(DataError.Local.DATABASE_ERROR, (result as Result.Error).error)
@@ -126,9 +87,9 @@ class ToggleBookPurchaseUseCaseTest {
     fun `multiple toggles all hit the column update`() = runTest {
         val book = TestBookBuilder().withId("toggle-test").withPurchased(false).build()
 
-        useCase(book, true)
-        useCase(book.copy(purchased = true), false)
-        useCase(book, true)
+        useCase(book.id, true)
+        useCase(book.id, false)
+        useCase(book.id, true)
 
         assertEquals(3, mockBookRepository.updatePurchasedCallCount)
         assertEquals(0, mockBookRepository.upsertBookCallCount)
