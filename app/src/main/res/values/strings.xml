@@ -31,9 +31,9 @@
     <string name="search_by_author">Author</string>
     <string name="search_by_subject">Subject</string>
     <string name="safe_search_label">Safe Search</string>
-    <string name="library_scope_label">My library only</string>
+    <string name="library_scope_label">My library</string>
     <string name="search_no_library_results">No library books match \"%1$s\"</string>
-    <string name="search_empty_library_hint">No books in your library yet. Turn off \"My library only\" to search Google Books.</string>
+    <string name="search_empty_library_hint">No books in your library yet. Turn off \"My library\" to search Google Books.</string>
     <string name="search_results_found">%1$d results found</string>
     <string name="safe_search_filtered">%1$d results (%2$d hidden by Safe Search)</string>
     <string name="search_no_results_found">No books found for \"%1$s\"</string>

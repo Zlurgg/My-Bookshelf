@@ -22,11 +22,14 @@ import uk.co.zlurgg.mybookshelf.R
  * Search filter checkboxes and safe search toggle.
  *
  * Row 1: Title / Author / Subject checkboxes — at least one must remain checked.
- * Row 2: Safe Search switch (+ optional "My library only" switch) — content
+ * Row 2: Safe Search switch (+ optional "My library" switch) — content
  * filters visually distinct from the search-mode checkboxes.
  *
- * When [libraryScopeEnabled] is on, Safe Search and the Subject checkbox are
- * disabled (greyed) — they don't apply to a local-library filter.
+ * When [libraryScopeEnabled] is on, the Subject checkbox is disabled (greyed)
+ * because local books don't carry the same subject-qualifier semantics. The
+ * Safe Search switch stays visually identical to the library-scope switch
+ * regardless of mode — it's a no-op for local results but matching style keeps
+ * the toggle row visually consistent.
  */
 @Composable
 fun SearchFilters(
@@ -47,7 +50,6 @@ fun SearchFilters(
     onToggleLibraryScope: () -> Unit = {},
 ) {
     val subjectDisabledByScope = showLibraryScopeToggle && libraryScopeEnabled
-    val safeSearchDisabledByScope = showLibraryScopeToggle && libraryScopeEnabled
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -99,8 +101,7 @@ fun SearchFilters(
                 style = MaterialTheme.typography.bodySmall
             )
             Switch(
-                checked = safeSearchEnabled && !safeSearchDisabledByScope,
-                enabled = !safeSearchDisabledByScope,
+                checked = safeSearchEnabled,
                 onCheckedChange = { onToggleSafeSearch() },
                 modifier = Modifier.scale(0.8f)
             )
