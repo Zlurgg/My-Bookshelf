@@ -54,11 +54,17 @@ fun BookSearchDialog(
     // platform window is torn down on navigation, so an internal state would
     // reset to top on return.
     lazyListState: LazyListState = rememberLazyListState(),
+    // Off by default so the Library dialog (which doesn't expose this toggle)
+    // and any future callers that haven't opted in keep today's UX.
+    showLibraryScopeToggle: Boolean = false,
+    onToggleLibraryScope: () -> Unit = {},
 ) {
     // Recomputed only when the result set changes; avoids a linear scan on
     // every recomposition (typing, scroll, focus changes) of the dialog.
-    val showGoogleAttribution = remember(state.results) {
-        state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }
+    // Library-scope results are local, never Google-sourced, so the
+    // attribution is suppressed in that mode regardless of the results.
+    val showGoogleAttribution = remember(state.results, state.libraryScopeEnabled) {
+        !state.libraryScopeEnabled && state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }
     }
     AlertDialog(
         onDismissRequest = {
@@ -89,7 +95,10 @@ fun BookSearchDialog(
                     onToggleTitle = onToggleSearchByTitle,
                     onToggleAuthor = onToggleSearchByAuthor,
                     onToggleSubject = onToggleSearchBySubject,
-                    onToggleSafeSearch = onToggleSafeSearch
+                    onToggleSafeSearch = onToggleSafeSearch,
+                    showLibraryScopeToggle = showLibraryScopeToggle,
+                    libraryScopeEnabled = state.libraryScopeEnabled,
+                    onToggleLibraryScope = onToggleLibraryScope,
                 )
             }
         },
@@ -150,10 +159,14 @@ fun BookSearchDialog(
                     }
                 }
 
+                val isEmptyResult = state.results.isEmpty() &&
+                    !state.isTyping && !state.isLoading &&
+                    state.hasSearched && state.errorMessage == null
+                val showLibraryEmptyState = isEmptyResult && state.libraryScopeEnabled
+                val showRemoteEmptyState = isEmptyResult &&
+                    !state.libraryScopeEnabled && state.query.isNotBlank()
                 when {
-                    state.results.isEmpty() && state.query.isNotBlank() &&
-                        !state.isTyping && !state.isLoading &&
-                        state.hasSearched && state.errorMessage == null -> {
+                    showLibraryEmptyState || showRemoteEmptyState -> {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -168,20 +181,33 @@ fun BookSearchDialog(
                                 tint = MaterialTheme.colorScheme.outline
                             )
                             Spacer(modifier = Modifier.height(16.dp))
+                            val (headline, subline) = when {
+                                showLibraryEmptyState && state.query.isBlank() ->
+                                    stringResource(R.string.search_empty_library_hint) to null
+                                showLibraryEmptyState ->
+                                    stringResource(
+                                        R.string.search_no_library_results,
+                                        state.query
+                                    ) to null
+                                else ->
+                                    stringResource(
+                                        R.string.search_no_results_found,
+                                        state.query
+                                    ) to stringResource(R.string.search_no_results_suggestion)
+                            }
                             Text(
-                                text = stringResource(
-                                    R.string.search_no_results_found,
-                                    state.query
-                                ),
+                                text = headline,
                                 style = MaterialTheme.typography.titleMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = stringResource(R.string.search_no_results_suggestion),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            if (subline != null) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = subline,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
 

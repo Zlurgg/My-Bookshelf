@@ -10,6 +10,7 @@ sealed interface BookshelfAction {
     data object OnToggleSearchByAuthor : BookshelfAction
     data object OnToggleSearchBySubject : BookshelfAction
     data object OnToggleSafeSearch : BookshelfAction
+    data object OnToggleLibraryScope : BookshelfAction
     data object OnDismissSearchDialog : BookshelfAction
     data class OnRemoveBook(val book: Book) : BookshelfAction
     data object OnUndoRemove : BookshelfAction

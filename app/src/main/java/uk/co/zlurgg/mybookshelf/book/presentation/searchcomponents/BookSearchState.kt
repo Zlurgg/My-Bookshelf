@@ -13,6 +13,7 @@ data class BookSearchState(
     val searchByAuthor: Boolean = false,
     val searchBySubject: Boolean = false,
     val safeSearchEnabled: Boolean = true,
+    val libraryScopeEnabled: Boolean = false,
     val filteredCount: Int = 0,
     val errorMessage: String? = null
 ) {

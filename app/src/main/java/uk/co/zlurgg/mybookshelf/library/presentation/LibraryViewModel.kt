@@ -70,7 +70,13 @@ class LibraryViewModel(
                             searchByTitle = prefs.searchByTitle,
                             searchByAuthor = prefs.searchByAuthor,
                             searchBySubject = prefs.searchBySubject,
-                            safeSearchEnabled = prefs.safeSearchEnabled
+                            safeSearchEnabled = prefs.safeSearchEnabled,
+                            // Read for state parity only — the Library dialog
+                            // doesn't surface the "My library only" toggle (the
+                            // Library tab IS the user's library), so this flag
+                            // is silently inert here. Stored so persistence
+                            // round-trips preserve whatever the Shelf dialog set.
+                            libraryScopeEnabled = prefs.libraryScopeEnabled,
                         )
                     )
                 }
@@ -116,7 +122,8 @@ class LibraryViewModel(
                             searchByTitle = it.bookSearchState.searchByTitle,
                             searchByAuthor = it.bookSearchState.searchByAuthor,
                             searchBySubject = it.bookSearchState.searchBySubject,
-                            safeSearchEnabled = it.bookSearchState.safeSearchEnabled
+                            safeSearchEnabled = it.bookSearchState.safeSearchEnabled,
+                            libraryScopeEnabled = it.bookSearchState.libraryScopeEnabled,
                         )
                     )
                 }
@@ -253,7 +260,10 @@ class LibraryViewModel(
                     searchByTitle = searchState.searchByTitle,
                     searchByAuthor = searchState.searchByAuthor,
                     searchBySubject = searchState.searchBySubject,
-                    safeSearchEnabled = searchState.safeSearchEnabled
+                    safeSearchEnabled = searchState.safeSearchEnabled,
+                    // Round-trip preserve — Library doesn't toggle this flag,
+                    // so write whatever we observed back unchanged.
+                    libraryScopeEnabled = searchState.libraryScopeEnabled,
                 )
             )
         }

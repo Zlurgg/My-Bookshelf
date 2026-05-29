@@ -22,7 +22,11 @@ import uk.co.zlurgg.mybookshelf.R
  * Search filter checkboxes and safe search toggle.
  *
  * Row 1: Title / Author / Subject checkboxes — at least one must remain checked.
- * Row 2: Safe Search switch — visually distinct as a content filter vs. search mode.
+ * Row 2: Safe Search switch (+ optional "My library only" switch) — content
+ * filters visually distinct from the search-mode checkboxes.
+ *
+ * When [libraryScopeEnabled] is on, Safe Search and the Subject checkbox are
+ * disabled (greyed) — they don't apply to a local-library filter.
  */
 @Composable
 fun SearchFilters(
@@ -37,8 +41,13 @@ fun SearchFilters(
     onToggleAuthor: () -> Unit,
     onToggleSubject: () -> Unit,
     onToggleSafeSearch: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showLibraryScopeToggle: Boolean = false,
+    libraryScopeEnabled: Boolean = false,
+    onToggleLibraryScope: () -> Unit = {},
 ) {
+    val subjectDisabledByScope = showLibraryScopeToggle && libraryScopeEnabled
+    val safeSearchDisabledByScope = showLibraryScopeToggle && libraryScopeEnabled
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -65,8 +74,8 @@ fun SearchFilters(
             )
 
             Checkbox(
-                checked = searchBySubject,
-                enabled = subjectEnabled,
+                checked = searchBySubject && !subjectDisabledByScope,
+                enabled = subjectEnabled && !subjectDisabledByScope,
                 onCheckedChange = { onToggleSubject() }
             )
             Text(
@@ -90,10 +99,23 @@ fun SearchFilters(
                 style = MaterialTheme.typography.bodySmall
             )
             Switch(
-                checked = safeSearchEnabled,
+                checked = safeSearchEnabled && !safeSearchDisabledByScope,
+                enabled = !safeSearchDisabledByScope,
                 onCheckedChange = { onToggleSafeSearch() },
                 modifier = Modifier.scale(0.8f)
             )
+
+            if (showLibraryScopeToggle) {
+                Text(
+                    text = stringResource(id = R.string.library_scope_label),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Switch(
+                    checked = libraryScopeEnabled,
+                    onCheckedChange = { onToggleLibraryScope() },
+                    modifier = Modifier.scale(0.8f)
+                )
+            }
         }
     }
 }
@@ -112,6 +134,9 @@ private fun SearchFiltersPreview() {
         onToggleTitle = {},
         onToggleAuthor = {},
         onToggleSubject = {},
-        onToggleSafeSearch = {}
+        onToggleSafeSearch = {},
+        showLibraryScopeToggle = true,
+        libraryScopeEnabled = false,
+        onToggleLibraryScope = {},
     )
 }

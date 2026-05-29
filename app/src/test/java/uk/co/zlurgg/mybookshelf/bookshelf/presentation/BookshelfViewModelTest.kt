@@ -19,6 +19,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchLibraryBooksUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchResult
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.BookshelfUseCases
 import uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase.GetShelfBooksUseCase
@@ -49,6 +50,7 @@ class BookshelfViewModelTest {
 
     // Simplified inline mocks for ViewModel UI testing
     private val mockSearchBooks = SimpleSearchBooksUseCase()
+    private val mockSearchLibraryBooks = SimpleSearchLibraryBooksUseCase()
     private val mockGetShelfBooks = SimpleGetShelfBooksUseCase()
     private val mockAddBookToShelf = SimpleAddBookToShelfUseCase()
     private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
@@ -62,6 +64,7 @@ class BookshelfViewModelTest {
     @After
     fun tearDown() {
         mockSearchBooks.reset()
+        mockSearchLibraryBooks.reset()
         mockGetShelfBooks.reset()
         mockAddBookToShelf.reset()
         mockRemoveBookFromShelf.reset()
@@ -74,6 +77,7 @@ class BookshelfViewModelTest {
     private fun createViewModel(shelfId: String = "test-shelf"): BookshelfViewModel {
         val bookshelfUseCases = BookshelfUseCases(
             searchBooks = mockSearchBooks,
+            searchLibraryBooks = mockSearchLibraryBooks,
             getShelfBooks = mockGetShelfBooks,
             addBookToShelf = mockAddBookToShelf,
             removeBookFromShelf = mockRemoveBookFromShelf,
@@ -400,6 +404,29 @@ class BookshelfViewModelTest {
     }
 
     @Test
+    fun `library scope toggle flips state and persists preference`() = runTest(testDispatcher) {
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        val stateAfterToggle = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnToggleLibraryScope)
+        }
+
+        assertTrue(
+            "Library scope should be enabled after toggle",
+            stateAfterToggle!!.bookSearchState.libraryScopeEnabled
+        )
+
+        val persistedState = stubSearchPreferences.lastUpdatedState
+        assertTrue(
+            "Persisted library scope should be enabled",
+            persistedState!!.libraryScopeEnabled
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
     fun `safe search toggle persists preference`() = runTest(testDispatcher) {
         mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
         val viewModel = createViewModel()
@@ -514,6 +541,34 @@ class BookshelfViewModelTest {
             lastAuthorFilter = null
             lastSubjectFilter = null
             invocationCount = 0
+        }
+    }
+
+    private class SimpleSearchLibraryBooksUseCase : SearchLibraryBooksUseCase {
+        var booksToReturn: List<Book> = emptyList()
+        var invocationCount = 0
+        var lastQuery: String? = null
+        var lastSearchByTitle: Boolean? = null
+        var lastSearchByAuthor: Boolean? = null
+
+        override suspend operator fun invoke(
+            query: String,
+            searchByTitle: Boolean,
+            searchByAuthor: Boolean,
+        ): Result<List<Book>, DataError.Local> {
+            invocationCount++
+            lastQuery = query
+            lastSearchByTitle = searchByTitle
+            lastSearchByAuthor = searchByAuthor
+            return Result.Success(booksToReturn)
+        }
+
+        fun reset() {
+            booksToReturn = emptyList()
+            invocationCount = 0
+            lastQuery = null
+            lastSearchByTitle = null
+            lastSearchByAuthor = null
         }
     }
 

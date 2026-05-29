@@ -18,6 +18,7 @@ class SearchPreferencesImpl(
         private val SEARCH_BY_AUTHOR_KEY = booleanPreferencesKey("search_by_author")
         private val SEARCH_BY_SUBJECT_KEY = booleanPreferencesKey("search_by_subject")
         private val SAFE_SEARCH_ENABLED_KEY = booleanPreferencesKey("safe_search_enabled")
+        private val LIBRARY_SCOPE_ENABLED_KEY = booleanPreferencesKey("library_scope_enabled")
     }
 
     override fun observe(): Flow<SearchPreferenceState> =
@@ -26,7 +27,8 @@ class SearchPreferencesImpl(
                 searchByTitle = prefs[SEARCH_BY_TITLE_KEY] ?: true,
                 searchByAuthor = prefs[SEARCH_BY_AUTHOR_KEY] ?: false,
                 searchBySubject = prefs[SEARCH_BY_SUBJECT_KEY] ?: false,
-                safeSearchEnabled = prefs[SAFE_SEARCH_ENABLED_KEY] ?: true
+                safeSearchEnabled = prefs[SAFE_SEARCH_ENABLED_KEY] ?: true,
+                libraryScopeEnabled = prefs[LIBRARY_SCOPE_ENABLED_KEY] ?: false,
             )
         }
 
@@ -36,6 +38,7 @@ class SearchPreferencesImpl(
             prefs[SEARCH_BY_AUTHOR_KEY] = state.searchByAuthor
             prefs[SEARCH_BY_SUBJECT_KEY] = state.searchBySubject
             prefs[SAFE_SEARCH_ENABLED_KEY] = state.safeSearchEnabled
+            prefs[LIBRARY_SCOPE_ENABLED_KEY] = state.libraryScopeEnabled
         }
     }
 }

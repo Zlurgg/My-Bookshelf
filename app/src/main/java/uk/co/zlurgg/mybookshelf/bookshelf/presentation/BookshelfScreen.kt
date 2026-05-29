@@ -369,6 +369,9 @@ fun BookshelfScreen(
                 override val onToggleSafeSearch: () -> Unit = {
                     onAction(BookshelfAction.OnToggleSafeSearch)
                 }
+                override val onToggleLibraryScope: () -> Unit = {
+                    onAction(BookshelfAction.OnToggleLibraryScope)
+                }
                 override val onAddBook: (Book) -> Unit = { book ->
                     onAction(BookshelfAction.OnAddBookClick(book))
                     // Keep dialog open for bulk adding (e.g., multiple books from same series)

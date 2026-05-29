@@ -35,6 +35,8 @@ fun ShelfBookSearchDialog(
         onBookClick = callbacks.onBookClick,
         onDismiss = callbacks.onDismiss,
         lazyListState = lazyListState,
+        showLibraryScopeToggle = true,
+        onToggleLibraryScope = callbacks.onToggleLibraryScope,
         trailingContent = { book, isExisting ->
             if (isExisting) {
                 IconButton(onClick = { callbacks.onRemoveBook(book) }) {
@@ -72,6 +74,7 @@ private fun ShelfBookSearchDialogPreview() {
             override val onToggleSearchByAuthor: () -> Unit = {}
             override val onToggleSearchBySubject: () -> Unit = {}
             override val onToggleSafeSearch: () -> Unit = {}
+            override val onToggleLibraryScope: () -> Unit = {}
             override val onAddBook: (Book) -> Unit = {}
             override val onRemoveBook: (Book) -> Unit = {}
             override val onBookClick: (Book) -> Unit = {}

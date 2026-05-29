@@ -8,6 +8,7 @@ interface BookSearchCallbacks {
     val onToggleSearchByAuthor: () -> Unit
     val onToggleSearchBySubject: () -> Unit
     val onToggleSafeSearch: () -> Unit
+    val onToggleLibraryScope: () -> Unit
     val onAddBook: (Book) -> Unit
     val onRemoveBook: (Book) -> Unit
     val onBookClick: (Book) -> Unit

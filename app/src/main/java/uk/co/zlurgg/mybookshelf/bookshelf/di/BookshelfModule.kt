@@ -20,6 +20,7 @@ val bookshelfModule = module {
     single {
         BookshelfUseCases(
             searchBooks = get(),
+            searchLibraryBooks = get(),
             getShelfBooks = get(),
             addBookToShelf = get(),
             removeBookFromShelf = get(),

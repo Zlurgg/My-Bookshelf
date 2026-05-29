@@ -74,7 +74,8 @@ class BookshelfViewModel(
                             searchByTitle = prefs.searchByTitle,
                             searchByAuthor = prefs.searchByAuthor,
                             searchBySubject = prefs.searchBySubject,
-                            safeSearchEnabled = prefs.safeSearchEnabled
+                            safeSearchEnabled = prefs.safeSearchEnabled,
+                            libraryScopeEnabled = prefs.libraryScopeEnabled,
                         )
                     )
                 }
@@ -196,6 +197,17 @@ class BookshelfViewModel(
                 persistSearchPreferences()
                 retriggerSearchIfNeeded()
             }
+            BookshelfAction.OnToggleLibraryScope -> {
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            libraryScopeEnabled = !it.bookSearchState.libraryScopeEnabled
+                        )
+                    )
+                }
+                persistSearchPreferences()
+                retriggerSearchIfNeeded()
+            }
             // Navigation actions handled by the UI layer
             is BookshelfAction.OnBookClick,
             BookshelfAction.OnBackClick,
@@ -211,7 +223,8 @@ class BookshelfViewModel(
                     searchByTitle = searchState.searchByTitle,
                     searchByAuthor = searchState.searchByAuthor,
                     searchBySubject = searchState.searchBySubject,
-                    safeSearchEnabled = searchState.safeSearchEnabled
+                    safeSearchEnabled = searchState.safeSearchEnabled,
+                    libraryScopeEnabled = searchState.libraryScopeEnabled,
                 )
             )
         }
@@ -303,8 +316,11 @@ class BookshelfViewModel(
                 .debounce(SEARCH_DEBOUNCE_MS)
                 .collectLatest { raw ->
                     val query = raw.trim()
+                    val libraryScope = _state.value.bookSearchState.libraryScopeEnabled
 
-                    if (query.length < MIN_SEARCH_QUERY_LENGTH) {
+                    // Skip the min-length gate when library scope is on —
+                    // empty query is "show me my whole library."
+                    if (query.length < MIN_SEARCH_QUERY_LENGTH && !libraryScope) {
                         _state.update {
                             it.copy(bookSearchState = it.bookSearchState.withBelowMinLength())
                         }
@@ -331,9 +347,13 @@ class BookshelfViewModel(
     }
 
     private fun retriggerSearchIfNeeded() {
-        val currentQuery = _state.value.bookSearchState.query
-        if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-            queryFlow.tryEmit(currentQuery)
+        val searchState = _state.value.bookSearchState
+        val isLongEnough = searchState.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
+        // Library scope reads from local memory — the min-length gate exists
+        // to throttle network calls, not local filters, so an empty query is
+        // legitimately "show me everything I own."
+        if (isLongEnough || searchState.libraryScopeEnabled) {
+            queryFlow.tryEmit(searchState.query)
         }
     }
 
@@ -341,6 +361,12 @@ class BookshelfViewModel(
         _state.update { it.copy(bookSearchState = it.bookSearchState.withLoading()) }
 
         val searchState = _state.value.bookSearchState
+
+        if (searchState.libraryScopeEnabled) {
+            performLibrarySearch(searchState)
+            return
+        }
+
         val params = searchState.toSearchParams()
 
         bookshelfUseCases.searchBooks(
@@ -365,6 +391,34 @@ class BookshelfViewModel(
                             errorMessage = null,
                             results = searchResult.books,
                             filteredCount = searchResult.filteredCount
+                        )
+                    )
+                }
+            }
+            .onError { error ->
+                _state.update { it.withSearchError(error) }
+            }
+    }
+
+    private suspend fun performLibrarySearch(searchState: BookSearchState) {
+        // Subject is intentionally omitted — local books don't carry the same
+        // subject-qualifier semantics as the remote `subject:` field. The use
+        // case applies a title-default fallback when neither title nor author
+        // is checked, so the user always gets results.
+        bookshelfUseCases.searchLibraryBooks(
+            query = searchState.query,
+            searchByTitle = searchState.searchByTitle,
+            searchByAuthor = searchState.searchByAuthor,
+        )
+            .onSuccess { books ->
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            isLoading = false,
+                            hasSearched = true,
+                            errorMessage = null,
+                            results = books,
+                            filteredCount = 0,
                         )
                     )
                 }
