@@ -510,14 +510,13 @@ class BookshelfViewModelTest {
     // The identical error behavior (results preserved on error) is tested in LibraryViewModelTest.
 
     // ========================================================================
-    // C1 — Library-scope guards + closeSearchDialog asymmetry fix
+    // Library-scope dismiss preservation + Fix E entering/leaving branches
     // ========================================================================
 
     @Test
-    fun `closeSearchDialog preserves libraryScopeEnabled (asymmetry fix)`() = runTest(testDispatcher) {
-        // Bookshelf previously dropped libraryScopeEnabled on dismiss while
-        // Library preserved it — round-trip parity matters because dismiss
-        // builds a fresh BookSearchState rather than copying.
+    fun `dismiss preserves libraryScopeEnabled via resetForDialogClose`() = runTest(testDispatcher) {
+        // resetForDialogClose() preserves filter prefs / scope flag by omission
+        // from copy() — the field-by-field rebuild this replaced used to drop it.
         mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
@@ -563,6 +562,205 @@ class BookshelfViewModelTest {
         assertEquals(
             "OnLoadMore in library scope must not fire a remote search",
             before,
+            mockSearchBooks.invocationCount,
+        )
+        stateHelper.cleanup()
+    }
+
+    // ========================================================================
+    // C2 — Tap-to-search + Fix E (library scope toggle) + Fix B (empty-state)
+    // ========================================================================
+
+    @Test
+    fun `OnSubmitSearch in library scope is a no-op`() = runTest(testDispatcher) {
+        // §Decisions: library scope's type-to-filter already keeps results live.
+        // Submitting is redundant and must not invoke the remote use case.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        stubSearchPreferences.seed(SearchPreferenceState(libraryScopeEnabled = true))
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("kotlin"))
+        val invocationsBefore = mockSearchBooks.invocationCount
+
+        viewModel.onAction(BookshelfAction.OnSubmitSearch)
+        stateHelper.getCurrentState()
+
+        assertEquals(
+            "OnSubmitSearch in library scope must not invoke the remote search",
+            invocationsBefore,
+            mockSearchBooks.invocationCount,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnSearchQueryChange in library scope writes lastSubmittedQuery`() = runTest(testDispatcher) {
+        // §Decisions invariant: library mode keeps lastSubmittedQuery == query
+        // so empty-state predicates (Fix B) work uniformly across modes.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        stubSearchPreferences.seed(SearchPreferenceState(libraryScopeEnabled = true))
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("h"))
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals(
+            "Library mode must write lastSubmittedQuery on every keystroke",
+            "h",
+            state.bookSearchState.lastSubmittedQuery,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnClearSearch resets results and lastSubmittedQuery and pagination`() = runTest(testDispatcher) {
+        // X-button regression guard: the dedicated onClear lambda routes to
+        // resetSearchState which must clear everything the submit path set up.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        mockSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("a").build())
+        mockSearchBooks.defaultRawPageSize = 40
+        mockSearchBooks.defaultPageSize = 40
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("kotlin"))
+        viewModel.onAction(BookshelfAction.OnSubmitSearch)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnClearSearch)
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals("query reset", "", state.bookSearchState.query)
+        assertEquals("lastSubmittedQuery reset", "", state.bookSearchState.lastSubmittedQuery)
+        assertTrue("results empty", state.bookSearchState.results.isEmpty())
+        assertFalse("canLoadMore reset", state.bookSearchState.canLoadMore)
+        assertEquals("nextStartIndex reset", 0, state.bookSearchState.nextStartIndex)
+        assertTrue(
+            "dialog stays open after clear (X is not dismiss)",
+            state.isSearchDialogVisible,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `pre-submit filter toggle does not fire remote search`() = runTest(testDispatcher) {
+        // Fix E rationale: typed query without OnSubmitSearch means
+        // lastSubmittedQuery is blank → retriggerSearchIfNeeded must no-op.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("harr"))
+        val invocationsBefore = mockSearchBooks.invocationCount
+
+        viewModel.onAction(BookshelfAction.OnToggleSafeSearch)
+        stateHelper.getCurrentState()
+
+        assertEquals(
+            "Filter toggle before submit must NOT fire remote search",
+            invocationsBefore,
+            mockSearchBooks.invocationCount,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnToggleLibraryScope enter seeds lastSubmittedQuery from query`() = runTest(testDispatcher) {
+        // Fix E entering branch: remote→library auto-runs the local filter via
+        // the retrigger after the entering branch writes lastSubmittedQuery.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        mockSearchLibraryBooks.booksToReturn = listOf(TestBookBuilder().withId("local-1").build())
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("kotlin"))
+        viewModel.onAction(BookshelfAction.OnToggleLibraryScope)
+        val state = stateHelper.getCurrentState()!!
+
+        assertTrue("scope enabled", state.bookSearchState.libraryScopeEnabled)
+        assertEquals(
+            "Entering library scope must seed lastSubmittedQuery from query",
+            "kotlin",
+            state.bookSearchState.lastSubmittedQuery,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnToggleLibraryScope leave clears lastSubmittedQuery and results`() = runTest(testDispatcher) {
+        // Fix E leaving branch: library→remote is a clean slate. No auto remote
+        // call (lastSubmittedQuery cleared, retrigger no-ops), results dropped.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        stubSearchPreferences.seed(SearchPreferenceState(libraryScopeEnabled = true))
+        mockSearchLibraryBooks.booksToReturn = listOf(TestBookBuilder().withId("local-1").build())
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("h"))
+        stateHelper.getCurrentState()
+        val invocationsBefore = mockSearchBooks.invocationCount
+
+        viewModel.onAction(BookshelfAction.OnToggleLibraryScope)
+        val state = stateHelper.getCurrentState()!!
+
+        assertFalse("scope disabled", state.bookSearchState.libraryScopeEnabled)
+        assertEquals(
+            "Leaving library scope must clear lastSubmittedQuery",
+            "",
+            state.bookSearchState.lastSubmittedQuery,
+        )
+        assertTrue("results cleared", state.bookSearchState.results.isEmpty())
+        assertFalse("hasSearched cleared", state.bookSearchState.hasSearched)
+        assertEquals(
+            "No remote search must fire on library→remote",
+            invocationsBefore,
+            mockSearchBooks.invocationCount,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `B3 typed library query does not leak into remote retrigger`() = runTest(testDispatcher) {
+        // §Fix E full reproduction: open, toggle library ON, type "h", toggle
+        // library OFF. Zero remote invocations across the entire sequence.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        mockSearchLibraryBooks.booksToReturn = listOf(TestBookBuilder().withId("local-1").build())
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        val invocationsBefore = mockSearchBooks.invocationCount
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnToggleLibraryScope) // enter library
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("h")) // local filter
+        viewModel.onAction(BookshelfAction.OnToggleLibraryScope) // back to remote
+        stateHelper.getCurrentState()
+
+        assertEquals(
+            "No remote search must fire across the full B3 reproduction",
+            invocationsBefore,
             mockSearchBooks.invocationCount,
         )
         stateHelper.cleanup()

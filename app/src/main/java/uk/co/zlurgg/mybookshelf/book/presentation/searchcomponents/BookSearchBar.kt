@@ -30,6 +30,7 @@ fun BookSearchBar(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onImeSearch: () -> Unit,
+    onClear: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     CompositionLocalProvider(
@@ -79,9 +80,7 @@ fun BookSearchBar(
                     visible = searchQuery.isNotBlank()
                 ) {
                     IconButton(
-                        onClick = {
-                            onSearchQueryChange("")
-                        }
+                        onClick = onClear
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,

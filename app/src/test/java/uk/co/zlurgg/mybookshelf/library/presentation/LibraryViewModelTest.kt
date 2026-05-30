@@ -341,7 +341,7 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `remote search populates bookSearchState results after debounce`() = runTest(testDispatcher) {
+    fun `remote search populates bookSearchState results after submit`() = runTest(testDispatcher) {
         val searchResults = listOf(
             TestBookBuilder().withId("s1").withTitle("Search Result 1").build(),
             TestBookBuilder().withId("s2").withTitle("Search Result 2").build()
@@ -354,9 +354,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("test"))
-
-        // Advance past debounce (300ms)
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()
 
@@ -367,7 +365,9 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `remote search does not trigger for query under 2 chars`() = runTest(testDispatcher) {
+    fun `typing alone does not fire remote search under tap-to-search`() = runTest(testDispatcher) {
+        // Headline behavioural change (plan §Why): typed query does NOT trigger
+        // a remote call. Only OnSubmitSearch (IME Search tap) fires the request.
         stubSearchBooks.searchResultsToReturn = listOf(
             TestBookBuilder().withId("s1").withTitle("Result").build()
         )
@@ -377,14 +377,38 @@ class LibraryViewModelTest {
         stateHelper.getCurrentState()
 
         viewModel.onAction(LibraryAction.OnSearchClick)
-        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("a"))
-
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()
 
-        assertTrue("Results should be empty for short query", state!!.bookSearchState.results.isEmpty())
+        assertEquals(
+            "OnRemoteSearchQueryChange alone must not invoke the search use case",
+            0,
+            stubSearchBooks.invocationCount,
+        )
+        assertTrue("Results should be empty until submit", state!!.bookSearchState.results.isEmpty())
         assertFalse("Should not have searched", state.bookSearchState.hasSearched)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnSubmitSearch with blank query does not fire search`() = runTest(testDispatcher) {
+        // Replaces the old MIN_SEARCH_QUERY_LENGTH guard: only the isBlank()
+        // guard remains under tap-to-search.
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("   "))
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
+        advanceUntilIdle()
+
+        assertEquals(
+            "Blank query must not invoke the search use case",
+            0,
+            stubSearchBooks.invocationCount,
+        )
         stateHelper.cleanup()
     }
 
@@ -398,8 +422,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()
 
@@ -799,14 +822,13 @@ class LibraryViewModelTest {
         // Perform initial search
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
         val countAfterInitial = stubSearchBooks.invocationCount
 
         // Toggle title OFF → only author remains → search uses authorFilter
         viewModel.onAction(LibraryAction.OnToggleSearchByTitle)
-        advanceTimeBy(350)
         advanceUntilIdle()
         stateHelper.getCurrentState()
 
@@ -831,14 +853,13 @@ class LibraryViewModelTest {
         // Perform initial search
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
         val countAfterInitial = stubSearchBooks.invocationCount
 
         // Toggle author OFF → only title remains → search uses titleFilter
         viewModel.onAction(LibraryAction.OnToggleSearchByAuthor)
-        advanceTimeBy(350)
         advanceUntilIdle()
         stateHelper.getCurrentState()
 
@@ -929,7 +950,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("test"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         val afterPage1 = stateHelper.getCurrentState()!!
         assertEquals(
@@ -969,7 +990,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
 
@@ -986,36 +1007,33 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `OnLoadMore is silent when query is below MIN length (defensive guard)`() = runTest(testDispatcher) {
-        // Edge case: user deleted query below MIN_SEARCH_QUERY_LENGTH but taps
-        // load-more before the 300ms debounce fires the below-min reset.
-        // canLoadMore is still true from the prior page; firing would burn a
-        // request the imminent reset would invalidate.
+    fun `OnLoadMore is silent when typed query diverges from lastSubmittedQuery`() = runTest(testDispatcher) {
+        // Race-guard from plan §Fix A: a Load More tap dispatched between the
+        // user refining the typed query and the UI hiding the affordance must
+        // not fire a malformed call with the stale page cursor.
         stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("a").build())
-        stubSearchBooks.defaultRawPageSize = 1
-        stubSearchBooks.defaultPageSize = 1
+        stubSearchBooks.defaultRawPageSize = 40
+        stubSearchBooks.defaultPageSize = 40
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
         stateHelper.getCurrentState()
 
-        // Establish state with canLoadMore (set up via a normal search at MIN length first).
-        stubSearchBooks.defaultRawPageSize = 40
-        stubSearchBooks.defaultPageSize = 40
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
         val invocationCountBefore = stubSearchBooks.invocationCount
 
-        // User deletes query down to 1 char then taps load-more before debounce fires.
-        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("k"))
+        // User refines the typed query past the submitted one; the UI hides
+        // Load More but the VM gate is the backstop if a tap slips through.
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin coroutines"))
         viewModel.onAction(LibraryAction.OnLoadMore)
         advanceUntilIdle()
 
         assertEquals(
-            "OnLoadMore must not fire a request when query is below MIN length",
+            "OnLoadMore must not fire when typed query diverges from submitted",
             invocationCountBefore,
             stubSearchBooks.invocationCount,
         )
@@ -1039,7 +1057,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
 
@@ -1071,7 +1089,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()!!
 
@@ -1098,7 +1116,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()!!
 
@@ -1125,7 +1143,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()!!
 
@@ -1162,7 +1180,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
 
@@ -1191,7 +1209,7 @@ class LibraryViewModelTest {
         // Get page 1 results.
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
 
@@ -1206,7 +1224,7 @@ class LibraryViewModelTest {
         stubSearchBooks.searchResultsToReturn = freshResults
 
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("rust"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()!!
 
@@ -1232,7 +1250,7 @@ class LibraryViewModelTest {
 
         viewModel.onAction(LibraryAction.OnSearchClick)
         viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
-        advanceTimeBy(350)
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
         advanceUntilIdle()
         stateHelper.getCurrentState()
 
@@ -1245,7 +1263,6 @@ class LibraryViewModelTest {
         stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("fresh-1").build())
 
         viewModel.onAction(LibraryAction.OnToggleSearchBySubject)
-        advanceTimeBy(350)
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()!!
 
@@ -1260,6 +1277,139 @@ class LibraryViewModelTest {
             40, // rawPageSize from the fresh page-1 response
             state.bookSearchState.nextStartIndex,
         )
+        stateHelper.cleanup()
+    }
+
+    // ========================================================================
+    // C2 — §Fix F: Library tab ignores persisted libraryScopeEnabled flag
+    // ========================================================================
+
+    @Test
+    fun `Library tab can submit remote search when persisted libraryScope is true`() = runTest(testDispatcher) {
+        // §Fix F N1a regression guard: a libraryScope flag persisted from the
+        // Bookshelf tab must NOT silently turn LibraryAction.OnSubmitSearch into
+        // a no-op. The Library tab dialog is unambiguously remote and ignores
+        // the flag for behaviour.
+        stubSearchPreferences.seed(SearchPreferenceState(libraryScopeEnabled = true))
+        stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("g1").build())
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState() // let observeSearchPreferences settle
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("harry"))
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals(
+            "Library tab must invoke remote search regardless of persisted libraryScope",
+            1,
+            stubSearchBooks.invocationCount,
+        )
+        assertEquals(1, state.bookSearchState.results.size)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnRemoteSearchQueryChange does not write lastSubmittedQuery`() = runTest(testDispatcher) {
+        // §Fix F carve-out: typed-only on Library VM. Only OnSubmitSearch writes
+        // lastSubmittedQuery here — the asymmetry with Bookshelf is intentional
+        // because Library has no scope toggle.
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals("typed query stored", "kotlin", state.bookSearchState.query)
+        assertEquals(
+            "lastSubmittedQuery must remain blank until OnSubmitSearch",
+            "",
+            state.bookSearchState.lastSubmittedQuery,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `retriggerRemoteSearchIfNeeded ignores libraryScopeEnabled (Fix F N1b)`() = runTest(testDispatcher) {
+        // §Fix F N1b guard: a leaked libraryScope=true flag must not gate the
+        // retrigger. With a real lastSubmittedQuery, the filter toggle re-fires.
+        stubSearchPreferences.seed(SearchPreferenceState(libraryScopeEnabled = true))
+        stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("g1").build())
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
+        advanceUntilIdle()
+        val invocationsAfterSubmit = stubSearchBooks.invocationCount
+
+        viewModel.onAction(LibraryAction.OnToggleSafeSearch)
+        advanceUntilIdle()
+
+        assertTrue(
+            "Filter toggle must retrigger remote search despite leaked libraryScope flag",
+            stubSearchBooks.invocationCount > invocationsAfterSubmit,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `Library tap-to-search does not fire on typed query alone`() = runTest(testDispatcher) {
+        // Mirror of the Bookshelf headline test (plan §Fix F also extends
+        // tap-to-search to the Library remote dialog for the first time).
+        stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("g1").build())
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceUntilIdle()
+
+        assertEquals(
+            "OnRemoteSearchQueryChange alone must not invoke remote search",
+            0,
+            stubSearchBooks.invocationCount,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnClearSearch on Library cancels in-flight remote search`() = runTest(testDispatcher) {
+        // Verifies the shared resetSearchState helper's tryEmit("") path
+        // routes through collectLatest to cancel an in-flight performRemoteSearch.
+        stubSearchBooks.suspendUntilCancelled = true
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        viewModel.onAction(LibraryAction.OnSubmitSearch)
+        advanceUntilIdle() // suspended in the use case
+
+        // Re-arm so any LATE write would be visible if cancellation failed.
+        stubSearchBooks.suspendUntilCancelled = false
+        stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("late").build())
+
+        viewModel.onAction(LibraryAction.OnClearSearch)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals("query reset", "", state.bookSearchState.query)
+        assertEquals("lastSubmittedQuery reset", "", state.bookSearchState.lastSubmittedQuery)
+        assertTrue("results empty after clear", state.bookSearchState.results.isEmpty())
+        assertTrue("dialog stays open on X tap", state.isSearchDialogVisible)
         stateHelper.cleanup()
     }
 

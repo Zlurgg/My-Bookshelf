@@ -10,13 +10,12 @@ import uk.co.zlurgg.mybookshelf.testutil.builders.TestBookBuilder
 class BookSearchStateTest {
 
     @Test
-    fun `withLoading sets loading and clears typing and error`() {
-        val state = BookSearchState(isTyping = true, errorMessage = "old error")
+    fun `withLoading sets loading and clears error`() {
+        val state = BookSearchState(errorMessage = "old error")
 
         val result = state.withLoading()
 
         assertTrue(result.isLoading)
-        assertFalse(result.isTyping)
         assertNull(result.errorMessage)
     }
 
@@ -34,59 +33,56 @@ class BookSearchStateTest {
     }
 
     @Test
-    fun `withBelowMinLength clears results when query is empty`() {
-        val books = listOf(TestBookBuilder().withId("book-1").build())
-        val state = BookSearchState(query = "", results = books, isLoading = true, isTyping = true)
-
-        val result = state.withBelowMinLength()
-
-        assertFalse(result.isLoading)
-        assertFalse(result.isTyping)
-        assertNull(result.errorMessage)
-        assertTrue(result.results.isEmpty())
-    }
-
-    @Test
-    fun `withBelowMinLength clears results when query is whitespace only`() {
-        val books = listOf(TestBookBuilder().withId("book-1").build())
-        val state = BookSearchState(query = "   ", results = books)
-
-        val result = state.withBelowMinLength()
-
-        assertTrue(result.results.isEmpty())
-    }
-
-    @Test
-    fun `withBelowMinLength preserves results when query has content`() {
-        val books = listOf(TestBookBuilder().withId("book-1").build())
-        val state = BookSearchState(query = "k", results = books)
-
-        val result = state.withBelowMinLength()
-
-        assertEquals(books, result.results)
-    }
-
-    @Test
-    fun `withBelowMinLength resets pagination state so stale Load More button is hidden`() {
-        // Regression: after a successful paginated search, clearing the query
-        // (X tap or backspace-to-empty) ran withBelowMinLength, which cleared
-        // results but left canLoadMore=true. The dialog's footer render checks
-        // (canLoadMore || isLoadingMore), so the button rendered over an empty
-        // list — tap silently swallowed by the VM's min-length guard.
+    fun `resetForDialogClose clears query lastSubmittedQuery and result state`() {
         val books = listOf(TestBookBuilder().withId("book-1").build())
         val state = BookSearchState(
-            query = "",
+            query = "harry",
+            lastSubmittedQuery = "harry",
             results = books,
+            hasSearched = true,
+            isLoading = true,
+            isLoadingMore = true,
             canLoadMore = true,
             nextStartIndex = 20,
-            isLoadingMore = true,
+            filteredCount = 1,
+            errorMessage = "boom",
         )
 
-        val result = state.withBelowMinLength()
+        val result = state.resetForDialogClose()
 
-        assertFalse("canLoadMore must reset so the footer disappears", result.canLoadMore)
-        assertFalse("isLoadingMore must reset", result.isLoadingMore)
-        assertEquals("nextStartIndex must reset", 0, result.nextStartIndex)
+        assertEquals("", result.query)
+        assertEquals("", result.lastSubmittedQuery)
+        assertTrue(result.results.isEmpty())
+        assertFalse(result.hasSearched)
+        assertFalse(result.isLoading)
+        assertFalse(result.isLoadingMore)
+        assertFalse("canLoadMore must reset so stale footer disappears", result.canLoadMore)
+        assertEquals(0, result.nextStartIndex)
+        assertEquals(0, result.filteredCount)
+        assertNull(result.errorMessage)
+    }
+
+    @Test
+    fun `resetForDialogClose preserves filter prefs and existingBookIds`() {
+        val state = BookSearchState(
+            query = "harry",
+            lastSubmittedQuery = "harry",
+            searchByTitle = false,
+            searchByAuthor = true,
+            searchBySubject = true,
+            safeSearchEnabled = false,
+            libraryScopeEnabled = true,
+            existingBookIds = setOf("book-1", "book-2"),
+        )
+
+        val result = state.resetForDialogClose()
+
+        assertFalse(result.searchByTitle)
+        assertTrue(result.searchByAuthor)
+        assertTrue(result.searchBySubject)
+        assertFalse(result.safeSearchEnabled)
+        assertTrue(result.libraryScopeEnabled)
+        assertEquals(setOf("book-1", "book-2"), result.existingBookIds)
     }
 
     @Test

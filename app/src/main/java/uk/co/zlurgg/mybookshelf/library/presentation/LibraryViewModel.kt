@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
-import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchState
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
@@ -40,8 +39,10 @@ class LibraryViewModel(
 
     companion object {
         private const val TAG = "LibraryVM"
+
+        // Debounce applies to the outer Library-tab local filter only; the
+        // remote-search dialog uses explicit submit (no debounce).
         private const val SEARCH_DEBOUNCE_MS = 300L
-        private const val MIN_SEARCH_QUERY_LENGTH = 2
         private val TIDY_MODE_KEY = booleanPreferencesKey("library_tidy_mode")
     }
 
@@ -64,7 +65,7 @@ class LibraryViewModel(
         observeBooks()
         observeNonRemovableBookIds()
         observeDebouncedLocalQuery()
-        observeDebouncedRemoteQuery()
+        observeRemoteSearchTriggers()
     }
 
     private sealed interface SearchTrigger {
@@ -82,11 +83,14 @@ class LibraryViewModel(
                             searchByAuthor = prefs.searchByAuthor,
                             searchBySubject = prefs.searchBySubject,
                             safeSearchEnabled = prefs.safeSearchEnabled,
-                            // Read for state parity only — the Library dialog
-                            // doesn't surface the "My library only" toggle (the
-                            // Library tab IS the user's library), so this flag
-                            // is silently inert here. Stored so persistence
-                            // round-trips preserve whatever the Shelf dialog set.
+                            // Round-trip preserve only — Library has no scope
+                            // toggle and intentionally ignores this flag in
+                            // behaviour. See plan §Fix F for the carve-outs in
+                            // OnRemoteSearchQueryChange / OnSubmitSearch /
+                            // retriggerRemoteSearchIfNeeded; the dialog's
+                            // display-side gate (showLibraryScopeToggle) keeps
+                            // a leaked-true value from breaking empty-state
+                            // and Google attribution rendering.
                             libraryScopeEnabled = prefs.libraryScopeEnabled,
                         )
                     )
@@ -122,34 +126,31 @@ class LibraryViewModel(
             is LibraryAction.OnSearchClick -> {
                 _state.update { it.copy(isSearchDialogVisible = true) }
             }
-            is LibraryAction.OnDismissSearchDialog -> {
-                // Preserve search preferences — the DataStore observer won't re-emit because
-                // the persisted value hasn't changed, so a fresh BookSearchState would lose them.
-                _state.update {
-                    it.copy(
-                        isSearchDialogVisible = false,
-                        bookSearchState = BookSearchState(
-                            existingBookIds = it.bookSearchState.existingBookIds,
-                            searchByTitle = it.bookSearchState.searchByTitle,
-                            searchByAuthor = it.bookSearchState.searchByAuthor,
-                            searchBySubject = it.bookSearchState.searchBySubject,
-                            safeSearchEnabled = it.bookSearchState.safeSearchEnabled,
-                            libraryScopeEnabled = it.bookSearchState.libraryScopeEnabled,
-                        )
-                    )
-                }
-                remoteQueryFlow.tryEmit("")
-            }
+            is LibraryAction.OnDismissSearchDialog -> resetSearchState(closeDialog = true)
+            is LibraryAction.OnClearSearch -> resetSearchState(closeDialog = false)
             is LibraryAction.OnRemoteSearchQueryChange -> {
+                // §Fix F carve-out: typed-only, no lastSubmittedQuery write,
+                // no retrigger. Library has no scope toggle, and OnSubmitSearch
+                // is the sole writer of lastSubmittedQuery on this VM.
                 _state.update {
                     it.copy(
-                        bookSearchState = it.bookSearchState.copy(
-                            query = action.query,
-                            isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
-                        )
+                        bookSearchState = it.bookSearchState.copy(query = action.query)
                     )
                 }
-                remoteQueryFlow.tryEmit(action.query)
+            }
+            is LibraryAction.OnSubmitSearch -> {
+                // §Fix F carve-out: libraryScopeEnabled is NOT consulted here —
+                // the Library tab's dialog is unambiguously remote, and a
+                // leaked-true value persisted from the Bookshelf tab must not
+                // turn this into a no-op (reviewer N1a).
+                val q = _state.value.bookSearchState.query
+                if (q.isBlank()) return@onAction
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(lastSubmittedQuery = q)
+                    )
+                }
+                remoteQueryFlow.tryEmit(q)
             }
             is LibraryAction.OnToggleSearchByTitle -> {
                 val current = _state.value.bookSearchState
@@ -205,12 +206,16 @@ class LibraryViewModel(
                 retriggerRemoteSearchIfNeeded()
             }
             is LibraryAction.OnLoadMore -> {
-                // See BookshelfViewModel for the min-length guard rationale.
+                // The race-guard (`query == lastSubmittedQuery`) closes the
+                // typed/submitted divergence window — see BookshelfViewModel.
                 val s = _state.value.bookSearchState
-                val canFire = s.query.trim().length >= MIN_SEARCH_QUERY_LENGTH &&
+                val canFire = s.lastSubmittedQuery.isNotBlank() &&
+                    s.query.trim() == s.lastSubmittedQuery.trim() &&
                     s.canLoadMore &&
                     !s.isLoadingMore
-                if (canFire) loadMoreFlow.tryEmit(Unit)
+                if (canFire) {
+                    loadMoreFlow.tryEmit(Unit)
+                }
             }
             is LibraryAction.OnAddBookToLibrary -> {
                 addBookToLibrary(action.book)
@@ -288,11 +293,25 @@ class LibraryViewModel(
         }
     }
 
+    // TODO(phase2-controller): mirrored with BookshelfViewModel.retriggerSearchIfNeeded.
+    // §Fix F: libraryScopeEnabled is NOT consulted — the Library tab ignores
+    // the persisted flag for behaviour and only re-fires the last submitted query.
     private fun retriggerRemoteSearchIfNeeded() {
-        val currentQuery = _state.value.bookSearchState.query
-        if (currentQuery.trim().length >= MIN_SEARCH_QUERY_LENGTH) {
-            remoteQueryFlow.tryEmit(currentQuery)
+        val lastSubmitted = _state.value.bookSearchState.lastSubmittedQuery
+        if (lastSubmitted.isBlank()) return
+        remoteQueryFlow.tryEmit(lastSubmitted)
+    }
+
+    // TODO(phase2-controller): shared with BookshelfViewModel.
+    private fun resetSearchState(closeDialog: Boolean) {
+        _state.update {
+            it.copy(
+                isSearchDialogVisible = if (closeDialog) false else it.isSearchDialogVisible,
+                bookSearchState = it.bookSearchState.resetForDialogClose(),
+            )
         }
+        // Cancels any in-flight performRemoteSearch via collectLatest.
+        remoteQueryFlow.tryEmit("")
     }
 
     private fun observeNonRemovableBookIds() {
@@ -379,24 +398,21 @@ class LibraryViewModel(
         }
     }
 
-    @OptIn(FlowPreview::class)
-    private fun observeDebouncedRemoteQuery() {
+    // TODO(phase2-controller): mirrors BookshelfViewModel.observeSearchTriggers.
+    private fun observeRemoteSearchTriggers() {
         viewModelScope.launch {
             // Merging both triggers into the same collectLatest is the load-bearing
             // cancellation primitive — see BookshelfViewModel for rationale.
             merge(
-                remoteQueryFlow.debounce(SEARCH_DEBOUNCE_MS).map<String, SearchTrigger> {
-                    SearchTrigger.Fresh(it)
-                },
+                remoteQueryFlow.map<String, SearchTrigger> { SearchTrigger.Fresh(it) },
                 loadMoreFlow.map<Unit, SearchTrigger> { SearchTrigger.More },
             ).collectLatest { trigger ->
                 when (trigger) {
                     is SearchTrigger.Fresh -> {
                         val query = trigger.rawQuery.trim()
-                        if (query.length < MIN_SEARCH_QUERY_LENGTH) {
-                            _state.update {
-                                it.copy(bookSearchState = it.bookSearchState.withBelowMinLength())
-                            }
+                        // Cancellation emit from clear/dismiss — collectLatest above
+                        // has already cancelled any in-flight performRemoteSearch.
+                        if (query.isEmpty()) {
                             return@collectLatest
                         }
                         performRemoteSearch(append = false)

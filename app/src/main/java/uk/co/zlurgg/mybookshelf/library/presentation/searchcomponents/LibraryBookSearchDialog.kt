@@ -22,6 +22,8 @@ import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchSta
 fun LibraryBookSearchDialog(
     state: BookSearchState,
     onQueryChange: (String) -> Unit,
+    onSubmitSearch: () -> Unit,
+    onClearSearch: () -> Unit,
     onToggleSearchByTitle: () -> Unit,
     onToggleSearchByAuthor: () -> Unit,
     onToggleSearchBySubject: () -> Unit,
@@ -35,6 +37,8 @@ fun LibraryBookSearchDialog(
     BookSearchDialog(
         state = state,
         onQueryChange = onQueryChange,
+        onSubmitSearch = onSubmitSearch,
+        onClearSearch = onClearSearch,
         onToggleSearchByTitle = onToggleSearchByTitle,
         onToggleSearchByAuthor = onToggleSearchByAuthor,
         onToggleSearchBySubject = onToggleSearchBySubject,

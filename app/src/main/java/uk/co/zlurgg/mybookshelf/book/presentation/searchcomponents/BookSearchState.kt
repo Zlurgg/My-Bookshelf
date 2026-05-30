@@ -4,9 +4,12 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 
 data class BookSearchState(
     val query: String = "",
+    // The query that produced the currently-displayed results.
+    // Remote mode: written by OnSubmitSearch only. Library mode: written on every
+    // OnSearchQueryChange so the type-to-filter invariant holds. See plan §Decisions.
+    val lastSubmittedQuery: String = "",
     val results: List<Book> = emptyList(),
     val isLoading: Boolean = false,
-    val isTyping: Boolean = false,
     val hasSearched: Boolean = false,
     val existingBookIds: Set<String> = emptySet(),
     val searchByTitle: Boolean = true,
@@ -36,7 +39,6 @@ data class BookSearchState(
 
     fun withLoading(): BookSearchState = copy(
         isLoading = true,
-        isTyping = false,
         errorMessage = null
     )
 
@@ -46,7 +48,6 @@ data class BookSearchState(
     fun withFreshSearch(): BookSearchState = copy(
         isLoading = true,
         isLoadingMore = false,
-        isTyping = false,
         errorMessage = null,
         results = emptyList(),
         nextStartIndex = 0,
@@ -61,19 +62,20 @@ data class BookSearchState(
         results = results
     )
 
-    // query is untrimmed in state; trim here to detect whitespace-only input.
-    // Pagination fields reset alongside results — otherwise a stale `canLoadMore`
-    // from a previous successful search keeps the Load More button rendered over
-    // an empty (or stale-short-query) list, where tapping is a silent no-op
-    // because the VM's min-length guard blocks it.
-    fun withBelowMinLength(): BookSearchState = copy(
+    // Opt-in reset of search-result fields. Filter prefs, existingBookIds, and
+    // safeSearch/libraryScope flags are preserved by omission from copy(...);
+    // future fields default to preserved unless named explicitly here.
+    fun resetForDialogClose(): BookSearchState = copy(
+        query = "",
+        lastSubmittedQuery = "",
+        results = emptyList(),
+        hasSearched = false,
         isLoading = false,
         isLoadingMore = false,
-        isTyping = false,
-        errorMessage = null,
-        results = if (query.trim().isEmpty()) emptyList() else results,
-        nextStartIndex = 0,
         canLoadMore = false,
+        nextStartIndex = 0,
+        filteredCount = 0,
+        errorMessage = null,
     )
 
     /**

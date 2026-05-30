@@ -28,6 +28,8 @@ fun ShelfBookSearchDialog(
     BookSearchDialog(
         state = state,
         onQueryChange = callbacks.onQueryChange,
+        onSubmitSearch = callbacks.onSubmitSearch,
+        onClearSearch = callbacks.onClearSearch,
         onToggleSearchByTitle = callbacks.onToggleSearchByTitle,
         onToggleSearchByAuthor = callbacks.onToggleSearchByAuthor,
         onToggleSearchBySubject = callbacks.onToggleSearchBySubject,
@@ -71,6 +73,8 @@ private fun ShelfBookSearchDialogPreview() {
         ),
         callbacks = object : BookSearchCallbacks {
             override val onQueryChange: (String) -> Unit = {}
+            override val onSubmitSearch: () -> Unit = {}
+            override val onClearSearch: () -> Unit = {}
             override val onToggleSearchByTitle: () -> Unit = {}
             override val onToggleSearchByAuthor: () -> Unit = {}
             override val onToggleSearchBySubject: () -> Unit = {}

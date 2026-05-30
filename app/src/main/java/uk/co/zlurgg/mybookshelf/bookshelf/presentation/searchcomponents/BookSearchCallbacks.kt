@@ -4,6 +4,8 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 
 interface BookSearchCallbacks {
     val onQueryChange: (String) -> Unit
+    val onSubmitSearch: () -> Unit
+    val onClearSearch: () -> Unit
     val onToggleSearchByTitle: () -> Unit
     val onToggleSearchByAuthor: () -> Unit
     val onToggleSearchBySubject: () -> Unit

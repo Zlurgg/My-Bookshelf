@@ -2,13 +2,11 @@ package uk.co.zlurgg.mybookshelf.bookshelf.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.merge
@@ -43,8 +41,6 @@ class BookshelfViewModel(
 
     companion object {
         private const val TAG = "BookshelfViewModel"
-        private const val SEARCH_DEBOUNCE_MS = 300L
-        private const val MIN_SEARCH_QUERY_LENGTH = 2
     }
 
     // Initialize state flow with default value
@@ -67,7 +63,7 @@ class BookshelfViewModel(
 
     init {
         observeSearchPreferences()
-        observeDebouncedQuery()
+        observeSearchTriggers()
         loadBooks()
         loadShelfDetails()
         checkSignInStatus()
@@ -108,11 +104,8 @@ class BookshelfViewModel(
             is BookshelfAction.OnSearchClick -> {
                 _state.update { it.copy(isSearchDialogVisible = true) }
             }
-            is BookshelfAction.OnDismissSearchDialog -> {
-                _state.update { it.closeSearchDialog() }
-                // Reset query to cancel any pending search
-                queryFlow.tryEmit("")
-            }
+            is BookshelfAction.OnDismissSearchDialog -> resetSearchState(closeDialog = true)
+            is BookshelfAction.OnClearSearch -> resetSearchState(closeDialog = false)
             is BookshelfAction.OnSearchResultBookClick -> {
                 _state.update { it.copy(navigateToBook = action.book) }
             }
@@ -141,16 +134,41 @@ class BookshelfViewModel(
                 _state.update { it.withBookRestored() }
             }
             is BookshelfAction.OnSearchQueryChange -> {
-                // Update UI immediately with typing indicator; defer actual search via debounce
                 _state.update {
+                    val libraryScope = it.bookSearchState.libraryScopeEnabled
+                    // Library mode keeps lastSubmittedQuery == query so the
+                    // "currently-displayed query" invariant holds for empty-state
+                    // text and Load More gating. Remote mode preserves the prior
+                    // lastSubmittedQuery — only OnSubmitSearch writes it there.
+                    val newLastSubmitted = if (libraryScope) {
+                        action.query
+                    } else {
+                        it.bookSearchState.lastSubmittedQuery
+                    }
                     it.copy(
                         bookSearchState = it.bookSearchState.copy(
                             query = action.query,
-                            isTyping = action.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
+                            lastSubmittedQuery = newLastSubmitted,
                         )
                     )
                 }
-                queryFlow.tryEmit(action.query)
+                if (_state.value.bookSearchState.libraryScopeEnabled) {
+                    retriggerSearchIfNeeded()
+                }
+            }
+            is BookshelfAction.OnSubmitSearch -> {
+                val s = _state.value.bookSearchState
+                // Library scope: type-to-filter already keeps results live; the
+                // dialog still dismisses the keyboard via its IME handler.
+                val q = s.query
+                if (!s.libraryScopeEnabled && q.isNotBlank()) {
+                    _state.update {
+                        it.copy(
+                            bookSearchState = it.bookSearchState.copy(lastSubmittedQuery = q)
+                        )
+                    }
+                    queryFlow.tryEmit(q)
+                }
             }
             BookshelfAction.OnToggleTidyMode -> {
                 val newTidyMode = !_state.value.isTidyMode
@@ -211,26 +229,51 @@ class BookshelfViewModel(
                 retriggerSearchIfNeeded()
             }
             BookshelfAction.OnToggleLibraryScope -> {
+                val current = _state.value.bookSearchState
+                val newLibScope = !current.libraryScopeEnabled
                 _state.update {
-                    it.copy(
-                        bookSearchState = it.bookSearchState.copy(
-                            libraryScopeEnabled = !it.bookSearchState.libraryScopeEnabled
+                    val newSearchState = if (newLibScope) {
+                        // Entering library scope: seed the invariant from the
+                        // current typed query so the local filter retriggers correctly.
+                        it.bookSearchState.copy(
+                            libraryScopeEnabled = true,
+                            lastSubmittedQuery = it.bookSearchState.query,
                         )
-                    )
+                    } else {
+                        // Leaving library scope: clean break. Drop library-derived
+                        // state and require an explicit IME Search to hit Google —
+                        // asymmetric by design (see plan §Fix E).
+                        it.bookSearchState.copy(
+                            libraryScopeEnabled = false,
+                            lastSubmittedQuery = "",
+                            results = emptyList(),
+                            hasSearched = false,
+                            canLoadMore = false,
+                            nextStartIndex = 0,
+                            filteredCount = 0,
+                            isLoadingMore = false,
+                        )
+                    }
+                    it.copy(bookSearchState = newSearchState)
                 }
                 persistSearchPreferences()
+                // No-op on library→remote: lastSubmittedQuery is blank.
                 retriggerSearchIfNeeded()
             }
             BookshelfAction.OnLoadMore -> {
-                // The min-length guard handles an in-flight tap landing after the
-                // user deleted the query below MIN — canLoadMore is still true
-                // from the prior page but the upcoming below-min reset invalidates it.
+                // The race-guard (`query == lastSubmittedQuery`) closes the
+                // typed/submitted divergence window — a Load More tap dispatched
+                // between the user refining the typed query and the recomposition
+                // hiding the button must not fire a malformed call.
                 val s = _state.value.bookSearchState
-                val canFire = s.query.trim().length >= MIN_SEARCH_QUERY_LENGTH &&
+                val canFire = s.lastSubmittedQuery.isNotBlank() &&
+                    s.query.trim() == s.lastSubmittedQuery.trim() &&
                     s.canLoadMore &&
                     !s.isLoadingMore &&
                     !s.libraryScopeEnabled
-                if (canFire) loadMoreFlow.tryEmit(Unit)
+                if (canFire) {
+                    loadMoreFlow.tryEmit(Unit)
+                }
             }
             // Navigation actions handled by the UI layer
             is BookshelfAction.OnBookClick,
@@ -331,30 +374,28 @@ class BookshelfViewModel(
         }
     }
 
-    @OptIn(FlowPreview::class)
-    private fun observeDebouncedQuery() {
+    // TODO(phase2-controller): extract this observer + the merge/collectLatest pair
+    // into a shared RemoteSearchController used by both VMs.
+    private fun observeSearchTriggers() {
         viewModelScope.launch {
             // Merging both triggers into the same collectLatest is the load-bearing
             // cancellation primitive — any new trigger cancels the previous in-flight
             // performSearch regardless of source. Refactoring to per-call Job tracking
-            // re-opens the toggle-during-load-more race.
+            // re-opens the toggle-during-load-more race. Both modes flow through here:
+            // remote via OnSubmitSearch/retrigger, library via OnSearchQueryChange/retrigger.
             merge(
-                queryFlow.debounce(SEARCH_DEBOUNCE_MS).map<String, SearchTrigger> {
-                    SearchTrigger.Fresh(it)
-                },
+                queryFlow.map<String, SearchTrigger> { SearchTrigger.Fresh(it) },
                 loadMoreFlow.map<Unit, SearchTrigger> { SearchTrigger.More },
             ).collectLatest { trigger ->
                 when (trigger) {
                     is SearchTrigger.Fresh -> {
                         val query = trigger.rawQuery.trim()
                         val libraryScope = _state.value.bookSearchState.libraryScopeEnabled
-
-                        // Skip the min-length gate when library scope is on —
-                        // empty query is "show me my whole library."
-                        if (query.length < MIN_SEARCH_QUERY_LENGTH && !libraryScope) {
-                            _state.update {
-                                it.copy(bookSearchState = it.bookSearchState.withBelowMinLength())
-                            }
+                        // Cancellation emit from clear/dismiss — collectLatest above
+                        // has already cancelled any in-flight performSearch. Library
+                        // mode with empty query is "show me my whole library," so
+                        // we still run the search there.
+                        if (query.isEmpty() && !libraryScope) {
                             return@collectLatest
                         }
                         performSearch(append = false)
@@ -378,15 +419,28 @@ class BookshelfViewModel(
         }
     }
 
+    // TODO(phase2-controller): mirrored with retriggerRemoteSearchIfNeeded in
+    // LibraryViewModel (modulo the libraryScope gate per Fix F).
     private fun retriggerSearchIfNeeded() {
         val searchState = _state.value.bookSearchState
-        val isLongEnough = searchState.query.trim().length >= MIN_SEARCH_QUERY_LENGTH
-        // Library scope reads from local memory — the min-length gate exists
-        // to throttle network calls, not local filters, so an empty query is
-        // legitimately "show me everything I own."
-        if (isLongEnough || searchState.libraryScopeEnabled) {
-            queryFlow.tryEmit(searchState.query)
+        // Library mode: lastSubmittedQuery == query (kept in sync by OnSearchQueryChange).
+        // Remote mode: lastSubmittedQuery is the last submitted query — re-fires that.
+        if (searchState.lastSubmittedQuery.isBlank() && !searchState.libraryScopeEnabled) {
+            return
         }
+        queryFlow.tryEmit(searchState.lastSubmittedQuery)
+    }
+
+    // TODO(phase2-controller): shared with LibraryViewModel.
+    private fun resetSearchState(closeDialog: Boolean) {
+        _state.update {
+            it.copy(
+                isSearchDialogVisible = if (closeDialog) false else it.isSearchDialogVisible,
+                bookSearchState = it.bookSearchState.resetForDialogClose(),
+            )
+        }
+        // Cancels any in-flight performSearch via collectLatest.
+        queryFlow.tryEmit("")
     }
 
     private suspend fun performSearch(append: Boolean) {
@@ -548,21 +602,5 @@ class BookshelfViewModel(
         return recentlyDeleted?.let {
             copy(books = books + it, recentlyDeleted = null)
         } ?: this
-    }
-
-    private fun BookshelfState.closeSearchDialog(): BookshelfState {
-        // Preserve search preferences — the DataStore observer won't re-emit because
-        // the persisted value hasn't changed, so a fresh BookSearchState would lose them.
-        return copy(
-            isSearchDialogVisible = false,
-            bookSearchState = BookSearchState(
-                existingBookIds = bookSearchState.existingBookIds,
-                searchByTitle = bookSearchState.searchByTitle,
-                searchByAuthor = bookSearchState.searchByAuthor,
-                searchBySubject = bookSearchState.searchBySubject,
-                safeSearchEnabled = bookSearchState.safeSearchEnabled,
-                libraryScopeEnabled = bookSearchState.libraryScopeEnabled,
-            )
-        )
     }
 }

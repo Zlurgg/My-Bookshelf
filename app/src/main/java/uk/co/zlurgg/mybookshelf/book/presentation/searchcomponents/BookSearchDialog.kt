@@ -30,7 +30,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -40,10 +43,13 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.model.displayDescription
 import uk.co.zlurgg.mybookshelf.book.presentation.components.LoadImage
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun BookSearchDialog(
     state: BookSearchState,
     onQueryChange: (String) -> Unit,
+    onSubmitSearch: () -> Unit,
+    onClearSearch: () -> Unit,
     onToggleSearchByTitle: () -> Unit,
     onToggleSearchByAuthor: () -> Unit,
     onToggleSearchBySubject: () -> Unit,
@@ -57,20 +63,42 @@ fun BookSearchDialog(
     // platform window is torn down on navigation, so an internal state would
     // reset to top on return.
     lazyListState: LazyListState = rememberLazyListState(),
-    // Off by default so the Library dialog (which doesn't expose this toggle)
-    // and any future callers that haven't opted in keep today's UX.
+    // Gates BOTH the toggle UI visibility AND whether state.libraryScopeEnabled
+    // is honoured for display branching. When false (Library tab), display
+    // treats library-scope as off: Google attribution shows, remote empty-state
+    // renders. This prevents a persisted libraryScope=true from the Bookshelf
+    // tab silently re-skinning the Library tab dialog (reviewer N2). Anyone
+    // flipping this to false to suppress just the toggle UI must understand
+    // they are also opting into remote-only display semantics.
     showLibraryScopeToggle: Boolean = false,
     onToggleLibraryScope: () -> Unit = {},
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val dismissKeyboard = remember(keyboardController, focusManager) {
+        {
+            focusManager.clearFocus()
+            keyboardController?.hide()
+        }
+    }
+    // Display-side gate: when the caller hasn't opted into the scope toggle,
+    // treat library scope as off so a leaked persisted flag from the other
+    // tab's preference doesn't break attribution/empty-state on this tab.
+    val effectiveLibraryScope = state.libraryScopeEnabled && showLibraryScopeToggle
+    // Race-guard: Load More only renders while the typed query still matches
+    // the submitted one. Diverging typed input hides the affordance.
+    val canShowLoadMore = (state.canLoadMore || state.isLoadingMore) &&
+        state.query.trim() == state.lastSubmittedQuery.trim()
     // Recomputed only when the result set changes; avoids a linear scan on
     // every recomposition (typing, scroll, focus changes) of the dialog.
     // Library-scope results are local, never Google-sourced, so the
     // attribution is suppressed in that mode regardless of the results.
-    val showGoogleAttribution = remember(state.results, state.libraryScopeEnabled) {
-        !state.libraryScopeEnabled && state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }
+    val showGoogleAttribution = remember(state.results, effectiveLibraryScope) {
+        !effectiveLibraryScope && state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }
     }
     AlertDialog(
         onDismissRequest = {
+            dismissKeyboard()
             if (!state.isLoading) onDismiss()
         },
         title = {
@@ -82,7 +110,11 @@ fun BookSearchDialog(
                 BookSearchBar(
                     searchQuery = state.query,
                     onSearchQueryChange = onQueryChange,
-                    onImeSearch = { /* handled by onQueryChange as user types */ }
+                    onImeSearch = {
+                        dismissKeyboard()
+                        onSubmitSearch()
+                    },
+                    onClear = onClearSearch,
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -107,7 +139,7 @@ fun BookSearchDialog(
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                if (state.isTyping || state.isLoading) {
+                if (state.isLoading) {
                     LinearProgressIndicator(
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -123,7 +155,7 @@ fun BookSearchDialog(
                     )
                 }
 
-                if (!state.isLoading && !state.isTyping && state.hasSearched) {
+                if (!state.isLoading && state.hasSearched) {
                     val resultText = if (state.filteredCount > 0) {
                         stringResource(
                             R.string.safe_search_filtered,
@@ -163,11 +195,11 @@ fun BookSearchDialog(
                 }
 
                 val isEmptyResult = state.results.isEmpty() &&
-                    !state.isTyping && !state.isLoading &&
+                    !state.isLoading &&
                     state.hasSearched && state.errorMessage == null
-                val showLibraryEmptyState = isEmptyResult && state.libraryScopeEnabled
+                val showLibraryEmptyState = isEmptyResult && effectiveLibraryScope
                 val showRemoteEmptyState = isEmptyResult &&
-                    !state.libraryScopeEnabled && state.query.isNotBlank()
+                    !effectiveLibraryScope && state.lastSubmittedQuery.isNotBlank()
                 when {
                     showLibraryEmptyState || showRemoteEmptyState -> {
                         Column(
@@ -185,17 +217,17 @@ fun BookSearchDialog(
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                             val (headline, subline) = when {
-                                showLibraryEmptyState && state.query.isBlank() ->
+                                showLibraryEmptyState && state.lastSubmittedQuery.isBlank() ->
                                     stringResource(R.string.search_empty_library_hint) to null
                                 showLibraryEmptyState ->
                                     stringResource(
                                         R.string.search_no_library_results,
-                                        state.query
+                                        state.lastSubmittedQuery
                                     ) to null
                                 else ->
                                     stringResource(
                                         R.string.search_no_results_found,
-                                        state.query
+                                        state.lastSubmittedQuery
                                     ) to stringResource(R.string.search_no_results_suggestion)
                             }
                             Text(
@@ -280,7 +312,7 @@ fun BookSearchDialog(
                                     trailingContent(book, isExisting)
                                 }
                             }
-                            if (state.canLoadMore || state.isLoadingMore) {
+                            if (canShowLoadMore) {
                                 item(key = LOAD_MORE_ITEM_KEY) {
                                     Row(
                                         modifier = Modifier
@@ -294,7 +326,12 @@ fun BookSearchDialog(
                                                 modifier = Modifier.size(24.dp)
                                             )
                                         } else {
-                                            Button(onClick = onLoadMore) {
+                                            Button(
+                                                onClick = {
+                                                    dismissKeyboard()
+                                                    onLoadMore()
+                                                }
+                                            ) {
                                                 Text(stringResource(R.string.search_load_more))
                                             }
                                         }

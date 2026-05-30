@@ -378,6 +378,8 @@ fun LibraryScreen(
         LibraryBookSearchDialog(
             state = state.bookSearchState,
             onQueryChange = { onAction(LibraryAction.OnRemoteSearchQueryChange(it)) },
+            onSubmitSearch = { onAction(LibraryAction.OnSubmitSearch) },
+            onClearSearch = { onAction(LibraryAction.OnClearSearch) },
             onToggleSearchByTitle = { onAction(LibraryAction.OnToggleSearchByTitle) },
             onToggleSearchByAuthor = { onAction(LibraryAction.OnToggleSearchByAuthor) },
             onToggleSearchBySubject = { onAction(LibraryAction.OnToggleSearchBySubject) },

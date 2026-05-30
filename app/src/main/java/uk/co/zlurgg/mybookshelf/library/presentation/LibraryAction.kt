@@ -14,6 +14,8 @@ sealed interface LibraryAction {
     data object OnSearchClick : LibraryAction
     data object OnDismissSearchDialog : LibraryAction
     data class OnRemoteSearchQueryChange(val query: String) : LibraryAction
+    data object OnSubmitSearch : LibraryAction
+    data object OnClearSearch : LibraryAction
     data object OnToggleSearchByTitle : LibraryAction
     data object OnToggleSearchByAuthor : LibraryAction
     data object OnToggleSearchBySubject : LibraryAction

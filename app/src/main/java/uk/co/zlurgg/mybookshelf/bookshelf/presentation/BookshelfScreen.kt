@@ -357,6 +357,12 @@ fun BookshelfScreen(
                 override val onQueryChange: (String) -> Unit = { query ->
                     onAction(BookshelfAction.OnSearchQueryChange(query))
                 }
+                override val onSubmitSearch: () -> Unit = {
+                    onAction(BookshelfAction.OnSubmitSearch)
+                }
+                override val onClearSearch: () -> Unit = {
+                    onAction(BookshelfAction.OnClearSearch)
+                }
                 override val onToggleSearchByTitle: () -> Unit = {
                     onAction(BookshelfAction.OnToggleSearchByTitle)
                 }
