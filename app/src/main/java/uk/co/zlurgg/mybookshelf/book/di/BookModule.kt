@@ -19,6 +19,8 @@ import uk.co.zlurgg.mybookshelf.book.domain.repository.BookcaseRepository
 import uk.co.zlurgg.mybookshelf.book.domain.repository.BookshelfRepository
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCaseImpl
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.CacheSearchPreviewsUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.CacheSearchPreviewsUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCaseImpl
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
@@ -59,4 +61,5 @@ val bookModule = module {
     singleOf(::SearchBooksUseCaseImpl).bind<SearchBooksUseCase>()
     singleOf(::SearchLibraryBooksUseCaseImpl).bind<SearchLibraryBooksUseCase>()
     singleOf(::UpsertBookUseCaseImpl).bind<UpsertBookUseCase>()
+    singleOf(::CacheSearchPreviewsUseCaseImpl).bind<CacheSearchPreviewsUseCase>()
 }

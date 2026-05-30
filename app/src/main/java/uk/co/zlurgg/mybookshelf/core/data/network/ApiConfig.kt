@@ -24,6 +24,11 @@ object ApiConfig {
                     "ratings_average,ratings_count,first_publish_year,language," +
                     "number_of_pages_median,edition_count,isbn,publisher,publish_date,ia," +
                     "subject"
+
+            // Matches OL's `/search.json` server-side default. Pinned so the data
+            // source can populate `BookSearchResponse.pageSize` deterministically
+            // when the caller doesn't specify a limit (today's production path).
+            const val MAX_RESULTS = 100
         }
 
         /**
@@ -64,7 +69,15 @@ object ApiConfig {
         fun volumeEndpoint(volumeId: String) = "$BASE_URL/volumes/$volumeId"
 
         object DefaultParams {
-            const val MAX_RESULTS = 40
+            // Google Books API silently caps page responses at 20 regardless of
+            // what `maxResults` asks for (their docs still say 40 is the max, but
+            // empirically — verified via direct curl against the public endpoint —
+            // every popular query returns exactly 20 raw items even with
+            // maxResults=40). Pinning the constant to 20 keeps `pageSize` honest
+            // so the load-more predicate (`rawPageSize >= pageSize`) doesn't
+            // false-negative and hide the button. Pagination still works via
+            // `startIndex` — Google just hands them out 20 at a time.
+            const val MAX_RESULTS = 20
             const val PRINT_TYPE_BOOKS = "books"
         }
     }

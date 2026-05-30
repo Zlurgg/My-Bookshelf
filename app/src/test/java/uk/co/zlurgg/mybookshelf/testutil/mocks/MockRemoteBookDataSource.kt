@@ -26,7 +26,8 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         val authorFilter: String?,
         val titleFilter: String?,
         val subjectFilter: String?,
-        val sort: String?
+        val sort: String?,
+        val startIndex: Int?,
     )
 
     fun configureSearchResponse(response: BookSearchResponse) {
@@ -41,7 +42,11 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
                 .build()
                 .toBook()
         }
-        configuredSearchResponse = BookSearchResponse(books = books)
+        configuredSearchResponse = BookSearchResponse(
+            books = books,
+            rawPageSize = books.size,
+            pageSize = DEFAULT_TEST_PAGE_SIZE,
+        )
     }
 
     fun reset() {
@@ -64,22 +69,37 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
         authorFilter: String?,
         titleFilter: String?,
         subjectFilter: String?,
-        sort: String?
+        sort: String?,
+        startIndex: Int?,
     ): Result<BookSearchResponse, DataError.Remote> {
         searchBooksCallCount++
         lastSearchQuery = query
-        lastSearchParams = SearchParams(query, resultLimit, language, authorFilter, titleFilter, subjectFilter, sort)
+        lastSearchParams = SearchParams(
+            query, resultLimit, language, authorFilter, titleFilter, subjectFilter, sort, startIndex,
+        )
 
         return when {
             shouldThrowException -> Result.Error(networkError)
-            returnEmptyResults -> Result.Success(BookSearchResponse(books = emptyList()))
+            returnEmptyResults -> Result.Success(
+                BookSearchResponse(
+                    books = emptyList(),
+                    rawPageSize = 0,
+                    pageSize = DEFAULT_TEST_PAGE_SIZE,
+                )
+            )
             configuredSearchResponse != null -> Result.Success(configuredSearchResponse!!)
             else -> {
                 val defaultBooks = listOf(
                     TestSearchedBookDtoBuilder.withAllFields().toBook(),
                     TestSearchedBookDtoBuilder.withMinimalFields().toBook()
                 )
-                Result.Success(BookSearchResponse(books = defaultBooks))
+                Result.Success(
+                    BookSearchResponse(
+                        books = defaultBooks,
+                        rawPageSize = defaultBooks.size,
+                        pageSize = DEFAULT_TEST_PAGE_SIZE,
+                    )
+                )
             }
         }
     }
@@ -103,5 +123,11 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
             shouldThrowException -> Result.Error(networkError)
             else -> Result.Success(configuredDescription ?: "Default test description")
         }
+    }
+
+    companion object {
+        // Arbitrary single-page size for tests that don't care about pagination —
+        // big enough that `rawPageSize < pageSize` evaluates to "end of results."
+        private const val DEFAULT_TEST_PAGE_SIZE = 1000
     }
 }

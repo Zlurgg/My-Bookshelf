@@ -25,10 +25,14 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 class FallbackRemoteBookDataSourceTest {
 
     private val primaryResults = BookSearchResponse(
-        books = listOf(createTestBook("google-1", BookProvider.GOOGLE_BOOKS))
+        books = listOf(createTestBook("google-1", BookProvider.GOOGLE_BOOKS)),
+        rawPageSize = 1,
+        pageSize = 40,
     )
     private val fallbackResults = BookSearchResponse(
-        books = listOf(createTestBook("ol-1", BookProvider.OPEN_LIBRARY))
+        books = listOf(createTestBook("ol-1", BookProvider.OPEN_LIBRARY)),
+        rawPageSize = 1,
+        pageSize = 100,
     )
 
     @Test
@@ -192,6 +196,43 @@ class FallbackRemoteBookDataSourceTest {
     }
 
     @Test
+    fun `searchBooks short-circuits to primary when startIndex non-null even on fallback error`() = runTest {
+        // C1 invariant: provider-switch mid-pagination would interleave Google
+        // rows 0..N with OL rows from offset=N+1 of a different result set. The
+        // user sees the primary's error inline and can retry/refine.
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.TOO_MANY_REQUESTS)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test", startIndex = 40)
+
+        assertTrue(result is Result.Error)
+        assertEquals(DataError.Remote.TOO_MANY_REQUESTS, (result as Result.Error).error)
+        assertEquals("Fallback must not be invoked mid-pagination", 0, fallback.searchCallCount)
+        assertEquals("Primary still gets the startIndex", 40, primary.lastSearchStartIndex)
+    }
+
+    @Test
+    fun `searchBooks still falls back when startIndex is null (page 1 unchanged)`() = runTest {
+        // Regression guard: the startIndex short-circuit must not affect the
+        // existing page-1 fallback behavior — that's how OL takes over when
+        // Google 429s on a fresh search.
+        val primary = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.TOO_MANY_REQUESTS)
+        )
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test", startIndex = null)
+
+        assertTrue(result is Result.Success)
+        assertEquals("ol-1", (result as Result.Success).data.books[0].id)
+        assertEquals(1, fallback.searchCallCount)
+    }
+
+    @Test
     fun `getBookDescription does NOT fall through providers on primary failure`() = runTest {
         // Description fetch routes by provider only — it does not retry on the other source.
         val primary = StubRemoteBookDataSource(
@@ -230,12 +271,13 @@ class FallbackRemoteBookDataSourceTest {
      */
     class StubRemoteBookDataSource(
         private val searchResult: Result<BookSearchResponse, DataError.Remote> =
-            Result.Success(BookSearchResponse(emptyList())),
+            Result.Success(BookSearchResponse(emptyList(), rawPageSize = 0, pageSize = 40)),
         private val descriptionResult: Result<String?, DataError.Remote> =
             Result.Success(null),
     ) : RemoteBookDataSource {
 
         var searchCallCount = 0
+        var lastSearchStartIndex: Int? = null
         var getDescriptionCallCount = 0
 
         override suspend fun searchBooks(
@@ -245,9 +287,11 @@ class FallbackRemoteBookDataSourceTest {
             authorFilter: String?,
             titleFilter: String?,
             subjectFilter: String?,
-            sort: String?
+            sort: String?,
+            startIndex: Int?,
         ): Result<BookSearchResponse, DataError.Remote> {
             searchCallCount++
+            lastSearchStartIndex = startIndex
             return searchResult
         }
 

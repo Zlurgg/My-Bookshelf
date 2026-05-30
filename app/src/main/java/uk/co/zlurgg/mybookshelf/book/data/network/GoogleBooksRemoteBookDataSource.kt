@@ -31,7 +31,8 @@ class GoogleBooksRemoteBookDataSource(
         authorFilter: String?,
         titleFilter: String?,
         subjectFilter: String?,
-        sort: String?
+        sort: String?,
+        startIndex: Int?,
     ): Result<BookSearchResponse, DataError.Remote> {
         val apiKey = apiKeyProvider()
         if (apiKey.isBlank()) {
@@ -42,6 +43,9 @@ class GoogleBooksRemoteBookDataSource(
         val finalQuery = queryBuilder.build(query, authorFilter, titleFilter, subjectFilter)
         // Google Books uses ISO 639-1 two-letter codes (e.g. "en"), not OL three-letter codes
         val finalLanguage = language ?: systemLanguageProvider.getRawLanguageCode()
+        // Resolve the page size locally so `BookSearchResponse.pageSize` reflects
+        // what we actually asked Google for — even when the caller passes null.
+        val requestedPageSize = resultLimit ?: ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS
 
         Timber.tag(TAG).d("=== GOOGLE BOOKS SEARCH ===")
         Timber.tag(TAG).d("Final query: '%s', language: %s", finalQuery, finalLanguage)
@@ -51,10 +55,12 @@ class GoogleBooksRemoteBookDataSource(
                 query = finalQuery,
                 resultLimit = resultLimit,
                 language = finalLanguage,
-                sort = sort
+                sort = sort,
+                startIndex = startIndex,
             )
         }.map { dto ->
-            Timber.tag(TAG).d("Results: %d total, %d returned", dto.totalItems, dto.items?.size ?: 0)
+            val rawItems = dto.items ?: emptyList()
+            Timber.tag(TAG).d("Results: %d total, %d returned", dto.totalItems, rawItems.size)
             // Google's `langRestrict` is best-effort — it still returns books with
             // English descriptions but non-English content (e.g. Urdu Harry Potter
             // translations marked `"language": "ur"`). Filter before mapping so we
@@ -63,11 +69,15 @@ class GoogleBooksRemoteBookDataSource(
             // a populated ISBN/imageUrl but a blank title; they render as a row of
             // metadata with nothing for the user to identify.
             BookSearchResponse(
-                books = dto.items
-                    ?.filter { it.volumeInfo?.language == ENGLISH_LANGUAGE_CODE }
-                    ?.filter { !it.volumeInfo?.title.isNullOrBlank() }
-                    ?.map { it.toBook() }
-                    ?: emptyList()
+                books = rawItems
+                    .filter { it.volumeInfo?.language == ENGLISH_LANGUAGE_CODE }
+                    .filter { !it.volumeInfo?.title.isNullOrBlank() }
+                    .map { it.toBook() },
+                // rawPageSize is the PRE-filter count — `startIndex` advances by
+                // this so the next page doesn't re-fetch rows the language /
+                // blank-title filter happened to drop.
+                rawPageSize = rawItems.size,
+                pageSize = requestedPageSize,
             )
         }
     }

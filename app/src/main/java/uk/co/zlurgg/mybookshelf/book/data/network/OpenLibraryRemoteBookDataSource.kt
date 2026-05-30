@@ -7,6 +7,7 @@ import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
 import uk.co.zlurgg.mybookshelf.book.data.network.api.OpenLibraryBookApi
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
+import uk.co.zlurgg.mybookshelf.core.data.network.ApiConfig
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorMapper
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -27,10 +28,14 @@ class OpenLibraryRemoteBookDataSource(
         authorFilter: String?,
         titleFilter: String?,
         subjectFilter: String?,
-        sort: String?
+        sort: String?,
+        startIndex: Int?,
     ): Result<BookSearchResponse, DataError.Remote> {
         val finalQuery = queryBuilder.build(query, authorFilter, titleFilter, subjectFilter)
         val finalLanguage = language ?: systemLanguageProvider.getCurrentLanguageCode()
+        // Resolve null → server-side default (100) here so the API service stays
+        // a thin pass-through and `BookSearchResponse.pageSize` is deterministic.
+        val requestedLimit = resultLimit ?: ApiConfig.OpenLibrary.DefaultParams.MAX_RESULTS
 
         Timber.tag(TAG).d("=== OPEN LIBRARY SEARCH ===")
         Timber.tag(TAG).d(
@@ -45,14 +50,18 @@ class OpenLibraryRemoteBookDataSource(
         return ErrorMapper.httpNetworkCall<SearchResponseDto> {
             apiService.searchBooks(
                 query = finalQuery,
-                resultLimit = resultLimit,
+                resultLimit = requestedLimit,
                 language = finalLanguage,
-                sort = sort
+                sort = sort,
+                startIndex = startIndex,
             )
         }.map { dto ->
             Timber.tag(TAG).d("Results: %d total, %d returned", dto.numFound, dto.results.size)
             BookSearchResponse(
-                books = dto.results.map { it.toBook() }
+                // OL doesn't post-filter, so rawPageSize == books.size.
+                books = dto.results.map { it.toBook() },
+                rawPageSize = dto.results.size,
+                pageSize = requestedLimit,
             )
         }
     }

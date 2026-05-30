@@ -384,6 +384,7 @@ fun LibraryScreen(
             onToggleSafeSearch = { onAction(LibraryAction.OnToggleSafeSearch) },
             onBookClick = { book -> onAction(LibraryAction.OnSearchResultBookClick(book)) },
             onAddBook = { book -> onAction(LibraryAction.OnAddBookToLibrary(book)) },
+            onLoadMore = { onAction(LibraryAction.OnLoadMore) },
             onDismiss = { onAction(LibraryAction.OnDismissSearchDialog) },
             lazyListState = searchListState,
         )

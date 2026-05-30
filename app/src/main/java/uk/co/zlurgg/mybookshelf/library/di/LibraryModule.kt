@@ -21,6 +21,7 @@ val libraryModule = module {
         LibraryUseCases(
             getAllLibraryBooks = get(),
             searchBooks = get(),
+            cacheSearchPreviews = get(),
             upsertBook = get(),
             deleteBooks = get(),
             getNonRemovableBookIds = get()

@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +49,7 @@ fun BookSearchDialog(
     onToggleSearchBySubject: () -> Unit,
     onToggleSafeSearch: () -> Unit,
     onBookClick: (Book) -> Unit,
+    onLoadMore: () -> Unit,
     onDismiss: () -> Unit,
     trailingContent: @Composable (book: Book, isExisting: Boolean) -> Unit,
     // Hoisted so callers can preserve scroll across the search → detail → back
@@ -277,6 +280,27 @@ fun BookSearchDialog(
                                     trailingContent(book, isExisting)
                                 }
                             }
+                            if (state.canLoadMore || state.isLoadingMore) {
+                                item(key = LOAD_MORE_ITEM_KEY) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                        verticalAlignment = Alignment.CenterVertically,
+                                    ) {
+                                        if (state.isLoadingMore) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                        } else {
+                                            Button(onClick = onLoadMore) {
+                                                Text(stringResource(R.string.search_load_more))
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -287,3 +311,7 @@ fun BookSearchDialog(
         }
     )
 }
+
+// LazyColumn key for the load-more footer. Stable so the item doesn't recompose
+// out of the saver across spinner ↔ button state changes.
+private const val LOAD_MORE_ITEM_KEY = "__load_more_footer__"

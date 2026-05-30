@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.CacheSearchPreviewsUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchResult
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.UpsertBookUseCase
@@ -64,6 +65,7 @@ class LibraryViewModelTest {
     }
 
     private val stubSearchBooks = StubSearchBooksUseCase()
+    private val stubCacheSearchPreviews = StubCacheSearchPreviewsUseCase()
     private val stubUpsertBook = StubUpsertBookUseCase()
     private val stubDeleteBooks = StubDeleteBooksUseCase()
     private val stubGetNonRemovableBookIds = StubGetNonRemovableBookIdsUseCase()
@@ -74,6 +76,7 @@ class LibraryViewModelTest {
             libraryUseCases = LibraryUseCases(
                 getAllLibraryBooks = getAllLibraryBooks,
                 searchBooks = stubSearchBooks,
+                cacheSearchPreviews = stubCacheSearchPreviews,
                 upsertBook = stubUpsertBook,
                 deleteBooks = stubDeleteBooks,
                 getNonRemovableBookIds = stubGetNonRemovableBookIds
@@ -906,6 +909,360 @@ class LibraryViewModelTest {
         stateHelper.cleanup()
     }
 
+    // ========================================================================
+    // C1 — Pagination (load more)
+    // ========================================================================
+
+    @Test
+    fun `OnLoadMore advances nextStartIndex by rawPageSize, not books size`() = runTest(testDispatcher) {
+        // The provider-asymmetric bug: Google's startIndex points into the
+        // UNFILTERED stream. Advancing by books.size on a page where the
+        // language filter dropped 20 of 40 would re-fetch rows 20..59.
+        val page1 = (1..18).map { TestBookBuilder().withId("p1-$it").build() }
+        stubSearchBooks.searchResultsToReturn = page1
+        stubSearchBooks.defaultRawPageSize = 40 // pre-filter count
+        stubSearchBooks.defaultPageSize = 40
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("test"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        val afterPage1 = stateHelper.getCurrentState()!!
+        assertEquals(
+            "nextStartIndex should advance by rawPageSize (40), not books.size (18)",
+            40,
+            afterPage1.bookSearchState.nextStartIndex,
+        )
+        assertTrue("canLoadMore should be true when rawPageSize == pageSize", afterPage1.bookSearchState.canLoadMore)
+
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle()
+
+        assertEquals("Page 2 must request startIndex = 40", 40, stubSearchBooks.lastStartIndex)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnLoadMore dedupes accumulated results by id when provider returns overlap`() = runTest(testDispatcher) {
+        val page1 = listOf(
+            TestBookBuilder().withId("a").build(),
+            TestBookBuilder().withId("b").build(),
+        )
+        val page2 = listOf(
+            // Google occasionally returns the same volume across adjacent pages.
+            TestBookBuilder().withId("b").build(),
+            TestBookBuilder().withId("c").build(),
+        )
+        stubSearchBooks.searchResultsToReturn = page1
+        stubSearchBooks.page2ResultsToReturn = page2
+        stubSearchBooks.page2RawPageSize = 2
+        stubSearchBooks.defaultRawPageSize = 2
+        stubSearchBooks.defaultPageSize = 2
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals(
+            "Duplicate id 'b' must be dropped — final ids: a, b, c",
+            listOf("a", "b", "c"),
+            state.bookSearchState.results.map { it.id },
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnLoadMore is silent when query is below MIN length (defensive guard)`() = runTest(testDispatcher) {
+        // Edge case: user deleted query below MIN_SEARCH_QUERY_LENGTH but taps
+        // load-more before the 300ms debounce fires the below-min reset.
+        // canLoadMore is still true from the prior page; firing would burn a
+        // request the imminent reset would invalidate.
+        stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("a").build())
+        stubSearchBooks.defaultRawPageSize = 1
+        stubSearchBooks.defaultPageSize = 1
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        // Establish state with canLoadMore (set up via a normal search at MIN length first).
+        stubSearchBooks.defaultRawPageSize = 40
+        stubSearchBooks.defaultPageSize = 40
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+        val invocationCountBefore = stubSearchBooks.invocationCount
+
+        // User deletes query down to 1 char then taps load-more before debounce fires.
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("k"))
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle()
+
+        assertEquals(
+            "OnLoadMore must not fire a request when query is below MIN length",
+            invocationCountBefore,
+            stubSearchBooks.invocationCount,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `load-more error preserves accumulated results and surfaces errorMessage`() = runTest(testDispatcher) {
+        val page1 = listOf(
+            TestBookBuilder().withId("a").build(),
+            TestBookBuilder().withId("b").build(),
+        )
+        stubSearchBooks.searchResultsToReturn = page1
+        stubSearchBooks.defaultRawPageSize = 40
+        stubSearchBooks.defaultPageSize = 40
+        stubSearchBooks.failOnAppend = true
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals(
+            "Page-1 results must be preserved across load-more error",
+            listOf("a", "b"),
+            state.bookSearchState.results.map { it.id },
+        )
+        assertTrue("Error message must be surfaced", state.bookSearchState.errorMessage != null)
+        assertFalse("isLoadingMore must be cleared", state.bookSearchState.isLoadingMore)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `canLoadMore false when rawPageSize less than pageSize (partial last page)`() = runTest(testDispatcher) {
+        // End-of-results signal: when the provider returns fewer raw items than
+        // we asked for, there are no more pages.
+        stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("a").build())
+        stubSearchBooks.defaultRawPageSize = 7 // partial page
+        stubSearchBooks.defaultPageSize = 40
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertFalse(
+            "canLoadMore must be false when rawPageSize < pageSize",
+            state.bookSearchState.canLoadMore,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `canLoadMore stays true after a filter-killed page (rawPageSize equals pageSize)`() = runTest(testDispatcher) {
+        // Filter-killed page test: the safe-search filter could drop every book
+        // in the page, but the PROVIDER still has more. rawPageSize == pageSize
+        // means "full page from the provider" regardless of how many books
+        // survived the post-filter. Predicate must NOT use books.isEmpty.
+        stubSearchBooks.searchResultsToReturn = emptyList() // all filtered out
+        stubSearchBooks.defaultRawPageSize = 40 // provider returned full page
+        stubSearchBooks.defaultPageSize = 40
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertTrue(
+            "Filter-killed page must NOT prematurely terminate pagination",
+            state.bookSearchState.canLoadMore,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `canLoadMore true when page 1 fell back to OL and returned a full 100 rows`() = runTest(testDispatcher) {
+        // Cross-provider page-size propagation: the data source reports the page
+        // size IT asked for (Google 40, OL 100). The VM must compare against the
+        // returned pageSize, not a hard-coded constant.
+        val page1 = (1..100).map { TestBookBuilder().withId("ol-$it").build() }
+        stubSearchBooks.searchResultsToReturn = page1
+        stubSearchBooks.defaultRawPageSize = 100
+        stubSearchBooks.defaultPageSize = 100 // OL fallback page
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        // 100 == 100 → canLoadMore. A hard-coded Google-40 constant would
+        // misclassify this 100-row OL response.
+        assertTrue(
+            "canLoadMore must compare against the per-response pageSize",
+            state.bookSearchState.canLoadMore,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `cacheSearchPreviews called with accumulated list on load more`() = runTest(testDispatcher) {
+        // Repo's cacheSearchPreviews clears-then-writes — passing only the
+        // page-2 batch would invalidate page-1 entries for tap-into-detail.
+        val page1 = listOf(
+            TestBookBuilder().withId("a").build(),
+            TestBookBuilder().withId("b").build(),
+        )
+        val page2 = listOf(
+            TestBookBuilder().withId("c").build(),
+            TestBookBuilder().withId("d").build(),
+        )
+        stubSearchBooks.searchResultsToReturn = page1
+        stubSearchBooks.page2ResultsToReturn = page2
+        stubSearchBooks.page2RawPageSize = 2
+        stubSearchBooks.defaultRawPageSize = 2
+        stubSearchBooks.defaultPageSize = 2
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle()
+
+        assertEquals(
+            "After load-more, cache must hold the accumulated list (page1 + page2)",
+            listOf("a", "b", "c", "d"),
+            stubCacheSearchPreviews.lastCachedBooks.map { it.id },
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `new query during in-flight load-more cancels via merged collectLatest`() = runTest(testDispatcher) {
+        val page1 = listOf(TestBookBuilder().withId("a").build())
+        stubSearchBooks.searchResultsToReturn = page1
+        stubSearchBooks.defaultRawPageSize = 40
+        stubSearchBooks.defaultPageSize = 40
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        // Get page 1 results.
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+
+        // Make load-more suspend indefinitely; new query must cancel it.
+        stubSearchBooks.suspendUntilCancelled = true
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle() // load-more is now suspended
+
+        // Re-arm so the fresh-search succeeds.
+        stubSearchBooks.suspendUntilCancelled = false
+        val freshResults = listOf(TestBookBuilder().withId("fresh-1").build())
+        stubSearchBooks.searchResultsToReturn = freshResults
+
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("rust"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals(
+            "Fresh search must REPLACE results — load-more was cancelled mid-flight",
+            listOf("fresh-1"),
+            state.bookSearchState.results.map { it.id },
+        )
+        assertFalse("isLoadingMore must be cleared", state.bookSearchState.isLoadingMore)
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `filter toggle during in-flight load-more cancels via merged collectLatest`() = runTest(testDispatcher) {
+        val page1 = listOf(TestBookBuilder().withId("a").build())
+        stubSearchBooks.searchResultsToReturn = page1
+        stubSearchBooks.defaultRawPageSize = 40
+        stubSearchBooks.defaultPageSize = 40
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(LibraryAction.OnSearchClick)
+        viewModel.onAction(LibraryAction.OnRemoteSearchQueryChange("kotlin"))
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        stateHelper.getCurrentState()
+
+        stubSearchBooks.suspendUntilCancelled = true
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle()
+
+        // Toggle subject filter — must cancel the suspended load-more and re-run page 1.
+        stubSearchBooks.suspendUntilCancelled = false
+        stubSearchBooks.searchResultsToReturn = listOf(TestBookBuilder().withId("fresh-1").build())
+
+        viewModel.onAction(LibraryAction.OnToggleSearchBySubject)
+        advanceTimeBy(350)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertEquals(
+            "Filter retrigger must cancel the suspended load-more and re-run page 1",
+            listOf("fresh-1"),
+            state.bookSearchState.results.map { it.id },
+        )
+        assertFalse(state.bookSearchState.isLoadingMore)
+        assertEquals(
+            "nextStartIndex resets on fresh search",
+            40, // rawPageSize from the fresh page-1 response
+            state.bookSearchState.nextStartIndex,
+        )
+        stateHelper.cleanup()
+    }
+
     private class GetAllLibraryBooksUseCaseStub(
         private val bookRepository: MockBookRepository
     ) : GetAllLibraryBooksUseCase {
@@ -914,10 +1271,19 @@ class LibraryViewModelTest {
 
     private class StubSearchBooksUseCase : SearchBooksUseCase {
         var searchResultsToReturn: List<Book> = emptyList()
+
+        // For pagination: returned when startIndex != null.
+        var page2ResultsToReturn: List<Book>? = null
+        var page2RawPageSize: Int = 0
+        var defaultRawPageSize: Int = 0
+        var defaultPageSize: Int = 1000
         var shouldFail = false
+        var failOnAppend = false
+        var suspendUntilCancelled = false
         var lastTitleFilter: String? = null
         var lastAuthorFilter: String? = null
         var lastSubjectFilter: String? = null
+        var lastStartIndex: Int? = null
         var invocationCount = 0
 
         override suspend fun invoke(
@@ -927,17 +1293,53 @@ class LibraryViewModelTest {
             authorFilter: String?,
             titleFilter: String?,
             subjectFilter: String?,
-            safeSearchEnabled: Boolean
+            safeSearchEnabled: Boolean,
+            startIndex: Int?,
         ): Result<SearchResult, DataError.Remote> {
             lastTitleFilter = titleFilter
             lastAuthorFilter = authorFilter
             lastSubjectFilter = subjectFilter
+            lastStartIndex = startIndex
             invocationCount++
+
+            if (suspendUntilCancelled) {
+                kotlinx.coroutines.awaitCancellation()
+            }
+            if (failOnAppend && startIndex != null) {
+                return Result.Error(DataError.Remote.UNKNOWN)
+            }
             return if (shouldFail) {
                 Result.Error(DataError.Remote.UNKNOWN)
             } else {
-                Result.Success(SearchResult(books = searchResultsToReturn, filteredCount = 0))
+                val books = if (startIndex != null && page2ResultsToReturn != null) {
+                    page2ResultsToReturn!!
+                } else {
+                    searchResultsToReturn
+                }
+                val rawSize = if (startIndex != null && page2ResultsToReturn != null) {
+                    page2RawPageSize
+                } else {
+                    defaultRawPageSize.takeIf { it > 0 } ?: books.size
+                }
+                Result.Success(
+                    SearchResult(
+                        books = books,
+                        filteredCount = 0,
+                        rawPageSize = rawSize,
+                        pageSize = defaultPageSize,
+                    )
+                )
             }
+        }
+    }
+
+    private class StubCacheSearchPreviewsUseCase : CacheSearchPreviewsUseCase {
+        var invocationCount = 0
+        var lastCachedBooks: List<Book> = emptyList()
+
+        override fun invoke(books: List<Book>) {
+            invocationCount++
+            lastCachedBooks = books
         }
     }
 

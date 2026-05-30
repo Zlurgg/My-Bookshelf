@@ -230,6 +230,60 @@ class GoogleBooksRemoteBookDataSourceTest {
     }
 
     @Test
+    fun `startIndex passes through as startIndex query parameter`() = runTest {
+        val sut = buildDataSource { respondJson(EMPTY_RESPONSE) }
+
+        sut.searchBooks(query = "kotlin", startIndex = 80)
+
+        assertEquals("80", requests[0].url.parameters["startIndex"])
+    }
+
+    @Test
+    fun `null startIndex omits the startIndex query parameter`() = runTest {
+        val sut = buildDataSource { respondJson(EMPTY_RESPONSE) }
+
+        sut.searchBooks(query = "kotlin")
+
+        assertNull(
+            "Page-1 request must not send startIndex (defaults to 0 server-side)",
+            requests[0].url.parameters["startIndex"],
+        )
+    }
+
+    @Test
+    fun `negative startIndex is coerced to zero`() = runTest {
+        val sut = buildDataSource { respondJson(EMPTY_RESPONSE) }
+
+        sut.searchBooks(query = "kotlin", startIndex = -5)
+
+        assertEquals(
+            "Defensive guard against stale -1 from bad state transition",
+            "0",
+            requests[0].url.parameters["startIndex"],
+        )
+    }
+
+    @Test
+    fun `rawPageSize reflects PRE-filter item count and pageSize matches the request`() = runTest {
+        // Provider asymmetry: language filter drops some items, so books.size <
+        // rawPageSize. The VM advances by rawPageSize — if this returned 1
+        // (post-filter survivor) page 2 would re-fetch rows 1..3 instead of 3..5.
+        val sut = buildDataSource { respondJson(MIXED_LANGUAGE_RESPONSE) }
+
+        val result = sut.searchBooks(query = "harry potter")
+
+        assertTrue(result is Result.Success)
+        val response = (result as Result.Success).data
+        assertEquals("rawPageSize counts ALL items including filtered ones", 3, response.rawPageSize)
+        assertEquals("books only contains the en-tagged survivor", 1, response.books.size)
+        assertEquals(
+            "pageSize defaults to ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS",
+            20,
+            response.pageSize,
+        )
+    }
+
+    @Test
     fun `non-English items are filtered out before mapping`() = runTest {
         // langRestrict is best-effort — items with non-`en` language must be
         // dropped post-fetch (the cheap defensive filter from the search-

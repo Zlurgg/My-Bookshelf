@@ -17,7 +17,7 @@ class SearchBooksUseCaseTest {
 
     private val mockRemoteDataSource = MockRemoteBookDataSource()
     private val mockBookRepository = MockBookRepository()
-    private val useCase = SearchBooksUseCaseImpl(mockRemoteDataSource, mockBookRepository)
+    private val useCase = SearchBooksUseCaseImpl(mockRemoteDataSource)
 
     @After
     fun tearDown() {
@@ -67,7 +67,7 @@ class SearchBooksUseCaseTest {
                 .toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks)
+            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
         )
 
         val result = useCase("test query")
@@ -200,7 +200,7 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks)
+            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
         )
 
         val result = useCase("test", safeSearchEnabled = true)
@@ -228,7 +228,7 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks)
+            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
         )
 
         val result = useCase("test", safeSearchEnabled = false)
@@ -240,36 +240,28 @@ class SearchBooksUseCaseTest {
     }
 
     @Test
-    fun `successful search writes safe-filtered results to the preview cache`() = runTest {
-        // The preview cache lets GetBookDetailsUseCase render a tapped search
-        // result via BookRepository.peekPreview (DB-first, cache-fallback) without
-        // first persisting it to the local DB — that previously polluted Library.
+    fun `successful search no longer writes to the preview cache from the use case`() = runTest {
+        // C1 pagination moved cache ownership to the VM — it accumulates pages
+        // and is the sole writer. If a future reviewer "restores" the call here
+        // the result is a double-write per page with a transiently-wrong cache.
         val testBooks = listOf(
             TestSearchedBookDtoBuilder()
                 .withId("/works/SAFE1")
                 .withTitle("Safe Book")
                 .withSubjects(listOf("Fiction"))
-                .build().toBook(),
-            TestSearchedBookDtoBuilder()
-                .withId("/works/EXPLICIT")
-                .withTitle("Explicit Book")
-                .withSubjects(listOf("Erotica"))
                 .build().toBook()
         )
-        mockRemoteDataSource.configureSearchResponse(BookSearchResponse(books = testBooks))
+        mockRemoteDataSource.configureSearchResponse(
+            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
+        )
 
         val result = useCase("test", safeSearchEnabled = true)
 
         assertTrue("Should return success", result is Result.Success)
         assertEquals(
-            "Cache write must happen exactly once on success",
-            1,
+            "Use case must not write to the preview cache — VM owns this under pagination",
+            0,
             mockBookRepository.cacheSearchPreviewsCallCount
-        )
-        assertEquals(
-            "Only safe-filtered books should be cached",
-            listOf("SAFE1"),
-            mockBookRepository.lastCachedPreviewIds
         )
     }
 
@@ -303,7 +295,7 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks)
+            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
         )
 
         val result = useCase("test", safeSearchEnabled = true)
@@ -312,5 +304,43 @@ class SearchBooksUseCaseTest {
         val searchResult = (result as Result.Success).data
         assertTrue("Should return empty list", searchResult.books.isEmpty())
         assertEquals(2, searchResult.filteredCount)
+    }
+
+    // ========================================================================
+    // C1 — Pagination
+    // ========================================================================
+
+    @Test
+    fun `execute forwards startIndex to the data source`() = runTest {
+        useCase(query = "test", startIndex = 80)
+
+        assertEquals(80, mockRemoteDataSource.lastSearchParams?.startIndex)
+    }
+
+    @Test
+    fun `null startIndex propagates as null (page 1 path)`() = runTest {
+        useCase(query = "test")
+
+        assertEquals(null, mockRemoteDataSource.lastSearchParams?.startIndex)
+    }
+
+    @Test
+    fun `SearchResult carries rawPageSize and pageSize from the response`() = runTest {
+        // Provider asymmetry: Google's startIndex points into the UNFILTERED
+        // stream. Post-filter books.size would re-fetch dropped rows. The VM
+        // advances by rawPageSize — so it MUST flow through unchanged.
+        val books = listOf(
+            TestSearchedBookDtoBuilder().withId("/works/A").withTitle("A").build().toBook(),
+        )
+        mockRemoteDataSource.configureSearchResponse(
+            BookSearchResponse(books = books, rawPageSize = 40, pageSize = 40)
+        )
+
+        val result = useCase("test")
+
+        assertTrue(result is Result.Success)
+        val searchResult = (result as Result.Success).data
+        assertEquals("rawPageSize must reflect the provider's PRE-filter count", 40, searchResult.rawPageSize)
+        assertEquals("pageSize must reflect what the data source asked for", 40, searchResult.pageSize)
     }
 }

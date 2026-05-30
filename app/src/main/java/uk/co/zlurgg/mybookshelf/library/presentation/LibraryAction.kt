@@ -18,6 +18,7 @@ sealed interface LibraryAction {
     data object OnToggleSearchByAuthor : LibraryAction
     data object OnToggleSearchBySubject : LibraryAction
     data object OnToggleSafeSearch : LibraryAction
+    data object OnLoadMore : LibraryAction
     data class OnAddBookToLibrary(val book: Book) : LibraryAction
     data class OnSearchResultBookClick(val book: Book) : LibraryAction
     data object OnNavigationHandled : LibraryAction

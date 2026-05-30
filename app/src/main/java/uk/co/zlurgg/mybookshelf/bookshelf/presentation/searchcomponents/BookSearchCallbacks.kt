@@ -12,5 +12,6 @@ interface BookSearchCallbacks {
     val onAddBook: (Book) -> Unit
     val onRemoveBook: (Book) -> Unit
     val onBookClick: (Book) -> Unit
+    val onLoadMore: () -> Unit
     val onDismiss: () -> Unit
 }

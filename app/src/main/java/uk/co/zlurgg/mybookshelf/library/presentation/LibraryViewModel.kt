@@ -16,13 +16,14 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchState
-import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
@@ -52,6 +53,11 @@ class LibraryViewModel(
     // SharedFlow so that re-emitting the same query (e.g. after filter toggle) is not conflated.
     private val remoteQueryFlow = MutableSharedFlow<String>(replay = 1, extraBufferCapacity = 1)
 
+    // Merged with remoteQueryFlow inside a single collectLatest so any new trigger
+    // cancels the previous in-flight performRemoteSearch — see BookshelfViewModel
+    // for the load-bearing rationale.
+    private val loadMoreFlow = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
     init {
         observeSearchPreferences()
         loadTidyMode()
@@ -59,6 +65,11 @@ class LibraryViewModel(
         observeNonRemovableBookIds()
         observeDebouncedLocalQuery()
         observeDebouncedRemoteQuery()
+    }
+
+    private sealed interface SearchTrigger {
+        data class Fresh(val rawQuery: String) : SearchTrigger
+        data object More : SearchTrigger
     }
 
     private fun observeSearchPreferences() {
@@ -192,6 +203,14 @@ class LibraryViewModel(
                 }
                 persistSearchPreferences()
                 retriggerRemoteSearchIfNeeded()
+            }
+            is LibraryAction.OnLoadMore -> {
+                // See BookshelfViewModel for the min-length guard rationale.
+                val s = _state.value.bookSearchState
+                val canFire = s.query.trim().length >= MIN_SEARCH_QUERY_LENGTH &&
+                    s.canLoadMore &&
+                    !s.isLoadingMore
+                if (canFire) loadMoreFlow.tryEmit(Unit)
             }
             is LibraryAction.OnAddBookToLibrary -> {
                 addBookToLibrary(action.book)
@@ -363,59 +382,101 @@ class LibraryViewModel(
     @OptIn(FlowPreview::class)
     private fun observeDebouncedRemoteQuery() {
         viewModelScope.launch {
-            // remoteQueryFlow is a SharedFlow (not StateFlow) so filter toggles can re-emit
-            // the same query string. distinctUntilChanged is omitted for the same reason.
-            remoteQueryFlow
-                .debounce(SEARCH_DEBOUNCE_MS)
-                .collectLatest { raw ->
-                    val query = raw.trim()
-
-                    if (query.length < MIN_SEARCH_QUERY_LENGTH) {
-                        _state.update {
-                            it.copy(bookSearchState = it.bookSearchState.withBelowMinLength())
+            // Merging both triggers into the same collectLatest is the load-bearing
+            // cancellation primitive — see BookshelfViewModel for rationale.
+            merge(
+                remoteQueryFlow.debounce(SEARCH_DEBOUNCE_MS).map<String, SearchTrigger> {
+                    SearchTrigger.Fresh(it)
+                },
+                loadMoreFlow.map<Unit, SearchTrigger> { SearchTrigger.More },
+            ).collectLatest { trigger ->
+                when (trigger) {
+                    is SearchTrigger.Fresh -> {
+                        val query = trigger.rawQuery.trim()
+                        if (query.length < MIN_SEARCH_QUERY_LENGTH) {
+                            _state.update {
+                                it.copy(bookSearchState = it.bookSearchState.withBelowMinLength())
+                            }
+                            return@collectLatest
                         }
-                        return@collectLatest
+                        performRemoteSearch(append = false)
                     }
-
-                    performRemoteSearch()
+                    SearchTrigger.More -> performRemoteSearch(append = true)
                 }
+            }
         }
     }
 
-    private suspend fun performRemoteSearch() {
-        _state.update { it.copy(bookSearchState = it.bookSearchState.withLoading()) }
+    private suspend fun performRemoteSearch(append: Boolean) {
+        val current = _state.value.bookSearchState
+        if (append) {
+            if (!current.canLoadMore) return
+            _state.update {
+                it.copy(bookSearchState = it.bookSearchState.copy(isLoadingMore = true))
+            }
+        } else {
+            _state.update { it.copy(bookSearchState = it.bookSearchState.withFreshSearch()) }
+        }
 
         val searchState = _state.value.bookSearchState
         val params = searchState.toSearchParams()
+        val baseStartIndex = if (append) searchState.nextStartIndex else 0
 
         libraryUseCases.searchBooks(
             query = params.general ?: "",
-            // null defers to ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS (40).
-            // The Google Books post-fetch language filter trims roughly half of
-            // those, so a 40-result cap typically yields ~20 visible English
-            // titles — better coverage at the same per-request quota cost.
+            // null defers to ApiConfig.GoogleBooks.DefaultParams.MAX_RESULTS (20 —
+            // Google silently caps page responses there regardless of what we ask
+            // for). Post-filters trim roughly half, so a typical page yields
+            // ~10 visible English titles; pagination via `startIndex` lets the
+            // user request more.
             resultLimit = null,
             language = null,
             authorFilter = params.author,
             titleFilter = params.title,
             subjectFilter = params.subject,
-            safeSearchEnabled = searchState.safeSearchEnabled
+            safeSearchEnabled = searchState.safeSearchEnabled,
+            startIndex = baseStartIndex.coerceAtLeast(0).takeIf { append },
         )
             .onSuccess { searchResult ->
+                val mergedBooks = if (append) {
+                    val seen = HashSet(searchState.results.map { it.id })
+                    searchState.results + searchResult.books.filter { seen.add(it.id) }
+                } else {
+                    searchResult.books
+                }
                 _state.update {
                     it.copy(
                         bookSearchState = it.bookSearchState.copy(
                             isLoading = false,
+                            isLoadingMore = false,
                             hasSearched = true,
                             errorMessage = null,
-                            results = searchResult.books,
-                            filteredCount = searchResult.filteredCount
+                            results = mergedBooks,
+                            filteredCount = searchResult.filteredCount,
+                            nextStartIndex = baseStartIndex + searchResult.rawPageSize,
+                            canLoadMore = searchResult.rawPageSize >= searchResult.pageSize,
                         )
                     )
                 }
+                // Accumulated list, not per-page — see BookshelfViewModel for why.
+                libraryUseCases.cacheSearchPreviews(mergedBooks)
             }
             .onError { error ->
-                _state.update { it.withSearchError(error) }
+                _state.update {
+                    it.copy(
+                        bookSearchState = it.bookSearchState.copy(
+                            isLoading = false,
+                            isLoadingMore = false,
+                            // After error, the user did attempt a search — the
+                            // dialog should not revert to its pre-search empty state.
+                            hasSearched = true,
+                            errorMessage = ErrorFormatter.formatDataErrorMessage(
+                                error,
+                                "search books"
+                            ),
+                        )
+                    )
+                }
             }
     }
 
@@ -472,17 +533,5 @@ class LibraryViewModel(
         }
 
         _state.update { it.copy(filteredBooks = result) }
-    }
-
-    // State Update Helpers
-
-    private fun LibraryState.withSearchError(error: DataError): LibraryState {
-        return copy(
-            bookSearchState = bookSearchState.copy(
-                isLoading = false,
-                hasSearched = true,
-                errorMessage = ErrorFormatter.formatDataErrorMessage(error, "search books")
-            )
-        )
     }
 }

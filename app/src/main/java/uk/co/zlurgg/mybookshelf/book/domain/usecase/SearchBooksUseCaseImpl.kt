@@ -1,23 +1,22 @@
 package uk.co.zlurgg.mybookshelf.book.domain.usecase
 
 import uk.co.zlurgg.mybookshelf.book.data.network.RemoteBookDataSource
-import uk.co.zlurgg.mybookshelf.book.domain.repository.BookRepository
 import uk.co.zlurgg.mybookshelf.book.domain.service.SafeSearchFilter
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 import uk.co.zlurgg.mybookshelf.core.domain.result.map
-import uk.co.zlurgg.mybookshelf.core.domain.result.onSuccess
 
 /**
  * Implementation of SearchBooksUseCase that retrieves book data from RemoteBookDataSource.
  * Results are sorted by the API's default relevance algorithm.
  *
- * Successful results are written to [BookRepository.cacheSearchPreviews] so that the detail
- * screen can render a tapped search result without first persisting it to the local DB.
+ * The use case does NOT write to the preview cache — under pagination the VM
+ * accumulates pages and must control when the cache is replaced (writing the
+ * per-page batch here would clear page-1 entries on every "Load more"). The VM
+ * invokes [CacheSearchPreviewsUseCase] explicitly with the accumulated list.
  */
 class SearchBooksUseCaseImpl(
     private val remoteBookDataSource: RemoteBookDataSource,
-    private val bookRepository: BookRepository,
 ) : SearchBooksUseCase {
 
     companion object {
@@ -34,7 +33,8 @@ class SearchBooksUseCaseImpl(
         authorFilter: String?,
         titleFilter: String?,
         subjectFilter: String?,
-        safeSearchEnabled: Boolean
+        safeSearchEnabled: Boolean,
+        startIndex: Int?,
     ): Result<SearchResult, DataError.Remote> {
         if (query.length > MAX_QUERY_LENGTH) {
             return Result.Error(DataError.Remote.MALFORMED_REQUEST)
@@ -59,7 +59,8 @@ class SearchBooksUseCaseImpl(
             authorFilter = authorFilter,
             titleFilter = titleFilter,
             subjectFilter = subjectFilter,
-            sort = null
+            sort = null,
+            startIndex = startIndex,
         ).map { response ->
             val safeBooks = if (safeSearchEnabled) {
                 response.books.filter { SafeSearchFilter.isBookSafe(it) }
@@ -68,10 +69,12 @@ class SearchBooksUseCaseImpl(
             }
             SearchResult(
                 books = safeBooks,
-                filteredCount = response.books.size - safeBooks.size
+                // Per-page count, not cumulative — header copy "M filtered" climbing
+                // across pages is confusing in the dialog.
+                filteredCount = response.books.size - safeBooks.size,
+                rawPageSize = response.rawPageSize,
+                pageSize = response.pageSize,
             )
-        }.onSuccess { result ->
-            bookRepository.cacheSearchPreviews(result.books)
         }
     }
 }

@@ -383,6 +383,9 @@ fun BookshelfScreen(
                 override val onBookClick: (Book) -> Unit = { book ->
                     onAction(BookshelfAction.OnSearchResultBookClick(book))
                 }
+                override val onLoadMore: () -> Unit = {
+                    onAction(BookshelfAction.OnLoadMore)
+                }
                 override val onDismiss: () -> Unit = {
                     onAction(BookshelfAction.OnDismissSearchDialog)
                 }

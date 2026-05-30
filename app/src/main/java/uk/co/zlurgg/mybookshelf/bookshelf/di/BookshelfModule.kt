@@ -21,6 +21,7 @@ val bookshelfModule = module {
         BookshelfUseCases(
             searchBooks = get(),
             searchLibraryBooks = get(),
+            cacheSearchPreviews = get(),
             getShelfBooks = get(),
             addBookToShelf = get(),
             removeBookFromShelf = get(),

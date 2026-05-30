@@ -28,7 +28,8 @@ class OpenLibraryApiService(
         query: String,
         resultLimit: Int?,
         language: String?,
-        sort: String?
+        sort: String?,
+        startIndex: Int?,
     ): HttpResponse {
         val endpoint = ApiConfig.OpenLibrary.searchEndpoint
 
@@ -38,6 +39,7 @@ class OpenLibraryApiService(
             resultLimit?.let { append("&limit=$it") }
             language?.let { append("&language=$it") }
             sort?.let { append("&sort=$it") }
+            startIndex?.let { append("&offset=${it.coerceAtLeast(0)}") }
             append("&fields=${ApiConfig.OpenLibrary.DefaultParams.SEARCH_FIELDS}")
         }
 
@@ -50,6 +52,8 @@ class OpenLibraryApiService(
             resultLimit?.let { parameter("limit", it) }
             language?.let { parameter("language", it) }
             sort?.let { parameter("sort", it) }
+            // coerceAtLeast(0) guards against a stale negative leaking out as a 4xx.
+            startIndex?.let { parameter("offset", it.coerceAtLeast(0)) }
             parameter("fields", ApiConfig.OpenLibrary.DefaultParams.SEARCH_FIELDS)
         }
 

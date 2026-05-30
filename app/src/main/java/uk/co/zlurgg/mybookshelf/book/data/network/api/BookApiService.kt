@@ -14,13 +14,17 @@ interface BookApiService {
      * @param resultLimit Maximum number of results to return
      * @param language Language code for filtering results
      * @param sort Sort order for results
+     * @param startIndex Zero-based offset into the provider's unfiltered result
+     *   stream for pagination. `null` means the provider's default starting
+     *   page. Google maps this to `startIndex`; OpenLibrary maps to `offset`.
      * @return HTTP response containing search results
      */
     suspend fun searchBooks(
         query: String,
         resultLimit: Int? = null,
         language: String? = null,
-        sort: String? = null
+        sort: String? = null,
+        startIndex: Int? = null,
     ): HttpResponse
 
     /**

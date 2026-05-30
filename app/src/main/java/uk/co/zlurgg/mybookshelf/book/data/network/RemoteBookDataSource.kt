@@ -13,7 +13,8 @@ interface RemoteBookDataSource {
         authorFilter: String? = null,
         titleFilter: String? = null,
         subjectFilter: String? = null,
-        sort: String? = null
+        sort: String? = null,
+        startIndex: Int? = null,
     ): Result<BookSearchResponse, DataError.Remote>
 
     suspend fun getBookDescription(

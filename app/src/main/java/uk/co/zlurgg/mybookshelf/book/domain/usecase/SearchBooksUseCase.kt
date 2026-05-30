@@ -6,7 +6,9 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
 data class SearchResult(
     val books: List<Book>,
-    val filteredCount: Int
+    val filteredCount: Int,
+    val rawPageSize: Int,
+    val pageSize: Int,
 )
 
 /**
@@ -24,6 +26,7 @@ interface SearchBooksUseCase {
         authorFilter: String? = null,
         titleFilter: String? = null,
         subjectFilter: String? = null,
-        safeSearchEnabled: Boolean = true
+        safeSearchEnabled: Boolean = true,
+        startIndex: Int? = null,
     ): Result<SearchResult, DataError.Remote>
 }

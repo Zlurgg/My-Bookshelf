@@ -28,6 +28,7 @@ fun LibraryBookSearchDialog(
     onToggleSafeSearch: () -> Unit,
     onBookClick: (Book) -> Unit,
     onAddBook: (Book) -> Unit,
+    onLoadMore: () -> Unit,
     onDismiss: () -> Unit,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
@@ -39,6 +40,7 @@ fun LibraryBookSearchDialog(
         onToggleSearchBySubject = onToggleSearchBySubject,
         onToggleSafeSearch = onToggleSafeSearch,
         onBookClick = onBookClick,
+        onLoadMore = onLoadMore,
         onDismiss = onDismiss,
         lazyListState = lazyListState,
         trailingContent = { book, isExisting ->

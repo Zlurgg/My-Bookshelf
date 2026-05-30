@@ -20,7 +20,8 @@ class GoogleBooksApiService(
         query: String,
         resultLimit: Int?,
         language: String?,
-        sort: String?
+        sort: String?,
+        startIndex: Int?,
     ): HttpResponse {
         return httpClient.get(ApiConfig.GoogleBooks.searchEndpoint) {
             attachCredentials()
@@ -29,6 +30,9 @@ class GoogleBooksApiService(
             parameter("printType", ApiConfig.GoogleBooks.DefaultParams.PRINT_TYPE_BOOKS)
             language?.let { parameter("langRestrict", it) }
             sort?.let { parameter("orderBy", it) }
+            // coerceAtLeast(0) guards against a stale negative from a bad state
+            // transition leaking out as a 4xx — Google rejects negative offsets.
+            startIndex?.let { parameter("startIndex", it.coerceAtLeast(0)) }
         }
     }
 

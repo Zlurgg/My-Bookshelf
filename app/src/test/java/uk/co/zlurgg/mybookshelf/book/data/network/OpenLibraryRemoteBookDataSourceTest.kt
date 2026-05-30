@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.book.data.network.api.OpenLibraryApiService
@@ -157,6 +158,60 @@ class OpenLibraryRemoteBookDataSourceTest {
 
         // SystemLanguageProvider stub returns "eng" — OL uses three-letter codes.
         assertEquals("eng", requests[0].url.parameters["language"])
+    }
+
+    @Test
+    fun `null resultLimit resolves to MAX_RESULTS at the data source and sends limit=100`() = runTest {
+        // C1 invariant: the OL data source is the single source of truth for
+        // limit resolution so BookSearchResponse.pageSize is deterministic.
+        // The API service stays a thin pass-through; in production it never
+        // receives null from this data source.
+        val sut = buildDataSource { respondJson(EMPTY_RESPONSE) }
+
+        sut.searchBooks(query = "kotlin")
+
+        assertEquals("100", requests[0].url.parameters["limit"])
+    }
+
+    @Test
+    fun `startIndex passes through as offset query parameter`() = runTest {
+        val sut = buildDataSource { respondJson(EMPTY_RESPONSE) }
+
+        sut.searchBooks(query = "kotlin", startIndex = 200)
+
+        assertEquals("200", requests[0].url.parameters["offset"])
+    }
+
+    @Test
+    fun `null startIndex omits the offset query parameter`() = runTest {
+        val sut = buildDataSource { respondJson(EMPTY_RESPONSE) }
+
+        sut.searchBooks(query = "kotlin")
+
+        assertNull("Page-1 request must not send offset", requests[0].url.parameters["offset"])
+    }
+
+    @Test
+    fun `negative startIndex is coerced to zero`() = runTest {
+        val sut = buildDataSource { respondJson(EMPTY_RESPONSE) }
+
+        sut.searchBooks(query = "kotlin", startIndex = -10)
+
+        assertEquals("0", requests[0].url.parameters["offset"])
+    }
+
+    @Test
+    fun `rawPageSize equals docs size and pageSize reflects resolved limit`() = runTest {
+        // OL doesn't post-filter, so rawPageSize == books.size. pageSize is the
+        // limit the data source actually asked for — null → 100.
+        val sut = buildDataSource { respondJson(SUCCESS_RESPONSE) }
+
+        val result = sut.searchBooks(query = "kotlin")
+
+        assertTrue(result is Result.Success)
+        val response = (result as Result.Success).data
+        assertEquals(2, response.rawPageSize)
+        assertEquals("OL data source resolves null limit to 100", 100, response.pageSize)
     }
 
     @Test

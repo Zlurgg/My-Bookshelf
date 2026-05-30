@@ -18,7 +18,8 @@ class FallbackRemoteBookDataSource(
         authorFilter: String?,
         titleFilter: String?,
         subjectFilter: String?,
-        sort: String?
+        sort: String?,
+        startIndex: Int?,
     ): Result<BookSearchResponse, DataError.Remote> {
         val result = primary.searchBooks(
             query = query,
@@ -28,7 +29,14 @@ class FallbackRemoteBookDataSource(
             titleFilter = titleFilter,
             subjectFilter = subjectFilter,
             sort = sort,
+            startIndex = startIndex,
         )
+
+        // Provider-switch mid-pagination would interleave Google rows 0..N with
+        // OL rows from offset=N+1 of a totally different result set — there's no
+        // sane way to merge them. Surface the error instead so the user can
+        // retry or refine the query. Fresh searches (page 1) keep falling back.
+        if (startIndex != null) return result
 
         return when {
             result is Result.Error && shouldFallback(result.error) -> {
@@ -44,6 +52,7 @@ class FallbackRemoteBookDataSource(
                     titleFilter = titleFilter,
                     subjectFilter = subjectFilter,
                     sort = sort,
+                    startIndex = null,
                 )
             }
             else -> result

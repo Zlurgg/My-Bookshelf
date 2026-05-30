@@ -17,6 +17,7 @@ import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.CacheSearchPreviewsUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchLibraryBooksUseCase
@@ -51,6 +52,7 @@ class BookshelfViewModelTest {
     // Simplified inline mocks for ViewModel UI testing
     private val mockSearchBooks = SimpleSearchBooksUseCase()
     private val mockSearchLibraryBooks = SimpleSearchLibraryBooksUseCase()
+    private val mockCacheSearchPreviews = SimpleCacheSearchPreviewsUseCase()
     private val mockGetShelfBooks = SimpleGetShelfBooksUseCase()
     private val mockAddBookToShelf = SimpleAddBookToShelfUseCase()
     private val mockRemoveBookFromShelf = SimpleRemoveBookFromShelfUseCase()
@@ -65,6 +67,7 @@ class BookshelfViewModelTest {
     fun tearDown() {
         mockSearchBooks.reset()
         mockSearchLibraryBooks.reset()
+        mockCacheSearchPreviews.reset()
         mockGetShelfBooks.reset()
         mockAddBookToShelf.reset()
         mockRemoveBookFromShelf.reset()
@@ -78,6 +81,7 @@ class BookshelfViewModelTest {
         val bookshelfUseCases = BookshelfUseCases(
             searchBooks = mockSearchBooks,
             searchLibraryBooks = mockSearchLibraryBooks,
+            cacheSearchPreviews = mockCacheSearchPreviews,
             getShelfBooks = mockGetShelfBooks,
             addBookToShelf = mockAddBookToShelf,
             removeBookFromShelf = mockRemoveBookFromShelf,
@@ -505,13 +509,81 @@ class BookshelfViewModelTest {
     // Note: Search error/debounce tests require StandardTestDispatcher + advanceTimeBy.
     // The identical error behavior (results preserved on error) is tested in LibraryViewModelTest.
 
+    // ========================================================================
+    // C1 — Library-scope guards + closeSearchDialog asymmetry fix
+    // ========================================================================
+
+    @Test
+    fun `closeSearchDialog preserves libraryScopeEnabled (asymmetry fix)`() = runTest(testDispatcher) {
+        // Bookshelf previously dropped libraryScopeEnabled on dismiss while
+        // Library preserved it — round-trip parity matters because dismiss
+        // builds a fresh BookSearchState rather than copying.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+
+        // Open dialog, toggle library scope on.
+        stateHelper.executeAndGetState { viewModel.onAction(BookshelfAction.OnSearchClick) }
+        stateHelper.executeAndGetState { viewModel.onAction(BookshelfAction.OnToggleLibraryScope) }
+        val afterToggle = stateHelper.getCurrentState()
+        assertTrue(
+            "Pre-condition: library scope enabled",
+            afterToggle!!.bookSearchState.libraryScopeEnabled,
+        )
+
+        // Dismiss.
+        val afterDismiss = stateHelper.executeAndGetState {
+            viewModel.onAction(BookshelfAction.OnDismissSearchDialog)
+        }
+
+        assertTrue(
+            "libraryScopeEnabled must survive dismiss",
+            afterDismiss!!.bookSearchState.libraryScopeEnabled,
+        )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `OnLoadMore is a no-op when libraryScopeEnabled`() = runTest(testDispatcher) {
+        // Library scope routes to local search — there is no remote pagination
+        // to extend. The action handler's libraryScopeEnabled guard short-
+        // circuits before emitting to loadMoreFlow.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        stubSearchPreferences.seed(SearchPreferenceState(libraryScopeEnabled = true))
+        mockSearchLibraryBooks.booksToReturn = listOf(TestBookBuilder().withId("local-1").build())
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        val before = mockSearchBooks.invocationCount
+        viewModel.onAction(BookshelfAction.OnLoadMore)
+        stateHelper.getCurrentState()
+
+        assertEquals(
+            "OnLoadMore in library scope must not fire a remote search",
+            before,
+            mockSearchBooks.invocationCount,
+        )
+        stateHelper.cleanup()
+    }
+
     // Simplified inline mock implementations for UI testing
     private class SimpleSearchBooksUseCase : SearchBooksUseCase {
         var searchResultsToReturn: List<Book> = emptyList()
+
+        // For pagination tests: returns this on the 2nd+ invocation when set.
+        var page2ResultsToReturn: List<Book>? = null
+        var page2RawPageSize: Int = 0
+        var defaultRawPageSize: Int = 0
+        var defaultPageSize: Int = 1000
         var shouldFail = false
+        var failOnAppend = false
+        var suspendUntilCancelled = false
         var lastTitleFilter: String? = null
         var lastAuthorFilter: String? = null
         var lastSubjectFilter: String? = null
+        var lastStartIndex: Int? = null
         var invocationCount = 0
 
         override suspend operator fun invoke(
@@ -521,26 +593,74 @@ class BookshelfViewModelTest {
             authorFilter: String?,
             titleFilter: String?,
             subjectFilter: String?,
-            safeSearchEnabled: Boolean
+            safeSearchEnabled: Boolean,
+            startIndex: Int?,
         ): Result<SearchResult, DataError.Remote> {
             lastTitleFilter = titleFilter
             lastAuthorFilter = authorFilter
             lastSubjectFilter = subjectFilter
+            lastStartIndex = startIndex
             invocationCount++
+
+            if (suspendUntilCancelled) {
+                kotlinx.coroutines.awaitCancellation()
+            }
+            if (failOnAppend && startIndex != null) {
+                return Result.Error(DataError.Remote.UNKNOWN)
+            }
             return if (shouldFail) {
                 Result.Error(DataError.Remote.UNKNOWN)
             } else {
-                Result.Success(SearchResult(books = searchResultsToReturn, filteredCount = 0))
+                val books = if (startIndex != null && page2ResultsToReturn != null) {
+                    page2ResultsToReturn!!
+                } else {
+                    searchResultsToReturn
+                }
+                val rawSize = if (startIndex != null && page2ResultsToReturn != null) {
+                    page2RawPageSize
+                } else {
+                    defaultRawPageSize.takeIf { it > 0 } ?: books.size
+                }
+                Result.Success(
+                    SearchResult(
+                        books = books,
+                        filteredCount = 0,
+                        rawPageSize = rawSize,
+                        pageSize = defaultPageSize,
+                    )
+                )
             }
         }
 
         fun reset() {
             searchResultsToReturn = emptyList()
+            page2ResultsToReturn = null
+            page2RawPageSize = 0
+            defaultRawPageSize = 0
+            defaultPageSize = 1000
             shouldFail = false
+            failOnAppend = false
+            suspendUntilCancelled = false
             lastTitleFilter = null
             lastAuthorFilter = null
             lastSubjectFilter = null
+            lastStartIndex = null
             invocationCount = 0
+        }
+    }
+
+    private class SimpleCacheSearchPreviewsUseCase : CacheSearchPreviewsUseCase {
+        var invocationCount = 0
+        var lastCachedBooks: List<Book> = emptyList()
+
+        override fun invoke(books: List<Book>) {
+            invocationCount++
+            lastCachedBooks = books
+        }
+
+        fun reset() {
+            invocationCount = 0
+            lastCachedBooks = emptyList()
         }
     }
 

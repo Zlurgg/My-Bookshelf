@@ -15,7 +15,15 @@ data class BookSearchState(
     val safeSearchEnabled: Boolean = true,
     val libraryScopeEnabled: Boolean = false,
     val filteredCount: Int = 0,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    // Pagination: pre-filter cursor into the provider's result stream. Advances
+    // by BookSearchResponse.rawPageSize, not results.size — see C1 plan §Critical
+    // correctness for why a post-filter advance corrupts page 2 on Google.
+    val nextStartIndex: Int = 0,
+    val isLoadingMore: Boolean = false,
+    // Stored (not a getter) so the predicate (`rawPageSize >= pageSize`) lives in
+    // one place in the VM and state.copy() doesn't re-derive it.
+    val canLoadMore: Boolean = false,
 ) {
     /** Title can be unchecked if at least one other is checked. */
     val canToggleTitle: Boolean get() = searchByAuthor || searchBySubject
@@ -30,6 +38,20 @@ data class BookSearchState(
         isLoading = true,
         isTyping = false,
         errorMessage = null
+    )
+
+    // Resets every pagination field alongside the loading flags. Every fresh
+    // search must go through this rather than `withLoading()` — manually copying
+    // a subset at each call site reliably forgets one when state grows.
+    fun withFreshSearch(): BookSearchState = copy(
+        isLoading = true,
+        isLoadingMore = false,
+        isTyping = false,
+        errorMessage = null,
+        results = emptyList(),
+        nextStartIndex = 0,
+        canLoadMore = false,
+        filteredCount = 0,
     )
 
     fun withResults(results: List<Book>): BookSearchState = copy(

@@ -1,6 +1,7 @@
 package uk.co.zlurgg.mybookshelf.bookshelf.domain.usecase
 
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
+import uk.co.zlurgg.mybookshelf.book.domain.usecase.CacheSearchPreviewsUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchLibraryBooksUseCase
@@ -12,6 +13,7 @@ import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchLibraryBooksUseCase
 class BookshelfUseCases(
     val searchBooks: SearchBooksUseCase,
     val searchLibraryBooks: SearchLibraryBooksUseCase,
+    val cacheSearchPreviews: CacheSearchPreviewsUseCase,
     val getShelfBooks: GetShelfBooksUseCase,
     val addBookToShelf: AddBookToShelfUseCase,
     val removeBookFromShelf: RemoveBookFromShelfUseCase,

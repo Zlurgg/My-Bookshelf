@@ -33,6 +33,7 @@ fun ShelfBookSearchDialog(
         onToggleSearchBySubject = callbacks.onToggleSearchBySubject,
         onToggleSafeSearch = callbacks.onToggleSafeSearch,
         onBookClick = callbacks.onBookClick,
+        onLoadMore = callbacks.onLoadMore,
         onDismiss = callbacks.onDismiss,
         lazyListState = lazyListState,
         showLibraryScopeToggle = true,
@@ -78,6 +79,7 @@ private fun ShelfBookSearchDialogPreview() {
             override val onAddBook: (Book) -> Unit = {}
             override val onRemoveBook: (Book) -> Unit = {}
             override val onBookClick: (Book) -> Unit = {}
+            override val onLoadMore: () -> Unit = {}
             override val onDismiss: () -> Unit = {}
         }
     )
