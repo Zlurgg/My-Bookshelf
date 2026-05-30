@@ -61,12 +61,19 @@ data class BookSearchState(
         results = results
     )
 
-    // query is untrimmed in state; trim here to detect whitespace-only input
+    // query is untrimmed in state; trim here to detect whitespace-only input.
+    // Pagination fields reset alongside results — otherwise a stale `canLoadMore`
+    // from a previous successful search keeps the Load More button rendered over
+    // an empty (or stale-short-query) list, where tapping is a silent no-op
+    // because the VM's min-length guard blocks it.
     fun withBelowMinLength(): BookSearchState = copy(
         isLoading = false,
+        isLoadingMore = false,
         isTyping = false,
         errorMessage = null,
-        results = if (query.trim().isEmpty()) emptyList() else results
+        results = if (query.trim().isEmpty()) emptyList() else results,
+        nextStartIndex = 0,
+        canLoadMore = false,
     )
 
     /**

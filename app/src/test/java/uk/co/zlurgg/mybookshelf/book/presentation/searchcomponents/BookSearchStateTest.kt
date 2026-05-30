@@ -67,6 +67,29 @@ class BookSearchStateTest {
     }
 
     @Test
+    fun `withBelowMinLength resets pagination state so stale Load More button is hidden`() {
+        // Regression: after a successful paginated search, clearing the query
+        // (X tap or backspace-to-empty) ran withBelowMinLength, which cleared
+        // results but left canLoadMore=true. The dialog's footer render checks
+        // (canLoadMore || isLoadingMore), so the button rendered over an empty
+        // list — tap silently swallowed by the VM's min-length guard.
+        val books = listOf(TestBookBuilder().withId("book-1").build())
+        val state = BookSearchState(
+            query = "",
+            results = books,
+            canLoadMore = true,
+            nextStartIndex = 20,
+            isLoadingMore = true,
+        )
+
+        val result = state.withBelowMinLength()
+
+        assertFalse("canLoadMore must reset so the footer disappears", result.canLoadMore)
+        assertFalse("isLoadingMore must reset", result.isLoadingMore)
+        assertEquals("nextStartIndex must reset", 0, result.nextStartIndex)
+    }
+
+    @Test
     fun `toSearchParams returns general when both filters checked`() {
         val state = BookSearchState(
             query = " kotlin ",
