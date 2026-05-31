@@ -6,8 +6,13 @@ import java.io.ByteArrayOutputStream
  * Attempts to detect the host machine's LAN IP so a physical device on the same
  * Wi-Fi can reach the Firebase emulators. Returns null if detection fails or
  * yields a loopback/link-local address — caller falls back to the emulator host.
+ *
+ * Skipped on CI: Gradle's configuration cache rejects external processes started
+ * at configuration time, and CI builds are release-only so emulator routing is
+ * irrelevant. GitHub Actions / most CI providers set `CI=true`.
  */
 fun detectLanIp(): String? {
+    if (System.getenv("CI") == "true") return null
     val os = System.getProperty("os.name").lowercase()
     val command = when {
         os.contains("mac") -> listOf("ipconfig", "getifaddr", "en0")
