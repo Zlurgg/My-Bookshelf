@@ -57,6 +57,16 @@ jobs:
         run: |
           echo "$GOOGLE_SERVICES_JSON" > app/google-services.json
 
+      - name: Write local.properties
+        env:
+          GOOGLE_BOOKS_API_KEY: ${{ secrets.GOOGLE_BOOKS_API_KEY }}
+        run: |
+          if [ -z "$GOOGLE_BOOKS_API_KEY" ]; then
+            echo "::error::GOOGLE_BOOKS_API_KEY secret is empty — release would ship with a blank Books API key"
+            exit 1
+          fi
+          echo "GOOGLE_BOOKS_API_KEY=$GOOGLE_BOOKS_API_KEY" > local.properties
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
