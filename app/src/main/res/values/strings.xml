@@ -255,7 +255,7 @@
     <string name="welcome_title">Welcome to My Bookshelf</string>
     <string name="welcome_subtitle">Organize your personal book collection with beautiful virtual shelves</string>
     <string name="welcome_privacy_title">Privacy Notice</string>
-    <string name="welcome_privacy_message">Your data is stored locally on your device. Sign in with Google to sync across devices via secure cloud storage. We don\'t collect analytics or share your data with third parties.</string>
+    <string name="welcome_privacy_message">Your data is stored locally on your device. Sign in with Google to sync across devices via secure cloud storage. We don\'t sell your data or run ad trackers - anonymous crash reports help us fix bugs.</string>
     <string name="welcome_get_started">Get Started</string>
 
     <!-- Error messages - Remote -->

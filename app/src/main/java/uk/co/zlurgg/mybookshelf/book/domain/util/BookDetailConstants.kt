@@ -29,7 +29,10 @@ Welcome to My Bookshelf - your personal book collection organizer!
 Your books live on shelves, and shelves live in your bookcase. Think of it like a digital version of your home library!
 
 🔍 SEARCH FOR BOOKS
-Look for the add slot (+) on the first row of any shelf to search the Open Library for books. You can search by title, author, or keywords. Try searching for your favorite book!
+Look for the add slot (+) on the first row of any shelf to search for books. Type your query (title, author, or keywords) and tap the search icon - or press enter - to fetch results from Google Books (with Open Library as a backup).
+
+🔎 SEARCH ONLY YOUR LIBRARY
+While searching to add a book, flip the "My library" toggle on to search only books you already own - perfect for re-shelving a book you've read without going back out to the web. Toggle it off to search Google Books again.
 
 ➕ ADDING BOOKS
 Once you find a book in search results, tap the + icon to add it to your shelf. You can add the same book to multiple shelves if you like!

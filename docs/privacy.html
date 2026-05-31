@@ -188,7 +188,7 @@
 
         <header class="header">
             <h1>Privacy Policy</h1>
-            <p class="subtitle">Last updated: April 2026</p>
+            <p class="subtitle">Last updated: May 2026</p>
         </header>
 
         <section class="content-card">
@@ -236,12 +236,17 @@
                         <td>Shelf styles, ordering, display settings</td>
                         <td>Local device only</td>
                     </tr>
+                    <tr>
+                        <td><strong>Crash reports</strong></td>
+                        <td>Diagnose and fix bugs (no personal info)</td>
+                        <td>Firebase Crashlytics</td>
+                    </tr>
                 </tbody>
             </table>
 
             <h3>What We Don't Collect</h3>
             <ul>
-                <li>We do not collect analytics or usage data</li>
+                <li>We do not collect usage analytics beyond anonymous crash reports (see Third-Party Services below)</li>
                 <li>We do not use advertising trackers</li>
                 <li>We do not access your contacts, location, camera, or other device data</li>
                 <li>We do not track what books you search for or read</li>
@@ -300,11 +305,25 @@
                 <a href="https://cloud.google.com/security/privacy" target="_blank">Google Cloud Privacy</a>
             </p>
 
+            <h3>Google Books API (Google)</h3>
+            <p>
+                Primary source for book search and metadata (titles, authors, covers, descriptions).
+                Search queries are sent to Google. No personal data is attached to the request.
+                <a href="https://policies.google.com/privacy" target="_blank">Google Privacy Policy</a>
+            </p>
+
             <h3>Open Library API (Internet Archive)</h3>
             <p>
-                Used to search for books and retrieve book metadata (titles, authors, covers).
-                Search queries are sent to Open Library's public API. No personal data is shared.
+                Used as a fallback when Google Books is unavailable. Search queries are sent to Open Library's
+                public API. No personal data is shared.
                 <a href="https://openlibrary.org/privacy" target="_blank">Open Library Privacy Policy</a>
+            </p>
+
+            <h3>Firebase Crashlytics (Google)</h3>
+            <p>
+                Used to receive anonymous crash reports so we can diagnose and fix bugs. Reports include
+                stack traces, device model, OS version, and app version. No personal data is included.
+                <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase Privacy Policy</a>
             </p>
         </section>
 
