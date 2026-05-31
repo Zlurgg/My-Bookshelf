@@ -1,7 +1,6 @@
 package uk.co.zlurgg.mybookshelf.auth.data.service
 
 import android.content.Context
-import android.util.Log
 import androidx.credentials.ClearCredentialStateRequest
 import androidx.credentials.CredentialManager
 import com.google.firebase.auth.FirebaseAuth
@@ -20,10 +19,6 @@ class GoogleAuthUiClient(
 
     companion object {
         private const val TAG = "GoogleAuth"
-
-        // Tag used for temporary release-build Log.e diagnostics in signIn().
-        // Remove with the Log.e calls once root cause is identified.
-        private const val DEBUG_TAG = "GoogleAuthDebug"
     }
 
     private val auth = FirebaseAuth.getInstance()
@@ -32,20 +27,13 @@ class GoogleAuthUiClient(
     @Suppress("TooGenericExceptionCaught")
     override suspend fun signIn(idToken: String): Result<UserData, DataError.Local> {
         Timber.tag(TAG).d("=== GOOGLE SIGN-IN START ===")
-        // Temporary release-build diagnostic — Log.e survives R8 (only Log.v / Log.d are stripped).
-        // Lets us capture the actual sign-in failure via logcat when the CrashlyticsTree path
-        // is silently dropping the non-fatal. Remove once root cause identified.
-        Log.e(DEBUG_TAG, "signIn entered, idToken length=${idToken.length}")
 
         return try {
             Timber.tag(TAG).d("Authenticating with Firebase...")
-            Log.e(DEBUG_TAG, "About to call signInWithCredential")
 
             val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
             val authResult = auth.signInWithCredential(firebaseCredential).await()
             val user = authResult.user
-
-            Log.e(DEBUG_TAG, "signInWithCredential returned, user=${user?.uid ?: "<null>"}")
 
             if (user != null) {
                 Timber.tag(TAG).d("=== SIGN-IN SUCCESS === User ID: %s", user.uid)
@@ -59,12 +47,10 @@ class GoogleAuthUiClient(
                 )
             } else {
                 Timber.tag(TAG).e("Firebase returned null user")
-                Log.e(DEBUG_TAG, "Firebase returned null user (no exception thrown)")
                 Result.Error(DataError.Local.AUTH_FAILED)
             }
         } catch (e: Exception) {
             Timber.tag(TAG).e(e, "Unexpected sign-in error")
-            Log.e(DEBUG_TAG, "Unexpected sign-in error: ${e.javaClass.name}: ${e.message}", e)
             Result.Error(DataError.Local.AUTH_FAILED)
         }
     }
