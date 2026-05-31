@@ -20,6 +20,7 @@ class GoogleAuthUiClient(
 
     companion object {
         private const val TAG = "GoogleAuth"
+
         // Tag used for temporary release-build Log.e diagnostics in signIn().
         // Remove with the Log.e calls once root cause is identified.
         private const val DEBUG_TAG = "GoogleAuthDebug"
