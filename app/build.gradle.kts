@@ -1,37 +1,47 @@
 import java.util.Properties
 import java.io.FileInputStream
 import java.io.ByteArrayOutputStream
+import org.gradle.api.provider.ValueSource
+import org.gradle.api.provider.ValueSourceParameters
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
 
 /**
- * Attempts to detect the host machine's LAN IP so a physical device on the same
- * Wi-Fi can reach the Firebase emulators. Returns null if detection fails or
- * yields a loopback/link-local address — caller falls back to the emulator host.
+ * Gradle [ValueSource] that detects the host machine's LAN IP so a physical
+ * device on the same Wi-Fi can reach the Firebase emulators in debug builds.
+ * Returns null if detection fails or yields a loopback/link-local address —
+ * caller falls back to the emulator host.
  *
- * Skipped on CI: Gradle's configuration cache rejects external processes started
- * at configuration time, and CI builds are release-only so emulator routing is
- * irrelevant. GitHub Actions / most CI providers set `CI=true`.
+ * Wrapping in a ValueSource (instead of calling ProcessBuilder directly at
+ * configuration time) is required for Gradle's configuration cache: external
+ * processes started at config time are rejected unless they go through this
+ * API, which lets Gradle track the result as a cache input.
  */
-fun detectLanIp(): String? {
-    if (System.getenv("CI") == "true") return null
-    val os = System.getProperty("os.name").lowercase()
-    val command = when {
-        os.contains("mac") -> listOf("ipconfig", "getifaddr", "en0")
-        os.contains("linux") -> listOf("sh", "-c", "hostname -I | awk '{print \$1}'")
-        else -> return null
+abstract class LanIpValueSource : ValueSource<String, ValueSourceParameters.None> {
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    override fun obtain(): String? {
+        val os = System.getProperty("os.name").lowercase()
+        val command = when {
+            os.contains("mac") -> listOf("ipconfig", "getifaddr", "en0")
+            os.contains("linux") -> listOf("sh", "-c", "hostname -I | awk '{print \$1}'")
+            else -> return null
+        }
+        val output = ByteArrayOutputStream()
+        return runCatching {
+            execOperations.exec {
+                commandLine(command)
+                standardOutput = output
+                isIgnoreExitValue = true
+            }
+            output.toString(Charsets.UTF_8).trim().takeIf {
+                it.matches(Regex("""\d+\.\d+\.\d+\.\d+""")) &&
+                    !it.startsWith("127.") &&
+                    !it.startsWith("169.254.")
+            }
+        }.getOrNull()
     }
-    return runCatching {
-        val process = ProcessBuilder(command).redirectErrorStream(true).start()
-        val output = ByteArrayOutputStream().use { buf ->
-            process.inputStream.copyTo(buf)
-            buf.toString(Charsets.UTF_8).trim()
-        }
-        process.waitFor()
-        output.takeIf {
-            it.matches(Regex("""\d+\.\d+\.\d+\.\d+""")) &&
-                !it.startsWith("127.") &&
-                !it.startsWith("169.254.")
-        }
-    }.getOrNull()
 }
 
 plugins {
@@ -99,7 +109,7 @@ android {
             val emulatorHost = localProperties.getProperty("firebase.emulator.host.emulator")
                 ?: localProperties.getProperty("firebase.emulator.host", "10.0.2.2")
             val deviceHost = localProperties.getProperty("firebase.emulator.host.device")
-                ?: detectLanIp()
+                ?: providers.of(LanIpValueSource::class) {}.orNull
                 ?: emulatorHost
             buildConfigField("String", "FIREBASE_EMULATOR_HOST", "\"$emulatorHost\"")
             buildConfigField("String", "FIREBASE_EMULATOR_DEVICE_HOST", "\"$deviceHost\"")
