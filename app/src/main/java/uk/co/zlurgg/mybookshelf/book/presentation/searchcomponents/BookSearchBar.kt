@@ -2,6 +2,8 @@ package uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -23,6 +25,8 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -40,6 +44,8 @@ fun BookSearchBar(
     onClear: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isFocused by interactionSource.collectIsFocusedAsState()
     CompositionLocalProvider(
         LocalTextSelectionColors provides TextSelectionColors(
             handleColor = MaterialTheme.colorScheme.onBackground,
@@ -54,6 +60,7 @@ fun BookSearchBar(
                     onSearchQueryChange(newValue)
                 }
             },
+            interactionSource = interactionSource,
             shape = RoundedCornerShape(100),
             colors = OutlinedTextFieldDefaults.colors(
                 cursorColor = MaterialTheme.colorScheme.primary,
@@ -64,6 +71,17 @@ fun BookSearchBar(
                 Text(
                     text = stringResource(id = R.string.search_hint)
                 )
+            },
+            leadingIcon = {
+                AnimatedVisibility(
+                    visible = !isFocused && searchQuery.isBlank()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.66f)
+                    )
+                }
             },
             singleLine = true,
             keyboardActions = KeyboardActions(
@@ -94,8 +112,8 @@ fun BookSearchBar(
                         VerticalDivider(
                             modifier = Modifier
                                 .height(24.dp)
-                                .width(1.dp),
-                            color = MaterialTheme.colorScheme.outlineVariant
+                                .width(2.dp),
+                            color = MaterialTheme.colorScheme.outline
                         )
                         IconButton(
                             onClick = onClear
