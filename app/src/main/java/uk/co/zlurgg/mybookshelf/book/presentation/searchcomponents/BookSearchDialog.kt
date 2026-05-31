@@ -18,10 +18,11 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import uk.co.zlurgg.mybookshelf.R
@@ -111,6 +113,10 @@ fun BookSearchDialog(
                     searchQuery = state.query,
                     onSearchQueryChange = onQueryChange,
                     onImeSearch = {
+                        dismissKeyboard()
+                        onSubmitSearch()
+                    },
+                    onSubmitSearch = {
                         dismissKeyboard()
                         onSubmitSearch()
                     },
@@ -314,26 +320,37 @@ fun BookSearchDialog(
                             }
                             if (canShowLoadMore) {
                                 item(key = LOAD_MORE_ITEM_KEY) {
+                                    HorizontalDivider(
+                                        color = MaterialTheme.colorScheme.outlineVariant
+                                    )
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
+                                            .clickable(enabled = !state.isLoadingMore) {
+                                                dismissKeyboard()
+                                                onLoadMore()
+                                            }
                                             .padding(horizontal = 16.dp, vertical = 12.dp),
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically,
                                     ) {
                                         if (state.isLoadingMore) {
                                             CircularProgressIndicator(
-                                                modifier = Modifier.size(24.dp)
+                                                modifier = Modifier.size(20.dp)
                                             )
                                         } else {
-                                            Button(
-                                                onClick = {
-                                                    dismissKeyboard()
-                                                    onLoadMore()
-                                                }
-                                            ) {
-                                                Text(stringResource(R.string.search_load_more))
-                                            }
+                                            Icon(
+                                                imageVector = Icons.Default.ExpandMore,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.primary
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = stringResource(R.string.search_load_more),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Medium
+                                            )
                                         }
                                     }
                                 }

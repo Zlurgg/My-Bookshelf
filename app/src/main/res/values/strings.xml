@@ -157,6 +157,7 @@
 
     <!-- Search bar -->
     <string name="cd_clear_search">Clear Search</string>
+    <string name="cd_submit_search">Search</string>
 
     <!-- Rating -->
     <plurals name="cd_star_count">
