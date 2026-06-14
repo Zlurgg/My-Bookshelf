@@ -40,9 +40,9 @@ Baked into the APK at build time via `local.properties → GOOGLE_BOOKS_API_KEY 
 - The debug keystore moves off the local machine (e.g. CI starts producing debug builds with a different keystore).
 - Quota or billing on the key becomes non-trivial.
 
-Then switch to a separate `GOOGLE_BOOKS_API_KEY_DEBUG` (wired via the `debug` block of `app/build.gradle.kts`), restrict each key by its respective SHA-1. See `closed-testing-release-prep.md` Phase 3.1 for the upgrade path.
+Then switch to a separate `GOOGLE_BOOKS_API_KEY_DEBUG` (wired via the `debug` block of `app/build.gradle.kts`), restrict each key by its respective SHA-1.
 
-### Firebase auto-generated Android key (`AIzaSyB8H…wjyI`)
+### Firebase auto-generated Android key (`AIzaSyA_6V…eE-0`)
 
 Auto-managed by the `google-services` Gradle plugin from `google-services.json` (the `current_key` field). Used by Firebase Auth (`signInWithCredential` → Identity Toolkit), Firestore, Crashlytics SDK reporting, and the rest of the Firebase Android SDK bundle (24 APIs at time of writing). Listed in Cloud Console as **"New Android key (auto created by Firebase)"**.
 
@@ -52,7 +52,7 @@ Application restriction is **Android apps**, with its OWN allowlist independent 
 
 | Field | Value |
 | --- | --- |
-| API key value | `AIzaSyB8H…wjyI` |
+| API key value | `AIzaSyA_6V…eE-0` |
 | Used by | Firebase Android SDK (Auth, Firestore, Crashlytics reporting, etc.) |
 | Application restriction | **Android apps** |
 | API restriction | (None — required for Firebase SDK breadth) |
@@ -76,7 +76,7 @@ Auto-created alongside the Android key. Unused by the Android SDK at runtime; in
 Every new signing cert (debug, release, Play App Signing, alternative tracks, etc.) needs adding to **two separate Cloud Console allowlists**:
 
 1. **Books API key** (`95d5837c-…`) — or Books search falls back to OL
-2. **Firebase auto-generated Android key** (`AIzaSyB8H…`) — or Firebase Auth/Firestore is blocked
+2. **Firebase auto-generated Android key** (`AIzaSyA_6V…`) — or Firebase Auth/Firestore is blocked
 
 Plus, for Google Sign-In OAuth provisioning:
 
@@ -120,4 +120,4 @@ keytool -list -v \
 Rebuild both a debug and a release APK; in each, run a Books search.
 
 - **If Google attribution shows on results** → key + restriction working.
-- **If every search falls back to OpenLibrary** → restriction is wrong for that variant. Check the SHA-1 on the allowlist matches what the build is actually signed with. Once Crashlytics is live (`closed-testing-release-prep.md` Phase 2.1), the blank-key/403 path will surface as a non-fatal in the Firebase console.
+- **If every search falls back to OpenLibrary** → restriction is wrong for that variant. Check the SHA-1 on the allowlist matches what the build is actually signed with. Crashlytics surfaces the blank-key/403 path as a non-fatal in the Firebase console.
