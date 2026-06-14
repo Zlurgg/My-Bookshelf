@@ -432,5 +432,9 @@
     <string name="profile_reauth_message">For security, please sign in again to confirm account deletion.</string>
     <string name="profile_reauth_confirm">Sign In Again</string>
     <string name="profile_delete_error">Failed to delete account. Please try again.</string>
+    <string name="profile_send_feedback">Send Feedback</string>
+    <string name="feedback_email_subject">My Bookshelf feedback (%1$s)</string>
+    <string name="feedback_email_body">\n\n\n---\nApp: %1$s (%2$d)\nAndroid: %3$s (SDK %4$d)\nDevice: %5$s %6$s</string>
+    <string name="feedback_no_email_client">No email app found on this device</string>
     <string name="cd_profile">Account</string>
 </resources>

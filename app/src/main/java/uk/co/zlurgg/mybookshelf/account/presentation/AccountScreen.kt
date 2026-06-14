@@ -50,6 +50,7 @@ fun AccountScreen(
     state: AccountState,
     snackbarHostState: SnackbarHostState,
     onAction: (AccountAction) -> Unit,
+    onSendFeedback: () -> Unit,
     onBack: () -> Unit,
 ) {
     Scaffold(
@@ -123,6 +124,16 @@ fun AccountScreen(
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Text(stringResource(R.string.profile_sign_out))
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Send feedback button
+            OutlinedButton(
+                onClick = onSendFeedback,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(stringResource(R.string.profile_send_feedback))
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -215,6 +226,7 @@ private fun AccountScreenPreview() {
             ),
             snackbarHostState = SnackbarHostState(),
             onAction = {},
+            onSendFeedback = {},
             onBack = {},
         )
     }
