@@ -22,6 +22,14 @@ When viewing a book inside a club, the user can't see their own rating or notes 
 
 **Proposed direction:** add a view-swap toggle on the book-in-club screen so the user can flip between **club view** (everyone's reviews) and **my data** (their own rating + notes), without cluttering either view.
 
+## Play Store listing
+
+### Screenshots are raw mobile captures, not designed assets
+
+Raised in the 2026-06-14 tester feedback report (item #2): the current Play Store screenshots are unframed device captures without callouts or branded backgrounds, which weakens listing conversion.
+
+**Decision:** spec'd but deferred. See `play-store-screenshots.md` for the slot-by-slot design brief. Closed-testing reviewers don't depend on listing screenshots, so we won't block iteration on the redesign. Target executing the spec before the closed → production promotion.
+
 ## Process
 
 New tester-reported issues land here first.
