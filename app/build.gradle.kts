@@ -70,14 +70,14 @@ if (localPropertiesFile.exists()) {
 
 android {
     namespace = "uk.co.zlurgg.mybookshelf"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "uk.co.zlurgg.mybookshelf"
         minSdk = 28
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.0"
+        versionCode = 6
+        versionName = "1.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

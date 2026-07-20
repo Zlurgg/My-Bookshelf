@@ -2,27 +2,45 @@
 
 **Personal Library Management for Android**
 
----
-
-## v1.2.1 - Hotfix (January 2026)
-
-### Bug Fix
-- **Fixed Book Club data not loading** - ProGuard was stripping Firestore DTO getters/setters, causing club names and books to not deserialize properly in release builds
+> **Versioning:** entries track the Play Store `versionName`. Every closed-testing
+> build up to this point shipped to Play as **1.0.0**, so the feature milestones
+> below (previously tracked under internal dev tags 1.0.1–1.2.1) are folded under
+> the 1.0.0 launch. From **1.0.1** onward the number matches the Play release.
 
 ---
 
-## v1.2.0 - Book Clubs (January 2026)
+## v1.0.1 - Production launch: maintenance & dependency update (July 2026)
+
+First release promoted toward production. No user-facing feature changes — a
+maintenance pass to ship on current, mutually-compatible dependencies.
+
+### Improvements
+- Updated dependencies to latest stable: Compose BOM, Ktor, Coil, Koin, AndroidX Core/Lifecycle, Firebase (Auth/Firestore/Crashlytics), Google Services, KSP, coroutines-test
+- Upgraded Gradle wrapper 9.5.0 → 9.6.1
+- Raised `compileSdk` to 37 (required by updated AndroidX libraries; `targetSdk` unchanged at 36)
+
+### Technical
+- Kotlin held at 2.3.21 — latest KSP tracks the 2.3.x line, and Kotlin 2.4 has no matching KSP yet (Room's compiler runs through KSP)
+- All unit tests and detekt passing; signed release AAB verified locally
+
+---
+
+## v1.0.0 - Initial Release (2025–2026)
+
+🎉 **The public 1.0.0 launch.** All closed-testing builds shipped to Play under versionName 1.0.0. The milestones below were developed under internal dev tags and are folded here for an accurate Play-versioned history.
+
+### Book Clubs (dev tag 1.2.0, + 1.2.1 hotfix)
 
 👥 **Collaborative Book Clubs!**
 
-### What's New
+#### What's New
 - **Book Clubs** - Create collaborative shelves and invite friends to join
 - **Shared Ratings** - Rate books and see your club's average ratings
 - **Discussion Threads** - Comment on books with messaging-style conversations
 - **Real-time Sync** - Books added by any member sync to everyone instantly
 - **New App Icon** - Fresh modern icon design
 
-### Features
+#### Features
 - Create book clubs from any shelf with 8-character invite codes
 - Join clubs via invite link, deep link, or manual code entry
 - Add/remove books collaboratively (syncs to all members)
@@ -32,43 +50,44 @@
 - Member controls: leave club (keeps books as personal shelf)
 - Limits: 5 book clubs per user, 20 books per shelf
 
-### Deep Link Support
+#### Deep Link Support
 - Share via `mybookshelf://club/{code}` deep links
 - Web landing page at mybookshelf.co.uk/club/{code}
 - Automatic app launch and join flow
 
-### Code Quality
+#### Code Quality
 - **Detekt Integration** - Static analysis with ktlint formatting rules
 - **Zero tolerance policy** - All code quality issues must be resolved
 - **Feature-scoped DI modules** - Replaced 435-line monolithic AppModule with 6 focused Koin modules
 - **Architecture improvements** - UseCases moved to domain layer, Result pattern for all repositories
 
-### Technical
+#### Technical
 - 597 total tests (542 unit + 55 instrumented)
 - 50 UseCases across 10 domains
 - 16 new book club use cases
 - Enterprise-grade Firestore security rules
 - Full offline-first architecture maintained
 
-### Privacy
+#### Privacy
 - Club data stored securely in Firebase Firestore
 - Only members can access club content
 - Creator-only management controls
 - Secure invite code system
 
----
+#### Bug Fix (1.2.1 hotfix)
+- **Fixed Book Club data not loading** - ProGuard was stripping Firestore DTO getters/setters, causing club names and books to not deserialize properly in release builds
 
-## v1.1.0 - Cloud Sync (December 2025)
+### Cloud Sync (dev tag 1.1.0)
 
 🎉 **First full release with cloud sync!**
 
-### What's New
+#### What's New
 - **Cloud Sync** - Sign in with Google to sync your library across devices
 - **Automatic Backup** - Your books and shelves sync to secure cloud storage
 - **Offline-First** - Works without an account, sync is optional
 - **Guest Data Import** - Choose whether to import existing data when signing in
 
-### Features
+#### Features
 - Cross-device sync via Firebase Firestore
 - Background sync with WorkManager (every 15 minutes)
 - Immediate sync on data changes
@@ -76,56 +95,52 @@
 - Per-user data isolation
 - Clean sign-out with data clearing option
 
-### Technical
+#### Technical
 - 510 total tests (448 unit + 62 integration)
 - 280 production Kotlin files
 - 35 UseCases across 8 domains
 - Enterprise-grade sync architecture
 - Full offline support maintained
 
-### Privacy
+#### Privacy
 - Synced data stored securely in Google Cloud (Firebase)
 - No analytics or tracking
 - No data shared with third parties
 - Open source and transparent
 
----
+### Google Sign-In (dev tag 1.0.2)
 
-## v1.0.2 - Google Sign-In (December 2025)
-
-### What's New
+#### What's New
 - **Google Sign-In** - Sign in with your Google account for a personalized experience
 - **Clean Architecture Auth** - Enterprise-grade authentication using modern Credential Manager API
 
-### Features
+#### Features
 - One-tap Google sign-in with automatic account selection
 - Secure authentication via Firebase Auth
 - Sign out option in settings menu
 - Persistent sign-in state across app restarts
 
-### Technical
+#### Technical
 - 26 new auth tests (337 unit tests total)
 - Pure domain layer with zero Android dependencies
 - Consistent Result pattern error handling
 
----
+### Performance & Polish (dev tag 1.0.1)
 
-## v1.0.1 - Performance & Polish (December 2025)
-
-### What's New
+#### What's New
 - **Search Performance** - 37% faster search with reduced debounce (450ms→250ms)
 - **Image Loading** - Instant placeholder pattern eliminates perceived wait time
 - **Book Details** - New reading status, notes, and metadata fields
 - **Improved Logging** - Timber integration for better debugging
 
-### Features
+#### Features
 - Welcome screen and first-time onboarding experience
 - Three-dot overflow menu for shelf and book actions
 - Long-press to rename shelves
 - Reading status tracking for books
 - New book detail fields (personal notes, reading progress)
 
-### Improvements
+#### Improvements
 - Architecture refactoring with extracted handlers and callbacks
 - Centralized image URL construction in ApiConfig
 - Smaller image sizes for faster loading (10x improvement in search)
@@ -134,7 +149,7 @@
 - Export/Import UseCases refactored for consistency
 - Literal search queries instead of split word searches
 
-### Bug Fixes
+#### Bug Fixes
 - Fixed race condition bug with search
 - Fixed onBack overwriting save in viewmodel
 - Fixed bug where change occurs before dialog closes
@@ -142,19 +157,17 @@
 - Prevented renaming of tutorial shelf
 - Prevented sharing empty bookshelves
 
----
-
-## v1.0.0 - Initial Release (January 2025)
+### Core Launch Feature Set
 
 🎉 **First stable release of MyBookshelf!**
 
-### What's New
+#### What's New
 - **Production Ready** - No longer in alpha, fully tested and stable
 - **Complete Feature Set** - All core features implemented and polished
 - **Offline-First** - All your data stays on your device, no cloud required
 - **Open Source** - MIT licensed, available on GitHub
 
-### Key Features
+#### Key Features
 - 📚 **Personal Library** - Create and organize custom bookshelves
 - 🔍 **Book Search** - Find books from Open Library's 20M+ collection
 - 🎨 **Beautiful UI** - Material 3 design with realistic shelf effects
@@ -162,13 +175,10 @@
 - 🎯 **Drag & Drop** - Intuitive shelf and book organization
 - 🔒 **Privacy First** - No tracking, no ads, no data collection
 
-### Requirements
+#### Requirements
 - Android 9.0+ (API 28+)
 - ~15MB storage space
 - Internet connection for book search only
-
-### Installation
-Download the APK from the release assets below and install on your Android device.
 
 ---
 
