@@ -13,6 +13,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -36,6 +37,7 @@ fun AccountScreenRoot(
     val activity = LocalActivity.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val noEmailClientMessage = stringResource(R.string.feedback_no_email_client)
 
     // One-shot: navigate to sign-in
     LaunchedEffect(state.navigateToSignIn) {
@@ -79,7 +81,7 @@ fun AccountScreenRoot(
             } catch (_: ActivityNotFoundException) {
                 scope.launch {
                     snackbarHostState.showSnackbar(
-                        context.getString(R.string.feedback_no_email_client),
+                        noEmailClientMessage,
                     )
                 }
             }
