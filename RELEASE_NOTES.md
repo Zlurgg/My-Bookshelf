@@ -184,6 +184,8 @@ maintenance pass to ship on current, mutually-compatible dependencies.
 
 ## Previous Alpha Releases
 
+_Pre-launch alpha builds (portfolio and closed testing), before the 1.0.0 Play launch. Version numbers here are internal dev tags._
+
 ## v1.0.4-alpha - Testing Infrastructure & Documentation (October 2025)
 
 ### 🧪 **Testing Overhaul**
