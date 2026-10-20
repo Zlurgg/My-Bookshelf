@@ -6,6 +6,15 @@ import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 
+/**
+ * Google Books first, Open Library on page 1 when Google can't answer.
+ *
+ * Falls back on quota/auth/unavailable errors and on 5xx: `HttpClientFactory`
+ * already retries 5xx, but retries don't cover multi-day `backendFailed`
+ * outages like Google's in Oct 2026. Also falls back when Google returns an
+ * empty first page, since the same outage produced empty 200s for queries that
+ * obviously match. Connectivity errors don't fall back: OL won't do better.
+ */
 class FallbackRemoteBookDataSource(
     private val primary: RemoteBookDataSource,
     private val fallback: RemoteBookDataSource,
@@ -44,20 +53,41 @@ class FallbackRemoteBookDataSource(
                     "Google Books unavailable (%s), falling back to OpenLibrary",
                     result.error
                 )
-                fallback.searchBooks(
-                    query = query,
-                    resultLimit = resultLimit,
-                    language = language,
-                    authorFilter = authorFilter,
-                    titleFilter = titleFilter,
-                    subjectFilter = subjectFilter,
-                    sort = sort,
-                    startIndex = null,
-                )
+                searchFallback(query, resultLimit, language, authorFilter, titleFilter, subjectFilter, sort)
+            }
+            result is Result.Success && result.data.rawPageSize == 0 -> {
+                Timber.tag(TAG).w("Google Books returned no results, trying OpenLibrary")
+                val fallbackResult =
+                    searchFallback(query, resultLimit, language, authorFilter, titleFilter, subjectFilter, sort)
+                when (fallbackResult) {
+                    is Result.Success -> fallbackResult
+                    // An empty Google page is a legitimate answer; don't turn it
+                    // into an error screen because the fallback also failed.
+                    is Result.Error -> result
+                }
             }
             else -> result
         }
     }
+
+    private suspend fun searchFallback(
+        query: String,
+        resultLimit: Int?,
+        language: String?,
+        authorFilter: String?,
+        titleFilter: String?,
+        subjectFilter: String?,
+        sort: String?,
+    ): Result<BookSearchResponse, DataError.Remote> = fallback.searchBooks(
+        query = query,
+        resultLimit = resultLimit,
+        language = language,
+        authorFilter = authorFilter,
+        titleFilter = titleFilter,
+        subjectFilter = subjectFilter,
+        sort = sort,
+        startIndex = null,
+    )
 
     override suspend fun getBookDescription(
         bookId: String,
@@ -72,7 +102,8 @@ class FallbackRemoteBookDataSource(
     private fun shouldFallback(error: DataError.Remote): Boolean {
         return error == DataError.Remote.TOO_MANY_REQUESTS ||
             error == DataError.Remote.FORBIDDEN ||
-            error == DataError.Remote.PROVIDER_UNAVAILABLE
+            error == DataError.Remote.PROVIDER_UNAVAILABLE ||
+            error == DataError.Remote.SERVER_ERROR
     }
 
     companion object {

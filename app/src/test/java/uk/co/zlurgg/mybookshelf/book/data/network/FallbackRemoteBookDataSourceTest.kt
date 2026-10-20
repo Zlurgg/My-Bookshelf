@@ -13,20 +13,26 @@ import uk.co.zlurgg.mybookshelf.core.domain.result.Result
 /**
  * Tests for the production [FallbackRemoteBookDataSource] class.
  *
- * Fallback semantics under test (narrow): the fallback fires only on errors that
- * indicate Google Books is unavailable to *us specifically* — quota
- * ([DataError.Remote.TOO_MANY_REQUESTS]), auth/restriction ([DataError.Remote.FORBIDDEN])
- * and explicit provider-unavailability ([DataError.Remote.PROVIDER_UNAVAILABLE], emitted
- * by the blank-API-key short-circuit). Transport errors that affect both providers
- * equally ([DataError.Remote.NO_INTERNET], [DataError.Remote.SERVER_ERROR],
- * [DataError.Remote.REQUEST_TIMEOUT]) surface as-is — falling back would waste a request
- * and mask the real failure.
+ * Fallback semantics under test: on page 1 the fallback fires on errors that
+ * indicate Google Books can't serve us — quota ([DataError.Remote.TOO_MANY_REQUESTS]),
+ * auth/restriction ([DataError.Remote.FORBIDDEN]), explicit provider-unavailability
+ * ([DataError.Remote.PROVIDER_UNAVAILABLE], emitted by the blank-API-key short-circuit)
+ * and 5xx ([DataError.Remote.SERVER_ERROR], Google's multi-day `backendFailed` outage in
+ * Oct 2026) — and on an empty first page. Connectivity errors that affect both providers
+ * equally ([DataError.Remote.NO_INTERNET], [DataError.Remote.REQUEST_TIMEOUT]) surface
+ * as-is — falling back would waste a request and mask the real failure.
  */
 class FallbackRemoteBookDataSourceTest {
 
     private val primaryResults = BookSearchResponse(
         books = listOf(createTestBook("google-1", BookProvider.GOOGLE_BOOKS)),
         rawPageSize = 1,
+        pageSize = 40,
+        provider = BookProvider.GOOGLE_BOOKS,
+    )
+    private val emptyPrimaryResults = BookSearchResponse(
+        books = emptyList(),
+        rawPageSize = 0,
         pageSize = 40,
         provider = BookProvider.GOOGLE_BOOKS,
     )
@@ -99,7 +105,7 @@ class FallbackRemoteBookDataSourceTest {
     }
 
     @Test
-    fun `searchBooks does NOT fall back on SERVER_ERROR`() = runTest {
+    fun `searchBooks falls back on SERVER_ERROR`() = runTest {
         val primary = StubRemoteBookDataSource(
             searchResult = Result.Error(DataError.Remote.SERVER_ERROR)
         )
@@ -108,8 +114,51 @@ class FallbackRemoteBookDataSourceTest {
 
         val result = sut.searchBooks("test")
 
-        assertTrue(result is Result.Error)
-        assertEquals(DataError.Remote.SERVER_ERROR, (result as Result.Error).error)
+        assertTrue(result is Result.Success)
+        assertEquals(BookProvider.OPEN_LIBRARY, (result as Result.Success).data.provider)
+        assertEquals(1, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks falls back when primary returns empty first page`() = runTest {
+        val primary = StubRemoteBookDataSource(searchResult = Result.Success(emptyPrimaryResults))
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Success)
+        assertEquals("ol-1", (result as Result.Success).data.books[0].id)
+        assertEquals(1, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks returns primary empty result when fallback fails after empty first page`() = runTest {
+        // An empty Google page is a legitimate answer — the user should see
+        // "No books found", not the fallback's error.
+        val primary = StubRemoteBookDataSource(searchResult = Result.Success(emptyPrimaryResults))
+        val fallback = StubRemoteBookDataSource(
+            searchResult = Result.Error(DataError.Remote.SERVER_ERROR)
+        )
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test")
+
+        assertTrue(result is Result.Success)
+        assertEquals(emptyPrimaryResults, (result as Result.Success).data)
+        assertEquals(1, fallback.searchCallCount)
+    }
+
+    @Test
+    fun `searchBooks does not fall back on empty page when startIndex non-null`() = runTest {
+        val primary = StubRemoteBookDataSource(searchResult = Result.Success(emptyPrimaryResults))
+        val fallback = StubRemoteBookDataSource(searchResult = Result.Success(fallbackResults))
+        val sut = FallbackRemoteBookDataSource(primary = primary, fallback = fallback)
+
+        val result = sut.searchBooks("test", startIndex = 40)
+
+        assertTrue(result is Result.Success)
+        assertEquals(emptyPrimaryResults, (result as Result.Success).data)
         assertEquals(0, fallback.searchCallCount)
     }
 
@@ -273,12 +322,14 @@ class FallbackRemoteBookDataSourceTest {
      */
     class StubRemoteBookDataSource(
         private val searchResult: Result<BookSearchResponse, DataError.Remote> =
-            Result.Success(BookSearchResponse(
-                emptyList(),
-                rawPageSize = 0,
-                pageSize = 40,
-                provider = BookProvider.GOOGLE_BOOKS,
-            )),
+            Result.Success(
+                BookSearchResponse(
+                    emptyList(),
+                    rawPageSize = 0,
+                    pageSize = 40,
+                    provider = BookProvider.GOOGLE_BOOKS,
+                )
+            ),
         private val descriptionResult: Result<String?, DataError.Remote> =
             Result.Success(null),
     ) : RemoteBookDataSource {
