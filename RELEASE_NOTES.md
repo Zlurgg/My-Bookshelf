@@ -9,6 +9,29 @@
 
 ---
 
+## v1.0.2 - Search keeps working during Google Books outages (October 2026)
+
+Google Books was intermittently down for everyone in October 2026: it returned
+"Service temporarily unavailable" errors or no results for searches that should
+match. Search in the app failed with "Server error occurred".
+
+### Fixes
+- Search now uses Open Library when Google Books has a server error or returns no results, instead of showing an error
+- A short notice under the result count says when results came from Open Library, which explains the different covers and editions
+- "Load more" is hidden for Open Library results. Previously it could append unrelated Google rows or fail
+- About page: the "Open Source" section is now "Book Data" and credits Google Books, with Open Library as the backup
+
+### Improvements
+- Gradle wrapper 9.6.1 → 9.8.2, AGP 9.3.0 → 9.4.1, Kotlin 2.3.21 → 2.4.21 (KSP 2.3.12)
+- Updated Compose BOM, Ktor, Coil, Navigation, kotlinx.serialization, Room, Firebase (Auth/Firestore/Crashlytics), qrose, Robolectric
+
+### Technical
+- Search results now record which provider served them, so the UI can gate pagination and show the notice
+- Fixed a flaky `LibraryViewModelTest` teardown that could fail the release workflow's test step
+- 748 unit tests and detekt passing; signed release build verified on emulator and a physical device
+
+---
+
 ## v1.0.1 - Production launch: maintenance & dependency update (July 2026)
 
 First release promoted toward production. No user-facing feature changes — a
