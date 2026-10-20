@@ -20,6 +20,7 @@ match. Search in the app failed with "Server error occurred".
 - A short notice under the result count says when results came from Open Library, which explains the different covers and editions
 - "Load more" is hidden for Open Library results. Previously it could append unrelated Google rows or fail
 - About page: the "Open Source" section is now "Book Data" and credits Google Books, with Open Library as the backup
+- About page: the privacy summary now says that book searches go to Google Books or Open Library and crash reports go to Firebase Crashlytics, instead of claiming nothing goes to third parties
 
 ### Improvements
 - Gradle wrapper 9.6.1 → 9.8.2, AGP 9.3.0 → 9.4.1, Kotlin 2.3.21 → 2.4.21 (KSP 2.3.12)

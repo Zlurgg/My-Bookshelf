@@ -1,6 +1,6 @@
 # Search: survive Google Books outages
 
-**Status:** implemented — merged to `main` 2026-10-20 as 1.0.2 (versionCode 7); Play release pending. See [Outcome](#outcome).
+**Status:** implemented — merged to `main` 2026-10-20 as 1.0.2 (versionCode 7, re-cut as versionCode 8 with the About privacy fix); Play release pending. See [Outcome](#outcome).
 **Branch:** `fix/search-google-outage` (merged)
 **Date:** 2026-10-20
 
