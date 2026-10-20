@@ -3,7 +3,10 @@ package uk.co.zlurgg.mybookshelf.library.presentation
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
@@ -49,19 +52,27 @@ class LibraryViewModelTest {
     private val mockBookRepository = MockBookRepository()
     private lateinit var dataStore: DataStore<Preferences>
 
+    // DataStore's default scope runs file I/O on Dispatchers.IO. A read still in
+    // flight when a test ends resumes onto Main from an IO thread while
+    // resetMain() swaps it ("Dispatchers.Main is used concurrently with setting
+    // it"). Pinning DataStore to the test dispatcher keeps it on the test thread.
+    private lateinit var dataStoreScope: CoroutineScope
+
     private val getAllLibraryBooks: GetAllLibraryBooksUseCase =
         GetAllLibraryBooksUseCaseStub(mockBookRepository)
 
     @Before
     fun setUp() {
         Dispatchers.setMain(testDispatcher)
-        dataStore = PreferenceDataStoreFactory.create {
+        dataStoreScope = CoroutineScope(testDispatcher + Job())
+        dataStore = PreferenceDataStoreFactory.create(scope = dataStoreScope) {
             java.io.File.createTempFile("test_prefs", ".preferences_pb")
         }
     }
 
     @After
     fun tearDown() {
+        dataStoreScope.cancel()
         Dispatchers.resetMain()
     }
 
