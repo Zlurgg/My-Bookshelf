@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.core.domain.error.ErrorFormatter
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferenceState
 import uk.co.zlurgg.mybookshelf.core.domain.preferences.SearchPreferences
@@ -470,7 +471,9 @@ class LibraryViewModel(
                             results = mergedBooks,
                             filteredCount = searchResult.filteredCount,
                             nextStartIndex = baseStartIndex + searchResult.rawPageSize,
-                            canLoadMore = searchResult.rawPageSize >= searchResult.pageSize,
+                            // Google-only pagination — see BookshelfViewModel for why.
+                            canLoadMore = searchResult.provider == BookProvider.GOOGLE_BOOKS &&
+                                searchResult.rawPageSize >= searchResult.pageSize,
                         )
                     )
                 }

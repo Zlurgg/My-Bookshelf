@@ -1129,14 +1129,15 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `canLoadMore true when page 1 fell back to OL and returned a full 100 rows`() = runTest(testDispatcher) {
-        // Cross-provider page-size propagation: the data source reports the page
-        // size IT asked for (Google 40, OL 100). The VM must compare against the
-        // returned pageSize, not a hard-coded constant.
+    fun `load more is disabled when results came from Open Library`() = runTest(testDispatcher) {
+        // Load-more always goes to Google, so after a page-1 fallback it would
+        // append Google rows from a different result set. A full OL page must
+        // still end pagination.
         val page1 = (1..100).map { TestBookBuilder().withId("ol-$it").build() }
         stubSearchBooks.searchResultsToReturn = page1
         stubSearchBooks.defaultRawPageSize = 100
-        stubSearchBooks.defaultPageSize = 100 // OL fallback page
+        stubSearchBooks.defaultPageSize = 100
+        stubSearchBooks.providerToReturn = BookProvider.OPEN_LIBRARY
 
         val viewModel = createViewModel()
         val stateHelper = viewModel.state.testHelper(this)
@@ -1148,12 +1149,15 @@ class LibraryViewModelTest {
         advanceUntilIdle()
         val state = stateHelper.getCurrentState()!!
 
-        // 100 == 100 → canLoadMore. A hard-coded Google-40 constant would
-        // misclassify this 100-row OL response.
-        assertTrue(
-            "canLoadMore must compare against the per-response pageSize",
+        assertFalse(
+            "canLoadMore must be false for an Open Library page",
             state.bookSearchState.canLoadMore,
         )
+
+        viewModel.onAction(LibraryAction.OnLoadMore)
+        advanceUntilIdle()
+
+        assertEquals("OnLoadMore must not search again", 1, stubSearchBooks.invocationCount)
         stateHelper.cleanup()
     }
 

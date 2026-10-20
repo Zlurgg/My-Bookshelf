@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.presentation.searchcomponents.BookSearchState
 import uk.co.zlurgg.mybookshelf.book.presentation.util.ShelfMaterial
 import uk.co.zlurgg.mybookshelf.bookcase.domain.usecase.GetShelfByIdUseCase
@@ -501,10 +502,12 @@ class BookshelfViewModel(
                             // Advance by pre-filter raw count — post-filter
                             // books.size would re-fetch dropped rows on Google.
                             nextStartIndex = baseStartIndex + searchResult.rawPageSize,
-                            // Provider-aware end-detection — result.pageSize is
-                            // what the data source actually asked for (Google 40,
-                            // OL 100, possibly different if page 1 fell back).
-                            canLoadMore = searchResult.rawPageSize >= searchResult.pageSize,
+                            // Only Google pages paginate: load-more always goes to
+                            // Google, so after an OL fallback it would append rows
+                            // from a different result set. OL's 100-row page is
+                            // enough for a degraded mode.
+                            canLoadMore = searchResult.provider == BookProvider.GOOGLE_BOOKS &&
+                                searchResult.rawPageSize >= searchResult.pageSize,
                         )
                     )
                 }

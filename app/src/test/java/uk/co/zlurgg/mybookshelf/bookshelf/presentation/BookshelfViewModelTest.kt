@@ -5,6 +5,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -651,6 +652,39 @@ class BookshelfViewModelTest {
             "dialog stays open after clear (X is not dismiss)",
             state.isSearchDialogVisible,
         )
+        stateHelper.cleanup()
+    }
+
+    @Test
+    fun `load more is disabled when results came from Open Library`() = runTest(testDispatcher) {
+        // Load-more always goes to Google, so after a page-1 fallback it would
+        // append Google rows from a different result set. A full OL page must
+        // still end pagination.
+        mockGetShelfById.shelfToReturn = TestShelfBuilder().build()
+        mockSearchBooks.searchResultsToReturn = (1..100).map { TestBookBuilder().withId("ol-$it").build() }
+        mockSearchBooks.defaultRawPageSize = 100
+        mockSearchBooks.defaultPageSize = 100
+        mockSearchBooks.providerToReturn = BookProvider.OPEN_LIBRARY
+
+        val viewModel = createViewModel()
+        val stateHelper = viewModel.state.testHelper(this)
+        stateHelper.getCurrentState()
+
+        viewModel.onAction(BookshelfAction.OnSearchClick)
+        viewModel.onAction(BookshelfAction.OnSearchQueryChange("kotlin"))
+        viewModel.onAction(BookshelfAction.OnSubmitSearch)
+        advanceUntilIdle()
+        val state = stateHelper.getCurrentState()!!
+
+        assertFalse(
+            "canLoadMore must be false for an Open Library page",
+            state.bookSearchState.canLoadMore,
+        )
+
+        viewModel.onAction(BookshelfAction.OnLoadMore)
+        advanceUntilIdle()
+
+        assertEquals("OnLoadMore must not search again", 1, mockSearchBooks.invocationCount)
         stateHelper.cleanup()
     }
 
