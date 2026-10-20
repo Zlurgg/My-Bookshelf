@@ -98,6 +98,11 @@ fun BookSearchDialog(
     val showGoogleAttribution = remember(state.results, effectiveLibraryScope) {
         !effectiveLibraryScope && state.results.any { it.provider == BookProvider.GOOGLE_BOOKS }
     }
+    // Explains why results look different from usual after a Google → Open
+    // Library fallback (fewer covers, different editions).
+    val showOpenLibraryNotice = remember(state.results, effectiveLibraryScope) {
+        !effectiveLibraryScope && state.results.any { it.provider == BookProvider.OPEN_LIBRARY }
+    }
     AlertDialog(
         onDismissRequest = {
             dismissKeyboard()
@@ -190,6 +195,18 @@ fun BookSearchDialog(
                         Text(
                             text = stringResource(R.string.powered_by_google),
                             style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = 6.dp
+                            )
+                        )
+                    }
+                    if (showOpenLibraryNotice) {
+                        Text(
+                            text = stringResource(R.string.search_open_library_notice),
+                            style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(
                                 start = 16.dp,

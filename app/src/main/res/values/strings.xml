@@ -127,6 +127,7 @@
     <string name="publication_view_on_google_play">View on Google Play</string>
     <string name="publication_google_preview">Google Preview</string>
     <string name="powered_by_google">Powered by Google</string>
+    <string name="search_open_library_notice">Showing Open Library results. Google Books returned nothing for this search.</string>
     <string name="publication_not_available">Not available</string>
 
     <!-- Languages card -->
