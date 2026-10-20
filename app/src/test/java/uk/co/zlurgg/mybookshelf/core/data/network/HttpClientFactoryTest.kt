@@ -1,5 +1,10 @@
 package uk.co.zlurgg.mybookshelf.core.data.network
 
+import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.respond
+import io.ktor.client.request.get
+import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -64,5 +69,23 @@ class HttpClientFactoryTest {
     fun `redactSensitiveValues does not match unrelated query parameters containing 'key'`() {
         val input = "GET https://example.com/v1/search?keyword=cooking"
         assertEquals(input, redactSensitiveValues(input))
+    }
+
+    @Test
+    fun `server error is retried once, not MAX_RETRIES times`() = runTest {
+        // During a sustained 5xx outage every retry delays the Open Library
+        // fallback, so 5xx gets one retry (two attempts in total).
+        var attempts = 0
+        val client = HttpClientFactory.create(
+            MockEngine {
+                attempts++
+                respond(content = "", status = HttpStatusCode.ServiceUnavailable)
+            }
+        )
+
+        val response = client.get("https://example.com/books")
+
+        assertEquals(HttpStatusCode.ServiceUnavailable, response.status)
+        assertEquals(1 + HttpClientFactory.MAX_SERVER_ERROR_RETRIES, attempts)
     }
 }

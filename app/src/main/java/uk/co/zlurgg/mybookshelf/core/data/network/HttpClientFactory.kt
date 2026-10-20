@@ -56,6 +56,11 @@ object HttpClientFactory {
 
     private const val MAX_RETRIES = 3
 
+    // 5xx gets one retry only. A single retry covers a brief blip, but during a
+    // sustained outage (Google Books `backendFailed`, Oct 2026) more retries only
+    // delay the Open Library fallback in FallbackRemoteBookDataSource by 1-2s each.
+    internal const val MAX_SERVER_ERROR_RETRIES = 1
+
     fun create(engine: HttpClientEngine, enableLogging: Boolean = false): HttpClient {
         return HttpClient(engine) {
             install(ContentNegotiation) {
@@ -74,13 +79,16 @@ object HttpClientFactory {
             install(HttpRequestRetry) {
                 maxRetries = MAX_RETRIES
                 retryIf { _, httpResponse ->
-                    // Retry on server errors (5xx) only.
+                    // Retry on server errors (5xx) only, and only MAX_SERVER_ERROR_RETRIES
+                    // times. retryCount is the retry about to happen, starting at 1.
                     // 429 not retried — Google Books returns 429 for daily quota exhaustion (not transient).
                     // FallbackRemoteBookDataSource handles this by switching providers.
-                    httpResponse.status == HttpStatusCode.InternalServerError ||
-                        httpResponse.status == HttpStatusCode.BadGateway ||
-                        httpResponse.status == HttpStatusCode.ServiceUnavailable ||
-                        httpResponse.status == HttpStatusCode.GatewayTimeout
+                    retryCount <= MAX_SERVER_ERROR_RETRIES && (
+                        httpResponse.status == HttpStatusCode.InternalServerError ||
+                            httpResponse.status == HttpStatusCode.BadGateway ||
+                            httpResponse.status == HttpStatusCode.ServiceUnavailable ||
+                            httpResponse.status == HttpStatusCode.GatewayTimeout
+                        )
                 }
                 retryOnExceptionIf { _, cause ->
                     // Retry on network-related exceptions
