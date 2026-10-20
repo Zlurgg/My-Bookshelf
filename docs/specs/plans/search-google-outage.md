@@ -166,6 +166,9 @@ All of §1–7 shipped as planned, one commit per section. Deviations and result
 
 ## Open question (owner decision, not part of this branch unless decided)
 
+**Resolved 2026-10-20:** Analytics is not live. The Firebase console has no Analytics app for `uk.co.zlurgg.mybookshelf`, and the release APK has no measurement SDK. The "no analytics" wording stays. Separately, `about_privacy_content` claimed "we don't share your data with third parties", which ignored Books/Open Library searches and Crashlytics. That was reworded on `fix/about-privacy-copy`.
+
+
 **Analytics wording.** `about_privacy_content` says "We don't collect analytics…" and `docs/privacy.html:249` says "We do not collect usage analytics beyond anonymous crash reports". The release runtime classpath contains no Analytics SDK (only `firebase-measurement-connector`), but the owner confirmed on 2026-06-14 that Analytics data appears in the Firebase console. Check the console (Analytics → events / data streams for `uk.co.zlurgg.mybookshelf`). If Analytics is live, fix both texts and the Play Data Safety form together.
 
 ## Out of scope
