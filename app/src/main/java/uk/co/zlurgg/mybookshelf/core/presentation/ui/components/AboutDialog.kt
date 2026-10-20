@@ -68,8 +68,8 @@ fun AboutDialog(
         Spacer(modifier = Modifier.height(16.dp))
 
         DialogContentSection(
-            title = stringResource(R.string.about_open_source_title),
-            content = stringResource(R.string.about_open_source_content)
+            title = stringResource(R.string.about_book_data_title),
+            content = stringResource(R.string.about_book_data_content)
         )
 
         Spacer(modifier = Modifier.height(16.dp))
