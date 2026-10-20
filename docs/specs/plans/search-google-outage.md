@@ -1,6 +1,6 @@
 # Search: survive Google Books outages
 
-**Status:** implemented — merged to `main` 2026-10-20 as 1.0.2 (versionCode 7, re-cut as versionCode 8 with the About privacy fix); Play release pending. See [Outcome](#outcome).
+**Status:** shipped — promoted to production 2026-10-20 as **1.0.3 (versionCode 9)**. See [Outcome](#outcome).
 **Branch:** `fix/search-google-outage` (merged)
 **Date:** 2026-10-20
 
@@ -160,9 +160,18 @@ All of §1–7 shipped as planned, one commit per section. Deviations and result
 
 - **§3 tests:** `LibraryViewModelTest` had `canLoadMore true when page 1 fell back to OL and returned a full 100 rows`, which asserted the opposite of the new rule. It was replaced by `load more is disabled when results came from Open Library` (drift, not a tombstone). Both VM tests also assert that `OnLoadMore` doesn't search again.
 - **§6:** the DataStore now runs on `CoroutineScope(testDispatcher + Job())`, cancelled before `resetMain()`. `BookshelfViewModelTest` has no DataStore, so it needed no change. The full suite passed 3× with `--rerun-tasks` (748 tests).
-- **`MAX_RETRIES`:** unchanged. With Google returning 503 for every query, page 1 arrived via Open Library in under 5s on the emulator and about 4–7s on a OnePlus CPH2581, below the ~10s threshold.
+- **5xx retries (follow-up in 1.0.3):** first left unchanged, because early on-device timings were 4–7s. On the Play-signed 1.0.2 build they rose to 9–12s, so 5xx now gets one retry (`HttpClientFactory.MAX_SERVER_ERROR_RETRIES = 1`) instead of `MAX_RETRIES = 3`. Network-exception retries are still 3. On 1.0.3, most fallback searches took about 4–9s on the phone. Timings are approximate (sampled every ~2s), and Open Library's own speed varied between 1.1s and 3.6s per request.
 - **Verification:** steps 1–4 and 6–8 passed on the emulator and the physical device. **Step 5 (Google answering: "Powered by Google", no notice, working "Load more") is unverified**, because Google returned 503 for every query throughout testing. Re-check once the curl replay returns 200.
 - **Seen during testing, not fixed:** an Open Library row showed `null` as its year, and an Open Library `harry potter` search included a Spanish edition (the English filter may be loose).
+- **Slow outliers, not fixed:** two of about 15 timed searches on 1.0.3 took about 22s and over 60s; the same queries retried in about 5s. The likely cause is a stalled Open Library request, which waits the 20s HTTP timeout and retries socket timeouts up to 3 times. This predates this work. Release builds don't log, so it's unconfirmed. Only act on it if users report slow searches.
+
+### Release history
+
+| Version | Code | Contents | Track |
+|---|---|---|---|
+| 1.0.2 | 7 | §1–7 | internal (superseded) |
+| 1.0.2 | 8 | + About privacy text no longer claims nothing goes to third parties | internal (superseded) |
+| 1.0.3 | 9 | + 5xx retried once instead of three times | **production**, 2026-10-20 |
 
 ## Open question (owner decision, not part of this branch unless decided)
 
