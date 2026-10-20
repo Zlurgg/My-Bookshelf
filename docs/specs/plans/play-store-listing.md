@@ -66,7 +66,7 @@ PRIVACY
 
 Your personal shelves, books, ratings, and notes are stored only on your device — they never leave it. Only book club activity (the part you choose to share) is synced to the cloud.
 
-For sign-in, cloud sync, crash reports, and usage analytics, the app uses Google's Firebase services (Authentication, Firestore, Crashlytics, Analytics). These follow Google's standard privacy controls. There are no ads and no third-party advertising trackers.
+For sign-in, cloud sync and crash reports, the app uses Google's Firebase services (Authentication, Firestore, Crashlytics). These follow Google's standard privacy controls. There are no analytics, no ads and no third-party advertising trackers.
 
 GOOD TO KNOW
 

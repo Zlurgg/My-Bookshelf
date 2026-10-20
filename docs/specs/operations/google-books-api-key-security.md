@@ -19,11 +19,11 @@ So the *actual* protection model has two layers:
 
 | Concern | File |
 |---|---|
-| Build-time injection | `app/build.gradle.kts:104,118` |
-| Runtime config accessor | `app/src/main/java/uk/co/zlurgg/mybookshelf/core/data/network/ApiConfig.kt:61` |
-| Per-request header attachment | `app/src/main/java/uk/co/zlurgg/mybookshelf/book/data/network/api/GoogleBooksApiService.kt:46-50` |
+| Build-time injection | `app/build.gradle.kts:119-120,133-134` |
+| Runtime config accessor | `app/src/main/java/uk/co/zlurgg/mybookshelf/core/data/network/ApiConfig.kt:66` |
+| Per-request header attachment | `app/src/main/java/uk/co/zlurgg/mybookshelf/book/data/network/api/GoogleBooksApiService.kt:51-53` |
 | Package + cert SHA-1 computation | `app/src/main/java/uk/co/zlurgg/mybookshelf/core/data/service/AndroidAppAttestation.kt` |
-| Missing-key fallback | `app/src/main/java/uk/co/zlurgg/mybookshelf/book/data/network/GoogleBooksRemoteBookDataSource.kt:36-40` |
+| Missing-key fallback | `app/src/main/java/uk/co/zlurgg/mybookshelf/book/data/network/GoogleBooksRemoteBookDataSource.kt:37-41` |
 
 ## Diagram
 
@@ -91,11 +91,13 @@ So the *actual* protection model has two layers:
                                      │
                   ┌──────────────────┴──────────────────┐
                   ▼                                     ▼
-            200 OK + JSON                       403 → maps to
-            → mapped to BookSearchResponse      PROVIDER_UNAVAILABLE
+            200 OK + JSON                       403 → maps to FORBIDDEN
+            → mapped to BookSearchResponse      (blank key → PROVIDER_UNAVAILABLE,
+              (empty page 1 also falls back)     5xx → SERVER_ERROR)
                                                 → FallbackRemoteBookDataSource
-                                                  silently falls back to
-                                                  OpenLibrary
+                                                  falls back to OpenLibrary
+                                                  (page 1 only; dialog shows
+                                                  an Open Library notice)
 
 ┌──────────────────────────────────────────────────────────────────────────┐
 │                            THREAT MODEL                                  │

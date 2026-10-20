@@ -120,4 +120,4 @@ keytool -list -v \
 Rebuild both a debug and a release APK; in each, run a Books search.
 
 - **If Google attribution shows on results** → key + restriction working.
-- **If every search falls back to OpenLibrary** → restriction is wrong for that variant. Check the SHA-1 on the allowlist matches what the build is actually signed with. Crashlytics surfaces the blank-key/403 path as a non-fatal in the Firebase console.
+- **If every search falls back to OpenLibrary** → first replay the request with curl (see `docs/specs/plans/search-google-outage.md` §Verification). A `403` means the restriction is wrong for that variant: check that the SHA-1 on the allowlist matches what the build is actually signed with. A `503 backendFailed` or an empty `200` means Google itself is down, and the app now falls back on those too (Oct 2026). Crashlytics surfaces the blank-key path as a non-fatal in the Firebase console.
