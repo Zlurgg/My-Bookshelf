@@ -78,6 +78,7 @@ class GoogleBooksRemoteBookDataSource(
                 // blank-title filter happened to drop.
                 rawPageSize = rawItems.size,
                 pageSize = requestedPageSize,
+                provider = BookProvider.GOOGLE_BOOKS,
             )
         }
     }

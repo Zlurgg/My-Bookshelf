@@ -28,11 +28,13 @@ class FallbackRemoteBookDataSourceTest {
         books = listOf(createTestBook("google-1", BookProvider.GOOGLE_BOOKS)),
         rawPageSize = 1,
         pageSize = 40,
+        provider = BookProvider.GOOGLE_BOOKS,
     )
     private val fallbackResults = BookSearchResponse(
         books = listOf(createTestBook("ol-1", BookProvider.OPEN_LIBRARY)),
         rawPageSize = 1,
         pageSize = 100,
+        provider = BookProvider.OPEN_LIBRARY,
     )
 
     @Test
@@ -271,7 +273,12 @@ class FallbackRemoteBookDataSourceTest {
      */
     class StubRemoteBookDataSource(
         private val searchResult: Result<BookSearchResponse, DataError.Remote> =
-            Result.Success(BookSearchResponse(emptyList(), rawPageSize = 0, pageSize = 40)),
+            Result.Success(BookSearchResponse(
+                emptyList(),
+                rawPageSize = 0,
+                pageSize = 40,
+                provider = BookProvider.GOOGLE_BOOKS,
+            )),
         private val descriptionResult: Result<String?, DataError.Remote> =
             Result.Success(null),
     ) : RemoteBookDataSource {

@@ -62,6 +62,7 @@ class OpenLibraryRemoteBookDataSource(
                 books = dto.results.map { it.toBook() },
                 rawPageSize = dto.results.size,
                 pageSize = requestedLimit,
+                provider = BookProvider.OPEN_LIBRARY,
             )
         }
     }

@@ -21,6 +21,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.model.ReadingStatus
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.CacheSearchPreviewsUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.SearchBooksUseCase
@@ -1435,6 +1436,7 @@ class LibraryViewModelTest {
         var lastSubjectFilter: String? = null
         var lastStartIndex: Int? = null
         var invocationCount = 0
+        var providerToReturn = BookProvider.GOOGLE_BOOKS
 
         override suspend fun invoke(
             query: String,
@@ -1477,6 +1479,7 @@ class LibraryViewModelTest {
                         filteredCount = 0,
                         rawPageSize = rawSize,
                         pageSize = defaultPageSize,
+                        provider = providerToReturn,
                     )
                 )
             }

@@ -10,4 +10,8 @@ data class BookSearchResponse(
     // Per-response so a Google→OL fallback on page 1 advertises OL's 100, not
     // Google's 40, when the VM computes canLoadMore.
     val pageSize: Int,
+    // Which provider served this page. No default so every data source must
+    // state it; the VM uses it to gate pagination and the dialog to show the
+    // Open Library notice after a fallback.
+    val provider: BookProvider,
 )

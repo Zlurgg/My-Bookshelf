@@ -6,6 +6,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import uk.co.zlurgg.mybookshelf.book.data.mappers.toBook
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.model.BookSearchResponse
 import uk.co.zlurgg.mybookshelf.core.domain.error.DataError
 import uk.co.zlurgg.mybookshelf.core.domain.result.Result
@@ -67,7 +68,12 @@ class SearchBooksUseCaseTest {
                 .toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
+            BookSearchResponse(
+                books = testBooks,
+                rawPageSize = testBooks.size,
+                pageSize = 100,
+                provider = BookProvider.OPEN_LIBRARY,
+            )
         )
 
         val result = useCase("test query")
@@ -200,7 +206,12 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
+            BookSearchResponse(
+                books = testBooks,
+                rawPageSize = testBooks.size,
+                pageSize = 100,
+                provider = BookProvider.OPEN_LIBRARY,
+            )
         )
 
         val result = useCase("test", safeSearchEnabled = true)
@@ -228,7 +239,12 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
+            BookSearchResponse(
+                books = testBooks,
+                rawPageSize = testBooks.size,
+                pageSize = 100,
+                provider = BookProvider.OPEN_LIBRARY,
+            )
         )
 
         val result = useCase("test", safeSearchEnabled = false)
@@ -252,7 +268,12 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
+            BookSearchResponse(
+                books = testBooks,
+                rawPageSize = testBooks.size,
+                pageSize = 100,
+                provider = BookProvider.OPEN_LIBRARY,
+            )
         )
 
         val result = useCase("test", safeSearchEnabled = true)
@@ -295,7 +316,12 @@ class SearchBooksUseCaseTest {
                 .build().toBook()
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = testBooks, rawPageSize = testBooks.size, pageSize = 100)
+            BookSearchResponse(
+                books = testBooks,
+                rawPageSize = testBooks.size,
+                pageSize = 100,
+                provider = BookProvider.OPEN_LIBRARY,
+            )
         )
 
         val result = useCase("test", safeSearchEnabled = true)
@@ -333,7 +359,12 @@ class SearchBooksUseCaseTest {
             TestSearchedBookDtoBuilder().withId("/works/A").withTitle("A").build().toBook(),
         )
         mockRemoteDataSource.configureSearchResponse(
-            BookSearchResponse(books = books, rawPageSize = 40, pageSize = 40)
+            BookSearchResponse(
+                books = books,
+                rawPageSize = 40,
+                pageSize = 40,
+                provider = BookProvider.OPEN_LIBRARY,
+            )
         )
 
         val result = useCase("test")
@@ -342,5 +373,24 @@ class SearchBooksUseCaseTest {
         val searchResult = (result as Result.Success).data
         assertEquals("rawPageSize must reflect the provider's PRE-filter count", 40, searchResult.rawPageSize)
         assertEquals("pageSize must reflect what the data source asked for", 40, searchResult.pageSize)
+    }
+
+    @Test
+    fun `SearchResult carries the provider from the response`() = runTest {
+        // The VM gates "Load more" on this, and the dialog shows the Open
+        // Library notice from it, so it must survive the use case unchanged.
+        mockRemoteDataSource.configureSearchResponse(
+            BookSearchResponse(
+                books = emptyList(),
+                rawPageSize = 0,
+                pageSize = 100,
+                provider = BookProvider.OPEN_LIBRARY,
+            )
+        )
+
+        val result = useCase("test")
+
+        assertTrue(result is Result.Success)
+        assertEquals(BookProvider.OPEN_LIBRARY, (result as Result.Success).data.provider)
     }
 }

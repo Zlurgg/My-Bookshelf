@@ -46,6 +46,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
             books = books,
             rawPageSize = books.size,
             pageSize = DEFAULT_TEST_PAGE_SIZE,
+            provider = BookProvider.OPEN_LIBRARY,
         )
     }
 
@@ -85,6 +86,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
                     books = emptyList(),
                     rawPageSize = 0,
                     pageSize = DEFAULT_TEST_PAGE_SIZE,
+                    provider = BookProvider.OPEN_LIBRARY,
                 )
             )
             configuredSearchResponse != null -> Result.Success(configuredSearchResponse!!)
@@ -98,6 +100,7 @@ class MockRemoteBookDataSource : RemoteBookDataSource {
                         books = defaultBooks,
                         rawPageSize = defaultBooks.size,
                         pageSize = DEFAULT_TEST_PAGE_SIZE,
+                        provider = BookProvider.OPEN_LIBRARY,
                     )
                 )
             }

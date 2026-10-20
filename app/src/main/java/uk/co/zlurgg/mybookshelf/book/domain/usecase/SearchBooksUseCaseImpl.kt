@@ -74,6 +74,7 @@ class SearchBooksUseCaseImpl(
                 filteredCount = response.books.size - safeBooks.size,
                 rawPageSize = response.rawPageSize,
                 pageSize = response.pageSize,
+                provider = response.provider,
             )
         }
     }

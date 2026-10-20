@@ -16,6 +16,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import uk.co.zlurgg.mybookshelf.auth.domain.usecase.CheckSignInStatusUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.model.Book
+import uk.co.zlurgg.mybookshelf.book.domain.model.BookProvider
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.AddBookToShelfUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.CacheSearchPreviewsUseCase
 import uk.co.zlurgg.mybookshelf.book.domain.usecase.RemoveBookFromShelfUseCase
@@ -783,6 +784,7 @@ class BookshelfViewModelTest {
         var lastSubjectFilter: String? = null
         var lastStartIndex: Int? = null
         var invocationCount = 0
+        var providerToReturn = BookProvider.GOOGLE_BOOKS
 
         override suspend operator fun invoke(
             query: String,
@@ -825,6 +827,7 @@ class BookshelfViewModelTest {
                         filteredCount = 0,
                         rawPageSize = rawSize,
                         pageSize = defaultPageSize,
+                        provider = providerToReturn,
                     )
                 )
             }
@@ -844,6 +847,7 @@ class BookshelfViewModelTest {
             lastSubjectFilter = null
             lastStartIndex = null
             invocationCount = 0
+            providerToReturn = BookProvider.GOOGLE_BOOKS
         }
     }
 
