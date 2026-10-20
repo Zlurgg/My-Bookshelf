@@ -1,7 +1,7 @@
 # Search: survive Google Books outages
 
-**Status:** planned — implementation pending (see `search-google-outage-handover.md`)
-**Branch:** `fix/search-google-outage`
+**Status:** implemented — merged to `main` 2026-10-20 as 1.0.2 (versionCode 7); Play release pending. See [Outcome](#outcome).
+**Branch:** `fix/search-google-outage` (merged)
 **Date:** 2026-10-20
 
 ## Problem
@@ -153,6 +153,16 @@ curl -s -o /dev/null -w '%{http_code}\n' -G https://www.googleapis.com/books/v1/
   -H "X-Android-Package: uk.co.zlurgg.mybookshelf" \
   -H "X-Android-Cert: 9f2f9f7af4eae833b9cd3fb29a2b593d69ebbcc0"
 ```
+
+## Outcome
+
+All of §1–7 shipped as planned, one commit per section. Deviations and results:
+
+- **§3 tests:** `LibraryViewModelTest` had `canLoadMore true when page 1 fell back to OL and returned a full 100 rows`, which asserted the opposite of the new rule. It was replaced by `load more is disabled when results came from Open Library` (drift, not a tombstone). Both VM tests also assert that `OnLoadMore` doesn't search again.
+- **§6:** the DataStore now runs on `CoroutineScope(testDispatcher + Job())`, cancelled before `resetMain()`. `BookshelfViewModelTest` has no DataStore, so it needed no change. The full suite passed 3× with `--rerun-tasks` (748 tests).
+- **`MAX_RETRIES`:** unchanged. With Google returning 503 for every query, page 1 arrived via Open Library in under 5s on the emulator and about 4–7s on a OnePlus CPH2581, below the ~10s threshold.
+- **Verification:** steps 1–4 and 6–8 passed on the emulator and the physical device. **Step 5 (Google answering: "Powered by Google", no notice, working "Load more") is unverified**, because Google returned 503 for every query throughout testing. Re-check once the curl replay returns 200.
+- **Seen during testing, not fixed:** an Open Library row showed `null` as its year, and an Open Library `harry potter` search included a Spanish edition (the English filter may be loose).
 
 ## Open question (owner decision, not part of this branch unless decided)
 

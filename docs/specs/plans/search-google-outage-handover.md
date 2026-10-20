@@ -1,5 +1,7 @@
 # Handover: search Google-outage fix
 
+> **Done.** Implemented and merged to `main` on 2026-10-20 as 1.0.2 (versionCode 7). See the plan's [Outcome](search-google-outage.md#outcome) section. Kept for history.
+
 Start a new session on branch `fix/search-google-outage` and implement **`docs/specs/plans/search-google-outage.md`**. Read that plan first: it has the investigation, exact files and line numbers, test cases and verification steps.
 
 ## State at handover (2026-10-20)
