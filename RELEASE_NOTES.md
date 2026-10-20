@@ -9,6 +9,13 @@
 
 ---
 
+## v1.0.3 - Faster search during Google Books outages (October 2026)
+
+### Improvements
+- Search reaches Open Library results a few seconds sooner when Google Books is down. Google server errors are now retried once instead of three times before falling back
+
+---
+
 ## v1.0.2 - Search keeps working during Google Books outages (October 2026)
 
 Google Books was intermittently down for everyone in October 2026: it returned
